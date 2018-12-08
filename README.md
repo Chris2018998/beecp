@@ -35,10 +35,12 @@ Performace test
 Oe million cycle test for popular connection pools in mutil-thread Concurrent
 
 1: take connection from pool.
-    *getConenction(), con.close()*
+
+    *getConenction(),con.close()*
 	
 2: take conneciton and execute query.
-    *getConenction(), con.preparedStetment(), statement.execute(),   statement.close(),  con.close()*
+
+    *getConenction(),con.preparedStetment(),statement.execute(),statement.close(),con.close()*
 
 
 |  Env |   value |   Remark|
@@ -49,7 +51,7 @@ Oe million cycle test for popular connection pools in mutil-thread Concurrent
 |  Datase | mysql5.6-64  | not optimize  |
 |  JDBC Driver | Connector/J 5.1.47  |   | |
 
-#Connection pool for comparison
+**Connection pool for comparison**
 
 |  Pool Name  |   Version |   Remark|
 | ------------ | ------------ | ------------ |
@@ -60,7 +62,7 @@ Oe million cycle test for popular connection pools in mutil-thread Concurrent
 |  Druid | 1.1.12  | Alibaba product from china     |
 |  vibur-dbcp |22.2 |   | |
 
-# Test Pool paramters settting
+**Test Pool paramters settting**
 
 |  Parameter Name  |   Value |   Remark|
 | ------------ | ------------ | ------------ |
@@ -68,5 +70,48 @@ Oe million cycle test for popular connection pools in mutil-thread Concurrent
 |  pool max size |10 |   |
 | request timetou(ms)  |  40000 |    |
 |  statement cache size |20 |    |  |
+
+
+
+**connection cycle test result(1000thread x 1000cycle )**
+
+| summary count | c3p0 | dbcp |Tomcat-JDBC|Druid|vibur-dbcp|HikariCP|BeeCP-Fair|BeeCP-Compete|
+| ------ | ---------- | ---------- |------ | ---------- | ---------- |------ | ---------- | ---------- |
+|time==0ms              |    |   |  |    |   |  |   |   |
+|0ms<time<=10ms         |    |   |  |    |   |  |   |   |
+|10ms<time<=30ms        |    |   |  |    |   |  |   |   |
+|30ms<time<=50ms        |    |   |  |    |   |  |   |   |
+|50ms<time<=100ms       |    |   |  |    |   |  |   |   |
+|100ms<time<=200ms      |    |   |  |    |   |  |   |   |
+|200ms<time<=500ms      |    |   |  |    |   |  |   |   |
+|500ms<time<=1000ms     |    |   |  |    |   |  |   |   |
+|1000ms<time            |    |   |  |    |   |  |   |   |
+|fail                   |    |   |  |    |   |  |   |   |
+|avg                    |    |   |  |    |   |  |   |   |
+|min                    |    |   |  |    |   |  |   |   |
+|max                    |    |   |  |    |   |  |   |   |
+
+
+
+**Statement cycle test result(1000thread x 1000cycle )**
+
+| summary count | c3p0 | dbcp |Tomcat-JDBC|Druid|vibur-dbcp|HikariCP|BeeCP-Fair|BeeCP-Compete|
+| ------ | ---------- | ---------- |------ | ---------- | ---------- |------ | ---------- | ---------- |
+|time==0ms              |    |   |  |    |   |  |   |   |
+|0ms<time<=10ms         |    |   |  |    |   |  |   |   |
+|10ms<time<=30ms        |    |   |  |    |   |  |   |   |
+|30ms<time<=50ms        |    |   |  |    |   |  |   |   |
+|50ms<time<=100ms       |    |   |  |    |   |  |   |   |
+|100ms<time<=200ms      |    |   |  |    |   |  |   |   |
+|200ms<time<=500ms      |    |   |  |    |   |  |   |   |
+|500ms<time<=1000ms     |    |   |  |    |   |  |   |   |
+|1000ms<time            |    |   |  |    |   |  |   |   |
+|fail                   |    |   |  |    |   |  |   |   |
+|avg                    |    |   |  |    |   |  |   |   |
+|min                    |    |   |  |    |   |  |   |   |
+|max                    |    |   |  |    |   |  |   |   |
+
+
+
 
 
