@@ -37,15 +37,15 @@ Configuration
   <tr bgcolor="#E8D098" style="font-size:15">
     <td>connectionIdleTimeout</td>
     <td>if connections idle time is more then the value,pool will close them</td>
-	<td>time unit:Millisecond,default value:three minutes</td>
+    <td>time unit:Millisecond,default value:three minutes</td>
   </tr>
   <tr bgcolor="#E8D098" style="font-size:15">
     <td>connectionValidateSQL</td>
     <td>test connection is whether active</td>
-	<td></td>
+    <td></td>
   </tr>
 <table>
-
+     
 DataSource Demo
 ---
 ```java
@@ -60,9 +60,8 @@ Connection con = datasource.getConnection();
 ```
 
 Performace test
---- 
-
-<table border="1" cellpadding="0" width="100%" bgcolor="#f7fafc" bordercolor="#DCDAE5">
+---
+<table border="1" cellpadding="0" bgcolor="#f7fafc" bordercolor="#DCDAE5">
   <tr bgcolor="#6699CC" >
     <th>Env </th>
     <th>value</th>
@@ -97,11 +96,12 @@ Performace test
 
 ---
 Oe million cycle test for popular connection pools in mutil-thread Concurrent
+
 1: take connection from pool. 
 
 2: take conneciton and execute query. 
 
-<table border="1" cellpadding="0" width="100%" bgcolor="#f7fafc" bordercolor="#DCDAE5">
+<table border="1" cellpadding="0"  bgcolor="#f7fafc" bordercolor="#DCDAE5">
   <tr bgcolor="#6699CC" >
     <th>Pool Name</th>
     <th>Version</th>
@@ -141,7 +141,8 @@ Oe million cycle test for popular connection pools in mutil-thread Concurrent
 
 ---
 Pool paramters settting 
-<table border="1" cellpadding="0" width="100%" bgcolor="#f7fafc" bordercolor="#DCDAE5">
+
+<table border="1" cellpadding="0" bgcolor="#f7fafc" bordercolor="#DCDAE5">
   <tr bgcolor="#6699CC" >
     <th>Parameter Name</th>
     <th>Value</th>
@@ -159,7 +160,7 @@ Pool paramters settting
   </tr>
   <tr style="font-size:15">
     <td style="background:yellow">request timetou(ms)</td>
-    <td>40000.</td>
+    <td>40000</td>
     <td></td>
   </tr>
   <tr style="font-size:15">
