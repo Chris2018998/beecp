@@ -43,9 +43,6 @@ Oe million cycle test for popular connection pools in mutil-thread Concurrent
     *getConenction(),con.preparedStetment(),statement.execute(),statement.close(),con.close()*
 
 
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/Pool_Test_src.zip">>Download Test source</a>
-
-
 |  Env |   value |   Remark|
 | ------------ | ------------ | ------------ |
 |  CPU | I3-7100(3.9HZ x 2)  | dual core  |
@@ -73,6 +70,9 @@ Oe million cycle test for popular connection pools in mutil-thread Concurrent
 |  pool max size |10 |   |
 | request timetou(ms)  |  40000 |    |
 |  statement cache size |20 |    |  |
+
+
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/Pool_Test_src.zip">Download Test source</a>
 
 **connection cycle test result(1000thread x 1000 cycle )**
 
