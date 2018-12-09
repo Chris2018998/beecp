@@ -37,7 +37,7 @@ Oe million cycle test for popular connection pools in mutil-thread Concurrent
 1: take connection from pool.
 
     *getConenction(),con.close()*
-	
+    
 2: take conneciton and execute query.
 
     *getConenction(),con.preparedStetment(),statement.execute(),statement.close(),con.close()*
@@ -72,8 +72,9 @@ Oe million cycle test for popular connection pools in mutil-thread Concurrent
 |  statement cache size |20 |    |  |
 
 **connection cycle test result(1000thread x 1000 cycle )**
+
 |Sumary|C3P0|DBCP|TOMCAT|Druid|Vibur|HikariCP| Bee_F|Bee_C|
-| ... | ... | ... | ... | ... | ... | ... | ... | ... |
+| ------------ | ------------| ------------ | ------------ | ------------ | ------------ | ------------ | ------------ | ------------ |
 |success Count|1000000|1000000|1000000|1000000|1000000|1000000|1000000|1000000|
 |fail count|0|0|0|0|0|0|0|0|
 |avr(ms)|37.6495|27.7597|24.5578|26.1534|4.1056|0.4689|1.1911|0.513|
@@ -91,8 +92,9 @@ Oe million cycle test for popular connection pools in mutil-thread Concurrent
 |2000ms<time|0|0|0|0|0|0|0|0||
 
 **Statement cycle test result(1000thread x 1000 cycle )**
+
 |Sumary|C3P0|DBCP|TOMCAT|Druid|Vibur|HikariCP| Bee_F|Bee_C|
-| ... | ... | ... | ... | ... | ... | ... | ... | ... |
+| ---  | ---  | --- | --- | --- | --- | --- | --- | --- |
 |success Count|1000000|1000000|1000000|1000000|1000000|1000000|1000000|1000000|
 |fail count|0|0|0|0|0|0|0|0|
 |avr(ms)|83.5001|64.8457|62.1005|62.8310|35.9717|22.6460|36.9728|22.3423|
@@ -103,13 +105,8 @@ Oe million cycle test for popular connection pools in mutil-thread Concurrent
 |10ms<time<=30ms|178069|10|0|4387|1|104|11|299|
 |30ms<time<=50ms|121037|5|0|5525|990469|23|986821|46|
 |50ms<time<=100ms|209700|991943|995716|711425|6684|36|9058|33|
-|100ms<time<=200ms|189003|4514|3227|119582|1707|42|1951|28|
+|100ms<time<=200ms|189003|4514|3227|119582|1707|42|1951|28| 
 |200ms<time<=500ms|95721|431|1057|6176|0|143|0|88|
 |500ms<time<=1000ms|6525|0|0|794|0|150|0|105|
 |1000ms<time<=2000ms|820|0|0|524|0|249|0|176|
 |2000ms<time|116|0|0|0|0|1985|0|1795||
-
-
-
-
-
