@@ -47,7 +47,7 @@ Oe million cycle test for popular connection pools in mutil-thread Concurrent
 | ------------ | ------------ | ------------ |
 |  CPU | I3-7100(3.9HZ x 2)  | dual core  |
 |  Memory |  8G |   |
-| JDK  |  OpenJdk8-192 | not optimize  |
+| JDK  |  OpenJdk8-192 | 2G  |
 |  Datase | mysql5.6-64  | not optimize  |
 |  JDBC Driver | Connector/J 5.1.47  |   | |
 
