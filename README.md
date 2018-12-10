@@ -59,7 +59,8 @@ Oe million cycle test for popular connection pools in mutil-thread Concurrent
 |  c3p0 |  0.9.5.2 |   |
 | dbcp  |  1.4 |   |
 |  Tomcat-JDBC |9.0.13 |   |
-|  Druid | 1.1.12  | Alibaba product from china     |
+|  Druid | 1.1.12  | Alibaba product from china|
+|  BeeCP | 0.67  |  |
 |  vibur-dbcp |22.2 |   | |
 
 **Test Pool paramters settting**
