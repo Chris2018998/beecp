@@ -75,7 +75,7 @@ Oe million cycle test for popular connection pools in mutil-thread Concurrent
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/Pool_Test_src.zip">Download Test source</a>
 
-**connection cycle test result(1000thread x 1000 cycle )**
+**connection cycle test result(1000 thread x 1000 cycle )**
 
 |Sumary|C3P0|DBCP|TOMCAT|Druid|Vibur|HikariCP| Bee_F|Bee_C|
 | ------------ | ------------| ------------ | ------------ | ------------ | ------------ | ------------ | ------------ | ------------ |
@@ -95,7 +95,7 @@ Oe million cycle test for popular connection pools in mutil-thread Concurrent
 |1000ms<time<=2000ms|39|0|0|0|0|0|0|0|
 |2000ms<time|0|0|0|0|0|0|0|0||
 
-**Statement cycle test result(1000thread x 1000 cycle )**
+**Statement cycle test result(1000 thread x 1000 cycle )**
 
 |Sumary|C3P0|DBCP|TOMCAT|Druid|Vibur|HikariCP| Bee_F|Bee_C|
 | ---  | ---  | --- | --- | --- | --- | --- | --- | --- |
