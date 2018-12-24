@@ -47,9 +47,9 @@ Oe million cycle test for popular connection pools in mutil-thread Concurrent
 | ------------ | ------------ | ------------ |
 |  CPU | I3-7100(3.9HZ x 2)  | dual core  |
 |  Memory |  8G |   |
-| JDK  |  OpenJdk8-192 | 2G  |
-|  Datase | mysql5.6-64  | not optimize  |
-|  JDBC Driver | Connector/J 5.1.47  |   | |
+| JDK  | Jdk8-192 | 2G  |
+|  Datase | mariadb-10.3.11-winx64 | not optimize  |
+|  JDBC Driver | mariadb-java-client-2.3.0.jar  |   | |
 
 **Connection pool for comparison**
 
