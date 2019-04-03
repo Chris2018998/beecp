@@ -4,18 +4,18 @@ Introduction
 ---
 BeeCP,a lightweight and  fast JDBC connection pool implementation. 
 
-<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.69/BeeCP-0.69.jar">Download beeCP_0.69.jar</a>
+<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.72/BeeCP-0.72.jar">Download beeCP_0.69.jar</a>
 
 Configuration
 ---
 |  Name  |   Description |   Remark |
 | ------------ | ------------ | ------------ |
-|  poolInitSize  | connection size need create when pool initialization  |   |
-|  poolMaxSize |  max connnection size in pool |    |
-|  borrowerMaxWaitTime |request timeout for  borrower  |   |
-|  preparedStatementCacheSize | stement cache size |   |
+| poolInitSize  | connection size need create when pool initialization  |   |
+| poolMaxSize |  max connnection size in pool |    |
+| borrowerMaxWaitTime |request timeout for  borrower  |   |
+| preparedStatementCacheSize | stement cache size |   |
 | connectionIdleTimeout  | max idle time,then will be close  |    |
-| connectionValidateSQL |  a test sql to check connection ative   |    |   |
+| validationQuerySQL |  a test sql to check connection ative   |    |   |
 
  DataSource Demo
 ---
@@ -24,7 +24,7 @@ String userId="root";
 String password="";
 String driver="com.mysql.jdbc.Driver";
 String URL="jdbc:mysql://localhost/test";
-BeeDataSourceConfig config = new JdbcPoolConfig(driver,URL,userId,password);
+BeeDataSourceConfig config = new BeeDataSourceConfig(driver,URL,userId,password);
 DataSource datasource = new BeeDataSource(config);
 Connection con = datasource.getConnection();
 ....................
