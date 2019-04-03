@@ -12,9 +12,9 @@ Configuration
 | ------------ | ------------ | ------------ |
 | poolInitSize  | connection size need create when pool initialization  |   |
 | poolMaxSize |  max connnection size in pool |    |
-| borrowerMaxWaitTime |request timeout for  borrower  |   |
+| borrowerMaxWaitTime |request timeout for borrower(ms)  |   |
 | preparedStatementCacheSize | stement cache size |   |
-| connectionIdleTimeout  | max idle time,then will be close  |    |
+| connectionIdleTimeout  | max idle time,then will be close(ms)  |    |
 | validationQuerySQL |  a test sql to check connection ative   |    |   |
 
  DataSource Demo
