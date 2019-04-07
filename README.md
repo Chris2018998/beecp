@@ -32,38 +32,9 @@ Connection con = datasource.getConnection();
 
 Performace test
 ---
-1: JMH Test with <a href="https://github.com/brettwooldridge/HikariCP-benchmark">HikariCP Benchmarks code</a> 
-
-add the following code to HikariCP class: com.zaxxer.hikari.benchmark.BenchBase
-
- private void setupBeeCPWithCompete(){
-		 BeeDataSourceConfig sourceInfo = new BeeDataSourceConfig(
-				 "com.zaxxer.hikari.benchmark.stubs.StubDriver", 
-				jdbcUrl,
-				"brettw", 
-				"");
-	 	sourceInfo.setPoolMaxSize(maxPoolSize);
-	  sourceInfo.setPoolInitSize(MIN_POOL_SIZE);
-	 	sourceInfo.setBorrowerMaxWaitTime(8000);
-	 	sourceInfo.setValidationQuerySQL("select 1");
-		 DS = new BeeDataSource(sourceInfo);
- }
-	
- private void setupBeeCPWithFair(){
-	 	BeeDataSourceConfig sourceInfo = new BeeDataSourceConfig(
-				"com.zaxxer.hikari.benchmark.stubs.StubDriver", 
-			 	jdbcUrl,
-				 "brettw", 
-				 "");
-	 	sourceInfo.setPoolMaxSize(maxPoolSize);
-		 sourceInfo.setPoolInitSize(MIN_POOL_SIZE);
-	 	sourceInfo.setBorrowerMaxWaitTime(8000);
-		 sourceInfo.setValidationQuerySQL("select 1");
-		 sourceInfo.setFairMode(true);
-		 DS = new BeeDataSource(sourceInfo);
- }
+1: JMH Test with <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/HikariCP-jdbcBech.zip">HikariCP Benchmarks source code</a> 
 
 
-
+2: Concurrent Test <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/Jdbc-Performace.zip">Source code</a> 
 
 
