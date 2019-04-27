@@ -37,7 +37,8 @@ Test Env
 ---
 |  Name        |  Description | 
 | ------------ | ------------ | 
-|  OS          | Win7_64    |   
+|  OS          | Win7_64      |   
+| CPU          | I3-7100(3.9hz*2) |   
 | Memory       | 8G           |   
 | Java         |JDK1.8.0_192  |  
 |  DB          | mariadb10.3  |  
