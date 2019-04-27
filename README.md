@@ -52,4 +52,5 @@ Test Env
 
 ![Image text](https://github.com/Chris2018998/BeeCP/blob/master/doc/PoolPerformace_test.png)
 
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/JDBCPool.log">Download the log file</a> 
 
