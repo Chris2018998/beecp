@@ -12,6 +12,8 @@ package org.jmin.bee.pool;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.jmin.bee.pool.util.ConnectionUtil;
+
 /**
  * ProxyBaseStatement
  * 
@@ -38,23 +40,19 @@ public class ProxyStatementWrapper {
 	protected void updateLastActivityTime() throws SQLException {
 		if (isClosed)
 			throw new SQLException("Statement has been closed,access forbidden");
-		else
-			this.proxyConnection.updateLastActivityTime();
+		this.proxyConnection.updateLastActivityTime();
 	}
 
-	public void close() throws SQLException {		
-		if (!this.isClosed) {
+	public void close() throws SQLException {
+		if (this.isClosed) {
+			throw new SQLException("Statement has been closed");
+		} else {
 			this.isClosed = true;
-			try {
-				if(!this.isUseStatementCache)
-					delegate.close();
-			} catch (Throwable e) {
-			} finally {
+			if (!this.isUseStatementCache) {
+				ConnectionUtil.close(delegate);
 				this.delegate = null;
 				this.proxyConnection = null;
 			}
-		} else {
-			throw new SQLException("Statement has been closed");
 		}
 	}
 }

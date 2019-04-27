@@ -21,16 +21,18 @@ import java.util.Map;
  * @version 1.0
  */
 
-public class StatementCache {
+public final class StatementCache {
 	private int maxSize;
-	private LinkedHashMap<Object, PreparedStatement> objectMap;
+	private static float mapLoadFactor = 0.75f; 
+	private LinkedHashMap<Object, PreparedStatement> cacheMap;
 	
 	@SuppressWarnings("serial")
-	public StatementCache(final int maxSize) {
+	public StatementCache( int maxSize) {
 		this.maxSize = maxSize;
-		this.objectMap = new LinkedHashMap<Object, PreparedStatement>(maxSize, 0.75F, true) {
-			protected boolean removeEldestEntry(Map.Entry<Object, PreparedStatement> eldest) {
-				if (size() > maxSize) {
+		int mapInitialCapacity = (int)Math.ceil(maxSize/mapLoadFactor)+1;
+		this.cacheMap = new LinkedHashMap<Object, PreparedStatement>(mapInitialCapacity, mapLoadFactor, true) {
+			protected boolean removeEldestEntry(Map.Entry<Object,PreparedStatement> eldest) {
+				if (this.size() > StatementCache.this.maxSize) {
 					onRemove(eldest.getKey(), eldest.getValue());
 					return true;
 				} else {
@@ -43,16 +45,16 @@ public class StatementCache {
 		return this.maxSize;
 	}
 	public int size() {
-		return this.objectMap.size();
+		return this.cacheMap.size();
 	}
 	public PreparedStatement getStatement(Object key) {
-		return (this.objectMap.size()== 0)?null:this.objectMap.get(key) ;
+		return (this.cacheMap.size()== 0)?null:this.cacheMap.get(key) ;
 	}
 	public void putStatement(Object key, PreparedStatement value) {
-		if(maxSize>0)this.objectMap.put(key, value);
+		if(maxSize>0){this.cacheMap.put(key, value);}
 	}
 	public void clearAllStatement() {
-		Iterator<Map.Entry<Object, PreparedStatement>> itor = this.objectMap.entrySet().iterator();
+		Iterator<Map.Entry<Object, PreparedStatement>> itor = this.cacheMap.entrySet().iterator();
 		while (itor.hasNext()) {
 			Map.Entry<Object, PreparedStatement> entry = (Map.Entry<Object, PreparedStatement>) itor.next();
 			itor.remove();
@@ -61,8 +63,7 @@ public class StatementCache {
 	}
 	void onRemove(Object key, PreparedStatement obj) {
 		try {
-			((PreparedStatement) obj).close();
-		} catch (Throwable e) {
-		}
+			 ((PreparedStatement) obj).close();
+		} catch (Throwable e) {}
 	}
 }

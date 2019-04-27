@@ -32,9 +32,8 @@ public abstract class ProxyResultSet implements ResultSet {
 	}
 	protected void updateLastActivityTime() throws SQLException {
 		if (isClosed)
-			throw new SQLException("ResultSet has been closed,access forbidden");
-		else
-			this.proxyStatement.updateLastActivityTime();
+		 throw new SQLException("ResultSet has been closed,access forbidden");
+		this.proxyStatement.updateLastActivityTime();
 	}
 	public void close() throws SQLException {
 		if (!this.isClosed) {

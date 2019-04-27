@@ -18,7 +18,7 @@ import java.sql.SQLException;
  * @version 1.0
  */
 public final class ProxyConnectionFactory {
-	public final static ProxyConnection createProxyConnection(PooledConnection pooledConnection)throws SQLException{
+	public static ProxyConnection createProxyConnection(PooledConnection pooledConnection)throws SQLException{
 		 throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassUtil' after project compile");
 	}
 }

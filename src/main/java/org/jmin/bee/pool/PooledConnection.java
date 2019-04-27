@@ -23,7 +23,7 @@ import org.jmin.bee.pool.util.SystemClock;
  * @version 1.0
  */
 
-public class PooledConnection {
+public final class PooledConnection {
 	// state
 	private AtomicInteger state;
 	// last activity time
@@ -42,6 +42,8 @@ public class PooledConnection {
 	private ConnectionPool connectionPool;
 	//existStamentCache
 	private boolean isUseStatementCache=false;
+	//isSurpportSetQueryTimeout
+	private boolean isSurpportSetQueryTimeout=true;
 	
 	public PooledConnection(Connection connection, ConnectionPool connectionPool) {
 		this(connection, 10, connectionPool);
@@ -52,17 +54,24 @@ public class PooledConnection {
 		this.state = new AtomicInteger(PooledConnectionState.IDLE);
 		this.statementCache = new StatementCache(statementCacheSize);
 		this.isUseStatementCache=(statementCacheSize>0);
-		this.updateLastActivityTime();
 		this.connectionPool = connectionPool;
 		try {
 			this.autoCommit = this.connection.getAutoCommit();
 			this.transactionIsolationLevlOrig = this.connection.getTransactionIsolation();
-		} catch (Throwable e) {
-		}
+		} catch (Throwable e) {}
+		this.updateLastActivityTime();
 	}
 	
 	public boolean isUseStatementCache() {
 		return this.isUseStatementCache;
+	}
+	
+	public boolean isSurpportSetQueryTimeout() {
+		return isSurpportSetQueryTimeout;
+	}
+
+	public void setSurpportSetQueryTimeout(boolean isSurpportSetQueryTimeout) {
+		this.isSurpportSetQueryTimeout = isSurpportSetQueryTimeout;
 	}
 
 	public boolean isAutoCommit() {
@@ -100,9 +109,13 @@ public class PooledConnection {
 	public void bindProxyConnection(ProxyConnection proxyConnection) {
 		this.proxyConnection = proxyConnection;
 	}
+	
+	public boolean equals(Object obj) {
+		return this==obj;
+	}
 
 	public int hashCode() {
-		return connection.hashCode();
+		return this.hashCode();
 	}
 
 	public String toString() {
@@ -132,17 +145,8 @@ public class PooledConnection {
 			this.connection.setTransactionIsolation(this.transactionIsolationLevlOrig);
 		}
 	}
-
-	public boolean equals(Object obj) {
-		if (obj instanceof PooledConnection) {
-			PooledConnection oPool = (PooledConnection) obj;
-			return this.connection == oPool.connection;
-		} else {
-			return false;
-		}
-	}
-
-	public void closePhisicConnection() {
+	
+	public void removeFromPool() {
 		if (this.proxyConnection != null) {
 			proxyConnection.setConnectionDataToNull();
 			proxyConnection = null;

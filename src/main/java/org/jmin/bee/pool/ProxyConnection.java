@@ -51,15 +51,14 @@ public abstract class ProxyConnection implements Connection {
 	protected void updateLastActivityTime() throws SQLException {
 		if (isClosed)
 			throw new SQLException("Connection has been closed");
-		else
-			this.pooledConnection.updateLastActivityTime();
+		this.pooledConnection.updateLastActivityTime();
 	}
 
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
-		this.updateLastActivityTime();
 		this.autoCommitValue = autoCommit;
 		this.delegate.setAutoCommit(autoCommit);
 		this.autoCommitChanged = (autoCommit != pooledConnection.isAutoCommit());
+		this.updateLastActivityTime();
 	}
 
 	public boolean isAutoCommitValue() {
@@ -67,9 +66,9 @@ public abstract class ProxyConnection implements Connection {
 	}
 
 	public void setTransactionIsolation(int level) throws SQLException {
-		this.updateLastActivityTime();
 		this.delegate.setTransactionIsolation(level);
 		this.transactionLevlChanged = (level != pooledConnection.getTransactionIsolationLevl());
+		this.updateLastActivityTime();
 	}
 
 	void setConnectionDataToNull() {

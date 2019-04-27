@@ -8,7 +8,7 @@ import java.util.Arrays;
  * @author Chris.Liao
  * @version 1.0
  */
-public class StatementPsCacheKey {
+public class StatementPsCacheKey{
 	private String sql = null;
 	private int resultSetType;
 	private int resultSetConcurrency;

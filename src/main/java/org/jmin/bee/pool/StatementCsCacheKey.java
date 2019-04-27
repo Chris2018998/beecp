@@ -6,7 +6,7 @@ package org.jmin.bee.pool;
  * @author Chris.Liao
  * @version 1.0
  */
-public class StatementCsCacheKey {
+public class StatementCsCacheKey{
 	private String sql = null;
 	private int resultSetType;
 	private int resultSetConcurrency;
