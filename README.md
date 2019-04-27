@@ -17,7 +17,7 @@ Configuration
 | connectionIdleTimeout  | max idle time,then will be close(ms)  |    |
 | validationQuerySQL |  a test sql to check connection ative   |    |   |
 
- DataSource Demo
+DataSource Demo
 ---
 ```java
 String userId="root";
@@ -31,25 +31,25 @@ Connection con = datasource.getConnection();
 ```
 
 Performace test
+---
 
----
-Test Env
----
+1: Test Env
+
 |  Name        |  Description | 
 | ------------ | ------------ | 
 |  OS          | Win7_64      |   
-| CPU          | I3-7100(3.9hz*2) |   
+| CPU          | I3-7100(3.9hz*2) |  
 | Memory       | 8G           |   
 | Java         |JDK1.8.0_192  |  
 |  DB          | mariadb10.3  |  
 | JDBC Driver  | mariadb-java-client-2.4.1  |   |  
 
 ---
-1: JMH Test with <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/HikariCP-jdbcBech.zip">HikariCP Benchmarks source code</a> 
+2: JMH Test with <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/HikariCP-jdbcBech.zip">HikariCP Benchmarks source code</a> 
 
 ![Image text](https://github.com/Chris2018998/BeeCP/blob/master/doc/HikariCP-jdbcBech.png)
 
-2: Concurrent Test <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/Jdbc-Performace.zip">Source code</a> 
+3: Concurrent Test <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/Jdbc-Performace.zip">Source code</a> 
 
 ![Image text](https://github.com/Chris2018998/BeeCP/blob/master/doc/PoolPerformace_test.png)
 
