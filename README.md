@@ -4,7 +4,7 @@ Introduction
 ---
 BeeCP,a lightweight and  fast JDBC connection pool implementation. 
 
-<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.72/BeeCP-0.73.jar">Download beeCP_0.73.jar</a>
+<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.72/BeeCP-0.74.jar">Download beeCP_0.74.jar</a>
 
 Configuration
 ---
