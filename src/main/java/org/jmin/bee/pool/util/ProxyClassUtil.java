@@ -262,7 +262,6 @@ public final class ProxyClassUtil {
 			
 			if(methodName.equals("createStatement")){
 				methodBuffer.append("  return new ProxyStatementImpl(this.delegate.createStatement($$),this);");	
-
 			}else if(methodName.equals("prepareStatement")){
 				methodBuffer.append("if(this.pooledConnection.isUseStatementCache()){");
  				methodBuffer.append("   StatementPsCacheKey key = new StatementPsCacheKey($$);");

@@ -27,6 +27,7 @@ public final class ConnectionUtil {
 	public static boolean isNull(String value) {
 		return (value == null || value.trim().length() == 0);
 	}
+
 	public static void close(Connection connection) {
 		try {
 			if (connection != null)
@@ -35,6 +36,7 @@ public final class ConnectionUtil {
 			e.printStackTrace();
 		}
 	}
+
 	public static void close(Statement statement) {
 		try {
 			if (statement != null)
@@ -42,6 +44,7 @@ public final class ConnectionUtil {
 		} catch (Throwable e) {
 		}
 	}
+
 	public static void close(ResultSet resultSet) {
 		try {
 			if (resultSet != null)
@@ -49,6 +52,7 @@ public final class ConnectionUtil {
 		} catch (Throwable e) {
 		}
 	}
+
 	public static void close(Reader reader) {
 		try {
 			if (reader != null)
@@ -56,6 +60,7 @@ public final class ConnectionUtil {
 		} catch (Throwable e) {
 		}
 	}
+
 	public static void close(Writer writer) {
 		try {
 			if (writer != null)
@@ -63,6 +68,7 @@ public final class ConnectionUtil {
 		} catch (Throwable e) {
 		}
 	}
+
 	public static void close(InputStream inputStream) {
 		try {
 			if (inputStream != null)
@@ -70,6 +76,7 @@ public final class ConnectionUtil {
 		} catch (Throwable e) {
 		}
 	}
+
 	public static void close(OutputStream outputStream) {
 		try {
 			if (outputStream != null)
