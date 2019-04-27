@@ -31,10 +31,25 @@ Connection con = datasource.getConnection();
 ```
 
 Performace test
+
+---
+Test Env
+---
+|  Name        |  Description | 
+| ------------ | ------------ | 
+|  OS          | Win7_64    |   
+| Memory       | 8G           |   
+| Java         |JDK1.8.0_192  |  
+|  DB          | mariadb10.3  |  
+| JDBC Driver  | mariadb-java-client-2.4.1  |   |  
+
 ---
 1: JMH Test with <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/HikariCP-jdbcBech.zip">HikariCP Benchmarks source code</a> 
 
+![Image text](https://github.com/Chris2018998/BeeCP/blob/master/doc/HikariCP-jdbcBech.png)
 
 2: Concurrent Test <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/Jdbc-Performace.zip">Source code</a> 
+
+![Image text](https://github.com/Chris2018998/BeeCP/blob/master/doc/PoolPerformace_test.png)
 
 
