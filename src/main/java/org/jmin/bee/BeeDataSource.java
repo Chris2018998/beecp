@@ -10,9 +10,12 @@
 package org.jmin.bee;
 
 import java.io.PrintWriter;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.sql.DataSource;
@@ -38,7 +41,14 @@ public final class BeeDataSource implements DataSource {
 	public BeeDataSource(final BeeDataSourceConfig config) {
 		this.connectionPool = this.createPool(config);
 	}
-
+	
+	/**
+	 * @return pool internal information
+	 */
+	public Map<String,Integer> getPoolSnapshot(){
+		return this.connectionPool.getPoolSnapshot();
+	}
+	
 	/**
 	 * borrow a connection from pool
 	 * 
@@ -100,11 +110,29 @@ public final class BeeDataSource implements DataSource {
 	 * @param config  pool configuration
 	 * @return a initialized pool for data source
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private ConnectionPool createPool(BeeDataSourceConfig config){
 		try {
-			return new ConnectionPool(config);
-		}catch(Throwable e){
+			Class poolClass = Class.forName(config.getConnectionPoolClassName(),true,BeeDataSource.class.getClassLoader());
+			Constructor constructor = poolClass.getDeclaredConstructor(new Class[] {BeeDataSourceConfig.class});
+			ConnectionPool pool = (ConnectionPool) constructor.newInstance(new Object[]{config});
+			return pool;
+		} catch (ClassNotFoundException e) {
+			throw new ExceptionInInitializerError("Not found conneciton pool implementation class:" + config.getConnectionPoolClassName());
+		} catch (NoSuchMethodException e) {
 			throw new ExceptionInInitializerError(e);
+		} catch (SecurityException e) {
+			throw new ExceptionInInitializerError(e);
+		} catch (InstantiationException e) {
+			throw new ExceptionInInitializerError(e);
+		} catch (IllegalAccessException e) {
+			throw new ExceptionInInitializerError(e);
+		} catch (IllegalArgumentException e) {
+			throw new ExceptionInInitializerError(e);
+		} catch (InvocationTargetException e) {
+			Throwable cause=e.getTargetException();
+			String errorMessage= (cause==null)?"":",cuase:"+cause.getMessage();
+			throw new ExceptionInInitializerError("Failed to init datasource"+errorMessage);
 		}
 	}
 }

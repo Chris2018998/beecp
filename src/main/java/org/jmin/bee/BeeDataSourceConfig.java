@@ -99,6 +99,11 @@ public final class BeeDataSourceConfig {
 	 * connection validate timeout:5 seconds
 	 */
 	private int validationQueryTimeout = 5;
+	
+	/**
+	 * BeeCP implementation class name
+	 */
+	private String connectionPoolClassName = "org.jmin.bee.pool.ConnectionPool";
 
 	/**
 	 * milliseconds,max inactive time to check active for borrower
@@ -193,7 +198,7 @@ public final class BeeDataSourceConfig {
 		}
 	}
 
-	public int getPoolMaxSize() {
+	public  int getPoolMaxSize() {
 		return poolMaxSize;
 	}
 
@@ -203,7 +208,7 @@ public final class BeeDataSourceConfig {
 		}
 	}
 
-	public int getPreparedStatementCacheSize() {
+	public  int getPreparedStatementCacheSize() {
 		return preparedStatementCacheSize;
 	}
 
@@ -268,6 +273,15 @@ public final class BeeDataSourceConfig {
 			Class.forName(driver, true, this.getClass().getClassLoader());
 		} catch (ClassNotFoundException e) {
 			throw new IllegalArgumentException("JDBC driver class[" + driver + "] not found");
+		}
+	}
+	
+	public String getConnectionPoolClassName() {
+		return connectionPoolClassName;
+	}
+	public void setConnectionPoolClassName(String connectionPoolClassName) {
+		if (!this.inited && connectionPoolClassName != null && connectionPoolClassName.trim().length() > 0) {
+			this.connectionPoolClassName = connectionPoolClassName;
 		}
 	}
 
