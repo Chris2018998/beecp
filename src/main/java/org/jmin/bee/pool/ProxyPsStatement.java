@@ -18,7 +18,7 @@ import java.sql.PreparedStatement;
  * @version 1.0
  */
 public abstract class ProxyPsStatement extends ProxyStatementWrapper implements PreparedStatement {
-	public ProxyPsStatement(PreparedStatement delegate,ProxyConnection proxyConnection) {
-		super(delegate,proxyConnection,proxyConnection.isUseStatementCache());
+	public ProxyPsStatement(PreparedStatement delegate,ProxyConnection proxyConnection,boolean cacheAble) {
+		super(delegate,proxyConnection,cacheAble);
 	}
 }

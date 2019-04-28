@@ -63,7 +63,7 @@ public class ConnectionPool{
 	private final ThreadLocal<WeakReference<Borrower>> borrowerThreadLocal = new ThreadLocal<WeakReference<Borrower>>();
 	
 	private final long MAX_IDLE_TIME_IN_USING = 600000L;
-	private final TimeUnit NanoSecondTimeUnit=TimeUnit.NANOSECONDS;
+	private final SystemClock systemClock=SystemClock.clock;
 	private final TimeUnit MillSecondTimeUnit=TimeUnit.MILLISECONDS;
 	private SQLException PoolCloseStateException = new SQLException("Pool has been closed");
 	private SQLException ConnectionRequestTimeoutException = new SQLException("Request timeout");
@@ -160,7 +160,7 @@ public class ConnectionPool{
 	 * @return if the checked connection is active then return true,otherwise false     
 	 */
 	private boolean isActivePooledConnection(PooledConnection pooledConnection) {
-		if (SystemClock.currentTimeMillis()-pooledConnection.getLastActiveTime()-poolInfo.getMaxInactiveTimeToCheck()>0) {
+		if (systemClock.currentTimeMillis()-pooledConnection.getLastActiveTime()-poolInfo.getMaxInactiveTimeToCheck()>0) {
 			final Connection connecton = pooledConnection.getPhisicConnection();
 			if (this.connecitonTestSQLIsNull) {
 				try {
@@ -288,9 +288,9 @@ public class ConnectionPool{
 			}
 			
 			if (pooledCon == null) {// try to search one/create one
-				long timeout = MillSecondTimeUnit.toNanos(maxWaitMillTime);
-				final long targetTimeoutPoint=System.nanoTime()+timeout;
-				try{acquired=!this.isFairMode && this.takeSemaphore.tryAcquire(timeout,NanoSecondTimeUnit);}catch (InterruptedException e){}
+				long timeout = maxWaitMillTime;
+				final long targetTimeoutPoint=systemClock.currentTimeMillis()+timeout;
+				try{acquired=!this.isFairMode && this.takeSemaphore.tryAcquire(timeout,MillSecondTimeUnit);}catch (InterruptedException e){}
 				
 				do {
 					if ((pooledCon = this.searchOneConnection(badConList)) != null) //step2
@@ -298,7 +298,7 @@ public class ConnectionPool{
 					if ((pooledCon = this.createOneConneciton()) != null)//step3
 						break;
 					
-					if ((timeout = targetTimeoutPoint - System.nanoTime()) <= 0)
+					if ((timeout = targetTimeoutPoint - systemClock.currentTimeMillis()) <= 0)
 						break;
 					if ((tempPooledCon = this.waitRelease(timeout, borrower)) != null
 							&& this.transferPolicy.tryCatchReleasedConnection(tempPooledCon) 
@@ -306,7 +306,7 @@ public class ConnectionPool{
 							pooledCon = tempPooledCon;
 							break;
 					}
-				} while (this.isNormal() && targetTimeoutPoint - System.nanoTime()>0);// while
+				} while (this.isNormal() && targetTimeoutPoint - systemClock.currentTimeMillis()>0);// while
 			}
 		} finally {
 			if (acquired)this.takeSemaphore.release();
@@ -362,7 +362,7 @@ public class ConnectionPool{
 	protected PooledConnection waitRelease(long timeout,Borrower borrower) {
 		try {
 			this.waiterSize.incrementAndGet();
-			return this.transferQueue.poll(timeout,NanoSecondTimeUnit);
+			return this.transferQueue.poll(timeout,MillSecondTimeUnit);
 		} catch (InterruptedException e) {
 			return null;
 		} finally {
@@ -405,7 +405,7 @@ public class ConnectionPool{
 				final int state = pooledConnection.getConnectionState();
 				if (state == PooledConnectionState.IDLE) {
 					final boolean isDead = !this.isActivePooledConnection(pooledConnection);
-					final boolean isTimeout = ((SystemClock.currentTimeMillis() - pooledConnection.getLastActiveTime()-poolInfo.getConnectionIdleTimeout()>=0));
+					final boolean isTimeout = ((systemClock.currentTimeMillis() - pooledConnection.getLastActiveTime()-poolInfo.getConnectionIdleTimeout()>=0));
 					if ((isDead || isTimeout) && (pooledConnection.compareAndSet(state, PooledConnectionState.CLOSED))) {
 						this.conCurSize.decrementAndGet();
 						pooledConnection.removeFromPool();
@@ -414,7 +414,7 @@ public class ConnectionPool{
 
 				} else if (state == PooledConnectionState.USING) {
 					final boolean isDead = !this.isActivePooledConnection(pooledConnection);
-					final boolean isTimeout = ((SystemClock.currentTimeMillis() - pooledConnection.getLastActiveTime()-MAX_IDLE_TIME_IN_USING >=0));
+					final boolean isTimeout = ((systemClock.currentTimeMillis() - pooledConnection.getLastActiveTime()-MAX_IDLE_TIME_IN_USING >=0));
 					if ((isDead || isTimeout) && (pooledConnection.compareAndSet(state, PooledConnectionState.CLOSED))) {
 						this.conCurSize.decrementAndGet();
 						pooledConnection.removeFromPool();
@@ -457,7 +457,7 @@ public class ConnectionPool{
 						badConList.add(pooledConnection);
 					} else if (pooledConnection.getConnectionState() == PooledConnectionState.USING) {
 						final boolean isDead = !this.isActivePooledConnection(pooledConnection);
-						final boolean isTimeout = ((SystemClock.currentTimeMillis()-pooledConnection.getLastActiveTime()-MAX_IDLE_TIME_IN_USING >=0));
+						final boolean isTimeout = ((systemClock.currentTimeMillis()-pooledConnection.getLastActiveTime()-MAX_IDLE_TIME_IN_USING >=0));
 						if ((isDead || isTimeout) && (pooledConnection.compareAndSet(PooledConnectionState.USING, PooledConnectionState.CLOSED))) {
 							pooledConnection.removeFromPool();
 							badConList.add(pooledConnection);

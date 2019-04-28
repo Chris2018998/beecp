@@ -23,12 +23,14 @@ import java.util.Map;
 
 public final class StatementCache {
 	private int maxSize;
-	private static float mapLoadFactor = 0.75f; 
+	private boolean isValid;
 	private LinkedHashMap<Object, PreparedStatement> cacheMap;
 	
 	@SuppressWarnings("serial")
-	public StatementCache( int maxSize) {
-		this.maxSize = maxSize;
+	public StatementCache(int maxSize) {
+		this.maxSize=maxSize;
+		this.isValid=maxSize>0;
+		float mapLoadFactor = 0.75f; 
 		int mapInitialCapacity = (int)Math.ceil(maxSize/mapLoadFactor)+1;
 		this.cacheMap = new LinkedHashMap<Object, PreparedStatement>(mapInitialCapacity, mapLoadFactor, true) {
 			protected boolean removeEldestEntry(Map.Entry<Object,PreparedStatement> eldest) {
@@ -43,6 +45,9 @@ public final class StatementCache {
 	}
 	public int maxSize() {
 		return this.maxSize;
+	}
+	public boolean isValid() {
+		return isValid;
 	}
 	public int size() {
 		return this.cacheMap.size();

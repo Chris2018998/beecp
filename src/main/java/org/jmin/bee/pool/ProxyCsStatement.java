@@ -18,7 +18,7 @@ import java.sql.CallableStatement;
  * @version 1.0
  */
 public abstract class ProxyCsStatement extends ProxyStatementWrapper implements CallableStatement {
-	public ProxyCsStatement(CallableStatement delegate, ProxyConnection proxyConnection) {
-		super(delegate,proxyConnection,proxyConnection.isUseStatementCache());
+	public ProxyCsStatement(CallableStatement delegate, ProxyConnection proxyConnection,boolean cacheAble) {
+		super(delegate,proxyConnection,cacheAble);
 	}
 }

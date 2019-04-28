@@ -11,6 +11,7 @@ package org.jmin.bee.pool;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.jmin.bee.pool.util.ConnectionUtil;
 
 /**
  * Statement resultset proxy super class
@@ -22,7 +23,7 @@ public abstract class ProxyResultSet implements ResultSet {
 	private boolean isClosed;
 	protected ResultSet delegate;
 	private ProxyStatementWrapper proxyStatement;
-
+	
 	public ProxyResultSet(ResultSet delegate, ProxyStatementWrapper proxyStatement) {
 		this.delegate = delegate;
 		this.proxyStatement = proxyStatement;
@@ -31,22 +32,18 @@ public abstract class ProxyResultSet implements ResultSet {
 		return isClosed;
 	}
 	protected void updateLastActivityTime() throws SQLException {
-		if (isClosed)
-		 throw new SQLException("ResultSet has been closed,access forbidden");
+		if (isClosed)throw new SQLException("ResultSet has been closed,access forbidden");
 		this.proxyStatement.updateLastActivityTime();
 	}
+	
 	public void close() throws SQLException {
-		if (!this.isClosed) {
-			this.isClosed = true;
-			try {
-				delegate.close();
-			} catch (Throwable e) {
-			} finally {
-				this.delegate = null;
-				this.proxyStatement = null;
-			}
-		} else {
+		if (this.isClosed) {
 			throw new SQLException("ResultSet has been closed");
+		} else {
+			this.isClosed = true;
+			ConnectionUtil.close(delegate);
+			this.delegate = null;
+			this.proxyStatement = null;
 		}
 	}
 }

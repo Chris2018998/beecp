@@ -10,7 +10,6 @@
 package org.jmin.bee.pool;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -40,11 +39,9 @@ public final class PooledConnection {
 	private int transactionIsolationLevlOrig = Connection.TRANSACTION_READ_COMMITTED;
 	// related pool
 	private ConnectionPool connectionPool;
-	//existStamentCache
-	private boolean isUseStatementCache=false;
 	//isSurpportSetQueryTimeout
 	private boolean isSurpportSetQueryTimeout=true;
-	
+	private final SystemClock systemClock=SystemClock.clock;
 	public PooledConnection(Connection connection, ConnectionPool connectionPool) {
 		this(connection, 10, connectionPool);
 	}
@@ -53,7 +50,6 @@ public final class PooledConnection {
 		this.connection = connection;
 		this.state = new AtomicInteger(PooledConnectionState.IDLE);
 		this.statementCache = new StatementCache(statementCacheSize);
-		this.isUseStatementCache=(statementCacheSize>0);
 		this.connectionPool = connectionPool;
 		try {
 			this.autoCommit = this.connection.getAutoCommit();
@@ -62,10 +58,10 @@ public final class PooledConnection {
 		this.updateLastActivityTime();
 	}
 	
-	public boolean isUseStatementCache() {
-		return this.isUseStatementCache;
+	public StatementCache getStatementCache() {
+		return statementCache;
 	}
-	
+
 	public boolean isSurpportSetQueryTimeout() {
 		return isSurpportSetQueryTimeout;
 	}
@@ -87,19 +83,11 @@ public final class PooledConnection {
 	}
 
 	public void updateLastActivityTime() {
-		this.lastActiveTime = SystemClock.currentTimeMillis();
+		this.lastActiveTime = systemClock.currentTimeMillis();
 	}
 
 	public Connection getPhisicConnection() {
 		return this.connection;
-	}
-
-	public PreparedStatement getStatement(Object key) {
-		return this.statementCache.getStatement(key);
-	}
-
-	public void putStatement(Object key, PreparedStatement value) {
-		this.statementCache.putStatement(key, value);
 	}
 
 	public ProxyConnection getProxyConnection() {
@@ -112,10 +100,6 @@ public final class PooledConnection {
 	
 	public boolean equals(Object obj) {
 		return this==obj;
-	}
-
-	public int hashCode() {
-		return this.hashCode();
 	}
 
 	public String toString() {

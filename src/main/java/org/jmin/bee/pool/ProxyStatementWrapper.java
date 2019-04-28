@@ -24,22 +24,20 @@ public class ProxyStatementWrapper {
 	protected boolean isClosed;
 	protected Statement delegate;
 	protected ProxyConnection proxyConnection;
-	protected boolean isUseStatementCache;
+	protected boolean cacheAble;
 
-	public ProxyStatementWrapper(Statement delegate, ProxyConnection proxyConnection, boolean isUseStatementCache) {
+	public ProxyStatementWrapper(Statement delegate, ProxyConnection proxyConnection, boolean cacheAble) {
 		this.delegate = delegate;
 		this.proxyConnection = proxyConnection;
-		this.isUseStatementCache = isUseStatementCache;
+		this.cacheAble = cacheAble;
 		this.isClosed = false;
 	}
 
 	public boolean isClosed() {
 		return isClosed;
 	}
-
 	protected void updateLastActivityTime() throws SQLException {
-		if (isClosed)
-			throw new SQLException("Statement has been closed,access forbidden");
+		if (isClosed)throw new SQLException("Statement has been closed,access forbidden");
 		this.proxyConnection.updateLastActivityTime();
 	}
 
@@ -48,10 +46,10 @@ public class ProxyStatementWrapper {
 			throw new SQLException("Statement has been closed");
 		} else {
 			this.isClosed = true;
-			if (!this.isUseStatementCache) {
+			if (!this.cacheAble) {
 				ConnectionUtil.close(delegate);
 				this.delegate = null;
-				this.proxyConnection = null;
+				this.proxyConnection =null;
 			}
 		}
 	}
