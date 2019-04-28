@@ -122,7 +122,7 @@ public final class ProxyClassUtil {
 			ctStatementProxyImplClass.setModifiers(Modifier.PUBLIC);
 			CtClass[] parameters = new CtClass[] {
 					classPool.get("java.sql.Statement"),
-					classPool.get("org.jmin.bee.pool.ProxyConnection") };
+					classPool.get("org.jmin.bee.pool.ProxyConnection")};
 			subClassConstructor = new CtConstructor(parameters,ctStatementProxyImplClass);
 			subClassConstructor.setModifiers(Modifier.PUBLIC);
 			body.delete(0, body.length());
@@ -144,7 +144,8 @@ public final class ProxyClassUtil {
 			
 			 parameters = new CtClass[] {
 					classPool.get("java.sql.PreparedStatement"),
-					classPool.get("org.jmin.bee.pool.ProxyConnection") };
+					classPool.get("org.jmin.bee.pool.ProxyConnection"),
+					classPool.get("boolean")};
 			subClassConstructor = new CtConstructor(parameters,ctPsStatementProxyImplClass);
 			subClassConstructor.setModifiers(Modifier.PUBLIC);
 			body.delete(0, body.length());
@@ -166,7 +167,8 @@ public final class ProxyClassUtil {
 			
 			parameters = new CtClass[] {
 					classPool.get("java.sql.CallableStatement"),
-					classPool.get("org.jmin.bee.pool.ProxyConnection") };
+					classPool.get("org.jmin.bee.pool.ProxyConnection"),
+					classPool.get("boolean")};
 			subClassConstructor = new CtConstructor(parameters,ctCsStatementProxyImplClass);
 			subClassConstructor.setModifiers(Modifier.PUBLIC);
 			
@@ -263,28 +265,32 @@ public final class ProxyClassUtil {
 			if(methodName.equals("createStatement")){
 				methodBuffer.append("  return new ProxyStatementImpl(this.delegate.createStatement($$),this);");	
 			}else if(methodName.equals("prepareStatement")){
-				methodBuffer.append("if(this.pooledConnection.isUseStatementCache()){");
+				methodBuffer.append("StatementCache statementCache = this.getStatementCache();"); 
+				methodBuffer.append("boolean cacheAble = statementCache.isValid();"); 
+				methodBuffer.append("if(cacheAble){");
  				methodBuffer.append("   StatementPsCacheKey key = new StatementPsCacheKey($$);");
- 				methodBuffer.append("   PreparedStatement statement=this.pooledConnection.getStatement(key);");
+ 				methodBuffer.append("   PreparedStatement statement=statementCache.getStatement(key);");
 				methodBuffer.append("   if(statement==null){");
 				methodBuffer.append("     statement=this.delegate.prepareStatement($$);");
-				methodBuffer.append("     this.pooledConnection.putStatement(key,statement);");
+				methodBuffer.append("     statementCache.putStatement(key,statement);");
 				methodBuffer.append("   }");
-				methodBuffer.append("   return new ProxyPsStatementImpl(statement,this);");	
+				methodBuffer.append("   return new ProxyPsStatementImpl(statement,this,cacheAble);");	
 				methodBuffer.append("}else{");
-				methodBuffer.append("   return new ProxyPsStatementImpl(this.delegate.prepareStatement($$),this);");	
+				methodBuffer.append("   return new ProxyPsStatementImpl(this.delegate.prepareStatement($$),this,cacheAble);");	
  				methodBuffer.append("}");
 			}else if(methodName.equals("prepareCall")){
-				methodBuffer.append("if(this.pooledConnection.isUseStatementCache()){");
+				methodBuffer.append("StatementCache statementCache = this.getStatementCache();"); 
+				methodBuffer.append("boolean cacheAble = statementCache.isValid();"); 
+				methodBuffer.append("if(cacheAble){");
 				methodBuffer.append("  StatementCsCacheKey key = new StatementCsCacheKey($$);");
-				methodBuffer.append("  CallableStatement statement=(CallableStatement)this.pooledConnection.getStatement(key);");
+				methodBuffer.append("  CallableStatement statement=(CallableStatement)statementCache.getStatement(key);");
 				methodBuffer.append("  if(statement==null){");
 				methodBuffer.append("    statement=this.delegate.prepareCall($$);");
-				methodBuffer.append("    this.pooledConnection.putStatement(key,statement);");
+				methodBuffer.append("    statementCache.putStatement(key,statement);");
 				methodBuffer.append("  }");
-			    methodBuffer.append("  return new ProxyCsStatementImpl(statement,this);");	
+			    methodBuffer.append("  return new ProxyCsStatementImpl(statement,this,cacheAble);");	
 			    methodBuffer.append("}else{");
-				methodBuffer.append("   return new ProxyCsStatementImpl(this.delegate.prepareCall($$),this);");	
+				methodBuffer.append("   return new ProxyCsStatementImpl(this.delegate.prepareCall($$),this,cacheAble);");	
 				methodBuffer.append("}");
 			}else if(methodName.equals("close")){
 				methodBuffer.append("super."+methodName + "($$);");

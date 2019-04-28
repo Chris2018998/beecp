@@ -9,8 +9,8 @@ import java.util.concurrent.TimeUnit;
  * 
  * @author Chris.liao
  */
-public class SystemClock{
-	private volatile long millSecond = System.currentTimeMillis();
+public final class SystemClock implements Runnable{
+	private volatile long millSecond;
 	public static final SystemClock clock = new SystemClock(1);
 	private SystemClock(long period) {
 		ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1,new ThreadFactory() {
@@ -20,12 +20,14 @@ public class SystemClock{
 				return thread;
 			}
 		});
-		
-		scheduler.scheduleAtFixedRate(
-				new Runnable(){public void run(){SystemClock.this.millSecond=System.currentTimeMillis();}}, 
-				period, period, TimeUnit.MILLISECONDS);
+		this.millSecond=System.currentTimeMillis();
+		scheduler.scheduleAtFixedRate(this,period,period,TimeUnit.MILLISECONDS);
 	}
-	public final static long currentTimeMillis() {
-		return clock.millSecond;
+	
+	public void run(){
+		this.millSecond=System.currentTimeMillis();
+	}
+	public long currentTimeMillis() {
+		return millSecond;
 	}
 }
