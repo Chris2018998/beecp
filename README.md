@@ -8,11 +8,11 @@ BeeCP,a lightweight and  fast JDBC connection pool implementation.
 
 ```java
 <dependency>
-			<groupId>com.github.chris2018998</groupId>
-			<artifactId>BeeCP</artifactId>
-			<version>0.75</version>
+   <groupId>com.github.chris2018998</groupId>
+   <artifactId>BeeCP</artifactId>
+   <version>0.75</version>
 </dependency>
-....................
+
 ```
 
 Configuration
