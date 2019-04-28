@@ -4,7 +4,7 @@ Introduction
 ---
 BeeCP,a lightweight and  fast JDBC connection pool implementation. 
 
-<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.72/BeeCP-0.75.jar">Download beeCP_0.75.jar</a>
+Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.72/BeeCP-0.75.jar">BeeCP_0.75.jar</a>
 
 ```java
 <dependency>
@@ -86,7 +86,7 @@ B: Query Result
 | ------------        | ------------     | ------------      | ------------  | 
 | Tomcat-JDBC-9.0.19  |  0               | 453               |   40.80       | 
 | Aili-Druid-1.1.16   |  0               | 1465              |   45.79       | 
-| Vibur-22.2.         |  3               | 373               |   27.10       | 
+| Vibur-22.2.         |  16              | 373               |   27.10       | 
 | HikariCP-3.3.1      |  0               | 22634             |   18.81       | 
 | BeeCP_Fair-0.75     |  0               | 276               |   26.23       | 
 | BeeCP_Compete-0.75  |  0               | 1795              |   18.10       | 
