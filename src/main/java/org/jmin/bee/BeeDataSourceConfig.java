@@ -310,16 +310,18 @@ public final class BeeDataSourceConfig {
 			throw new IllegalArgumentException("Borrower max waiting time must be greater than zero");
 		if (this.preparedStatementCacheSize < 0)
 			throw new IllegalArgumentException("Statement cache Size must be greater than zero");
-		if (this.validationQuerySQL != null && validationQuerySQL.trim().length() == 0) {
-			if (this.validationQuerySQL.toLowerCase().startsWith("select "))
-				throw new IllegalArgumentException("connection calidate SQL must start with 'select '");
-		}
+		
+		//fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 begin
+		//if (this.validationQuerySQL != null && validationQuerySQL.trim().length() == 0) {
+		if (!isNull(this.validationQuerySQL) && !this.validationQuerySQL.trim().toLowerCase().startsWith("select "))
+		//fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end	
+			throw new IllegalArgumentException("connection validate SQL must start with 'select '");
+		//}
 
 		if (!isNull(this.userName))
 			this.jdbcProperties.put("user", this.userName);
 		if (!isNull(this.password))
 			this.jdbcProperties.put("password", this.password);
-	
 	}
 
 	private boolean isNull(String value) {
