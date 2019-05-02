@@ -55,7 +55,11 @@ public class PooledConnectionArray {
 			PooledConnection[] arrayAdd =col.toArray(new PooledConnection[addLen]);
 			PooledConnection[] arrayNew = new PooledConnection[oldLen+addLen];
 			System.arraycopy(arrayOld,0,arrayNew,0,oldLen);
-			System.arraycopy(arrayAdd,0,arrayNew,0,addLen);
+			//fix issue:#2 There are a problem in class. Chris-2019-05-01 begin
+			//System.arraycopy(arrayAdd,0,arrayNew,0,addLen);
+			System.arraycopy(arrayAdd,0,arrayNew,oldLen,addLen);
+			//fix issue:#2 There are a problem in class. Chris-2019-05-01 end
+			
 			setArray(arrayNew);
 		}finally{
 			lock.unlock();
