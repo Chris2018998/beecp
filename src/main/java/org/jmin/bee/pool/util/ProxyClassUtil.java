@@ -260,45 +260,45 @@ public final class ProxyClassUtil {
 			
 			methodBuffer.delete(0, methodBuffer.length());
 			methodBuffer.append("{");
-			methodBuffer.append("this.updateLastActivityTime();");
+			methodBuffer.append("updateLastActivityTime();");
 			
 			if(methodName.equals("createStatement")){
-				methodBuffer.append("  return new ProxyStatementImpl(this.delegate.createStatement($$),this);");	
+				methodBuffer.append("  return new ProxyStatementImpl(delegate.createStatement($$),this);");	
 			}else if(methodName.equals("prepareStatement")){
-				methodBuffer.append("StatementCache statementCache = this.getStatementCache();"); 
+				methodBuffer.append("StatementCache statementCache = getStatementCache();"); 
 				methodBuffer.append("boolean cacheAble = statementCache.isValid();"); 
 				methodBuffer.append("if(cacheAble){");
  				methodBuffer.append("   StatementPsCacheKey key = new StatementPsCacheKey($$);");
  				methodBuffer.append("   PreparedStatement statement=statementCache.getStatement(key);");
 				methodBuffer.append("   if(statement==null){");
-				methodBuffer.append("     statement=this.delegate.prepareStatement($$);");
+				methodBuffer.append("     statement=delegate.prepareStatement($$);");
 				methodBuffer.append("     statementCache.putStatement(key,statement);");
 				methodBuffer.append("   }");
 				methodBuffer.append("   return new ProxyPsStatementImpl(statement,this,cacheAble);");	
 				methodBuffer.append("}else{");
-				methodBuffer.append("   return new ProxyPsStatementImpl(this.delegate.prepareStatement($$),this,cacheAble);");	
+				methodBuffer.append("   return new ProxyPsStatementImpl(delegate.prepareStatement($$),this,cacheAble);");	
  				methodBuffer.append("}");
 			}else if(methodName.equals("prepareCall")){
-				methodBuffer.append("StatementCache statementCache = this.getStatementCache();"); 
+				methodBuffer.append("StatementCache statementCache = getStatementCache();"); 
 				methodBuffer.append("boolean cacheAble = statementCache.isValid();"); 
 				methodBuffer.append("if(cacheAble){");
 				methodBuffer.append("  StatementCsCacheKey key = new StatementCsCacheKey($$);");
 				methodBuffer.append("  CallableStatement statement=(CallableStatement)statementCache.getStatement(key);");
 				methodBuffer.append("  if(statement==null){");
-				methodBuffer.append("    statement=this.delegate.prepareCall($$);");
+				methodBuffer.append("    statement=delegate.prepareCall($$);");
 				methodBuffer.append("    statementCache.putStatement(key,statement);");
 				methodBuffer.append("  }");
 			    methodBuffer.append("  return new ProxyCsStatementImpl(statement,this,cacheAble);");	
 			    methodBuffer.append("}else{");
-				methodBuffer.append("   return new ProxyCsStatementImpl(this.delegate.prepareCall($$),this,cacheAble);");	
+				methodBuffer.append("   return new ProxyCsStatementImpl(delegate.prepareCall($$),this,cacheAble);");	
 				methodBuffer.append("}");
 			}else if(methodName.equals("close")){
 				methodBuffer.append("super."+methodName + "($$);");
 			}else{
 				if (newCtMethodm.getReturnType() == CtClass.voidType)
-					methodBuffer.append(" this.delegate." + methodName + "($$);");
+					methodBuffer.append(" delegate." + methodName + "($$);");
 				else
-					methodBuffer.append(" return this.delegate." + methodName + "($$);");
+					methodBuffer.append(" return delegate." + methodName + "($$);");
 		   }
 			methodBuffer.append("}");
 			newCtMethodm.setBody(methodBuffer.toString());
@@ -331,16 +331,16 @@ public final class ProxyClassUtil {
 
 			methodBuffer.delete(0, methodBuffer.length());
 			methodBuffer.append("{");
-			methodBuffer.append("this.updateLastActivityTime();");
+			methodBuffer.append("updateLastActivityTime();");
 			if (methodName.equals("executeQuery")) {
-				methodBuffer.append(" return new ProxyResultSetImpl(this.delegate.executeQuery($$),this);");
+				methodBuffer.append(" return new ProxyResultSetImpl(delegate.executeQuery($$),this);");
 			}else if (methodName.equals("close")){
 				methodBuffer.append("super."+methodName + "($$);");
 			}else{
 				if (newCtMethodm.getReturnType() == CtClass.voidType)
-					methodBuffer.append(" this.delegate." + methodName + "($$);");
+					methodBuffer.append(" delegate." + methodName + "($$);");
 				else
-					methodBuffer.append(" return this.delegate." + methodName + "($$);");
+					methodBuffer.append(" return delegate." + methodName + "($$);");
 			}
 			methodBuffer.append("}");
 
@@ -374,8 +374,8 @@ public final class ProxyClassUtil {
 			
 			methodBuffer.delete(0, methodBuffer.length());
 			methodBuffer.append("{");
-			methodBuffer.append("this.updateLastActivityTime();");
-			methodBuffer.append("PreparedStatement delegate=(PreparedStatement)this.delegate;");
+			methodBuffer.append("updateLastActivityTime();");
+			methodBuffer.append("PreparedStatement delegate=(PreparedStatement)delegate;");
 			
 			if(methodName.equals("executeQuery")){
 			  methodBuffer.append(" return new ProxyResultSetImpl(delegate.executeQuery($$),this);");		
@@ -418,8 +418,8 @@ public final class ProxyClassUtil {
 			
 			methodBuffer.delete(0, methodBuffer.length());
 			methodBuffer.append("{");
-			methodBuffer.append("this.updateLastActivityTime();");
-			methodBuffer.append("CallableStatement delegate=(CallableStatement)this.delegate;");
+			methodBuffer.append("updateLastActivityTime();");
+			methodBuffer.append("CallableStatement delegate=(CallableStatement)delegate;");
 			
 			if(methodName.equals("getResultSet")){
 				methodBuffer.append(" return new ProxyResultSetImpl(delegate.getResultSet($$),this);");		
@@ -462,14 +462,14 @@ public final class ProxyClassUtil {
 			
 			methodBuffer.delete(0, methodBuffer.length());
 			methodBuffer.append("{");
-			methodBuffer.append("this.updateLastActivityTime();");
+			methodBuffer.append("updateLastActivityTime();");
 			if (methodName.equals("close")) {
 				methodBuffer.append("super." + methodName + "($$);");
 			} else {
 				if (ctMethod.getReturnType() == CtClass.voidType)
-					methodBuffer.append("this.delegate." + methodName + "($$);");
+					methodBuffer.append("delegate." + methodName + "($$);");
 				else
-					methodBuffer.append("return this.delegate." + methodName + "($$);");
+					methodBuffer.append("return delegate." + methodName + "($$);");
 			}
 			methodBuffer.append("}");
 			newCtMethodm.setBody(methodBuffer.toString());
