@@ -4,13 +4,13 @@ Introduction
 ---
 BeeCP,a lightweight and  fast JDBC connection pool implementation. 
 
-Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.75/BeeCP-0.75.jar">BeeCP_0.75.jar</a>
+Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.76/BeeCP-0.76.jar">BeeCP_0.75.jar</a>
 
 ```java
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>0.75</version>
+   <version>0.76</version>
 </dependency>
 
 ```
@@ -68,28 +68,6 @@ Pool setting
 ![Image text](https://github.com/Chris2018998/BeeCP/blob/master/doc/HikariCP-jdbcBech.png)
 
 2: Concurrent(1000threads x 1000iteration)Test <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/Jdbc-Performace.zip">Source code</a> 
-
-A: Borrow Result
-
-|  pool name          |  min time(ms)    |  max time(ms) | avg time(ms)  | 
-| ------------        | ------------     | ------------      | ------------  | 
-| Tomcat-JDBC-9.0.19  |  0               | 323               |   2.7951      | 
-| Aili-Druid-1.1.16   |  0               | 827               |   22.2587     | 
-| Vibur-22.2          |  3               | 235               |   4.4147      | 
-| HikariCP-3.3.1      |  0               | 335               |   0.5305      | 
-| BeeCP_Fair-0.75     |  0               | 229               |   1.9102      | 
-| BeeCP_Compete-0.75  |  0               | 349               |   0.2792      | 
-
-B: Query Result
-
-|  pool name          |  min time(ms)    | max time(ms)      | avg time(ms)  | 
-| ------------        | ------------     | ------------      | ------------  | 
-| Tomcat-JDBC-9.0.19  |  0               | 453               |   40.80       | 
-| Aili-Druid-1.1.16   |  0               | 1465              |   45.79       | 
-| Vibur-22.2          |  16              | 373               |   27.10       | 
-| HikariCP-3.3.1      |  0               | 22634             |   18.81       | 
-| BeeCP_Fair-0.75     |  0               | 276               |   26.23       | 
-| BeeCP_Compete-0.75  |  0               | 1795              |   18.10       | 
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/JDBCPool.log">Download the log file</a> 
 
