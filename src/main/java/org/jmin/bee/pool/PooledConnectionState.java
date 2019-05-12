@@ -29,7 +29,7 @@ public final class PooledConnectionState {
 	public static final int USING = 2;
 	
 	/**
-	 *关闭
+	 *closed
 	 */
 	public static final int CLOSED = 3;
 	

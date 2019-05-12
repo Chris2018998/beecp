@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jmin.bee.pool.util.ConnectionUtil;
 import org.jmin.bee.pool.util.SystemClock;
 
 /**
@@ -39,9 +40,9 @@ public final class PooledConnection {
 	private int transactionIsolationLevlOrig = Connection.TRANSACTION_READ_COMMITTED;
 	// related pool
 	private ConnectionPool connectionPool;
-	//isSurpportSetQueryTimeout
-	private boolean isSurpportSetQueryTimeout=true;
+	
 	private final SystemClock systemClock=SystemClock.clock;
+	
 	public PooledConnection(Connection connection, ConnectionPool connectionPool) {
 		this(connection, 10, connectionPool);
 	}
@@ -61,15 +62,7 @@ public final class PooledConnection {
 	public StatementCache getStatementCache() {
 		return statementCache;
 	}
-
-	public boolean isSurpportSetQueryTimeout() {
-		return isSurpportSetQueryTimeout;
-	}
-
-	public void setSurpportSetQueryTimeout(boolean isSurpportSetQueryTimeout) {
-		this.isSurpportSetQueryTimeout = isSurpportSetQueryTimeout;
-	}
-
+	
 	public boolean isAutoCommit() {
 		return autoCommit;
 	}
@@ -107,31 +100,32 @@ public final class PooledConnection {
 	}
 
 	public int getConnectionState() {
-		return this.state.get();
+		return state.get();
 	}
 
 	public void setConnectionState(int update) {
-		this.state.set(update);
+		state.set(update);
 	}
 
 	public boolean compareAndSet(int expect, int update) {
-		return this.state.compareAndSet(expect, update);
+		return state.compareAndSet(expect, update);
 	}
 
 	public void resetConnectionAfterRelease() throws SQLException {
 		if (!proxyConnection.isAutoCommitValue()) {
-			this.connection.rollback();
+			connection.rollback();
 		}
 		if (proxyConnection.isAutoCommitChanged()) {
-			this.connection.setAutoCommit(autoCommit);
+			connection.setAutoCommit(autoCommit);
 		}
 		if (proxyConnection.isTransactionLevlChanged()) {
-			this.connection.setTransactionIsolation(this.transactionIsolationLevlOrig);
+			connection.setTransactionIsolation(this.transactionIsolationLevlOrig);
 		}
 	}
 	
-	public void removeFromPool() {
-		if (this.proxyConnection != null) {
+	//called for pool
+	public void closePhysicalConnection() {
+		if (proxyConnection != null) {
 			proxyConnection.setConnectionDataToNull();
 			proxyConnection = null;
 		}
@@ -142,23 +136,18 @@ public final class PooledConnection {
 				connection.rollback();
 		} catch (Throwable e) {
 		}
-
-		try {
-			this.connection.close();
-		} catch (Throwable e) {
-		}
+		ConnectionUtil.close(connection);
 	}
 
 	void returnToPoolBySelf() throws SQLException {
-		if (this.state.get() == PooledConnectionState.USING) {
+		if (state.get() == PooledConnectionState.USING) {
 			if (proxyConnection != null) {
-				this.resetConnectionAfterRelease();
-				this.proxyConnection.setConnectionDataToNull();
+				resetConnectionAfterRelease();
+				proxyConnection.setConnectionDataToNull();
 			}
 			
-			this.bindProxyConnection(null);
-			this.updateLastActivityTime();
-			this.connectionPool.releasePooledConnection(this);
+			bindProxyConnection(null);
+			connectionPool.releasePooledConnection(this);
 		}
 	}
 }

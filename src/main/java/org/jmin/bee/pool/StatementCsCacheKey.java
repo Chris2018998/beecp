@@ -37,11 +37,11 @@ public class StatementCsCacheKey{
 	private int buildHashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + statementType.hashCode();
 		result = prime * result + resultSetConcurrency;
 		result = prime * result + resultSetHoldability;
 		result = prime * result + resultSetType;
-		result = prime * result + ((sql == null) ? 0 : sql.hashCode());
-		result = prime * result + ((statementType == null) ? 0 : statementType.hashCode());
+		result = prime * result + sql.hashCode();
 		return result;
 	}
 
@@ -52,14 +52,13 @@ public class StatementCsCacheKey{
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
 		if (getClass() != obj.getClass())
 			return false;
+		
 		StatementCsCacheKey other = (StatementCsCacheKey) obj;
 		if (hashCode != other.hashCode)
+			return false;
+		if(!statementType.equals(other.statementType))
 			return false;
 		if (resultSetConcurrency != other.resultSetConcurrency)
 			return false;
@@ -67,15 +66,7 @@ public class StatementCsCacheKey{
 			return false;
 		if (resultSetType != other.resultSetType)
 			return false;
-		if (sql == null) {
-			if (other.sql != null)
-				return false;
-		} else if (!sql.equals(other.sql))
-			return false;
-		if (statementType == null) {
-			if (other.statementType != null)
-				return false;
-		} else if (!statementType.equals(other.statementType))
+		if (!sql.equals(other.sql))
 			return false;
 		return true;
 	}

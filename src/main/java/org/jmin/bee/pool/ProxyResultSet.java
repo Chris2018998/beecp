@@ -33,17 +33,17 @@ public abstract class ProxyResultSet implements ResultSet {
 	}
 	protected void updateLastActivityTime() throws SQLException {
 		if (isClosed)throw new SQLException("ResultSet has been closed,access forbidden");
-		this.proxyStatement.updateLastActivityTime();
+		proxyStatement.updateLastActivityTime();
 	}
 	
 	public void close() throws SQLException {
-		if (this.isClosed) {
+		if (isClosed) {
 			throw new SQLException("ResultSet has been closed");
 		} else {
-			this.isClosed = true;
+			isClosed = true;
 			ConnectionUtil.close(delegate);
-			this.delegate = null;
-			this.proxyStatement = null;
+			delegate = null;
+			proxyStatement = null;
 		}
 	}
 }

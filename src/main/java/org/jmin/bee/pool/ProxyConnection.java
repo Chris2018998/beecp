@@ -65,23 +65,23 @@ public abstract class ProxyConnection implements Connection {
 	}
 
 	public void setTransactionIsolation(int level) throws SQLException {
-		this.updateLastActivityTime();
-		this.delegate.setTransactionIsolation(level);
-		this.transactionLevlChanged = (level != pooledConnection.getTransactionIsolationLevl());
+		updateLastActivityTime();
+		delegate.setTransactionIsolation(level);
+		transactionLevlChanged = (level != pooledConnection.getTransactionIsolationLevl());
 	}
 
 	void setConnectionDataToNull() {
-		this.isClosed = true;
-		this.delegate = null;
-		this.pooledConnection = null;
+		isClosed = true;
+		delegate = null;
+		pooledConnection = null;
 	}
 
 	public void close() throws SQLException {
-		if (this.isClosed) {
+		if (isClosed) {
 			throw new SQLException("Connection has been closed");
 		} else {
-			this.updateLastActivityTime();
-			this.pooledConnection.returnToPoolBySelf();
+			pooledConnection.updateLastActivityTime();
+			pooledConnection.returnToPoolBySelf();
 		}
 	}
 }
