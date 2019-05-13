@@ -27,7 +27,7 @@ public final class PooledConnection {
 	// state
 	private AtomicInteger state;
 	// last activity time
-	private long lastActiveTime;
+	private volatile long lastActiveTime;
 	// physical connection
 	private Connection connection;
 	// PreparedStatement cache
