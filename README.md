@@ -47,7 +47,7 @@ computer Env
 |  Name        |  Description | 
 | ------------ | ------------ | 
 |  OS          | Win7_64      |   
-| CPU          | I3-7100(3.9hz*2) |  
+| CPU          | I5-4460(3.2hz*4) |  
 | Memory       | 8G           |   
 | Java         |JDK1.8.0_192  |  
 |  DB          | mariadb10.3  |  
