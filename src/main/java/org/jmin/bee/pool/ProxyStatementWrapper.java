@@ -42,15 +42,14 @@ public class ProxyStatementWrapper {
 	}
 
 	public void close() throws SQLException {
-		if (this.isClosed) {
+		if (this.isClosed) 
 			throw new SQLException("Statement has been closed");
-		} else {
-			this.isClosed = true;
-			if (!this.cacheAble) {
-				ConnectionUtil.close(delegate);
-				this.delegate = null;
-				this.proxyConnection =null;
-			}
+		
+		this.isClosed = true;
+		if (!this.cacheAble) {
+			ConnectionUtil.close(delegate);
+			this.delegate = null;
+			this.proxyConnection =null;
 		}
 	}
 }

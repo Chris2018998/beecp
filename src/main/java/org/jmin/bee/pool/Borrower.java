@@ -11,6 +11,9 @@ package org.jmin.bee.pool;
 
 import java.util.LinkedList;
 import java.util.List;
+
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -24,7 +27,8 @@ final class Borrower {
 	private volatile Borrower pre=null;
 	private AtomicReference<Borrower> nextRef=null;
 	private volatile PooledConnection transferedConnection=null;
-	
+	private ReentrantLock lock=new ReentrantLock();
+	private Condition lockCondition=lock.newCondition();
 	private PooledConnection lastUsedConnection = null;
 	private List<PooledConnection> badConnectionList = new LinkedList<PooledConnection>();
 	public Borrower() {
@@ -40,7 +44,9 @@ final class Borrower {
 	public void setPre(Borrower pre) {
 		this.pre = pre;
 	}
-	
+	public boolean equals(Object o){
+		return this==o;
+	}
 	public boolean isOffChain(){
 		return nextRef.get()==this;
 	}
@@ -53,7 +59,12 @@ final class Borrower {
 	public boolean compareAndSetNext(Borrower cur,Borrower next) {
 		return nextRef.compareAndSet(cur, next);
 	}
-	
+	public ReentrantLock getLock() {
+		return lock;
+	}
+	public Condition getLockCondition() {
+		return lockCondition;
+	}
 	public List<PooledConnection> getBadConnectionList() {
 		return badConnectionList;
 	}

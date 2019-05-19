@@ -28,6 +28,8 @@ public final class PooledConnection {
 	private AtomicInteger state;
 	// last activity time
 	private volatile long lastActiveTime;
+	// related pool
+	private ConnectionPool pool;
 	// physical connection
 	private Connection connection;
 	// PreparedStatement cache
@@ -38,25 +40,22 @@ public final class PooledConnection {
 	private boolean autoCommit;
 	// transaction level
 	private int transactionIsolationLevlOrig = Connection.TRANSACTION_READ_COMMITTED;
-	// related pool
-	private ConnectionPool connectionPool;
-	
-	private final SystemClock systemClock=SystemClock.clock;
 	
 	public PooledConnection(Connection connection, ConnectionPool connectionPool) {
 		this(connection, 10, connectionPool);
 	}
 
-	public PooledConnection(Connection connection, int statementCacheSize, ConnectionPool connectionPool) {
-		this.connection = connection;
-		this.state = new AtomicInteger(PooledConnectionState.IDLE);
-		this.statementCache = new StatementCache(statementCacheSize);
-		this.connectionPool = connectionPool;
+	public PooledConnection(Connection phConn, int stCacheSize, ConnectionPool connpool) {
+		pool = connpool;
+		connection= phConn;
+		state = new AtomicInteger(PooledConnectionState.IDLE);
+	    statementCache = new StatementCache(stCacheSize);
+	    
 		try {
-			this.autoCommit = this.connection.getAutoCommit();
-			this.transactionIsolationLevlOrig = this.connection.getTransactionIsolation();
+			autoCommit = connection.getAutoCommit();
+			transactionIsolationLevlOrig = connection.getTransactionIsolation();
 		} catch (Throwable e) {}
-		this.updateLastActivityTime();
+		updateLastActivityTime();
 	}
 	
 	public StatementCache getStatementCache() {
@@ -76,11 +75,11 @@ public final class PooledConnection {
 	}
 
 	public void updateLastActivityTime() {
-		this.lastActiveTime = systemClock.currentTimeMillis();
+		lastActiveTime = SystemClock.currentTimeMillis();
 	}
 
 	public Connection getPhisicConnection() {
-		return this.connection;
+		return connection;
 	}
 
 	public ProxyConnection getProxyConnection() {
@@ -147,7 +146,7 @@ public final class PooledConnection {
 			}
 			
 			bindProxyConnection(null);
-			connectionPool.releasePooledConnection(this);
+			pool.release(this);
 		}
 	}
 }
