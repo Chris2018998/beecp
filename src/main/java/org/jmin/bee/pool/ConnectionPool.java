@@ -510,20 +510,17 @@ public class ConnectionPool{
 	}
 	
 	 static class ConnectionFactory {
-		private String jdbcURL;
-		private Properties jdbcProperties;
-		private Driver jdbcConnectionDriver;
+		private String url;
+		private Properties prop;
+		private Driver driver;
 		public ConnectionFactory(String jdbcURL,Properties jdbcProperties,Driver jdbcConnectionDriver) throws SQLException {
-			this.jdbcURL=jdbcURL;
-			this.jdbcProperties=jdbcProperties;
-			this.jdbcConnectionDriver=jdbcConnectionDriver;
+			url=jdbcURL;
+			prop=jdbcProperties;
+			driver=jdbcConnectionDriver;
 		}
 		public Connection createConnection() throws SQLException {
-			if (jdbcConnectionDriver!=null) {
-				return jdbcConnectionDriver.connect(jdbcURL,jdbcProperties);
-			} else {
-				return DriverManager.getConnection(jdbcURL,jdbcProperties);
-			}
+			if(driver!=null)return driver.connect(url,prop);
+			return DriverManager.getConnection(url,prop);
 		}
 	}
 	
