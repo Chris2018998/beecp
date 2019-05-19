@@ -32,21 +32,21 @@ public final class BeeDataSource implements DataSource {
 	/**
 	 * connection pool
 	 */
-	private ConnectionPool connectionPool=null;
+	private ConnectionPool pool=null;
 	
 	/**
 	 * constructor
 	 * @param config data source configuration
 	 */
 	public BeeDataSource(final BeeDataSourceConfig config) {
-		this.connectionPool = this.createPool(config);
+		pool = createPool(config);
 	}
 	
 	/**
 	 * @return pool internal information
 	 */
 	public Map<String,Integer> getPoolSnapshot(){
-		return this.connectionPool.getPoolSnapshot();
+		return pool.getPoolSnapshot();
 	}
 	
 	/**
@@ -58,7 +58,7 @@ public final class BeeDataSource implements DataSource {
 	 *             if pool is closed or waiting timeout,then throw exception
 	 */
 	public Connection getConnection() throws SQLException {
-		return this.connectionPool.getConnection();
+		return pool.getConnection();
 	}
 
 	/**
@@ -79,7 +79,7 @@ public final class BeeDataSource implements DataSource {
 		throw new SQLException("Not support");
 	}
 	public void close(){
-		this.connectionPool.destroy();
+		pool.destroy();
 	}
 	public PrintWriter getLogWriter() throws SQLException {
 		throw new SQLException("Not supported");
