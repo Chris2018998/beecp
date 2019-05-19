@@ -10,8 +10,8 @@ import java.util.concurrent.TimeUnit;
  * @author Chris.liao
  */
 public final class SystemClock implements Runnable{
-	private volatile long millSecond;
-	public static final SystemClock clock = new SystemClock(1);
+	private volatile long currentTimeMillis;
+	private static final SystemClock clock = new SystemClock(1);
 	private SystemClock(long period) {
 		ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1,new ThreadFactory() {
 			public Thread newThread(Runnable r) {
@@ -20,14 +20,13 @@ public final class SystemClock implements Runnable{
 				return thread;
 			}
 		});
-		this.millSecond=System.currentTimeMillis();
+		currentTimeMillis=System.currentTimeMillis();
 		scheduler.scheduleAtFixedRate(this,period,period,TimeUnit.MILLISECONDS);
 	}
-	
 	public void run(){
-		this.millSecond=System.currentTimeMillis();
+	  currentTimeMillis=System.currentTimeMillis();
 	}
-	public long currentTimeMillis() {
-		return millSecond;
+	public static long currentTimeMillis() {
+		return clock.currentTimeMillis;
 	}
 }
