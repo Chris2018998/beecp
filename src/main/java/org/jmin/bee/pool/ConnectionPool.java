@@ -267,21 +267,21 @@ public class ConnectionPool{
 	public Connection getConnection(final long maxWait) throws SQLException {
 		checkPool();
 		boolean acquired=false;
-		Borrower borrower=null;
 		PooledConnection pConn=null;
 		PooledConnection tmpPConn=null;
 		
 		WeakReference<Borrower> bRef = threadLocal.get();
-		if (bRef != null)borrower = bRef.get();
+		Borrower borrower=(bRef!=null)?bRef.get():null;
 		if (borrower == null) {
 			borrower = new Borrower();
 			threadLocal.set(new WeakReference<Borrower>(borrower));
+		}else{
+			tmpPConn = borrower.getLastUsedConnection();
 		}
 		List<PooledConnection> badConList = borrower.getBadConnectionList();//collect bad connection
 		
 		try {
-			if ((tmpPConn = borrower.getLastUsedConnection()) != null //step1: try to reuse one
-					&& tmpPConn.compareAndSet(PooledConnectionState.IDLE, PooledConnectionState.USING)) {
+			if (tmpPConn!=null && tmpPConn.compareAndSet(PooledConnectionState.IDLE,PooledConnectionState.USING)) {//step1: try to reuse one
 				if (checkOnBorrowed(tmpPConn, badConList)) 
 					pConn = tmpPConn;
 				 else 
@@ -294,26 +294,22 @@ public class ConnectionPool{
 				try{acquired=takeSemaphore.tryAcquire(timeout,WaitTimeUnit);}catch(InterruptedException e){}
 				
 				 for(;;){
-					if ((tmpPConn=searchOne())!=null
-						&& checkOnBorrowed(tmpPConn, badConList)){//step2:try to search one 
+					if ((tmpPConn=searchOne())!=null && checkOnBorrowed(tmpPConn, badConList)){//step2:try to search one 
 						pConn = tmpPConn;
 						break;
 					}
 					
-					if ((pConn = createOne()) != null)//step3:try to create one
-						break;
+					if ((pConn = createOne()) != null)break;//step3:try to create one
 					if ((timeout=deadlinePoint-SystemClock.currentTimeMillis())<=0)break;
 					if ((tmpPConn=waitForOne(timeout,WaitTimeUnit,borrower))!= null){//step4:wait for transfered one
-						if (transferPolicy.tryCatch(tmpPConn)&& 
-							checkOnBorrowed(tmpPConn, badConList)) {
-								pConn = tmpPConn;
-								break;
+						if (transferPolicy.tryCatch(tmpPConn)&&checkOnBorrowed(tmpPConn,badConList)) {
+							pConn = tmpPConn;
+							break;
 						}
 					}
-					
 					if(isClosed())break;
 				}//for
-			}
+			}//if
 		} finally {
 			if(acquired)takeSemaphore.release();
 			if(!badConList.isEmpty()) {
@@ -328,7 +324,7 @@ public class ConnectionPool{
 			pConn.bindProxyConnection(proxyConn);
 			pConn.updateLastActivityTime();
 			return proxyConn;
-		} else if (isClosed())
+		}else if (isClosed())
 			throw PoolCloseStateException;
 		else
 			throw ConnectionRequestTimeoutException;
@@ -378,7 +374,7 @@ public class ConnectionPool{
 	 * @param pConn need transfered connection
 	 * @return if transfer successful then return true,otherwise false
 	 */
-	protected boolean transferToWaiter(PooledConnection pConn) { 
+	protected boolean transfer(PooledConnection pConn) { 
 		return transferQueue.offer(pConn);
 	}
 	
@@ -546,7 +542,7 @@ public class ConnectionPool{
 		public void tryTransfer(PooledConnection pConn) {
 			int failTimes = 0;
 			while (pool.existWaiter()) {
-				if (pool.transferToWaiter(pConn)) {
+				if (pool.transfer(pConn)) {
 					return;
 				} else if (++failTimes%50==0) {
  					LockSupport.parkNanos(10);
@@ -570,7 +566,7 @@ public class ConnectionPool{
 			int failTimes=0;
 			pConn.setConnectionState(PooledConnectionState.IDLE);
 			while (pool.existWaiter() && pConn.getConnectionState()== PooledConnectionState.IDLE) {
-				if (pool.transferToWaiter(pConn)) {
+				if (pool.transfer(pConn)) {
 					return;
 				} else if (++failTimes % 50 == 0) {
 					LockSupport.parkNanos(1000);
