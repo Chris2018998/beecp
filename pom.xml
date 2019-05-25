@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.chris2018998</groupId>
 	<artifactId>BeeCP</artifactId>
-	<version>0.76</version>
+	<version>0.78</version>
 	<name>BeeCP</name>
 	<url>https://github.com/Chris2018998/BeeCP</url>
 	<description>Bee Connection Pool</description>
@@ -47,6 +47,7 @@
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
 			<version>3.20.0-GA</version>
+		    <scope>provided</scope> 
 		</dependency>
 	</dependencies>
 	
