@@ -4,7 +4,7 @@ Introduction
 ---
 BeeCP,a lightweight and  fast JDBC connection pool implementation. 
 
-Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.75/BeeCP-0.78.jar">BeeCP_0.78.jar</a>
+Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.78/BeeCP-0.78.jar">BeeCP_0.78.jar</a>
 
 ```java
 <dependency>
@@ -63,11 +63,7 @@ Pool setting
 | max wait time        | 30 seconds |  |  
 
 ---
-1: JMH Test with <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/HikariCP-jdbcBech.zip">HikariCP Benchmarks source code</a> 
-
-![Image text](https://github.com/Chris2018998/BeeCP/blob/master/doc/HikariCP-jdbcBech.png)
-
-2: Concurrent(1000threads x 1000iteration)Test <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/Jdbc-Performace.zip">Source code</a> 
+Concurrent(1000threads x 1000iteration)Test <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/Jdbc-Performace.zip">Source code</a> 
 
 A: Borrow Result
 
