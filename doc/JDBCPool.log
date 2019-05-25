@@ -1,227 +1,274 @@
-CPU:I5-4460(3.2hz*4),Momery:8G,Disk:500G
+CP concurrent:1000threads X 1000iterate
+CPU:I3-7100(3.9hz*2),Momery:8G,Disk:500G,DB:mariadb10.3
 
-Pool[Druid -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
-Pool[Druid -- Multiple thread borrow] -- Execution count:1000000,total time:16125199ms,avg time:16.1252ms,min time:0ms,max time:667ms
+******Connection test****************
+Pool[HikariCP -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
+Pool[HikariCP -- Multiple thread borrow] -- Execution count:1000000,total time:302000ms,avg time:0.3020ms,min time:0ms,max time:348ms
 success count       :1000000
 fail count          :0
-avr(ms)             :16.1252
+avr(ms)             :0.3020
 min(ms)             :0
-max(ms)             :667
-time==0ms           :494024
-time==1ms           :656
-time==2ms           :729
-time==3ms           :827
-time==4ms           :1151
-time==5ms           :1417
-5ms<time<=10ms      :17261
-10ms<time<=30ms     :245264
-30ms<time<=50ms     :179375
-50ms<time<=100ms    :52532
-100ms<time<=200ms   :5716
-200ms<time<=500ms   :845
-500ms<time<=1000ms  :203
-1000ms<time<=2000ms :0
-2000ms<time         :0
-Pool[Tomcat -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
-Pool[Tomcat -- Multiple thread borrow] -- Execution count:1000000,total time:2188256ms,avg time:2.1883ms,min time:0ms,max time:264ms
-success count       :1000000
-fail count          :0
-avr(ms)             :2.1883
-min(ms)             :0
-max(ms)             :264
-time==0ms           :21
-time==1ms           :861278
-time==2ms           :94804
-time==3ms           :15756
-time==4ms           :9100
-time==5ms           :10626
-5ms<time<=10ms      :2855
-10ms<time<=30ms     :3933
-30ms<time<=50ms     :404
-50ms<time<=100ms    :223
-100ms<time<=200ms   :58
-200ms<time<=500ms   :942
+max(ms)             :348
+time==0ms           :994312
+time==1ms           :1068
+time==2ms           :692
+time==3ms           :308
+time==4ms           :367
+time==5ms           :274
+5ms<time<=10ms      :626
+10ms<time<=30ms     :441
+30ms<time<=50ms     :81
+50ms<time<=100ms    :629
+100ms<time<=200ms   :791
+200ms<time<=500ms   :411
 500ms<time<=1000ms  :0
 1000ms<time<=2000ms :0
 2000ms<time         :0
-Pool[HikariCP -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
-Pool[HikariCP -- Multiple thread borrow] -- Execution count:1000000,total time:374028ms,avg time:0.3740ms,min time:0ms,max time:352ms
+Pool[Tomcat -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
+Pool[Tomcat -- Multiple thread borrow] -- Execution count:1000000,total time:2728363ms,avg time:2.7284ms,min time:0ms,max time:272ms
 success count       :1000000
 fail count          :0
-avr(ms)             :0.3740
+avr(ms)             :2.7284
 min(ms)             :0
-max(ms)             :352
-time==0ms           :991863
-time==1ms           :508
-time==2ms           :218
-time==3ms           :251
-time==4ms           :332
-time==5ms           :563
-5ms<time<=10ms      :1561
-10ms<time<=30ms     :1967
-30ms<time<=50ms     :597
-50ms<time<=100ms    :993
-100ms<time<=200ms   :626
-200ms<time<=500ms   :521
+max(ms)             :272
+time==0ms           :11
+time==1ms           :46
+time==2ms           :940038
+time==3ms           :15544
+time==4ms           :20348
+time==5ms           :15627
+5ms<time<=10ms      :3679
+10ms<time<=30ms     :3153
+30ms<time<=50ms     :528
+50ms<time<=100ms    :26
+100ms<time<=200ms   :47
+200ms<time<=500ms   :953
+500ms<time<=1000ms  :0
+1000ms<time<=2000ms :0
+2000ms<time         :0
+
+Pool[Druid -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
+Pool[Druid -- Multiple thread borrow] -- Execution count:1000000,total time:22377379ms,avg time:22.3774ms,min time:0ms,max time:903ms
+success count       :1000000
+fail count          :0
+avr(ms)             :22.3774
+min(ms)             :0
+max(ms)             :903
+time==0ms           :486039
+time==1ms           :493
+time==2ms           :386
+time==3ms           :815
+time==4ms           :688
+time==5ms           :701
+5ms<time<=10ms      :8724
+10ms<time<=30ms     :263421
+30ms<time<=50ms     :122879
+50ms<time<=100ms    :87925
+100ms<time<=200ms   :25457
+200ms<time<=500ms   :1702
+500ms<time<=1000ms  :770
+1000ms<time<=2000ms :0
+2000ms<time         :0
+Pool[Vibur -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
+Pool[Vibur -- Multiple thread borrow] -- Execution count:1000000,total time:4344675ms,avg time:4.3447ms,min time:3ms,max time:225ms
+success count       :1000000
+fail count          :0
+avr(ms)             :4.3447
+min(ms)             :3
+max(ms)             :225
+time==0ms           :0
+time==1ms           :0
+time==2ms           :0
+time==3ms           :319265
+time==4ms           :668059
+time==5ms           :5089
+5ms<time<=10ms      :2431
+10ms<time<=30ms     :3624
+30ms<time<=50ms     :532
+50ms<time<=100ms    :0
+100ms<time<=200ms   :705
+200ms<time<=500ms   :295
 500ms<time<=1000ms  :0
 1000ms<time<=2000ms :0
 2000ms<time         :0
 Pool[BeeCP_Fair -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
-Pool[BeeCP_Fair -- Multiple thread borrow] -- Execution count:1000000,total time:1325639ms,avg time:1.3256ms,min time:0ms,max time:226ms
+Pool[BeeCP_Fair -- Multiple thread borrow] -- Execution count:1000000,total time:265913ms,avg time:0.2659ms,min time:0ms,max time:256ms
 success count       :1000000
 fail count          :0
-avr(ms)             :1.3256
+avr(ms)             :0.2659
 min(ms)             :0
-max(ms)             :226
-time==0ms           :164895
-time==1ms           :821107
-time==2ms           :6063
-time==3ms           :245
-time==4ms           :76
-time==5ms           :1063
-5ms<time<=10ms      :3723
-10ms<time<=30ms     :1794
-30ms<time<=50ms     :34
-50ms<time<=100ms    :0
-100ms<time<=200ms   :788
-200ms<time<=500ms   :212
+max(ms)             :256
+time==0ms           :997472
+time==1ms           :354
+time==2ms           :205
+time==3ms           :18
+time==4ms           :14
+time==5ms           :7
+5ms<time<=10ms      :62
+10ms<time<=30ms     :129
+30ms<time<=50ms     :673
+50ms<time<=100ms    :65
+100ms<time<=200ms   :167
+200ms<time<=500ms   :834
 500ms<time<=1000ms  :0
 1000ms<time<=2000ms :0
 2000ms<time         :0
 Pool[BeeCP_Compete -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
-Pool[BeeCP_Compete -- Multiple thread borrow] -- Execution count:1000000,total time:240563ms,avg time:0.2406ms,min time:0ms,max time:295ms
+Pool[BeeCP_Compete -- Multiple thread borrow] -- Execution count:1000000,total time:259661ms,avg time:0.2597ms,min time:0ms,max time:304ms
 success count       :1000000
 fail count          :0
-avr(ms)             :0.2406
+avr(ms)             :0.2597
 min(ms)             :0
-max(ms)             :295
-time==0ms           :996521
-time==1ms           :237
-time==2ms           :145
-time==3ms           :185
-time==4ms           :36
-time==5ms           :177
-5ms<time<=10ms      :721
-10ms<time<=30ms     :856
-30ms<time<=50ms     :95
-50ms<time<=100ms    :27
-100ms<time<=200ms   :494
-200ms<time<=500ms   :506
+max(ms)             :304
+time==0ms           :998994
+time==1ms           :4
+time==2ms           :1
+time==3ms           :1
+time==4ms           :0
+time==5ms           :0
+5ms<time<=10ms      :0
+10ms<time<=30ms     :0
+30ms<time<=50ms     :0
+50ms<time<=100ms    :0
+100ms<time<=200ms   :1
+200ms<time<=500ms   :999
 500ms<time<=1000ms  :0
 1000ms<time<=2000ms :0
 2000ms<time         :0
 
 
 
-Pool[Druid -- Multiple thread query] -- Begin{1000threads X 1000iterate}
-Pool[Druid -- Multiple thread query] -- Execution count:1000000,total time:32997708ms,avg time:33.00ms,min time:0ms,max time:975ms
+
+******Statement test****************
+Pool[HikariCP -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+Pool[HikariCP -- Multiple thread query] -- Execution count:1000000,total time:22658343ms,avg time:22.66ms,min time:0ms,max time:29987ms
 success count       :1000000
 fail count          :0
-avr(ms)             :33.00
+avr(ms)             :22.66
 min(ms)             :0
-max(ms)             :975
-time==0ms           :440835
-time==1ms           :1290
-time==2ms           :319
-time==3ms           :353
-time==4ms           :458
-time==5ms           :304
-5ms<time<=10ms      :2089
-10ms<time<=30ms     :33770
-30ms<time<=50ms     :273877
-50ms<time<=100ms    :186084
-100ms<time<=200ms   :52935
-200ms<time<=500ms   :6987
-500ms<time<=1000ms  :699
-1000ms<time<=2000ms :0
-2000ms<time         :0
+max(ms)             :29987
+time==0ms           :967343
+time==1ms           :16203
+time==2ms           :3779
+time==3ms           :1695
+time==4ms           :898
+time==5ms           :516
+5ms<time<=10ms      :976
+10ms<time<=30ms     :1059
+30ms<time<=50ms     :448
+50ms<time<=100ms    :539
+100ms<time<=200ms   :543
+200ms<time<=500ms   :915
+500ms<time<=1000ms  :773
+1000ms<time<=2000ms :1037
+2000ms<time         :3276
 Pool[Tomcat -- Multiple thread query] -- Begin{1000threads X 1000iterate}
-Pool[Tomcat -- Multiple thread query] -- Execution count:1000000,total time:29368400ms,avg time:29.37ms,min time:0ms,max time:342ms
+Pool[Tomcat -- Multiple thread query] -- Execution count:1000000,total time:46428586ms,avg time:46.43ms,min time:0ms,max time:465ms
 success count       :1000000
 fail count          :0
-avr(ms)             :29.37
+avr(ms)             :46.43
 min(ms)             :0
-max(ms)             :342
-time==0ms           :6
-time==1ms           :1
-time==2ms           :4
-time==3ms           :1
-time==4ms           :3
-time==5ms           :2
-5ms<time<=10ms      :792
-10ms<time<=30ms     :869040
-30ms<time<=50ms     :114062
-50ms<time<=100ms    :12790
-100ms<time<=200ms   :2299
+max(ms)             :465
+time==0ms           :3
+time==1ms           :3
+time==2ms           :1
+time==3ms           :0
+time==4ms           :0
+time==5ms           :0
+5ms<time<=10ms      :1
+10ms<time<=30ms     :2395
+30ms<time<=50ms     :980085
+50ms<time<=100ms    :14544
+100ms<time<=200ms   :1968
 200ms<time<=500ms   :1000
 500ms<time<=1000ms  :0
 1000ms<time<=2000ms :0
 2000ms<time         :0
-Pool[HikariCP -- Multiple thread query] -- Begin{1000threads X 1000iterate}
-Pool[HikariCP -- Multiple thread query] -- Execution count:1000000,total time:11887528ms,avg time:11.89ms,min time:0ms,max time:17053ms
+Pool[Druid -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+Pool[Druid -- Multiple thread query] -- Execution count:1000000,total time:51031585ms,avg time:51.03ms,min time:0ms,max time:1301ms
 success count       :1000000
 fail count          :0
-avr(ms)             :11.89
+avr(ms)             :51.03
 min(ms)             :0
-max(ms)             :17053
-time==0ms           :982350
-time==1ms           :6165
-time==2ms           :1720
-time==3ms           :868
-time==4ms           :486
-time==5ms           :295
-5ms<time<=10ms      :657
-10ms<time<=30ms     :457
-30ms<time<=50ms     :161
-50ms<time<=100ms    :319
-100ms<time<=200ms   :494
-200ms<time<=500ms   :1289
-500ms<time<=1000ms  :1337
-1000ms<time<=2000ms :1561
-2000ms<time         :1841
-Pool[BeeCP_Fair -- Multiple thread query] -- Begin{1000threads X 1000iterate}
-Pool[BeeCP_Fair -- Multiple thread query] -- Execution count:1000000,total time:18983063ms,avg time:18.98ms,min time:0ms,max time:261ms
+max(ms)             :1301
+time==0ms           :435200
+time==1ms           :3022
+time==2ms           :362
+time==3ms           :258
+time==4ms           :235
+time==5ms           :235
+5ms<time<=10ms      :1028
+10ms<time<=30ms     :6500
+30ms<time<=50ms     :124299
+50ms<time<=100ms    :226934
+100ms<time<=200ms   :160476
+200ms<time<=500ms   :40169
+500ms<time<=1000ms  :1261
+1000ms<time<=2000ms :21
+2000ms<time         :0
+Pool[Vibur -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+Pool[Vibur -- Multiple thread query] -- Execution count:1000000,total time:33275757ms,avg time:33.28ms,min time:12ms,max time:380ms
 success count       :1000000
 fail count          :0
-avr(ms)             :18.98
-min(ms)             :0
-max(ms)             :261
-time==0ms           :3
-time==1ms           :3
-time==2ms           :3
-time==3ms           :5
-time==4ms           :4
-time==5ms           :233
-5ms<time<=10ms      :986
-10ms<time<=30ms     :988054
-30ms<time<=50ms     :8129
-50ms<time<=100ms    :614
-100ms<time<=200ms   :1716
-200ms<time<=500ms   :250
+avr(ms)             :33.28
+min(ms)             :12
+max(ms)             :380
+time==0ms           :0
+time==1ms           :0
+time==2ms           :0
+time==3ms           :0
+time==4ms           :0
+time==5ms           :0
+5ms<time<=10ms      :0
+10ms<time<=30ms     :118
+30ms<time<=50ms     :990823
+50ms<time<=100ms    :7504
+100ms<time<=200ms   :653
+200ms<time<=500ms   :902
 500ms<time<=1000ms  :0
 1000ms<time<=2000ms :0
 2000ms<time         :0
-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{1000threads X 1000iterate}
-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:1000000,total time:11123550ms,avg time:11.12ms,min time:0ms,max time:6606ms
+Pool[BeeCP_Fair -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+Pool[BeeCP_Fair -- Multiple thread query] -- Execution count:1000000,total time:22995486ms,avg time:23.00ms,min time:0ms,max time:2092ms
 success count       :1000000
 fail count          :0
-avr(ms)             :11.12
+avr(ms)             :23.00
 min(ms)             :0
-max(ms)             :6606
-time==0ms           :989256
-time==1ms           :2700
-time==2ms           :959
-time==3ms           :396
-time==4ms           :274
-time==5ms           :165
-5ms<time<=10ms      :337
-10ms<time<=30ms     :144
-30ms<time<=50ms     :17
-50ms<time<=100ms    :35
-100ms<time<=200ms   :152
-200ms<time<=500ms   :645
-500ms<time<=1000ms  :1811
-1000ms<time<=2000ms :1314
-2000ms<time         :1795
-
-
+max(ms)             :2092
+time==0ms           :941110
+time==1ms           :10117
+time==2ms           :2841
+time==3ms           :1411
+time==4ms           :1063
+time==5ms           :1110
+5ms<time<=10ms      :5701
+10ms<time<=30ms     :3487
+30ms<time<=50ms     :1047
+50ms<time<=100ms    :2090
+100ms<time<=200ms   :3601
+200ms<time<=500ms   :7201
+500ms<time<=1000ms  :9709
+1000ms<time<=2000ms :9354
+2000ms<time         :158
+Pool[BeeCP_Compete -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:1000000,total time:18239251ms,avg time:18.24ms,min time:0ms,max time:20783ms
+success count       :1000000
+fail count          :0
+avr(ms)             :18.24
+min(ms)             :0
+max(ms)             :20783
+time==0ms           :970193
+time==1ms           :15683
+time==2ms           :3783
+time==3ms           :1763
+time==4ms           :1116
+time==5ms           :807
+5ms<time<=10ms      :2328
+10ms<time<=30ms     :2107
+30ms<time<=50ms     :342
+50ms<time<=100ms    :103
+100ms<time<=200ms   :23
+200ms<time<=500ms   :39
+500ms<time<=1000ms  :66
+1000ms<time<=2000ms :75
+2000ms<time         :1572
