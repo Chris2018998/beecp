@@ -260,19 +260,19 @@ public final class ProxyClassUtil {
 			
 			methodBuffer.delete(0, methodBuffer.length());
 			methodBuffer.append("{");
-			methodBuffer.append("updateLastActivityTime();");
+			methodBuffer.append("super.updateLastActivityTime();");
 			
 			if(methodName.equals("createStatement")){
-				methodBuffer.append("  return new ProxyStatementImpl(delegate.createStatement($$),this);");	
+				methodBuffer.append("return new ProxyStatementImpl(delegate.createStatement($$),this);");	
 			}else if(methodName.equals("prepareStatement")){
 				methodBuffer.append("StatementCache statementCache = getStatementCache();"); 
 				methodBuffer.append("boolean cacheAble = statementCache.isValid();"); 
 				methodBuffer.append("if(cacheAble){");
  				methodBuffer.append("   StatementPsCacheKey key = new StatementPsCacheKey($$);");
- 				methodBuffer.append("   PreparedStatement statement=statementCache.getStatement(key);");
+ 				methodBuffer.append("   PreparedStatement statement=statementCache.get(key);");
 				methodBuffer.append("   if(statement==null){");
 				methodBuffer.append("     statement=delegate.prepareStatement($$);");
-				methodBuffer.append("     statementCache.putStatement(key,statement);");
+				methodBuffer.append("     statementCache.put(key,statement);");
 				methodBuffer.append("   }");
 				methodBuffer.append("   return new ProxyPsStatementImpl(statement,this,cacheAble);");	
 				methodBuffer.append("}else{");
@@ -283,10 +283,10 @@ public final class ProxyClassUtil {
 				methodBuffer.append("boolean cacheAble = statementCache.isValid();"); 
 				methodBuffer.append("if(cacheAble){");
 				methodBuffer.append("  StatementCsCacheKey key = new StatementCsCacheKey($$);");
-				methodBuffer.append("  CallableStatement statement=(CallableStatement)statementCache.getStatement(key);");
+				methodBuffer.append("  CallableStatement statement=(CallableStatement)statementCache.get(key);");
 				methodBuffer.append("  if(statement==null){");
 				methodBuffer.append("    statement=delegate.prepareCall($$);");
-				methodBuffer.append("    statementCache.putStatement(key,statement);");
+				methodBuffer.append("    statementCache.put(key,statement);");
 				methodBuffer.append("  }");
 			    methodBuffer.append("  return new ProxyCsStatementImpl(statement,this,cacheAble);");	
 			    methodBuffer.append("}else{");
