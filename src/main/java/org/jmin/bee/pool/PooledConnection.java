@@ -41,10 +41,10 @@ public final class PooledConnection {
 	// transaction level
 	private int transactionIsolationLevlOrig = Connection.TRANSACTION_READ_COMMITTED;
 	
+	PooledConnection() {}
 	public PooledConnection(Connection connection, ConnectionPool connectionPool) {
 		this(connection, 10, connectionPool);
 	}
-
 	public PooledConnection(Connection phConn, int stCacheSize, ConnectionPool connpool) {
 		pool = connpool;
 		connection= phConn;
@@ -129,7 +129,7 @@ public final class PooledConnection {
 			proxyConnection = null;
 		}
 
-		this.statementCache.clearAllStatement();
+		this.statementCache.clear();
 		try {
 			if (!connection.getAutoCommit())
 				connection.rollback();

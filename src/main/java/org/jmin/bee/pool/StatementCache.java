@@ -23,48 +23,40 @@ import org.jmin.bee.pool.util.ConnectionUtil;
  * @version 1.0
  */
 
-public final class StatementCache {
+final class StatementCache extends LinkedHashMap<StatementCacheKey, PreparedStatement> {
 	private int maxSize;
 	private boolean isValid;
-	private LinkedHashMap<Object, PreparedStatement> cacheMap;
-	
-	@SuppressWarnings("serial")
 	public StatementCache(int maxSize) {
-		this.maxSize=maxSize;
-		this.isValid=maxSize>0;
-		int mapInitialCapacity = (int)Math.ceil(maxSize/0.75f)+1;
-		this.cacheMap = new LinkedHashMap<Object, PreparedStatement>(mapInitialCapacity, 0.75f, true) {
-			protected boolean removeEldestEntry(Map.Entry<Object,PreparedStatement> eldest) {
-				if (this.size() > StatementCache.this.maxSize) {
-					onRemove(eldest.getKey(), eldest.getValue());
-					return true;
-				} else {
-					return false;
-				}
-			}
-		};
+		super((maxSize==0)?0:(int)Math.ceil(maxSize / 0.75f)+1,0.75f,true);
+		this.maxSize = maxSize;
+		this.isValid = maxSize > 0;
 	}
 	public int maxSize() {
-		return this.maxSize;
+		return maxSize;
 	}
 	public boolean isValid() {
 		return isValid;
 	}
-	public int size() {
-		return this.cacheMap.size();
+	public PreparedStatement get(StatementCacheKey key) {
+		return (isEmpty()) ? null : super.get(key);
 	}
-	public PreparedStatement getStatement(Object key) {
-		return (this.cacheMap.size()== 0)?null:this.cacheMap.get(key) ;
+	public PreparedStatement put(StatementCacheKey key, PreparedStatement ps) {
+		return super.put(key, ps);
 	}
-	public void putStatement(Object key, PreparedStatement value) {
-		this.cacheMap.put(key, value);
-	}
-	public void clearAllStatement() {
-		Iterator<Map.Entry<Object, PreparedStatement>> itor = this.cacheMap.entrySet().iterator();
+	public void clear() {
+		Iterator<Map.Entry<StatementCacheKey, PreparedStatement>> itor = entrySet().iterator();
 		while (itor.hasNext()) {
-			Map.Entry<Object, PreparedStatement> entry = (Map.Entry<Object, PreparedStatement>) itor.next();
+			Map.Entry<StatementCacheKey, PreparedStatement> entry = (Map.Entry<StatementCacheKey, PreparedStatement>) itor.next();
 			itor.remove();
 			this.onRemove(entry.getKey(), entry.getValue());
+		}
+	}
+	protected boolean removeEldestEntry(Map.Entry<StatementCacheKey,PreparedStatement> eldest) {
+		if (size() > StatementCache.this.maxSize) {
+			onRemove(eldest.getKey(), eldest.getValue());
+			return true;
+		} else {
+			return false;
 		}
 	}
 	void onRemove(Object key, PreparedStatement obj) {

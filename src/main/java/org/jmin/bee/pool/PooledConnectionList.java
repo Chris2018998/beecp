@@ -10,88 +10,69 @@
 package org.jmin.bee.pool;
 
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 /**
  * Pooled Connection store array
  *
  * @author Chris.Liao
  * @version 1.0
  */
-public class PooledConnectionList {
-	private final ReentrantLock lock = new ReentrantLock();
+final class PooledConnectionList {
 	private volatile PooledConnection[] array = new PooledConnection[0];
-	final int size() {
+	int size() {
 		return array.length;
 	}
-	final PooledConnection[] getArray() {
+	PooledConnection[] getArray() {
 		return array;
 	}
-	final void setArray(PooledConnection[] a) {
+	void setArray(PooledConnection[] a) {
 		array = a;
 	}
-	void add(PooledConnection pooledCon) {
-		final ReentrantLock lock = this.lock;
-		lock.lock();
-		try {
-			final PooledConnection[] arrayOld=getArray();
-			int oldLen = arrayOld.length;
-			PooledConnection[] arrayNew = new PooledConnection[oldLen + 1];
-			System.arraycopy(arrayOld, 0, arrayNew, 0, oldLen);
-			arrayNew[oldLen] = pooledCon;
-			setArray(arrayNew);
-		} finally {
-			lock.unlock();
-		}
+	
+	synchronized void add(PooledConnection pooledCon) {
+		final PooledConnection[] arrayOld=getArray();
+		int oldLen = arrayOld.length;
+		PooledConnection[] arrayNew = new PooledConnection[oldLen + 1];
+		System.arraycopy(arrayOld, 0, arrayNew, 0, oldLen);
+		arrayNew[oldLen] = pooledCon;
+		setArray(arrayNew);
 	}
-	void addAll(List<PooledConnection> col) {
-		final ReentrantLock lock = this.lock;
-		lock.lock();
+	
+	synchronized void addAll(List<PooledConnection> col) {
+		final PooledConnection[] arrayOld=getArray();
+		int oldLen=arrayOld.length;
 		
-		try{
-			final PooledConnection[] arrayOld=getArray();
-			int oldLen=arrayOld.length;
-			
-			int addLen=col.size();
-			PooledConnection[] arrayAdd =col.toArray(new PooledConnection[addLen]);
-			PooledConnection[] arrayNew = new PooledConnection[oldLen+addLen];
-			System.arraycopy(arrayOld,0,arrayNew,0,oldLen);
-			//fix issue:#2 There are a problem in class. Chris-2019-05-01 begin
-			//System.arraycopy(arrayAdd,0,arrayNew,0,addLen);
-			System.arraycopy(arrayAdd,0,arrayNew,oldLen,addLen);
-			//fix issue:#2 There are a problem in class. Chris-2019-05-01 end
-			
-			setArray(arrayNew);
-		}finally{
-			lock.unlock();
-		}
+		int addLen=col.size();
+		PooledConnection[] arrayAdd =col.toArray(new PooledConnection[addLen]);
+		PooledConnection[] arrayNew = new PooledConnection[oldLen+addLen];
+		System.arraycopy(arrayOld,0,arrayNew,0,oldLen);
+		//fix issue:#2 There are a problem in class. Chris-2019-05-01 begin
+		//System.arraycopy(arrayAdd,0,arrayNew,0,addLen);
+		System.arraycopy(arrayAdd,0,arrayNew,oldLen,addLen);
+		//fix issue:#2 There are a problem in class. Chris-2019-05-01 end
+	
+		setArray(arrayNew); 
 	}
-	void removeAll(List<PooledConnection> col){ 
-		final ReentrantLock lock = this.lock;
-		lock.lock();
+	
+	synchronized void removeAll(List<PooledConnection> col){ 
+		PooledConnection[] arrayOld=getArray();
+		PooledConnection[] tempNew = new PooledConnection[arrayOld.length];
+		PooledConnection[] arrayRemove = col.toArray(new PooledConnection[col.size()]);
 		
-		try{
-			PooledConnection[] arrayOld=getArray();
-			PooledConnection[] tempNew = new PooledConnection[arrayOld.length];
-			PooledConnection[] arrayRemove = col.toArray(new PooledConnection[col.size()]);
-			
-			int tempIndex = 0;
-			boolean needRemove=false;
-			for (PooledConnection p1:arrayOld) {
-				needRemove=false;
-				for (PooledConnection p2:arrayRemove) {
-					if (p1 == p2) {
-						needRemove=true;
- 						break;
- 					}
+		int tempIndex = 0;
+		boolean needRemove=false;
+		for (PooledConnection p1:arrayOld) {
+			needRemove=false;
+			for (PooledConnection p2:arrayRemove) {
+				if (p1 == p2) {
+					needRemove=true;
+					break;
 				}
-				if (!needRemove)tempNew[tempIndex++]=p1;
 			}
-			
-			PooledConnection[] arrayNew = new PooledConnection[tempIndex];
-			System.arraycopy(tempNew,0,arrayNew, 0, tempIndex);
-			setArray(arrayNew);
-		}finally{
-			lock.unlock();
+			if (!needRemove)tempNew[tempIndex++]=p1;
 		}
+		
+		PooledConnection[] arrayNew = new PooledConnection[tempIndex];
+		System.arraycopy(tempNew,0,arrayNew, 0, tempIndex);
+		setArray(arrayNew);
 	}
 }

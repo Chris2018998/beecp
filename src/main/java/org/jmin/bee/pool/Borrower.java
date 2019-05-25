@@ -12,7 +12,6 @@ package org.jmin.bee.pool;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-
 /**
  * pooled connection Borrower
  *
@@ -21,53 +20,35 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 final class Borrower {
 	private Thread thread=null;
-	private volatile Borrower pre=null;
-	private AtomicReference<Borrower> nextRef=null;
-	private volatile PooledConnection transferedConnection=null;
 	private PooledConnection lastUsedConnection = null;
+	private AtomicReference<PooledConnection>transferRef=null;
 	private List<PooledConnection> badConnectionList = new LinkedList<PooledConnection>();
 	public Borrower() {
-		this.thread = Thread.currentThread();
-		this.nextRef=new AtomicReference(null);
+		thread = Thread.currentThread();
+		transferRef=new AtomicReference<PooledConnection>(null);
 	}
 	public Thread getThread() {
 		return thread;
 	}
-	public Borrower getPre() {
-		return pre;
-	}
-	public void setPre(Borrower pre) {
-		this.pre = pre;
-	}
 	public boolean equals(Object o){
 		return this==o;
-	}
-	public boolean isOffChain(){
-		return nextRef.get()==this;
-	}
-	public Borrower getNext() {
-		return nextRef.get();
-	}
-	public void setNext(Borrower next) {
-		nextRef.set(next);
-	}
-	public boolean compareAndSetNext(Borrower cur,Borrower next) {
-		return nextRef.compareAndSet(cur, next);
 	}
 	public List<PooledConnection> getBadConnectionList() {
 		return badConnectionList;
 	}
-	public PooledConnection getLastUsedConnection() {
+	public PooledConnection getLastUsedConn() {
 		return lastUsedConnection;
 	}
-	public void setLastUsedConnection(PooledConnection lastUsedConnection) {
-		this.lastUsedConnection = lastUsedConnection;
+	public void setLastUsedConn(PooledConnection pConn) {
+		lastUsedConnection = pConn;
 	}
-
-	public PooledConnection getTransferedConnection() {
-		return transferedConnection;
+	public void setTransferConnAsNull() {
+		transferRef.set(null);
 	}
-	public void setTransferedConnection(PooledConnection transferedConnection) {
-	   this.transferedConnection=transferedConnection;
+	public PooledConnection getTransferConn() {
+		return transferRef.get();
+	}
+	public boolean setTransferConn(PooledConnection pConn) {
+		return transferRef.compareAndSet(null, pConn);
 	}	
 }
