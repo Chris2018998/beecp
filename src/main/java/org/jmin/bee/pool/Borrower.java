@@ -42,13 +42,7 @@ final class Borrower {
 	public void setLastUsedConn(PooledConnection pConn) {
 		lastUsedConnection = pConn;
 	}
-	public void setTransferConnAsNull() {
-		transferRef.set(null);
-	}
-	public PooledConnection getTransferConn() {
-		return transferRef.get();
-	}
-	public boolean setTransferConn(PooledConnection pConn) {
-		return transferRef.compareAndSet(null, pConn);
+	public AtomicReference getTransferRef(){
+		return transferRef;
 	}	
 }

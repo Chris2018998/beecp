@@ -12,6 +12,7 @@ package org.jmin.bee.pool;
 import java.sql.SQLException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
 
 import org.jmin.bee.BeeDataSourceConfig;
@@ -23,55 +24,45 @@ import org.jmin.bee.BeeDataSourceConfig;
  * @version 1.0
  */
 public final class ConnectionPool2 extends ConnectionPool {
-	private static PooledConnection DummyPooledConn = new PooledConnection();
+	private final static PooledConnection DummyTransferVal=new PooledConnection();
 	private ConcurrentLinkedQueue<Borrower> transferQueue = new ConcurrentLinkedQueue<Borrower>();
-
 	public ConnectionPool2(BeeDataSourceConfig poolInfo) throws SQLException {
 		super(poolInfo);
 	}
-
-	protected int getWaiterSize() {
-		return transferQueue.size();
-	}
-
+	
 	public PooledConnection waitForOne(long timeout, TimeUnit unit, Borrower waiter) {
-		PooledConnection transConn = null;
+		final AtomicReference<PooledConnection>transferRef=waiter.getTransferRef();
 		
 		try {
+			waiterSize.incrementAndGet();
 			transferQueue.offer(waiter);
-			if (waiter.getTransferConn() == null){ 
-				LockSupport.parkNanos(unit.toNanos(timeout));
-				if (waiter.getTransferConn()==null && !transferQueue.remove(waiter))
-					waiter.setTransferConn(DummyPooledConn);
-			}
+			if(transferRef.get()!=null)return transferRef.get();
 			
-			transConn=waiter.getTransferConn();
-			return(transConn==DummyPooledConn)?null:transConn;
-		} finally {
-			waiter.setTransferConnAsNull();
+			LockSupport.parkNanos(waiter,unit.toNanos(timeout));
+			if(transferRef.get()!=null)return transferRef.get();
+			
+			return transferQueue.remove(waiter)?null:(transferRef.compareAndSet(null,DummyTransferVal)?null:transferRef.get());
+		 } finally {
+			transferRef.set(null);
+			waiterSize.decrementAndGet();
 		}
 	}
 
 	public void release(final PooledConnection pConn) throws SQLException {
-		if (isCompete)
-			pConn.setConnectionState(PooledConnectionState.IDLE);
-
-		Borrower waiter = null;
+		if (isCompete)pConn.setConnectionState(PooledConnectionState.IDLE);
+		
+		Borrower waiter=null;
 		for (;;) {
 			if (isCompete && pConn.getConnectionState() != PooledConnectionState.IDLE)
 				return;
 			
-			if ((waiter = transferQueue.poll()) != null){
-				if (waiter.setTransferConn(pConn)) {
-					LockSupport.unpark(waiter.getThread());
-					return;
-				}
-			}else{
+			if((waiter=transferQueue.poll())==null){
 				break;
+			}else if(waiter.getTransferRef().compareAndSet(null,pConn)){
+				LockSupport.unpark(waiter.getThread());
+				return;
 			}
 		}
-
-		if (!isCompete)
-			pConn.setConnectionState(PooledConnectionState.IDLE);
+		if (!isCompete)pConn.setConnectionState(PooledConnectionState.IDLE);
 	}
 }

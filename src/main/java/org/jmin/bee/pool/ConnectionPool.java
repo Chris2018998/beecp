@@ -262,14 +262,14 @@ public class ConnectionPool{
 	/**
 	 * borrow a connection from pool
 	 * 
-	 * @param maxWait
+	 * @param wait
 	 *            max wait time for borrower
 	 * @return If exists idle connection in pool,then return one;if not, waiting
 	 *         until other borrower release
 	 * @throws SQLException
 	 *             if pool is closed or waiting timeout,then throw exception
 	 */
-	public final Connection getConnection(final long maxWait) throws SQLException {
+	public final Connection getConnection(final long wait) throws SQLException {
 		checkPool();
 		boolean acquired=false;
 		PooledConnection pConn=null;
@@ -294,7 +294,7 @@ public class ConnectionPool{
 			}
 			
 			if (pConn == null) {
-				long timeout=MillSecondUnit.toNanos(maxWait);																																 
+				long timeout=MillSecondUnit.toNanos(wait);																																 
 				final long deadlinePoint=System.nanoTime()+timeout;
 				try {
 					acquired = takeSemaphore.tryAcquire(timeout, WaitTimeUnit);
