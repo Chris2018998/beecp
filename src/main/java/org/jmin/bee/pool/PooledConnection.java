@@ -11,7 +11,7 @@ package org.jmin.bee.pool;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 import org.jmin.bee.pool.util.ConnectionUtil;
 import org.jmin.bee.pool.util.SystemClock;
@@ -25,7 +25,7 @@ import org.jmin.bee.pool.util.SystemClock;
 
 public final class PooledConnection {
 	// state
-	private AtomicInteger state;
+	private volatile int state;
 	// last activity time
 	private volatile long lastActiveTime;
 	// related pool
@@ -40,6 +40,7 @@ public final class PooledConnection {
 	private boolean autoCommit;
 	// transaction level
 	private int transactionIsolationLevlOrig = Connection.TRANSACTION_READ_COMMITTED;
+	private final static AtomicIntegerFieldUpdater updater = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class,"state");
 	
 	PooledConnection() {}
 	public PooledConnection(Connection connection, ConnectionPool connectionPool) {
@@ -48,7 +49,7 @@ public final class PooledConnection {
 	public PooledConnection(Connection phConn, int stCacheSize, ConnectionPool connpool) {
 		pool = connpool;
 		connection= phConn;
-		state = new AtomicInteger(PooledConnectionState.IDLE);
+		state = PooledConnectionState.IDLE;
 	    statementCache = new StatementCache(stCacheSize);
 	    
 		try {
@@ -99,17 +100,14 @@ public final class PooledConnection {
 	}
 
 	public int getConnectionState() {
-		return state.get();
+		return state;
 	}
-
 	public void setConnectionState(int update) {
-		state.set(update);
+		state=update;
 	}
-
 	public boolean compareAndSet(int expect, int update) {
-		return state.compareAndSet(expect, update);
+		return updater.compareAndSet(this, expect, update);//state.compareAndSet(expect, update);
 	}
-
 	public void resetConnectionAfterRelease() throws SQLException {
 		if (!proxyConnection.isAutoCommitValue()) {
 			connection.rollback();
@@ -139,7 +137,7 @@ public final class PooledConnection {
 	}
 
 	void returnToPoolBySelf() throws SQLException {
-		if (state.get() == PooledConnectionState.USING) {
+		if (state == PooledConnectionState.USING) {
 			if (proxyConnection != null) {
 				resetConnectionAfterRelease();
 				proxyConnection.setConnectionDataToNull();

@@ -65,6 +65,7 @@ public class ConnectionPool{
 	private static final TimeUnit MillSecondUnit=TimeUnit.MILLISECONDS;
 	private static final SQLException PoolCloseStateException = new SQLException("Pool has been closed");
 	private static final SQLException ConnectionRequestTimeoutException = new SQLException("Request timeout");
+	private static final SQLException ConnectionRequestInterruptException = new SQLException("Request interrupt");
 	
 	/**
 	 * initialize pool with configuration
@@ -299,7 +300,7 @@ public class ConnectionPool{
 				try {
 					acquired = takeSemaphore.tryAcquire(timeout, WaitTimeUnit);
 				} catch (InterruptedException e) {
-					return null;
+					throw ConnectionRequestInterruptException;
 				}
 			
 				for (;;) {
@@ -549,7 +550,7 @@ public class ConnectionPool{
 				if (pool.transfer(pConn)) {
 					return;
 				} else if (++failTimes%50==0) {
- 					LockSupport.parkNanos(10);
+ 					LockSupport.parkNanos(1000);
 				} else {
 					Thread.yield();
 				}
@@ -573,7 +574,7 @@ public class ConnectionPool{
 				if (pool.transfer(pConn)) {
 					return;
 				} else if (++failTimes % 50 == 0) {
-					LockSupport.parkNanos(10);
+					LockSupport.parkNanos(1000);
 				} else {
 					Thread.yield();
 				}

@@ -12,7 +12,6 @@ package org.jmin.bee.pool;
 import java.sql.SQLException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
 
 import org.jmin.bee.BeeDataSourceConfig;
@@ -31,19 +30,17 @@ public final class ConnectionPool2 extends ConnectionPool {
 	}
 	
 	public PooledConnection waitForOne(long timeout, TimeUnit unit, Borrower waiter) {
-		final AtomicReference<PooledConnection>transferRef=waiter.getTransferRef();
-		
 		try {
 			waiterSize.incrementAndGet();
 			transferQueue.offer(waiter);
-			if(transferRef.get()!=null)return transferRef.get();
+			if(waiter.getTransferConn()!=null)return waiter.getTransferConn();
 			
 			LockSupport.parkNanos(waiter,unit.toNanos(timeout));
-			if(transferRef.get()!=null)return transferRef.get();
+			if(waiter.getTransferConn()!=null)return waiter.getTransferConn();
 			
-			return transferQueue.remove(waiter)?null:(transferRef.compareAndSet(null,DummyTransferVal)?null:transferRef.get());
+			return transferQueue.remove(waiter)?null:(waiter.setTransferConn(DummyTransferVal)?null:waiter.getTransferConn());
 		 } finally {
-			transferRef.set(null);
+			waiter.setTransferConnAsNull();
 			waiterSize.decrementAndGet();
 		}
 	}
@@ -58,7 +55,7 @@ public final class ConnectionPool2 extends ConnectionPool {
 			
 			if((waiter=transferQueue.poll())==null){
 				break;
-			}else if(waiter.getTransferRef().compareAndSet(null,pConn)){
+			}else if(waiter.setTransferConn(pConn)){
 				LockSupport.unpark(waiter.getThread());
 				return;
 			}
