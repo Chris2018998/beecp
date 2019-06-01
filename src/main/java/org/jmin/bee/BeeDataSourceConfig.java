@@ -57,6 +57,11 @@ public final class BeeDataSourceConfig {
 	 * connection extra properties
 	 */
 	private Properties jdbcProperties = new Properties();
+	
+	/**
+	 * pool name
+	 */
+	private String poolName="Pool1";
 
 	/**
 	 * if true,first arrival,first taking if false,competition for all borrower
@@ -186,6 +191,16 @@ public final class BeeDataSourceConfig {
 	public void setFairMode(boolean fairMode) {
 		if (!this.inited)
 			this.fairMode = fairMode;
+	}
+
+	public String getPoolName() {
+		return poolName;
+	}
+
+	public void setPoolName(String poolName) {
+		if (!this.inited && !isNull(poolName)) {
+			this.poolName = poolName;
+		}
 	}
 
 	public int getPoolInitSize() {
