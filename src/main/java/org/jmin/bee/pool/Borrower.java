@@ -10,7 +10,6 @@
 package org.jmin.bee.pool;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 /**
  * pooled connection Borrower
@@ -22,8 +21,8 @@ final class Borrower {
 	private Thread thread=null;
 	private PooledConnection lastUsedConnection=null;
 	private volatile PooledConnection transferConn=null;
-	private List<PooledConnection> badConnectionList = new LinkedList<PooledConnection>();
-	private final static AtomicReferenceFieldUpdater updater = AtomicReferenceFieldUpdater.newUpdater(Borrower.class,PooledConnection.class,"transferConn");
+	private LinkedList<PooledConnection> badConnectionList = new LinkedList<PooledConnection>();
+	private final static AtomicReferenceFieldUpdater<Borrower,PooledConnection> updater = AtomicReferenceFieldUpdater.newUpdater(Borrower.class,PooledConnection.class,"transferConn");
 	
 	public Borrower() {
 		thread = Thread.currentThread();
@@ -34,7 +33,7 @@ final class Borrower {
 	public boolean equals(Object o){
 		return this==o;
 	}
-	public List<PooledConnection> getBadConnectionList() {
+	public LinkedList<PooledConnection> getBadConnectionList() {
 		return badConnectionList;
 	}
 	public PooledConnection getLastUsedConn() {

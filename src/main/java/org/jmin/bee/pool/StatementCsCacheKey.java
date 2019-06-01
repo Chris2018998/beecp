@@ -6,7 +6,7 @@ package org.jmin.bee.pool;
  * @author Chris.Liao
  * @version 1.0
  */
-public class StatementCsCacheKey extends StatementCacheKey{
+public class StatementCsCacheKey{
 	private String sql = null;
 	private int resultSetType;
 	private int resultSetConcurrency;
@@ -52,24 +52,23 @@ public class StatementCsCacheKey extends StatementCacheKey{
 
 	@Override
 	public boolean equals(Object obj) {
-		if(obj instanceof StatementCsCacheKey){
-			StatementCsCacheKey other = (StatementCsCacheKey) obj;
-			if (hashCode != other.hashCode)
-				return false;
-			if(!statementType.equals(other.statementType))
-				return false;
-			if (resultSetConcurrency != other.resultSetConcurrency)
-				return false;
-			if (resultSetHoldability != other.resultSetHoldability)
-				return false;
-			if (resultSetType != other.resultSetType)
-				return false;
-			if (!sql.equals(other.sql))
-				return false;
-			return true;
-		}else{
+		if(!(obj instanceof StatementCsCacheKey))
 			return false;	
-		}
+		
+		StatementCsCacheKey other = (StatementCsCacheKey) obj;
+		if (!(hashCode == other.hashCode 
+				&& resultSetConcurrency == other.resultSetConcurrency 
+				&& resultSetHoldability == other.resultSetHoldability
+				&& resultSetType == other.resultSetType))
+			return false;
+		
+		if(!statementType.equals(other.statementType))
+			return false;
+		
+		if (!sql.equals(other.sql))
+			return false;
+		return true;
+		 
 	}
 
 	@Override

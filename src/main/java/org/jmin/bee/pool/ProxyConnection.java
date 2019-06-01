@@ -77,10 +77,7 @@ public abstract class ProxyConnection implements Connection {
 	}
 
 	public void close() throws SQLException {
-		if (isClosed) 
-			throw new SQLException("Connection has been closed");
-
-		pooledConnection.updateLastActivityTime();
+		updateLastActivityTime();
 		pooledConnection.returnToPoolBySelf();
 	}
 }

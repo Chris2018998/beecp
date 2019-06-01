@@ -103,7 +103,7 @@ public class ConnectionPool{
 			takeSemaphore=new Semaphore(poolInfo.getPoolMaxSize(),poolInfo.isFairMode());
 			connFactory=new ConnectionFactory(poolInfo.getDriverURL(),poolInfo.getJdbcProperties(),poolInfo.getJdbcConnectionDriver());
 			createInitConns();
-			System.out.println("BeeCP has been startup{init size:" + getCurConnSize() + ",max size:" + poolInfo.getPoolMaxSize() + ",mode:" + mode + "}");
+			System.out.println("BeeCP("+info.getPoolName()+") has been startup{init size:" + getCurConnSize() + ",max size:" + poolInfo.getPoolMaxSize() + ",mode:" + mode + "}");
 		} else {
 			throw new SQLException("Pool has been initialized");
 		}
@@ -116,10 +116,10 @@ public class ConnectionPool{
 		try {
 			ClassLoader classLoader = getClass().getClassLoader();
 			Class.forName("org.jmin.bee.pool.ProxyConnectionImpl", true, classLoader);
-			Class.forName("org.jmin.bee.pool.ProxyStatementImpl", true, classLoader);
-			Class.forName("org.jmin.bee.pool.ProxyPsStatementImpl", true, classLoader);
-			Class.forName("org.jmin.bee.pool.ProxyCsStatementImpl", true, classLoader);
-			Class.forName("org.jmin.bee.pool.ProxyResultSetImpl", true, classLoader);
+			Class.forName("org.jmin.bee.pool.ProxyStatement", true, classLoader);
+			Class.forName("org.jmin.bee.pool.ProxyPsStatement", true, classLoader);
+			Class.forName("org.jmin.bee.pool.ProxyCsStatement", true, classLoader);
+			Class.forName("org.jmin.bee.pool.ProxyResultSet", true, classLoader);
 		} catch (ClassNotFoundException e) {
 			throw new SQLException("Some pool jdbc proxy classes are missed");
 		}
@@ -454,8 +454,7 @@ public class ConnectionPool{
 			//clear all connections
 			LinkedList<PooledConnection> badConList = new LinkedList<PooledConnection>();
 			while (connList.size() > 0) {
-				PooledConnection[]  connListArray = connList.getArray();
-				for (PooledConnection pooledConnection : connListArray) {
+				for (PooledConnection pooledConnection : connList.getArray()) {
 					if (pooledConnection.compareAndSet(PooledConnectionState.IDLE, PooledConnectionState.CLOSED)) {
 						pooledConnection.closePhysicalConnection();
 						badConList.add(pooledConnection);
@@ -483,7 +482,7 @@ public class ConnectionPool{
 			try {
 				Runtime.getRuntime().removeShutdownHook(exitHook);
 			} catch (Throwable e) {}
-			System.out.println("BeeCP has been shutdown");
+			System.out.println("BeeCP("+info.getPoolName()+") has been shutdown");
 		}
 	}
 

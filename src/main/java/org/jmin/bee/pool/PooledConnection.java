@@ -40,7 +40,7 @@ public final class PooledConnection {
 	private boolean autoCommit;
 	// transaction level
 	private int transactionIsolationLevlOrig = Connection.TRANSACTION_READ_COMMITTED;
-	private final static AtomicIntegerFieldUpdater updater = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class,"state");
+	private final static AtomicIntegerFieldUpdater<PooledConnection> updater = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class,"state");
 	
 	PooledConnection() {}
 	public PooledConnection(Connection connection, ConnectionPool connectionPool) {
@@ -50,7 +50,7 @@ public final class PooledConnection {
 		pool = connpool;
 		connection= phConn;
 		state = PooledConnectionState.IDLE;
-	    statementCache = new StatementCache(stCacheSize);
+	    statementCache = new StatementCache((stCacheSize<=0)?16:stCacheSize);
 	    
 		try {
 			autoCommit = connection.getAutoCommit();
