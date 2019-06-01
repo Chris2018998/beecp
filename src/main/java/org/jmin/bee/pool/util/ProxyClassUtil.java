@@ -19,10 +19,8 @@ import java.util.LinkedList;
 
 import org.jmin.bee.pool.ProxyConnection;
 import org.jmin.bee.pool.ProxyConnectionFactory;
-import org.jmin.bee.pool.ProxyCsStatement;
-import org.jmin.bee.pool.ProxyPsStatement;
-import org.jmin.bee.pool.ProxyResultSet;
-import org.jmin.bee.pool.ProxyStatement;
+import org.jmin.bee.pool.ProxyResultSetBase;
+import org.jmin.bee.pool.ProxyStatementBase;
 
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -81,7 +79,7 @@ public final class ProxyClassUtil {
    * org.jmin.bee.pool.ProxyStatementImpl
    * org.jmin.bee.pool.ProxyPsStatementImpl
    * org.jmin.bee.pool.ProxyCsStatementImpl
-   * org.jmin.bee.pool.ProxyResultSetImpl 
+   * org.jmin.bee.pool.ProxyResultSet 
    */
 	public CtClass[] createJdbcProxyClasses() throws Exception {
 		try{
@@ -112,17 +110,19 @@ public final class ProxyClassUtil {
 			ctConIntfProxyImplClass.addConstructor(subClassConstructor);
 			//。。。。。。。。Connection End。。。。。。。。。。。
 		
+			
+			CtClass ctStatementWrapClass=classPool.get(ProxyStatementBase.class.getName());
 			//。。。。。。。。Statement Begin。。。。。。。。。。。
 			CtClass ctStatementIntf = classPool.get(Statement.class.getName());
-			CtClass ctStatementSuperclass= classPool.get(ProxyStatement.class.getName());
-			String ctStatementIntfProxyClassName ="org.jmin.bee.pool.ProxyStatementImpl";
-			CtClass ctStatementProxyImplClass = classPool.makeClass(ctStatementIntfProxyClassName,ctStatementSuperclass);
+			String ctStatementIntfProxyClassName ="org.jmin.bee.pool.ProxyStatement";
+			CtClass ctStatementProxyImplClass = classPool.makeClass(ctStatementIntfProxyClassName,ctStatementWrapClass);
 			ctStatementProxyImplClass.setInterfaces(new CtClass[]{ctStatementIntf});
 			ctStatementProxyImplClass.setModifiers(Modifier.FINAL);
 			ctStatementProxyImplClass.setModifiers(Modifier.PUBLIC);
 			CtClass[] parameters = new CtClass[] {
 					classPool.get("java.sql.Statement"),
-					classPool.get("org.jmin.bee.pool.ProxyConnection")};
+					classPool.get("org.jmin.bee.pool.ProxyConnection"),
+					classPool.get("boolean")};
 			subClassConstructor = new CtConstructor(parameters,ctStatementProxyImplClass);
 			subClassConstructor.setModifiers(Modifier.PUBLIC);
 			body.delete(0, body.length());
@@ -135,9 +135,8 @@ public final class ProxyClassUtil {
 			
 			//。。。。。。。。PreparedStatement Begin。。。。。。。。。。。
 			CtClass ctPsStatementIntf = classPool.get(PreparedStatement.class.getName());
-			CtClass ctPsStatementSuperclass= classPool.get(ProxyPsStatement.class.getName());
-			String ctPsStatementIntfProxyClassName ="org.jmin.bee.pool.ProxyPsStatementImpl";
-			CtClass ctPsStatementProxyImplClass = classPool.makeClass(ctPsStatementIntfProxyClassName,ctPsStatementSuperclass);
+			String ctPsStatementIntfProxyClassName ="org.jmin.bee.pool.ProxyPsStatement";
+			CtClass ctPsStatementProxyImplClass = classPool.makeClass(ctPsStatementIntfProxyClassName,ctStatementWrapClass);
 			ctPsStatementProxyImplClass.setInterfaces(new CtClass[]{ctPsStatementIntf});
 			ctPsStatementProxyImplClass.setModifiers(Modifier.FINAL);
 			ctPsStatementProxyImplClass.setModifiers(Modifier.PUBLIC);
@@ -158,9 +157,8 @@ public final class ProxyClassUtil {
 			
 			//。。。。。。。。CallableStatement Begin。。。。。。。。。。。
 			CtClass ctCsStatementIntf = classPool.get(CallableStatement.class.getName());
-			CtClass ctCsStatementSuperclass= classPool.get(ProxyCsStatement.class.getName());
-			String ctCsStatementIntfProxyClassName ="org.jmin.bee.pool.ProxyCsStatementImpl";
-			CtClass ctCsStatementProxyImplClass = classPool.makeClass(ctCsStatementIntfProxyClassName,ctCsStatementSuperclass);
+			String ctCsStatementIntfProxyClassName ="org.jmin.bee.pool.ProxyCsStatement";
+			CtClass ctCsStatementProxyImplClass = classPool.makeClass(ctCsStatementIntfProxyClassName,ctStatementWrapClass);
 			ctCsStatementProxyImplClass.setInterfaces(new CtClass[]{ctCsStatementIntf});
 			ctCsStatementProxyImplClass.setModifiers(Modifier.FINAL);
 			ctCsStatementProxyImplClass.setModifiers(Modifier.PUBLIC);
@@ -182,8 +180,8 @@ public final class ProxyClassUtil {
 			
 			//。。。。。。。。 Result Proxy Begin。。。。。。。。。。。
 			CtClass ctResultSetIntf = classPool.get(ResultSet.class.getName());
-			CtClass ctResultSetSuperclass= classPool.get(ProxyResultSet.class.getName());
-			String ctResultSetIntfProxyClassName ="org.jmin.bee.pool.ProxyResultSetImpl";
+			CtClass ctResultSetSuperclass= classPool.get(ProxyResultSetBase.class.getName());
+			String ctResultSetIntfProxyClassName ="org.jmin.bee.pool.ProxyResultSet";
 			CtClass ctResultSetIntfProxyImplClass = classPool.makeClass(ctResultSetIntfProxyClassName,ctResultSetSuperclass);
 			ctResultSetIntfProxyImplClass.setInterfaces(new CtClass[]{ctResultSetIntf});
 			ctResultSetIntfProxyImplClass.setModifiers(Modifier.FINAL);
@@ -191,7 +189,7 @@ public final class ProxyClassUtil {
 			
 			parameters = new CtClass[]{
 					classPool.get("java.sql.ResultSet"),
-					classPool.get("org.jmin.bee.pool.ProxyStatementWrapper")};
+					classPool.get("org.jmin.bee.pool.ProxyStatementBase")};
 			subClassConstructor = new CtConstructor(parameters,ctResultSetIntfProxyImplClass);
 			subClassConstructor.setModifiers(Modifier.PUBLIC);
 			body.delete(0, body.length());
@@ -203,9 +201,10 @@ public final class ProxyClassUtil {
 			//。。。。。。。。CallableStatement Result End。。。。。。。。。。。
 			
 		  this.createProxyConnectionClass(classPool,ctConIntfProxyImplClass,ctConIntf,ctConSuperclass);
-		  this.createProxyStatementClass(classPool,ctStatementProxyImplClass,ctStatementIntf,ctStatementSuperclass);
-		  this.createProxyPsStatementClass(classPool,ctPsStatementProxyImplClass,ctPsStatementIntf,ctPsStatementSuperclass);
-		  this.createProxyCsStatementClass(classPool,ctCsStatementProxyImplClass,ctCsStatementIntf,ctCsStatementSuperclass);
+		  CtClass ctStatementWrapperclass= classPool.get(ProxyStatementBase.class.getName());
+		  this.createProxyStatementClass(classPool,ctStatementProxyImplClass,ctStatementIntf,ctStatementWrapperclass);
+		  this.createProxyPsStatementClass(classPool,ctPsStatementProxyImplClass,ctPsStatementIntf,ctStatementWrapperclass);
+		  this.createProxyCsStatementClass(classPool,ctCsStatementProxyImplClass,ctCsStatementIntf,ctStatementWrapperclass);
 		  this.createProxyResultSetClass(classPool,ctResultSetIntfProxyImplClass,ctResultSetIntf,ctResultSetSuperclass);
 	
 		  CtClass ctProxyConnectionFactoryClass = classPool.get(ProxyConnectionFactory.class.getName());
@@ -260,38 +259,27 @@ public final class ProxyClassUtil {
 			
 			methodBuffer.delete(0, methodBuffer.length());
 			methodBuffer.append("{");
-			methodBuffer.append("super.updateLastActivityTime();");
-			
+			methodBuffer.append("updateLastActivityTime();");
 			if(methodName.equals("createStatement")){
-				methodBuffer.append("return new ProxyStatementImpl(delegate.createStatement($$),this);");	
+				methodBuffer.append("return new ProxyStatement(delegate.createStatement($$),this,false);");	
 			}else if(methodName.equals("prepareStatement")){
 				methodBuffer.append("StatementCache statementCache = getStatementCache();"); 
-				methodBuffer.append("boolean cacheAble = statementCache.isValid();"); 
-				methodBuffer.append("if(cacheAble){");
- 				methodBuffer.append("   StatementPsCacheKey key = new StatementPsCacheKey($$);");
- 				methodBuffer.append("   PreparedStatement statement=statementCache.get(key);");
-				methodBuffer.append("   if(statement==null){");
-				methodBuffer.append("     statement=delegate.prepareStatement($$);");
-				methodBuffer.append("     statementCache.put(key,statement);");
-				methodBuffer.append("   }");
-				methodBuffer.append("   return new ProxyPsStatementImpl(statement,this,cacheAble);");	
-				methodBuffer.append("}else{");
-				methodBuffer.append("   return new ProxyPsStatementImpl(delegate.prepareStatement($$),this,cacheAble);");	
- 				methodBuffer.append("}");
+ 				methodBuffer.append("StatementPsCacheKey key = new StatementPsCacheKey($$);");
+ 				methodBuffer.append("PreparedStatement statement=statementCache.get(key);");
+				methodBuffer.append("if(statement==null){");
+				methodBuffer.append("  statement=delegate.prepareStatement($$);");
+				methodBuffer.append("  statementCache.put(key,statement);");
+				methodBuffer.append("}");
+				methodBuffer.append("return new ProxyPsStatement(statement,this,true);");	
 			}else if(methodName.equals("prepareCall")){
 				methodBuffer.append("StatementCache statementCache = getStatementCache();"); 
-				methodBuffer.append("boolean cacheAble = statementCache.isValid();"); 
-				methodBuffer.append("if(cacheAble){");
-				methodBuffer.append("  StatementCsCacheKey key = new StatementCsCacheKey($$);");
-				methodBuffer.append("  CallableStatement statement=(CallableStatement)statementCache.get(key);");
-				methodBuffer.append("  if(statement==null){");
-				methodBuffer.append("    statement=delegate.prepareCall($$);");
-				methodBuffer.append("    statementCache.put(key,statement);");
-				methodBuffer.append("  }");
-			    methodBuffer.append("  return new ProxyCsStatementImpl(statement,this,cacheAble);");	
-			    methodBuffer.append("}else{");
-				methodBuffer.append("   return new ProxyCsStatementImpl(delegate.prepareCall($$),this,cacheAble);");	
+				methodBuffer.append("StatementCsCacheKey key = new StatementCsCacheKey($$);");
+				methodBuffer.append("CallableStatement statement=(CallableStatement)statementCache.get(key);");
+				methodBuffer.append("if(statement==null){");
+				methodBuffer.append("  statement=delegate.prepareCall($$);");
+				methodBuffer.append("  statementCache.put(key,statement);");
 				methodBuffer.append("}");
+			    methodBuffer.append("return new ProxyCsStatement(statement,this,true);");	
 			}else if(methodName.equals("close")){
 				methodBuffer.append("super."+methodName + "($$);");
 			}else{
@@ -333,7 +321,7 @@ public final class ProxyClassUtil {
 			methodBuffer.append("{");
 			methodBuffer.append("updateLastActivityTime();");
 			if (methodName.equals("executeQuery")) {
-				methodBuffer.append(" return new ProxyResultSetImpl(delegate.executeQuery($$),this);");
+				methodBuffer.append(" return new ProxyResultSet(delegate.executeQuery($$),this);");
 			}else if (methodName.equals("close")){
 				methodBuffer.append("super."+methodName + "($$);");
 			}else{
@@ -378,7 +366,7 @@ public final class ProxyClassUtil {
 			methodBuffer.append("PreparedStatement delegate=(PreparedStatement)delegate;");
 			
 			if(methodName.equals("executeQuery")){
-			  methodBuffer.append(" return new ProxyResultSetImpl(delegate.executeQuery($$),this);");		
+			  methodBuffer.append(" return new ProxyResultSet(delegate.executeQuery($$),this);");		
 			}else if (methodName.equals("close")) {
 				methodBuffer.append("super."+methodName + "($$);");
 			}else{
@@ -422,7 +410,7 @@ public final class ProxyClassUtil {
 			methodBuffer.append("CallableStatement delegate=(CallableStatement)delegate;");
 			
 			if(methodName.equals("getResultSet")){
-				methodBuffer.append(" return new ProxyResultSetImpl(delegate.getResultSet($$),this);");		
+				methodBuffer.append(" return new ProxyResultSet(delegate.getResultSet($$),this);");		
 			}else if (methodName.equals("close")) {
 				methodBuffer.append("super."+methodName + "($$);");
 			} else {
