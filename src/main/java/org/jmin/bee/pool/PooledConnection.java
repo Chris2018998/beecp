@@ -94,11 +94,7 @@ public final class PooledConnection {
 	public boolean equals(Object obj) {
 		return this==obj;
 	}
-
-	public String toString() {
-		return connection.toString();
-	}
-
+	
 	public int getConnectionState() {
 		return state;
 	}

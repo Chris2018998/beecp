@@ -53,6 +53,30 @@ final class PooledConnectionList {
 		setArray(arrayNew); 
 	}
 	
+	synchronized void remove(PooledConnection pooledCon){ 
+		PooledConnection[] arrayOld=getArray();
+		int index =-1;
+		for (int i=0,l=arrayOld.length;i<l;i++) {
+			 if(arrayOld[i]==pooledCon){
+				 index=i;
+				 break;
+			 }
+		}
+		
+		if(index >=0){
+			PooledConnection[] arrayNew = new PooledConnection[arrayOld.length-1];
+			if(index==0){
+				System.arraycopy(arrayOld,1,arrayNew,0,arrayNew.length);
+			}else if(index==arrayOld.length-1){
+				System.arraycopy(arrayOld,0, arrayNew,0, arrayNew.length);
+			}else{
+				System.arraycopy(arrayOld,0,arrayNew,0,index+1);
+				System.arraycopy(arrayOld,index+1, arrayNew,index,(arrayOld.length-index-1));
+			}
+			setArray(arrayNew);
+		}
+	}
+	
 	synchronized void removeAll(List<PooledConnection> col){ 
 		PooledConnection[] arrayOld=getArray();
 		PooledConnection[] tempNew = new PooledConnection[arrayOld.length];
