@@ -27,36 +27,36 @@ public final class BeeDataSourceConfig {
 	 * indicator to not allow to modify configuration after initialization
 	 */
 	private boolean inited;
-
+	
 	/**
-	 * JDBC driver class
-	 */
-	private String driver;
-
-	/**
-	 * jdbc URL
-	 */
-	private String driverURL;
-
-	/**
-	 * jdbc User
+	 *  User
 	 */
 	private String userName;
 
 	/**
-	 * jdbc Password
+	 * Password
 	 */
 	private String password;
+	
+	/**
+	 *  URL
+	 */
+	private String connectURL;
+	
+	/**
+	 * driver class name
+	 */
+	private String driverClassName;
 
 	/**
-	 * connection Driver
+	 * connection driver
 	 */
-	private Driver connectionDriver = null;
+	private Driver connectDriver = null;
 
 	/**
 	 * connection extra properties
 	 */
-	private Properties jdbcProperties = new Properties();
+	private Properties connectProperties = new Properties();
 	
 	/**
 	 * pool name
@@ -108,16 +108,16 @@ public final class BeeDataSourceConfig {
 	/**
 	 * BeeCP implementation class name
 	 */
-	private String connectionPoolClassName = "org.jmin.bee.pool.ConnectionPool";
+	private String poolImplementClassName = "org.jmin.bee.pool.ConnectionPool";
 
 	/**
 	 * milliseconds,max inactive time to check active for borrower
 	 */
-	private long maxInactiveTimeToCheck = 1000;
+	private long maxInactiveTimeToCheck = 1000L;
 
 	public BeeDataSourceConfig(String driver, String url, String user, String password) {
-		this.driver = driver;
-		this.driverURL = url;
+		this.driverClassName = driver;
+		this.connectURL = url;
 		this.userName = user;
 		this.password = password;
 		this.inited = false;
@@ -129,11 +129,11 @@ public final class BeeDataSourceConfig {
 	}
 
 	public String getDriver() {
-		return driver;
+		return driverClassName;
 	}
 
-	public String getDriverURL() {
-		return driverURL;
+	public String getConnectURL() {
+		return connectURL;
 	}
 
 	public String getUserName() {
@@ -144,14 +144,14 @@ public final class BeeDataSourceConfig {
 		return password;
 	}
 
-	public void setDriver(String driver) {
+	public void setDriverClassName(String driver) {
 		if (!this.inited)
-			this.driver = driver;
+			this.driverClassName = driver;
 	}
 
-	public void setDriverURL(String driverURL) {
+	public void setConnectionURL(String driverURL) {
 		if (!this.inited)
-			this.driverURL = driverURL;
+			this.connectURL = driverURL;
 	}
 
 	public void setUserName(String userName) {
@@ -164,23 +164,23 @@ public final class BeeDataSourceConfig {
 			this.password = password;
 	}
 
-	public Driver getJdbcConnectionDriver() {
-		return connectionDriver;
+	public Driver getConnectDriver() {
+		return connectDriver;
 	}
 
-	public Properties getJdbcProperties() {
-		return new Properties(jdbcProperties);
+	public Properties getConnectProperties() {
+		return new Properties(connectProperties);
 	}
 
 	public void addProperty(String key, String value) {
 		if (!this.inited) {
-			this.jdbcProperties.put(key, value);
+			this.connectProperties.put(key, value);
 		}
 	}
 
 	public void removeProperty(String key) {
 		if (!this.inited) {
-			this.jdbcProperties.remove(key);
+			this.connectProperties.remove(key);
 		}
 	}
 
@@ -283,60 +283,70 @@ public final class BeeDataSourceConfig {
 		}
 	}
 
-	private void loadJdbcDriver(String driver) throws IllegalArgumentException {
-		try {
-			Class.forName(driver, true, this.getClass().getClassLoader());
-		} catch (ClassNotFoundException e) {
-			throw new IllegalArgumentException("JDBC driver class[" + driver + "] not found");
+	
+	public String getPoolImplementClassName() {
+		return poolImplementClassName;
+	}
+	public void setPoolImplementClassName(String poolImplementClassName) {
+		if (!this.inited && poolImplementClassName != null && poolImplementClassName.trim().length() > 0) {
+			this.poolImplementClassName = poolImplementClassName;
 		}
 	}
 	
-	public String getConnectionPoolClassName() {
-		return connectionPoolClassName;
-	}
-	public void setConnectionPoolClassName(String connectionPoolClassName) {
-		if (!this.inited && connectionPoolClassName != null && connectionPoolClassName.trim().length() > 0) {
-			this.connectionPoolClassName = connectionPoolClassName;
+	private Driver loadJdbcDriver(String driverClassName) throws IllegalArgumentException {
+		try {
+			Class<?> driverClass = Class.forName(driverClassName,true,this.getClass().getClassLoader());
+			Driver driver=(Driver)driverClass.newInstance();
+			if(!driver.acceptsURL(this.connectURL))throw new InstantiationException();
+			return driver;
+		} catch (ClassNotFoundException e) {
+			throw new IllegalArgumentException("Driver class[" + driverClassName + "]not found");
+		} catch (InstantiationException e) {
+			throw new IllegalArgumentException("Driver class[" + driverClassName + "]can't be instantiated");
+		} catch (IllegalAccessException e) {
+			throw new IllegalArgumentException("Driver class[" + driverClassName + "]can't be instantiated",e);
+		} catch (SQLException e) {
+			throw new IllegalArgumentException("Driver class[" + driverClassName + "]can't be instantiated",e);
 		}
 	}
-
+	
 	/**
 	 * check pool configuration
 	 */
 	public void check() {
-		if (isNull(this.driver))
-			throw new IllegalArgumentException("JDBC driver class can't be null");
-		if (isNull(this.driverURL))
-			throw new IllegalArgumentException("JDBC URL can't be null");
+		if (isNull(this.driverClassName))
+			throw new IllegalArgumentException("Driver class name can't be null");
+		if (isNull(this.connectURL))
+			throw new IllegalArgumentException("Connect url can't be null");
 		try {
-			this.connectionDriver = DriverManager.getDriver(this.driverURL);
+			this.connectDriver = DriverManager.getDriver(this.connectURL);
 		} catch (SQLException e) {}
-		if(this.connectionDriver==null)this.loadJdbcDriver(this.driver);
-			
+		if(this.connectDriver==null)this.loadJdbcDriver(this.driverClassName);
+		
 		if (this.poolMaxSize <= 0)
 			throw new IllegalArgumentException("Pool max size must be greater than zero");
 		if (this.poolInitSize < 0)
 			throw new IllegalArgumentException("Pool init size must be greater than zero");
 		if (this.poolInitSize > poolMaxSize)
-			throw new IllegalArgumentException("Error configeruation,pool init size must be less than pool max size");
+			throw new IllegalArgumentException("Error configeruation,pool initiation size must be less than pool max size");
 		if (this.connectionIdleTimeout <= 0)
 			throw new IllegalArgumentException("Connection max idle time must be greater than zero");
 		if (this.borrowerMaxWaitTime <= 0)
-			throw new IllegalArgumentException("Borrower max waiting time must be greater than zero");
+			throw new IllegalArgumentException("Borrower max wait time must be greater than zero");
 		if (this.preparedStatementCacheSize < 0)
-			throw new IllegalArgumentException("Statement cache Size must be greater than zero");
+			throw new IllegalArgumentException("Statement cache size must be greater than zero");
 		
 		//fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 begin
 		//if (this.validationQuerySQL != null && validationQuerySQL.trim().length() == 0) {
 		if (!isNull(this.validationQuerySQL) && !this.validationQuerySQL.trim().toLowerCase().startsWith("select "))
 		//fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end	
-			throw new IllegalArgumentException("connection validate SQL must start with 'select '");
+			throw new IllegalArgumentException("Connection validate SQL must start with 'select '");
 		//}
 
 		if (!isNull(this.userName))
-			this.jdbcProperties.put("user", this.userName);
+			this.connectProperties.put("user", this.userName);
 		if (!isNull(this.password))
-			this.jdbcProperties.put("password", this.password);
+			this.connectProperties.put("password", this.password);
 	}
 
 	private boolean isNull(String value) {

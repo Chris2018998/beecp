@@ -113,12 +113,12 @@ public final class BeeDataSource implements DataSource {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private ConnectionPool createPool(BeeDataSourceConfig config){
 		try {
-			Class poolClass = Class.forName(config.getConnectionPoolClassName(),true,BeeDataSource.class.getClassLoader());
+			Class poolClass = Class.forName(config.getPoolImplementClassName(),true,BeeDataSource.class.getClassLoader());
 			Constructor constructor = poolClass.getDeclaredConstructor(new Class[] {BeeDataSourceConfig.class});
 			ConnectionPool pool = (ConnectionPool) constructor.newInstance(new Object[]{config});
 			return pool;
 		} catch (ClassNotFoundException e) {
-			throw new ExceptionInInitializerError("Not found conneciton pool implementation class:" + config.getConnectionPoolClassName());
+			throw new ExceptionInInitializerError("Not found conneciton pool implementation class:" + config.getPoolImplementClassName());
 		} catch (NoSuchMethodException e) {
 			throw new ExceptionInInitializerError(e);
 		} catch (SecurityException e) {
