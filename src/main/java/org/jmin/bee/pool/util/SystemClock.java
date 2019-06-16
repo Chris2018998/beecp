@@ -1,29 +1,26 @@
 package org.jmin.bee.pool.util;
 
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * Time Clock
  * 
  * @author Chris.liao
  */
-public final class SystemClock implements Runnable{
+public final class SystemClock extends Thread{
+	static final SystemClock clock = new SystemClock();
+	private static final long period=TimeUnit.MILLISECONDS.toNanos(1);
 	private volatile long currentTimeMillis=System.currentTimeMillis();
-	private static final SystemClock clock = new SystemClock(1);
-	private SystemClock(long period) {
-		ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1,new ThreadFactory() {
-			public Thread newThread(Runnable r) {
-				Thread thread = new Thread(r, "System Clock");
-				thread.setDaemon(true);
-				return thread;
-			}
-		});
-		scheduler.scheduleAtFixedRate(this,period,period,TimeUnit.MILLISECONDS);
+	private SystemClock() {
+		this.setDaemon(true);
+		this.start();
 	}
 	public void run(){
-	  currentTimeMillis=System.currentTimeMillis();
+		while (true) {
+			currentTimeMillis = System.currentTimeMillis();
+			LockSupport.parkNanos(period);
+		}
 	}
 	public static long currentTimeMillis() {
 		return clock.currentTimeMillis;
