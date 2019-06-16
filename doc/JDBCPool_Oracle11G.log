@@ -1,0 +1,124 @@
+JDK:JDK1.8_0.65_64,OS:Win7_64,
+CPU:I5-4210M(2.6Hz*2),PC memoery:8G
+Pool max Size:10,init size:0,max Wait:8000ms
+
+Pool[HikariCP -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+Pool[HikariCP -- Multiple thread query] -- Execution count:1000000,total time:15366212ms,avg time:15.41ms,min time:0ms,max time:10496ms
+success count       :997110
+fail count          :2890
+avr(ms)             :15.41
+min(ms)             :0
+max(ms)             :10496
+time==0ms           :971063
+1ms=<time<=10ms     :17179
+10ms<time<=50ms     :1777
+50ms<time<=100ms    :904
+100ms<time<=200ms   :849
+200ms<time<=500ms   :807
+500ms<time<=1000ms  :700
+1000ms<time<=2000ms :1019
+2000ms<time<=8000ms :2782
+time>8000ms         :30
+Pool[Tomcat -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+Pool[Tomcat -- Multiple thread query] -- Execution count:1000000,total time:90080212ms,avg time:90.08ms,min time:0ms,max time:384ms
+success count       :1000000
+fail count          :0
+avr(ms)             :90.08
+min(ms)             :0
+max(ms)             :384
+time==0ms           :4961
+1ms=<time<=10ms     :303
+10ms<time<=50ms     :3773
+50ms<time<=100ms    :947776
+100ms<time<=200ms   :41805
+200ms<time<=500ms   :1382
+500ms<time<=1000ms  :0
+1000ms<time<=2000ms :0
+2000ms<time<=8000ms :0
+time>8000ms         :0
+Pool[Druid -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+Pool[Druid -- Multiple thread query] -- Execution count:1000000,total time:100970711ms,avg time:100.97ms,min time:0ms,max time:2535ms
+success count       :1000000
+fail count          :0
+avr(ms)             :100.97
+min(ms)             :0
+max(ms)             :2535
+time==0ms           :264135
+1ms=<time<=10ms     :173194
+10ms<time<=50ms     :5460
+50ms<time<=100ms    :282017
+100ms<time<=200ms   :152142
+200ms<time<=500ms   :109011
+500ms<time<=1000ms  :13529
+1000ms<time<=2000ms :507
+2000ms<time<=8000ms :5
+time>8000ms         :0
+Pool[Vibur -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+Pool[Vibur -- Multiple thread query] -- Execution count:1000000,total time:48836063ms,avg time:48.84ms,min time:0ms,max time:464ms
+success count       :1000000
+fail count          :0
+avr(ms)             :48.84
+min(ms)             :0
+max(ms)             :464
+time==0ms           :999
+1ms=<time<=10ms     :0
+10ms<time<=50ms     :806120
+50ms<time<=100ms    :190061
+100ms<time<=200ms   :1199
+200ms<time<=500ms   :1621
+500ms<time<=1000ms  :0
+1000ms<time<=2000ms :0
+2000ms<time<=8000ms :0
+time>8000ms         :0
+Pool[BeeCP_Fair -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+Pool[BeeCP_Fair -- Multiple thread query] -- Execution count:1000000,total time:29401422ms,avg time:29.40ms,min time:0ms,max time:8045ms
+success count       :999985
+fail count          :15
+avr(ms)             :29.40
+min(ms)             :0
+max(ms)             :8045
+time==0ms           :984454
+1ms=<time<=10ms     :3178
+10ms<time<=50ms     :526
+50ms<time<=100ms    :330
+100ms<time<=200ms   :418
+200ms<time<=500ms   :1625
+500ms<time<=1000ms  :1891
+1000ms<time<=2000ms :2639
+2000ms<time<=8000ms :4921
+time>8000ms         :3
+Pool[BeeCP_Compete -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:1000000,total time:4540094ms,avg time:4.55ms,min time:0ms,max time:8001ms
+success count       :997837
+fail count          :2163
+avr(ms)             :4.55
+min(ms)             :0
+max(ms)             :8001
+time==0ms           :985309
+1ms=<time<=10ms     :6261
+10ms<time<=50ms     :4138
+50ms<time<=100ms    :893
+100ms<time<=200ms   :275
+200ms<time<=500ms   :143
+500ms<time<=1000ms  :62
+1000ms<time<=2000ms :89
+2000ms<time<=8000ms :666
+time>8000ms         :1
+[Multiple thread query]Performace analysis:Bee_C(4.55) > HikariCP(15.41) > Bee_F(29.40) > Vibur(48.84) > TOMCAT(90.08) > Druid(100.97)
+|Sumary|HikariCP|TOMCAT|Druid|Vibur|Bee_F|Bee_C|
+| --- | --- | --- | --- | --- | --- | --- |
+|success Count|997110|1000000|1000000|1000000|999985|997837|
+|fail count|2890|0|0|0|15|2163|
+|avr(ms)|15.41|90.08|100.97|48.84|29.40|4.55|
+|min(ms)|0|0|0|0|0|0|
+|max(ms)|10496|384|2535|464|8045|8001|
+|time=0ms|971063|4961|264135|999|984454|985309|
+|1ms=<time<=10ms|17179|303|173194|0|3178|6261|
+|10ms<time<=50ms|1777|3773|5460|806120|526|4138|
+|50ms<time<=100ms|904|947776|282017|190061|330|893|
+|100ms<time<=200ms|849|41805|152142|1199|418|275|
+|200ms<time<=500ms|807|1382|109011|1621|1625|143|
+|500ms<time<=1000ms|700|0|13529|0|1891|62|
+|1000ms<time<=2000ms|1019|0|507|0|2639|89|
+|2000ms<time<=800ms|2782|0|5|0|4921|666|
+|8000ms<time|30|0|0|0|3|1||
