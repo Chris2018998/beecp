@@ -29,37 +29,40 @@ public final class ConnectionPool2 extends ConnectionPool {
 		super(poolInfo);
 	}
 	
-	public PooledConnection waitForOne(long timeout, TimeUnit unit, Borrower waiter) {
+	public PooledConnection waitForOne(long timeout, TimeUnit unit, Borrower waiter)throws InterruptedException,SQLException{
 		try {
+			Object tfv=null;
 			waiterSize.incrementAndGet();
 			transferQueue.offer(waiter);
-			if(waiter.getTransferConn()!=null)return waiter.getTransferConn();
-			
+			tryTocreateNewConnByAsyn();// notify to create connections
+
+			if((tfv=waiter.getTransferVal())!=null)return readTransferPooledConn(tfv);
+	
 			LockSupport.parkNanos(waiter,unit.toNanos(timeout));
-			if(waiter.getTransferConn()!=null)return waiter.getTransferConn();
 			
-			return transferQueue.remove(waiter)?null:(waiter.setTransferConn(DummyTransferVal)?null:waiter.getTransferConn());
+			if((tfv=waiter.getTransferVal())!=null)return readTransferPooledConn(tfv);
+			
+			if(transferQueue.remove(waiter)){waiterSize.decrementAndGet();return null;}
+			if(waiter.setTransferVal(DummyTransferVal))return null;
+	
+			if((tfv=waiter.getTransferVal())!=null)return readTransferPooledConn(tfv);
+			return null;
 		 } finally {
-			waiter.setTransferConnAsNull();
-			waiterSize.decrementAndGet();
+		    waiter.setTransferValAsNull();
 		}
 	}
-
-	public void release(final PooledConnection pConn) throws SQLException {
-		if (isCompete)pConn.setConnectionState(PooledConnectionState.IDLE);
-		
+	
+	//transfer to waiter
+	protected boolean transfer(Object transferVal){
 		Borrower waiter=null;
-		for (;;) {
-			if (isCompete && pConn.getConnectionState() != PooledConnectionState.IDLE)
-				return;
-			
-			if((waiter=transferQueue.poll())==null){
-				break;
-			}else if(waiter.setTransferConn(pConn)){
+		boolean transfered=false;
+		if ((waiter = transferQueue.poll()) != null) {
+			waiterSize.decrementAndGet();
+			if (waiter.setTransferVal(transferVal)) {
+				transfered=true;
 				LockSupport.unpark(waiter.getThread());
-				return;
 			}
 		}
-		if (!isCompete)pConn.setConnectionState(PooledConnectionState.IDLE);
+		return transfered;
 	}
 }

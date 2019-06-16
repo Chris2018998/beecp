@@ -32,8 +32,8 @@ public final class PooledConnection {
 	private ConnectionPool pool;
 	// physical connection
 	private Connection connection;
-	// PreparedStatement cache
-	private StatementCache statementCache;
+	// Statement cache
+	private StatementCache mapCache;
 	// physical connection wrapper
 	private ProxyConnection proxyConnection;
 	// autoCommit
@@ -44,14 +44,13 @@ public final class PooledConnection {
 	
 	PooledConnection() {}
 	public PooledConnection(Connection connection, ConnectionPool connectionPool) {
-		this(connection, 10, connectionPool);
+		this(connection, 16, connectionPool);
 	}
 	public PooledConnection(Connection phConn, int stCacheSize, ConnectionPool connpool) {
 		pool = connpool;
 		connection= phConn;
 		state = PooledConnectionState.IDLE;
-	    statementCache = new StatementCache((stCacheSize<=0)?16:stCacheSize);
-	    
+	    mapCache = new StatementCache((stCacheSize<=0)?16:stCacheSize);
 		try {
 			autoCommit = connection.getAutoCommit();
 			transactionIsolationLevlOrig = connection.getTransactionIsolation();
@@ -60,9 +59,8 @@ public final class PooledConnection {
 	}
 	
 	public StatementCache getStatementCache() {
-		return statementCache;
+		return mapCache;
 	}
-	
 	public boolean isAutoCommit() {
 		return autoCommit;
 	}
@@ -76,7 +74,7 @@ public final class PooledConnection {
 	}
 
 	public void updateLastActivityTime() {
-		lastActiveTime = SystemClock.currentTimeMillis();
+		lastActiveTime=SystemClock.currentTimeMillis();
 	}
 
 	public Connection getPhisicConnection() {
@@ -104,43 +102,43 @@ public final class PooledConnection {
 	public boolean compareAndSet(int expect, int update) {
 		return updater.compareAndSet(this, expect, update);//state.compareAndSet(expect, update);
 	}
-	public void resetConnectionAfterRelease() throws SQLException {
-		if (!proxyConnection.isAutoCommitValue()) {
-			connection.rollback();
-		}
-		if (proxyConnection.isAutoCommitChanged()) {
-			connection.setAutoCommit(autoCommit);
-		}
-		if (proxyConnection.isTransactionLevlChanged()) {
-			connection.setTransactionIsolation(this.transactionIsolationLevlOrig);
+
+	private void resetConnectionAfterRelease() {
+		try {
+			if (proxyConnection != null) {
+				if (!proxyConnection.isAutoCommitValue()) {
+					connection.rollback();
+				}
+				if (proxyConnection.isAutoCommitChanged()) {
+					connection.setAutoCommit(autoCommit);
+				}
+				if (proxyConnection.isTransactionLevlChanged()) {
+					connection.setTransactionIsolation(this.transactionIsolationLevlOrig);
+				}
+
+				proxyConnection.setConnectionDataToNull();
+				proxyConnection = null;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 	}
 	
 	//called for pool
-	public void closePhysicalConnection() {
-		if (proxyConnection != null) {
-			proxyConnection.setConnectionDataToNull();
-			proxyConnection = null;
-		}
-
-		this.statementCache.clear();
-		try {
-			if (!connection.getAutoCommit())
-				connection.rollback();
-		} catch (Throwable e) {
-		}
+	public synchronized void closePhysicalConnection() {
+		resetConnectionAfterRelease();
+		bindProxyConnection(null);
+		
+		mapCache.clear();
 		ConnectionUtil.close(connection);
 	}
 
-	void returnToPoolBySelf() throws SQLException {
+	synchronized void returnToPoolBySelf() throws SQLException {
 		if (state == PooledConnectionState.USING) {
-			if (proxyConnection != null) {
-				resetConnectionAfterRelease();
-				proxyConnection.setConnectionDataToNull();
-			}
-			
+			resetConnectionAfterRelease();
 			bindProxyConnection(null);
-			pool.release(this);
+			
+			pool.returnToPool(this,false);
 		}
 	}
 }

@@ -8,7 +8,6 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 package org.jmin.bee.pool;
-
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 /**
  * pooled connection Borrower
@@ -18,10 +17,9 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  */
 final class Borrower {
 	private Thread thread=null;
-	private PooledConnection lastUsedConnection=null;
-	private volatile PooledConnection transferConn=null;
-	private final static AtomicReferenceFieldUpdater<Borrower,PooledConnection> updater = AtomicReferenceFieldUpdater.newUpdater(Borrower.class,PooledConnection.class,"transferConn");
-	
+	private volatile Object transferVal=null;
+	private PooledConnection lastUsedConn=null;
+	private final static AtomicReferenceFieldUpdater<Borrower,Object> updater = AtomicReferenceFieldUpdater.newUpdater(Borrower.class,Object.class,"transferVal");
 	public Borrower() {
 		thread = Thread.currentThread();
 	}
@@ -32,19 +30,18 @@ final class Borrower {
 		return this==o;
 	}
 	public PooledConnection getLastUsedConn() {
-		return lastUsedConnection;
+		return lastUsedConn;
 	}
 	public void setLastUsedConn(PooledConnection pConn) {
-		lastUsedConnection = pConn;
+		lastUsedConn = pConn;
 	}
-	
-	public void setTransferConnAsNull() {
-		this.transferConn = null;
-	}	
-	public PooledConnection getTransferConn() {
-		return transferConn;
+	public void setTransferValAsNull() {
+		this.transferVal=null;
 	}
-	public boolean setTransferConn(PooledConnection pConn) {
-		return updater.compareAndSet(this, null, pConn);
+	public Object getTransferVal() {
+		return transferVal;
+	}
+	public boolean setTransferVal(Object val) {
+		return updater.compareAndSet(this, null, val);
 	}
 }

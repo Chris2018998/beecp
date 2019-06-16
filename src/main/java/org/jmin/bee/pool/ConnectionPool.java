@@ -9,10 +9,11 @@
  */
 package org.jmin.bee.pool;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import java.lang.ref.WeakReference;
 import java.sql.Connection;
 import java.sql.Driver;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -23,8 +24,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
@@ -32,7 +34,6 @@ import java.util.concurrent.locks.LockSupport;
 import org.jmin.bee.BeeDataSourceConfig;
 import org.jmin.bee.pool.util.ConnectionUtil;
 import org.jmin.bee.pool.util.SystemClock;
-
 /**
  * JDBC Connection Pool Implementation
  * 
@@ -40,32 +41,33 @@ import org.jmin.bee.pool.util.SystemClock;
  * @version 1.0
  */
 public class ConnectionPool{
-	private final int STATE_UNINIT = 0;
-	private final int STATE_NORMAL = 1;
-	private final int STATE_CLOSED = 2;
+	private static final int STATE_UNINIT = 0;
+	private static final int STATE_NORMAL = 1;
+	private static final int STATE_CLOSED = 2;
 	private volatile int state=STATE_UNINIT;
 	private Timer idleCheckTimer;
 	private ConnectionPoolHook exitHook;
 	private boolean validateSQLIsNull;
 	protected final BeeDataSourceConfig info;
-
+	
 	protected final boolean isCompete;
-	private final Semaphore takeSemaphore;
-	private final TransferPolicy transferPolicy;
-	private final ConnectionFactory connFactory;
-	private final AtomicInteger conCurSize = new AtomicInteger(0);
+	private final TransferCatchPolicy catchPolicy;
+	private final PoolBorrowSemaphore takeSemaphore;
 	protected final AtomicInteger waiterSize = new AtomicInteger(0);
 	private final PooledConnectionList connList=new PooledConnectionList();
-	
-	private final SynchronousQueue<PooledConnection> transferQueue = new SynchronousQueue<PooledConnection>(true);	
+	private final SynchronousQueue<Object> transferQueue = new SynchronousQueue<Object>(true);
 	private final ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
 	private volatile boolean surpportQryTimeout=true;
 	private static final long MAX_IDLE_TIME_IN_USING = 600000L;
 	private static final TimeUnit WaitTimeUnit=TimeUnit.NANOSECONDS;
-	private static final TimeUnit MillSecondUnit=TimeUnit.MILLISECONDS;
+	private static final TimeUnit MillsTimeUnit=TimeUnit.MILLISECONDS;
 	private static final SQLException PoolCloseStateException = new SQLException("Pool has been closed");
 	private static final SQLException ConnectionRequestTimeoutException = new SQLException("Request timeout");
 	private static final SQLException ConnectionRequestInterruptException = new SQLException("Request interrupt");
+	private final CreateConnectionTask createconnTask=new CreateConnectionTask();
+	private final ThreadPoolExecutor createConnExecutor=new ThreadPoolExecutor(1,1,8,SECONDS,new LinkedBlockingQueue<Runnable>());
+	private static final long TransferParkNanos=10000L;
+	private static final int TransferFailSizeNeedPark=100;
 	
 	/**
 	 * initialize pool with configuration
@@ -75,35 +77,36 @@ public class ConnectionPool{
 	 */
 	public ConnectionPool(BeeDataSourceConfig poolInfo) throws SQLException {
 		if (poolInfo == null)
-			throw new SQLException("Connection info can't be null");
+			throw new SQLException("Pool info can't be null");
 	 
 		if (state == STATE_UNINIT) {
 			poolInfo.check();
-			checkProxyClasss();
+			checkProxyClasses();
 			info = poolInfo;
-			poolInfo.setInited(true);
-			validateSQLIsNull = ConnectionUtil.isNull(poolInfo.getValidationQuerySQL());
+			info.setInited(true);
+			validateSQLIsNull = ConnectionUtil.isNull(info.getValidationQuerySQL());
 
 			idleCheckTimer = new Timer(true);
-			idleCheckTimer.schedule(new PooledConnectionIdleTask(this), 60000, 180000);
-			exitHook = new ConnectionPoolHook(this);
+			idleCheckTimer.schedule(new PooledConnectionIdleTask(), 60000, 180000);
+			exitHook = new ConnectionPoolHook();
 			Runtime.getRuntime().addShutdownHook(exitHook);
-			state = STATE_NORMAL;
- 
+			
 			String mode = "";
-			if (poolInfo.isFairMode()) {
+			if (info.isFairMode()) {
 				mode = "fair";
-				transferPolicy = new FairTransferPolicy(this);
+				isCompete=false;
+				catchPolicy = new FairTransferPolicy();
 			} else {
+				isCompete=true;
 				mode = "compete";
-				transferPolicy = new CompeteTransferPolicy(this);
+				catchPolicy = new CompeteTransferPolicy();
 			}
 			
-			isCompete=!poolInfo.isFairMode();
-			takeSemaphore=new Semaphore(poolInfo.getPoolMaxSize(),poolInfo.isFairMode());
-			connFactory=new ConnectionFactory(poolInfo.getDriverURL(),poolInfo.getJdbcProperties(),poolInfo.getJdbcConnectionDriver());
 			createInitConns();
-			System.out.println("BeeCP("+info.getPoolName()+") has been startup{init size:" + getCurConnSize() + ",max size:" + poolInfo.getPoolMaxSize() + ",mode:" + mode + "}");
+			createConnExecutor.allowCoreThreadTimeOut(true);
+			takeSemaphore=new PoolBorrowSemaphore(info.getPoolMaxSize(),info.isFairMode());
+			System.out.println("BeeCP("+info.getPoolName()+")has been startup{init size:" + getCurConnSize() + ",max size:" + poolInfo.getPoolMaxSize() + ",mode:" + mode + "}");
+			state = STATE_NORMAL;
 		} else {
 			throw new SQLException("Pool has been initialized");
 		}
@@ -112,7 +115,7 @@ public class ConnectionPool{
 	/**
 	 * check some proxy class whether exists
 	 */
-	private void checkProxyClasss() throws SQLException {
+	private void checkProxyClasses() throws SQLException {
 		try {
 			ClassLoader classLoader = getClass().getClassLoader();
 			Class.forName("org.jmin.bee.pool.ProxyConnectionImpl", true, classLoader);
@@ -124,21 +127,17 @@ public class ConnectionPool{
 			throw new SQLException("Some pool jdbc proxy classes are missed");
 		}
 	}
-	
-	protected int getWaiterSize() {
-		return waiterSize.get();
-	}
 	private boolean existWaiter() {
-		return getWaiterSize()> 0;
+		return waiterSize.get()>0;
 	}
 	private final boolean isNormal() {
-		return (state == STATE_NORMAL);
+		return state == STATE_NORMAL;
 	}
 	private final boolean isClosed() {
-		return (state == STATE_CLOSED);
+		return state == STATE_CLOSED;
 	}
 	private final int getCurConnSize(){
-		return conCurSize.get();
+		return connList.size();
 	}
 	private int getIdleConnSize(){
 		int conIdleSize=0;
@@ -149,21 +148,19 @@ public class ConnectionPool{
 		return conIdleSize;
 	}
 	public Map<String,Integer> getPoolSnapshot(){
-		int waiterSize=getWaiterSize();
-		int conCurSize=getCurConnSize();
-		int conIdleSize=0;
-		if(waiterSize==0)
-			conIdleSize = getIdleConnSize();
+		int waitingSize=waiterSize.get();
+		int conCurSize=connList.size();
+		int conIdleSize=getIdleConnSize();
 		
 		Map<String,Integer> snapshotMap = new LinkedHashMap<String,Integer>();
 		snapshotMap.put("PoolMaxSize", info.getPoolMaxSize());
 		snapshotMap.put("ConCurSize",conCurSize);
 		snapshotMap.put("ConIdleSize",conIdleSize);
-		snapshotMap.put("WaiterSize",waiterSize);
+		snapshotMap.put("WaiterSize",waitingSize);
 		return snapshotMap;
 	}
-	private final void checkPool() throws SQLException {
-		if (isClosed())throw PoolCloseStateException;
+	private void checkPool() throws SQLException {
+		if(isClosed())throw PoolCloseStateException;
 	}
 	
 	/**
@@ -171,9 +168,6 @@ public class ConnectionPool{
 	 * @return if the checked connection is active then return true,otherwise false     
 	 */
 	private final boolean isActiveConn(PooledConnection pConn) {
-		if(SystemClock.currentTimeMillis()-pConn.getLastActiveTime()-info.getMaxInactiveTimeToCheck()<=0) 
-			return true;
-		
 		final Connection conn = pConn.getPhisicConnection();
 		if (validateSQLIsNull) {
 			try {
@@ -213,10 +207,11 @@ public class ConnectionPool{
 	 * 			collect bad connections    
 	 * @return if is valid,then return true,otherwise false;
 	 */
-	private final boolean checkOnBorrowed(PooledConnection pConn) {
-		if(isActiveConn(pConn))return true;
+	private boolean checkOnBorrowed(PooledConnection pConn) {
+		if(SystemClock.currentTimeMillis()-pConn.getLastActiveTime()<=info.getMaxInactiveTimeToCheck()) 
+			return true;
 		
-		conCurSize.decrementAndGet();
+		if(isActiveConn(pConn))return true;
 		pConn.setConnectionState(PooledConnectionState.CLOSED);
 		pConn.closePhysicalConnection();
 		connList.remove(pConn);
@@ -224,19 +219,20 @@ public class ConnectionPool{
 	}
 	
 	/**
-	 * create some idle connections to pool when pool initialization
+	 * create initialization connections
 	 * 
 	 * @throws SQLException
 	 *             error occurred in creating connections
 	 */
 	private void createInitConns() throws SQLException {
+		String connectURL=info.getConnectURL();
+		Driver connectDriver=info.getConnectDriver();
+		Properties connectProperties= info.getConnectProperties();
 		int size = info.getPoolInitSize();
 		ArrayList<PooledConnection> tempList = new ArrayList<PooledConnection>(size);
 		try {
-			for (int i = 0; i < size; i++) {
-				Connection con = connFactory.createConnection();
-				tempList.add(new PooledConnection(con, info.getPreparedStatementCacheSize(), this));
-			}
+			for (int i = 0; i < size; i++) 
+			tempList.add(new PooledConnection(connectDriver.connect(connectURL,connectProperties),info.getPreparedStatementCacheSize(),this));
 		} catch (SQLException e) {
 			Iterator<PooledConnection> itor = tempList.iterator();
 			while (itor.hasNext()) {
@@ -248,7 +244,6 @@ public class ConnectionPool{
 			throw e;
 		}
 		connList.addAll(tempList);
-		conCurSize.set(tempList.size());
 	}
 
 	/**
@@ -270,7 +265,7 @@ public class ConnectionPool{
 	 * @throws SQLException
 	 *             if pool is closed or waiting timeout,then throw exception
 	 */
-	public final Connection getConnection(final long wait) throws SQLException {
+	public final Connection getConnection(long wait) throws SQLException {
 		checkPool();
 		boolean acquired=false;
 		PooledConnection pConn=null;
@@ -291,26 +286,32 @@ public class ConnectionPool{
 		}
 		
 		try {
-			long timeout = MillSecondUnit.toNanos(wait);
-			final long deadlinePoint = System.nanoTime() + timeout;
-			
-			if(acquired = takeSemaphore.tryAcquire(timeout, WaitTimeUnit)){
+			wait=MillsTimeUnit.toNanos(wait);
+			final long deadlinePoint=System.nanoTime()+wait;
+			if(acquired = takeSemaphore.tryAcquire(wait,WaitTimeUnit)){
 				while (isNormal()) {
-					if ((pConn = takeOne()) != null) // step2:try to search one or create one
-						return createProxyConnection(pConn,borrower);
-					
-					if ((timeout = deadlinePoint - System.nanoTime()) <= 0)
-						break;
-					if ((pConn = waitForOne(timeout, WaitTimeUnit, borrower)) != null) {// step3:wait for transfered one
-						if (transferPolicy.tryCatch(pConn) && checkOnBorrowed(pConn)) 
-							return createProxyConnection(pConn,borrower);
+					for(PooledConnection sPConn : connList.getArray()) {//step2:search one
+						if(sPConn.compareAndSet(PooledConnectionState.IDLE,PooledConnectionState.USING)) {
+							if(checkOnBorrowed(sPConn)){//step2:search one
+								takeSemaphore.release();acquired=false;
+								return createProxyConnection(sPConn,borrower);
+							}
+						}
 					}
-				}//while	 
+					
+					if((wait=deadlinePoint-System.nanoTime())<=0L)break;
+					if((pConn=waitForOne(wait,WaitTimeUnit,borrower))!=null){//step4:wait one
+						if(catchPolicy.tryCatch(pConn) && checkOnBorrowed(pConn)){
+							takeSemaphore.release();acquired=false;
+							return createProxyConnection(pConn,borrower);
+						}
+					}
+				}//while
 			}
 		} catch (InterruptedException e) {
 			throw ConnectionRequestInterruptException;
 		} finally {
-			if(isNormal() && acquired)takeSemaphore.release();
+			if(acquired)takeSemaphore.release();
 		}
 		
 		if (isClosed())
@@ -318,81 +319,100 @@ public class ConnectionPool{
 		else
 			throw ConnectionRequestTimeoutException;
 	}
-	
-	private final ProxyConnection createProxyConnection(PooledConnection pConn,Borrower borrower)throws SQLException {
+	//create proxy to wrap connection as result
+	private static ProxyConnection createProxyConnection(PooledConnection pConn,Borrower borrower)throws SQLException {
 		borrower.setLastUsedConn(pConn);
 		ProxyConnection proxyConn = ProxyConnectionFactory.createProxyConnection(pConn);
 		pConn.bindProxyConnection(proxyConn);
 		pConn.updateLastActivityTime();
 		return proxyConn; 
 	}
-	
-	private final PooledConnection takeOne() throws SQLException{
-		PooledConnection pConn=null;
-		for (PooledConnection tempPConn:connList.getArray()) {
-			if (tempPConn.compareAndSet(PooledConnectionState.IDLE, PooledConnectionState.USING)){
-				pConn=tempPConn;
-				break;
-			}
-		}
-		if(pConn!= null && checkOnBorrowed(pConn))
-			return pConn;
-		
-		if(conCurSize.get() < info.getPoolMaxSize()){
-			if(conCurSize.incrementAndGet() <= info.getPoolMaxSize()) {
-				try {
-					Connection con = connFactory.createConnection();
-					pConn = new PooledConnection(con,info.getPreparedStatementCacheSize(),this);
-					pConn.setConnectionState(PooledConnectionState.USING);
-					connList.add(pConn);
-					return pConn;
-				} catch (SQLException e) {
-					conCurSize.decrementAndGet();
-					throw e;
-				}
-			} else {
-				conCurSize.decrementAndGet();
-				return null;
-			}
-		}
-		return null;
-	}
-	
-	protected PooledConnection waitForOne(long timeout,TimeUnit unit,Borrower borrower) {
+	//wait for one transfered connection
+	protected PooledConnection waitForOne(long timeout,TimeUnit unit,Borrower borrower)throws InterruptedException, SQLException {
+		Object tfv=null;
 		try {
 			waiterSize.incrementAndGet();
-			return transferQueue.poll(timeout,unit);
-		}catch(InterruptedException	e){
-			return null;
+			tryTocreateNewConnByAsyn();// notify to create connections
+			tfv= transferQueue.poll(timeout,unit);
+		    if(tfv!=null)readTransferPooledConn(tfv); 
+		    return null;
 		} finally {
+			if(tfv==null)waiterSize.decrementAndGet();
+		}
+	}
+	//notify to create connections to pool 
+	protected void tryTocreateNewConnByAsyn() {
+		if (connList.size() < info.getPoolMaxSize() && !createconnTask.isRunning){
+			createconnTask.isRunning=true;
+			createConnExecutor.execute(createconnTask);
+		}
+	}
+	//get connection from transfered value
+ 	protected static PooledConnection readTransferPooledConn(Object tranferVal)throws SQLException{
+		if(tranferVal instanceof PooledConnection)return(PooledConnection)tranferVal;
+		if(tranferVal instanceof SQLException) throw (SQLException)tranferVal;
+		if(tranferVal instanceof Throwable) throw new SQLException((Throwable)tranferVal);
+		return null;
+	}
+	//transfer to waiter
+	protected boolean transfer(Object transferVal){
+		if(transferQueue.offer(transferVal)){
 			waiterSize.decrementAndGet();
+			return true;
+		}else{
+			return false;
 		}
 	}
 	
 	/**
-	 * transfer released connection to a waiter
-	 * 
-	 * @param pConn need transfered connection
-	 * @return if transfer successful then return true,otherwise false
-	 */
-	protected boolean transfer(PooledConnection pConn) { 
-		return transferQueue.offer(pConn);
-	}
-	
-	/**
-	 * the method called to return a used connection to pool. if exists waiting
-	 * borrowers at releasing moment,then try to transfer the connection to one
-	 * of them
+	 * return connection to pool
 	 * 
 	 * @param pConn
 	 *            target connection need release
-	 * @throws SQLException
-	 *             if error occurred,then throws exception
+	 * @param isNewConn 
+	 *  		  true:new connection,false:release by borrower      
 	 */
-	public void release(final PooledConnection pConn) throws SQLException {
-		 transferPolicy.tryTransfer(pConn);
+	public void returnToPool(PooledConnection pConn,boolean isNewConn) {
+		boolean isIdle=false;
+		if (isNewConn) {
+			isIdle=true;
+		} else if (isCompete) {
+			isIdle=true;
+			pConn.setConnectionState(PooledConnectionState.IDLE);
+		}
+		
+		int failTimes=0;
+		int ParkIndex=TransferFailSizeNeedPark;
+		while (waiterSize.get()>0) {
+			if (isIdle && pConn.getConnectionState() != PooledConnectionState.IDLE)
+				return;
+			if (transfer(pConn))
+				return;
+			
+			if (++failTimes==ParkIndex){
+				LockSupport.parkNanos(this,TransferParkNanos);
+				ParkIndex +=TransferFailSizeNeedPark;
+			}else
+				Thread.yield();
+		}
+		
+		if(!isNewConn && !isCompete)pConn.setConnectionState(PooledConnectionState.IDLE);
 	}
-
+	private void transferException(SQLException exception) {
+		int failTimes=0;
+		int ParkIndex=TransferFailSizeNeedPark;
+		while (waiterSize.get()>0) {
+			if (transfer(exception))
+				return;
+			
+			if (++failTimes==ParkIndex){
+				LockSupport.parkNanos(this,TransferParkNanos);
+				ParkIndex +=TransferFailSizeNeedPark;
+			}else
+				Thread.yield();
+		}
+	}
+	
 	/**
 	 * inner timer will call the method to clear some idle timeout connections
 	 * or dead connections,or long time not active connections in using state
@@ -400,28 +420,27 @@ public class ConnectionPool{
 	public void closeIdleTimeoutConnection() {
 		if (isNormal() && !existWaiter()) {
 			LinkedList<PooledConnection> badConList = new LinkedList<PooledConnection>();
-			for (PooledConnection pooledConnection:connList.getArray()) {
-				final int state = pooledConnection.getConnectionState();
+			for (PooledConnection pConn:connList.getArray()) {
+				final int state = pConn.getConnectionState();
 				if (state == PooledConnectionState.IDLE) {
-					final boolean isDead = !isActiveConn(pooledConnection);
-					final boolean isTimeout = ((SystemClock.currentTimeMillis() - pooledConnection.getLastActiveTime()-info.getConnectionIdleTimeout()>=0));
-					if ((isDead || isTimeout) && (pooledConnection.compareAndSet(state, PooledConnectionState.CLOSED))) {
-						conCurSize.decrementAndGet();
-						pooledConnection.closePhysicalConnection();
-						badConList.add(pooledConnection);
+					final boolean isDead = !isActiveConn(pConn);
+					final boolean isTimeout = ((SystemClock.currentTimeMillis()-pConn.getLastActiveTime()-info.getConnectionIdleTimeout()>=0));
+					if ((isDead || isTimeout) && (pConn.compareAndSet(state, PooledConnectionState.CLOSED))) {
+						pConn.closePhysicalConnection();
+						badConList.add(pConn);
 					}
 
 				} else if (state == PooledConnectionState.USING) {
-					final boolean isDead = !isActiveConn(pooledConnection);
-					final boolean isTimeout = ((SystemClock.currentTimeMillis() - pooledConnection.getLastActiveTime()-MAX_IDLE_TIME_IN_USING >=0));
-					if ((isDead || isTimeout) && (pooledConnection.compareAndSet(state, PooledConnectionState.CLOSED))) {
-						conCurSize.decrementAndGet();
-						pooledConnection.closePhysicalConnection();
-						badConList.add(pooledConnection);
+					final boolean isDead = !isActiveConn(pConn);
+					final boolean isTimeout = ((SystemClock.currentTimeMillis()-pConn.getLastActiveTime()-MAX_IDLE_TIME_IN_USING >=0));
+					if ((isDead || isTimeout) && (pConn.compareAndSet(state, PooledConnectionState.CLOSED))) {
+
+						pConn.closePhysicalConnection();
+						badConList.add(pConn);
 					}
 				} else if (state == PooledConnectionState.CLOSED) {
-					pooledConnection.closePhysicalConnection();
-					badConList.add(pooledConnection);
+					pConn.closePhysicalConnection();
+					badConList.add(pConn);
 				}
 			}
 		 
@@ -440,26 +459,28 @@ public class ConnectionPool{
 		if (isNormal()) {
 			state = STATE_CLOSED;
 			idleCheckTimer.cancel();
-		    takeSemaphore.drainPermits();
-		  
-			while (existWaiter()) 
-			 LockSupport.parkNanos(1000);
 			
+			for(Thread thread:takeSemaphore.getQueuedThreads())
+				thread.interrupt();
+			while(waiterSize.get()>0) 
+				LockSupport.parkNanos(10000L);
+			
+			createConnExecutor.shutdown();
 			//clear all connections
 			LinkedList<PooledConnection> badConList = new LinkedList<PooledConnection>();
 			while (connList.size() > 0) {
-				for (PooledConnection pooledConnection : connList.getArray()) {
-					if (pooledConnection.compareAndSet(PooledConnectionState.IDLE, PooledConnectionState.CLOSED)) {
-						pooledConnection.closePhysicalConnection();
-						badConList.add(pooledConnection);
-					} else if (pooledConnection.getConnectionState() == PooledConnectionState.CLOSED) {
-						badConList.add(pooledConnection);
-					} else if (pooledConnection.getConnectionState() == PooledConnectionState.USING) {
-						final boolean isDead = !isActiveConn(pooledConnection);
-						final boolean isTimeout = ((SystemClock.currentTimeMillis()-pooledConnection.getLastActiveTime()-MAX_IDLE_TIME_IN_USING >=0));
-						if ((isDead || isTimeout) && (pooledConnection.compareAndSet(PooledConnectionState.USING, PooledConnectionState.CLOSED))) {
-							pooledConnection.closePhysicalConnection();
-							badConList.add(pooledConnection);
+				for (PooledConnection pConn : connList.getArray()) {
+					if (pConn.compareAndSet(PooledConnectionState.IDLE, PooledConnectionState.CLOSED)) {
+						pConn.closePhysicalConnection();
+						badConList.add(pConn);
+					} else if (pConn.getConnectionState() == PooledConnectionState.CLOSED) {
+						badConList.add(pConn);
+					} else if (pConn.getConnectionState() == PooledConnectionState.USING) {
+						final boolean isDead = !isActiveConn(pConn);
+						final boolean isTimeout = ((SystemClock.currentTimeMillis()-pConn.getLastActiveTime()-MAX_IDLE_TIME_IN_USING >=0));
+						if ((isDead || isTimeout) && (pConn.compareAndSet(PooledConnectionState.USING, PooledConnectionState.CLOSED))) {
+							pConn.closePhysicalConnection();
+							badConList.add(pConn);
 						}
 					}
 				}//for
@@ -469,14 +490,13 @@ public class ConnectionPool{
 					badConList.clear();
 				}
 				if (connList.size() > 0)
-					LockSupport.parkNanos(1000);
+					LockSupport.parkNanos(1000L);
 			}//while
-			conCurSize.set(0);
 			
 			try {
 				Runtime.getRuntime().removeShutdownHook(exitHook);
 			} catch (Throwable e) {}
-			System.out.println("BeeCP("+info.getPoolName()+") has been shutdown");
+			System.out.println("BeeCP("+info.getPoolName()+")has been shutdown");
 		}
 	}
 
@@ -484,95 +504,80 @@ public class ConnectionPool{
 	 * a inner task to scan idle timeout connections or dead
 	 */
 	private class PooledConnectionIdleTask extends TimerTask {
-		private ConnectionPool poolReference;
-
-		public PooledConnectionIdleTask(ConnectionPool connectionPool) {
-			poolReference = connectionPool;
-		}
-
 		public void run() {
-			poolReference.closeIdleTimeoutConnection();
+			closeIdleTimeoutConnection();
 		}
 	}
 
 	/**
 	 * Hook when JVM exit
 	 */
-	 class ConnectionPoolHook extends Thread {
-		private ConnectionPool pool;
-
-		public ConnectionPoolHook(ConnectionPool connectionPool) {
-			pool = connectionPool;
-		}
-
+   private class ConnectionPoolHook extends Thread {
 		public void run() {
-			pool.destroy();
+			ConnectionPool.this.destroy();
 		}
 	}
-	
-	 static class ConnectionFactory {
-		private String url;
-		private Properties prop;
-		private Driver driver;
-		public ConnectionFactory(String jdbcURL,Properties jdbcProperties,Driver jdbcConnectionDriver) throws SQLException {
-			url=jdbcURL;
-			prop=jdbcProperties;
-			driver=jdbcConnectionDriver;
-		}
-		public Connection createConnection() throws SQLException {
-			if(driver!=null)return driver.connect(url,prop);
-			return DriverManager.getConnection(url,prop);
-		}
-	}
-	
-	/**
-	 * Connection transfer
-	 */
-	static interface TransferPolicy {
-		public void tryTransfer(PooledConnection pConn);
-		public boolean tryCatch(PooledConnection pConn);
-	}
-	static class FairTransferPolicy implements TransferPolicy {
-		private ConnectionPool pool;
-		public FairTransferPolicy(ConnectionPool pool) {
-			this.pool = pool;
-		}
-		public void tryTransfer(PooledConnection pConn) {
-			int failTimes = 0;
-			while (pool.existWaiter()) {
-				if (pool.transfer(pConn)) {
-					return;
-				} else if (++failTimes%50==0) {
- 					LockSupport.parkNanos(1000);
-				} else {
-					Thread.yield();
+    private class CreateConnectionTask implements Runnable {
+		private volatile boolean isRunning = false;
+		public void run() {
+			isRunning=true;
+			int addSize=0;
+			PooledConnection pConn=null;
+			final ConnectionPool pool=ConnectionPool.this;
+			final int PoolMaxSize=info.getPoolMaxSize();
+			final int CacheSize=info.getPreparedStatementCacheSize();
+			
+			String connectURL=info.getConnectURL();
+			Driver connectDriver=info.getConnectDriver();
+			Properties connectProperties=info.getConnectProperties();
+			
+			while (isNormal()) {
+				addSize=Math.min(PoolMaxSize-connList.size(),PoolMaxSize-takeSemaphore.availablePermits());
+				if(addSize <=0)break;
+				for (int i = 0; i < addSize; i++) {
+					try {
+						pConn=new PooledConnection(connectDriver.connect(connectURL,connectProperties),CacheSize, pool);
+						connList.add(pConn);
+						new NewConnTransferThread(pConn).start();
+					} catch (SQLException e) {
+						new ExceptionTransferThread(e).start();
+					}
 				}
-			}
-			pConn.setConnectionState(PooledConnectionState.IDLE);
+			} // while
+			isRunning = false;
 		}
-		public boolean tryCatch(PooledConnection pConn) {
-			return true;
+    }
+
+    private class NewConnTransferThread extends Thread {
+		private PooledConnection pConn;
+		public NewConnTransferThread(PooledConnection pConn) {
+			this.pConn = pConn;
 		}
+		public void run() {
+			returnToPool(pConn, true);
+		}
+	}
+	private class ExceptionTransferThread extends Thread {
+		private SQLException exception;
+		public ExceptionTransferThread(SQLException exception) {
+			this.exception = exception;
+		}
+		public void run() {
+			transferException(exception);
+		}
+    }
+    //Transfer Catch Policy
+	private abstract class TransferCatchPolicy {
+		public abstract boolean tryCatch(PooledConnection pConn);
 	}
 
-	static class CompeteTransferPolicy implements TransferPolicy {
-		private ConnectionPool pool;
-		public CompeteTransferPolicy(ConnectionPool pool) {
-			this.pool = pool;
+	private class FairTransferPolicy extends TransferCatchPolicy {
+		public boolean tryCatch(PooledConnection pConn) {
+			if (pConn.getConnectionState() == PooledConnectionState.USING)return true;
+			return pConn.compareAndSet(PooledConnectionState.IDLE, PooledConnectionState.USING);
 		}
-		public void tryTransfer(PooledConnection pConn) {
-			int failTimes=0;
-			pConn.setConnectionState(PooledConnectionState.IDLE);
-			while (pool.existWaiter() && pConn.getConnectionState()== PooledConnectionState.IDLE) {
-				if (pool.transfer(pConn)) {
-					return;
-				} else if (++failTimes % 50 == 0) {
-					LockSupport.parkNanos(1000);
-				} else {
-					Thread.yield();
-				}
-			}
-		}
+	}
+	private class CompeteTransferPolicy extends TransferCatchPolicy {
 		public boolean tryCatch(PooledConnection pConn) {
 			return pConn.compareAndSet(PooledConnectionState.IDLE, PooledConnectionState.USING);
 		}

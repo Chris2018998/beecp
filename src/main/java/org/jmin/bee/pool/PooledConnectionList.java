@@ -8,27 +8,27 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 package org.jmin.bee.pool;
-
 import java.util.List;
+import org.jmin.bee.pool.PooledConnection;
+
 /**
  * Pooled Connection store array
  *
  * @author Chris.Liao
  * @version 1.0
  */
-final class PooledConnectionList {
+public final class PooledConnectionList {
 	private volatile PooledConnection[] array = new PooledConnection[0];
-	int size() {
+	public int size() {
 		return array.length;
 	}
-	PooledConnection[] getArray() {
+	public PooledConnection[] getArray() {
 		return array;
 	}
 	void setArray(PooledConnection[] a) {
 		array = a;
 	}
-	
-	synchronized void add(PooledConnection pooledCon) {
+	public synchronized void add(PooledConnection pooledCon) {
 		final PooledConnection[] arrayOld=getArray();
 		int oldLen = arrayOld.length;
 		PooledConnection[] arrayNew = new PooledConnection[oldLen + 1];
@@ -37,7 +37,7 @@ final class PooledConnectionList {
 		setArray(arrayNew);
 	}
 	
-	synchronized void addAll(List<PooledConnection> col) {
+	public synchronized void addAll(List<PooledConnection> col) {
 		final PooledConnection[] arrayOld=getArray();
 		int oldLen=arrayOld.length;
 		
@@ -53,7 +53,7 @@ final class PooledConnectionList {
 		setArray(arrayNew); 
 	}
 	
-	synchronized void remove(PooledConnection pooledCon){ 
+	public synchronized void remove(PooledConnection pooledCon){ 
 		PooledConnection[] arrayOld=getArray();
 		int index =-1;
 		for (int i=0,l=arrayOld.length;i<l;i++) {
@@ -77,7 +77,7 @@ final class PooledConnectionList {
 		}
 	}
 	
-	synchronized void removeAll(List<PooledConnection> col){ 
+	public synchronized void removeAll(List<PooledConnection> col){ 
 		PooledConnection[] arrayOld=getArray();
 		PooledConnection[] tempNew = new PooledConnection[arrayOld.length];
 		PooledConnection[] arrayRemove = col.toArray(new PooledConnection[col.size()]);

@@ -34,14 +34,12 @@ public abstract class ProxyConnection implements Connection {
 	public boolean isClosed() {
 		return isClosed;
 	}
-	
 	public PooledConnection getPooledConnection() {
 		 return pooledConnection;
 	}
 	protected StatementCache getStatementCache() {
 	  return pooledConnection.getStatementCache();
 	}
-
 	public boolean isAutoCommitChanged() {
 		return autoCommitChanged;
 	}
