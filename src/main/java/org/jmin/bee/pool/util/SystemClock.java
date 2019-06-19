@@ -1,28 +1,35 @@
 package org.jmin.bee.pool.util;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.LockSupport;
+import static java.lang.System.currentTimeMillis;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+import java.util.concurrent.locks.LockSupport;
 /**
  * Time Clock
  * 
  * @author Chris.liao
  */
 public final class SystemClock extends Thread{
-	static final SystemClock clock = new SystemClock();
-	private static final long period=TimeUnit.MILLISECONDS.toNanos(1);
-	private volatile long currentTimeMillis=System.currentTimeMillis();
-	private SystemClock() {
+	private final long period;
+	private boolean isNormal=true;
+	private volatile long currentTimeMillis=currentTimeMillis();
+	static final SystemClock clock = new SystemClock(MILLISECONDS.toNanos(1));
+	private SystemClock(long period) {
+		this.period=period;
 		this.setDaemon(true);
 		this.start();
 	}
 	public void run(){
-		while (true) {
-			currentTimeMillis = System.currentTimeMillis();
-			LockSupport.parkNanos(period);
+		while (isNormal) {
+			currentTimeMillis = currentTimeMillis();
+			LockSupport.parkNanos(this,period);
 		}
 	}
-	public static long currentTimeMillis() {
+	public static void terminate() {
+		clock.isNormal=false;
+		LockSupport.unpark(clock);
+	}
+	public static long curTimeMillis() {
 		return clock.currentTimeMillis;
 	}
 }
