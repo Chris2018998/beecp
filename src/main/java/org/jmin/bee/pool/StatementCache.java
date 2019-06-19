@@ -11,8 +11,8 @@ package org.jmin.bee.pool;
 
 import java.sql.PreparedStatement;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jmin.bee.pool.util.ConnectionUtil;
@@ -24,7 +24,7 @@ import org.jmin.bee.pool.util.ConnectionUtil;
  * @version 1.0
  */
 @SuppressWarnings("serial")
-final class StatementCache extends HashMap<Object, PreparedStatement> {
+final class StatementCache extends LinkedHashMap<Object, PreparedStatement> {
 	private int maxSize;
 	public StatementCache(int maxSize) {
 		super((int)Math.ceil(maxSize / 0.75f)+1,0.75f);
