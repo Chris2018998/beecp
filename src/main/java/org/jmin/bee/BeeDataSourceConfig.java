@@ -68,7 +68,7 @@ public final class BeeDataSourceConfig {
 	 * to take idle connection
 	 */
 	private boolean fairMode;
-
+	
 	/**
 	 * pool initialization size
 	 */
@@ -77,8 +77,13 @@ public final class BeeDataSourceConfig {
 	/**
 	 * pool allow max size
 	 */
-	private int poolMaxSize = 10;
-
+	private int poolMaxSize = Runtime.getRuntime().availableProcessors();
+	
+	/**
+	 * max acquire size of borrower
+	 */
+	private int maxAcquireSize=poolMaxSize;
+	
 	/**
 	 * 'PreparedStatement' cache size
 	 */
@@ -87,13 +92,13 @@ public final class BeeDataSourceConfig {
 	/**
 	 * borrower request timeout
 	 */
-	private long borrowerMaxWaitTime = 180000;
+	private long borrowerMaxWaitTime = 180000L;
 
 	/**
 	 * max idle time for pooledConnection(milliseconds),default value: three
 	 * minutes
 	 */
-	private long connectionIdleTimeout = 180000;
+	private long connectionIdleTimeout = 180000L;
 
 	/**
 	 * a test SQL to check connection active state
@@ -220,6 +225,17 @@ public final class BeeDataSourceConfig {
 	public void setPoolMaxSize(int poolMaxSize) {
 		if (!this.inited && poolMaxSize > 0) {
 			this.poolMaxSize = poolMaxSize;
+			this.maxAcquireSize=poolMaxSize;
+		}
+	}
+
+	public int getMaxAcquireSize() {
+		return maxAcquireSize;
+	}
+
+	public void setMaxAcquireSize(int maxAcquireSize) {
+		if (!this.inited && maxAcquireSize > 0) {
+			this.maxAcquireSize = maxAcquireSize;
 		}
 	}
 
