@@ -9,7 +9,6 @@
  */
 package org.jmin.bee.pool;
 import java.util.List;
-import org.jmin.bee.pool.PooledConnection;
 
 /**
  * Pooled Connection store array
@@ -28,33 +27,35 @@ public final class PooledConnectionList {
 	void setArray(PooledConnection[] a) {
 		array = a;
 	}
-	public synchronized void add(PooledConnection pooledCon) {
-		final PooledConnection[] arrayOld=getArray();
+	
+	public synchronized void add(PooledConnection pooledCon,boolean atHead) {
+		final PooledConnection[] arrayOld=array;
 		int oldLen = arrayOld.length;
 		PooledConnection[] arrayNew = new PooledConnection[oldLen + 1];
-		System.arraycopy(arrayOld, 0, arrayNew, 0, oldLen);
-		arrayNew[oldLen] = pooledCon;
+		if(atHead){
+			arrayNew[0] = pooledCon;//add at head
+			System.arraycopy(arrayOld, 0, arrayNew, 1, oldLen);
+		}else{
+			System.arraycopy(arrayOld, 0, arrayNew, 0, oldLen);
+			arrayNew[oldLen] = pooledCon;
+		}
 		setArray(arrayNew);
 	}
 	
 	public synchronized void addAll(List<PooledConnection> col) {
-		final PooledConnection[] arrayOld=getArray();
+		final PooledConnection[] arrayOld=array;
 		int oldLen=arrayOld.length;
 		
 		int addLen=col.size();
 		PooledConnection[] arrayAdd =col.toArray(new PooledConnection[addLen]);
 		PooledConnection[] arrayNew = new PooledConnection[oldLen+addLen];
-		System.arraycopy(arrayOld,0,arrayNew,0,oldLen);
-		//fix issue:#2 There are a problem in class. Chris-2019-05-01 begin
-		//System.arraycopy(arrayAdd,0,arrayNew,0,addLen);
-		System.arraycopy(arrayAdd,0,arrayNew,oldLen,addLen);
-		//fix issue:#2 There are a problem in class. Chris-2019-05-01 end
-	
+		System.arraycopy(arrayAdd,0,arrayNew,0,addLen);//add at head
+		System.arraycopy(arrayOld,0,arrayNew,addLen,oldLen);
 		setArray(arrayNew); 
 	}
 	
 	public synchronized void remove(PooledConnection pooledCon){ 
-		PooledConnection[] arrayOld=getArray();
+		PooledConnection[] arrayOld=array;
 		int index =-1;
 		for (int i=0,l=arrayOld.length;i<l;i++) {
 			 if(arrayOld[i]==pooledCon){
@@ -78,7 +79,7 @@ public final class PooledConnectionList {
 	}
 	
 	public synchronized void removeAll(List<PooledConnection> col){ 
-		PooledConnection[] arrayOld=getArray();
+		PooledConnection[] arrayOld=array;
 		PooledConnection[] tempNew = new PooledConnection[arrayOld.length];
 		PooledConnection[] arrayRemove = col.toArray(new PooledConnection[col.size()]);
 		

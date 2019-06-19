@@ -23,7 +23,7 @@ import org.jmin.bee.pool.util.SystemClock;
  * @version 1.0
  */
 
-public final class PooledConnection {
+final class PooledConnection {
 	// state
 	private volatile int state;
 	// last activity time
@@ -43,11 +43,11 @@ public final class PooledConnection {
 	private final static AtomicIntegerFieldUpdater<PooledConnection> updater = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class,"state");
 	
 	PooledConnection() {}
-	public PooledConnection(Connection connection, ConnectionPool connectionPool) {
-		this(connection, 16, connectionPool);
+	public PooledConnection(Connection connection, ConnectionPool connPool) {
+		this(connection, 16, connPool);
 	}
-	public PooledConnection(Connection phConn, int stCacheSize, ConnectionPool connpool) {
-		pool = connpool;
+	public PooledConnection(Connection phConn, int stCacheSize, ConnectionPool connPool) {
+		pool = connPool;
 		connection= phConn;
 		state = PooledConnectionState.IDLE;
 	    mapCache = new StatementCache((stCacheSize<=0)?16:stCacheSize);
@@ -57,14 +57,12 @@ public final class PooledConnection {
 		} catch (Throwable e) {}
 		updateLastActivityTime();
 	}
-	
 	public StatementCache getStatementCache() {
 		return mapCache;
 	}
 	public boolean isAutoCommit() {
 		return autoCommit;
 	}
-
 	public int getTransactionIsolationLevl() {
 		return transactionIsolationLevlOrig;
 	}
@@ -74,9 +72,9 @@ public final class PooledConnection {
 	}
 
 	public void updateLastActivityTime() {
-		lastActiveTime=SystemClock.currentTimeMillis();
+		lastActiveTime=SystemClock.curTimeMillis();
 	}
-
+	
 	public Connection getPhisicConnection() {
 		return connection;
 	}
@@ -99,8 +97,9 @@ public final class PooledConnection {
 	public void setConnectionState(int update) {
 		state=update;
 	}
+
 	public boolean compareAndSet(int expect, int update) {
-		return updater.compareAndSet(this, expect, update);//state.compareAndSet(expect, update);
+		return updater.compareAndSet(this, expect, update);
 	}
 
 	private void resetConnectionAfterRelease() {
@@ -138,7 +137,7 @@ public final class PooledConnection {
 			resetConnectionAfterRelease();
 			bindProxyConnection(null);
 			
-			pool.returnToPool(this,false);
+			pool.returnToPool(this);
 		}
 	}
 }
