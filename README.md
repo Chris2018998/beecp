@@ -38,3 +38,10 @@ DataSource datasource = new BeeDataSource(config);
 Connection con = datasource.getConnection();
 ....................
 ``
+
+Performace test
+
+---
+1: JMH Test with HikariCP Benchmarks source code</a> 
+
+![Image text](https://github.com/Chris2018998/BeeCP/blob/master/doc/HikariCP-jdbcBech.png)
