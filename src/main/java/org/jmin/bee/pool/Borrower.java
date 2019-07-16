@@ -8,19 +8,25 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 package org.jmin.bee.pool;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import static org.jmin.bee.pool.PoolObjectsState.BORROWER_NORMAL;
+ 
 /**
  * pooled connection Borrower
  *
  * @author Chris.Liao
  * @version 1.0
  */
-final class Borrower {
-	private Thread thread=null;
-	private volatile Object transferVal=null;
+final class Borrower{
+	volatile int transferState;
+	private volatile Thread thread=null;
 	private PooledConnection lastUsedConn=null;
-	private final static AtomicReferenceFieldUpdater<Borrower,Object> updater = AtomicReferenceFieldUpdater.newUpdater(Borrower.class,Object.class,"transferVal");
-	public Borrower() {
+	private volatile PooledConnection transferedConn=null;
+	private volatile SQLException transferedException=null;
+	private final static AtomicIntegerFieldUpdater<Borrower> updater = AtomicIntegerFieldUpdater.newUpdater(Borrower.class,"transferState");
+
+	public Borrower(ConnectionPool pool) {
 		thread = Thread.currentThread();
 	}
 	public Thread getThread() {
@@ -35,13 +41,27 @@ final class Borrower {
 	public void setLastUsedConn(PooledConnection pConn) {
 		lastUsedConn = pConn;
 	}
-	public void setTransferValAsNull() {
-		this.transferVal=null;
+	public int getState() {
+		return updater.get(this);
 	}
-	public Object getTransferVal() {
-		return transferVal;
+	public void resetState() {
+		this.transferedConn=null;
+		this.transferedException=null;
+		updater.set(this,BORROWER_NORMAL);
 	}
-	public boolean setTransferVal(Object val) {
-		return updater.compareAndSet(this, null, val);
+	public boolean compareAndSetState(int cur,int exp) {
+		return updater.compareAndSet(this,cur,exp);
+	}
+	public PooledConnection getTransferedConn() {
+		return transferedConn;
+	}
+	public void setTransferedConn(PooledConnection transferedConn) {
+		this.transferedConn = transferedConn;
+	}
+	public SQLException getTransferedException() {
+		return transferedException;
+	}
+	public void setTransferedException(SQLException transferedException) {
+		this.transferedException = transferedException;
 	}
 }

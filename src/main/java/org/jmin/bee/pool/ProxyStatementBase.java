@@ -11,8 +11,7 @@ package org.jmin.bee.pool;
 
 import java.sql.SQLException;
 import java.sql.Statement;
-
-import org.jmin.bee.pool.util.ConnectionUtil;
+import static org.jmin.bee.pool.util.ConnectionUtil.oclose;
 
 /**
  * ProxyBaseStatement
@@ -45,7 +44,7 @@ public class ProxyStatementBase {
 		updateLastActivityTime();
 		this.isClosed = true;
 		if (!this.cacheAble) {
-			ConnectionUtil.close(delegate);
+			oclose(delegate);
 			this.delegate = null;
 			this.proxyConnection =null;
 		}

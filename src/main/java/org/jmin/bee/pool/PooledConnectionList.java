@@ -28,17 +28,13 @@ public final class PooledConnectionList {
 		array = a;
 	}
 	
-	public synchronized void add(PooledConnection pooledCon,boolean atHead) {
+	public synchronized void add(PooledConnection pooledCon) {
 		final PooledConnection[] arrayOld=array;
 		int oldLen = arrayOld.length;
 		PooledConnection[] arrayNew = new PooledConnection[oldLen + 1];
-		if(atHead){
-			arrayNew[0] = pooledCon;//add at head
-			System.arraycopy(arrayOld, 0, arrayNew, 1, oldLen);
-		}else{
-			System.arraycopy(arrayOld, 0, arrayNew, 0, oldLen);
-			arrayNew[oldLen] = pooledCon;
-		}
+	
+		arrayNew[0] = pooledCon;//add at head
+		System.arraycopy(arrayOld,0,arrayNew,1,oldLen);
 		setArray(arrayNew);
 	}
 	

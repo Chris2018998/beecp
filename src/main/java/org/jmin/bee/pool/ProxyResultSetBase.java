@@ -11,7 +11,7 @@ package org.jmin.bee.pool;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.jmin.bee.pool.util.ConnectionUtil;
+import static org.jmin.bee.pool.util.ConnectionUtil.oclose;
 
 /**
  * Statement resultset proxy super class
@@ -38,7 +38,7 @@ public abstract class ProxyResultSetBase implements ResultSet {
 	public void close() throws SQLException {
 		updateLastActivityTime();
 		isClosed = true;
-		ConnectionUtil.close(delegate);
+		oclose(delegate);
 		delegate = null;
 		proxyStatement = null;
 	}

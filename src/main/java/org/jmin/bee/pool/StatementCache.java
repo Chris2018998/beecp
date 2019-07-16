@@ -8,14 +8,13 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 package org.jmin.bee.pool;
+import static org.jmin.bee.pool.util.ConnectionUtil.oclose;
 
 import java.sql.PreparedStatement;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
-
-import org.jmin.bee.pool.util.ConnectionUtil;
 
 /**
  * Statement cache
@@ -23,44 +22,110 @@ import org.jmin.bee.pool.util.ConnectionUtil;
  * @author Chris.liao
  * @version 1.0
  */
-@SuppressWarnings("serial")
-final class StatementCache extends LinkedHashMap<Object, PreparedStatement> {
-	private int maxSize;
-	public StatementCache(int maxSize) {
-		super((int)Math.ceil(maxSize / 0.75f)+1,0.75f);
-		this.maxSize=maxSize;
-	}
-	public int maxSize() {
-		return maxSize;
+public class StatementCache{
+	private int capacity;
+	public CacheNode head=null;//old
+	public CacheNode tail=null;//new
+	private HashMap<Object,CacheNode>nodeMap;
+	public StatementCache(int capacity) {
+		this.nodeMap = new HashMap<Object,CacheNode>((int)Math.ceil(capacity/0.75f)+1,0.75f);
+		this.capacity = capacity;
 	}
 	public PreparedStatement get(Object key) {
-		return isEmpty()?null:super.get(key);
+		if(nodeMap.isEmpty())return null;
+		
+		CacheNode n=nodeMap.get(key);
+		if(n!=null){
+			moveToTail(n);
+			return n.v;
+		}
+		return null;
+	}
+	public void put(Object k,PreparedStatement v) {
+		CacheNode n = nodeMap.get(k);
+		if (n==null) {
+			n = new CacheNode(k,v);
+			nodeMap.put(k,n);
+			addNewNode(n);
+			
+			if(nodeMap.size()>capacity) {
+			  CacheNode oldHead=removeHead();
+			  nodeMap.remove(oldHead.k);
+			  onRemove(oldHead.k,oldHead.v);
+			}
+		} else {
+			n.v = v;
+			moveToTail(n);
+		}
 	}
 	public void clear() {
-		Iterator<Map.Entry<Object, PreparedStatement>> itor = entrySet().iterator();
+		Iterator<Map.Entry<Object, CacheNode>> itor=nodeMap.entrySet().iterator();
 		while (itor.hasNext()) {
-			Map.Entry<Object, PreparedStatement> entry = (Map.Entry<Object, PreparedStatement>) itor.next();
+			Map.Entry<Object,CacheNode> entry = (Map.Entry<Object, CacheNode>) itor.next();
 			itor.remove();
-			this.onRemove(entry.getKey(), entry.getValue());
+			 CacheNode node= entry.getValue();
+			 onRemove(node.k,node.v);
 		}
+		
+		head=null;
+		tail=null;
 	}
-	protected boolean removeEldestEntry(Map.Entry<Object,PreparedStatement> eldest) {
-		if (size() > maxSize) {
-			onRemove(eldest.getKey(), eldest.getValue());
-			return true;
+	private void onRemove(Object key, PreparedStatement obj) {
+		oclose(obj);
+	}
+	//add new node
+	private void addNewNode(CacheNode n) {
+		if (head == null) {
+			head = n;
+			tail = n;
 		} else {
-			return false;
+			tail.next = n;
+			n.pre = tail;
+			tail = n;
 		}
 	}
-	void onRemove(Object key, PreparedStatement obj) {
-		ConnectionUtil.close(obj);
+	//below are node chain operation method
+	private void moveToTail(CacheNode n) {
+		if(n==tail)return;
+		//remove from chain
+		if (head == n) {
+			head = n.next;
+			head.pre = null;
+		} else {
+			n.pre.next = n.next;
+			n.next.pre = n.pre;
+		}
+
+		//append to tail
+		tail.next = n;
+		n.pre = tail;
+		n.next = null;
+		tail = tail.next;//new tail
+	}
+	//remove head when size more than capacity
+	private CacheNode removeHead() {
+		CacheNode n = head;
+		if (head == tail) {
+			head = null;
+			tail = null;
+		} else {
+			head = head.next;
+			head.pre = null;
+		}
+		return n;
+	}
+	static class CacheNode {// double linked chain node
+		private Object k;
+		private PreparedStatement v;
+		private CacheNode pre = null;
+		private CacheNode next = null;
+		public CacheNode(Object k, PreparedStatement v) {
+			this.k = k;
+			this.v = v;
+		}
 	}
 }
-
 class StatementCacheUtil {
-	public static final boolean UseCacheTag1 = true;
-	public static final boolean UseCacheTag2 = false;
-
 	public static final Object createPsCaecheKey(String sql) {
 		return new StatementPsCacheKey1(sql);
 	}
@@ -367,5 +432,4 @@ final class StatementCsCacheKey3 extends CacheKey{
 		return sql.equals(other.sql);
 	}
 }
-
  

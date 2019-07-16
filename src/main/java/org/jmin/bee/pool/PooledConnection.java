@@ -8,13 +8,13 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 package org.jmin.bee.pool;
+import static java.lang.System.currentTimeMillis;
+import static org.jmin.bee.pool.PoolObjectsState.CONNECTION_IDLE;
+import static org.jmin.bee.pool.util.ConnectionUtil.oclose;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-
-import org.jmin.bee.pool.util.ConnectionUtil;
-import org.jmin.bee.pool.util.SystemClock;
 
 /**
  * JDBC connection wrapper
@@ -23,7 +23,7 @@ import org.jmin.bee.pool.util.SystemClock;
  * @version 1.0
  */
 
-final class PooledConnection {
+final class PooledConnection{
 	// state
 	private volatile int state;
 	// last activity time
@@ -42,14 +42,13 @@ final class PooledConnection {
 	private int transactionIsolationLevlOrig = Connection.TRANSACTION_READ_COMMITTED;
 	private final static AtomicIntegerFieldUpdater<PooledConnection> updater = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class,"state");
 	
-	PooledConnection() {}
 	public PooledConnection(Connection connection, ConnectionPool connPool) {
 		this(connection, 16, connPool);
 	}
 	public PooledConnection(Connection phConn, int stCacheSize, ConnectionPool connPool) {
 		pool = connPool;
 		connection= phConn;
-		state = PooledConnectionState.IDLE;
+		state =CONNECTION_IDLE;
 	    mapCache = new StatementCache((stCacheSize<=0)?16:stCacheSize);
 		try {
 			autoCommit = connection.getAutoCommit();
@@ -72,11 +71,12 @@ final class PooledConnection {
 	}
 
 	public void updateLastActivityTime() {
-		lastActiveTime=SystemClock.curTimeMillis();
+		lastActiveTime=currentTimeMillis();
 	}
 	
 	public Connection getPhisicConnection() {
 		return connection;
+		
 	}
 
 	public ProxyConnection getProxyConnection() {
@@ -86,19 +86,17 @@ final class PooledConnection {
 	public void bindProxyConnection(ProxyConnection proxyConnection) {
 		this.proxyConnection = proxyConnection;
 	}
-	
 	public boolean equals(Object obj) {
 		return this==obj;
 	}
 	
-	public int getConnectionState() {
+	public int getState() {
 		return state;
 	}
-	public void setConnectionState(int update) {
+	public void setState(int update) {
 		state=update;
 	}
-
-	public boolean compareAndSet(int expect, int update) {
+	public boolean compareAndSetState(int expect, int update) {
 		return updater.compareAndSet(this, expect, update);
 	}
 
@@ -124,20 +122,16 @@ final class PooledConnection {
 	}
 	
 	//called for pool
-	public synchronized void closePhysicalConnection() {
+	void closePhysicalConnection() {
 		resetConnectionAfterRelease();
 		bindProxyConnection(null);
 		
 		mapCache.clear();
-		ConnectionUtil.close(connection);
+		oclose(connection);
 	}
-
-	synchronized void returnToPoolBySelf() throws SQLException {
-		if (state == PooledConnectionState.USING) {
-			resetConnectionAfterRelease();
-			bindProxyConnection(null);
-			
-			pool.returnToPool(this);
-		}
+    void returnToPoolBySelf() throws SQLException {
+		resetConnectionAfterRelease();
+		bindProxyConnection(null);
+		pool.release(this,false);
 	}
 }
