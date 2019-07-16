@@ -9,10 +9,6 @@
  */
 package org.jmin.bee.pool.util;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.Writer;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -28,7 +24,7 @@ public final class ConnectionUtil {
 		return (value == null || value.trim().length() == 0);
 	}
 
-	public static void close(Connection connection) {
+	public static void oclose(Connection connection) {
 		try {
 			if (connection != null)
 				connection.close();
@@ -37,7 +33,7 @@ public final class ConnectionUtil {
 		}
 	}
 
-	public static void close(Statement statement) {
+	public static void oclose(Statement statement) {
 		try {
 			if (statement != null)
 				statement.close();
@@ -45,42 +41,10 @@ public final class ConnectionUtil {
 		}
 	}
 
-	public static void close(ResultSet resultSet) {
+	public static void oclose(ResultSet resultSet) {
 		try {
 			if (resultSet != null)
 				resultSet.close();
-		} catch (Throwable e) {
-		}
-	}
-
-	public static void close(Reader reader) {
-		try {
-			if (reader != null)
-				reader.close();
-		} catch (Throwable e) {
-		}
-	}
-
-	public static void close(Writer writer) {
-		try {
-			if (writer != null)
-				writer.close();
-		} catch (Throwable e) {
-		}
-	}
-
-	public static void close(InputStream inputStream) {
-		try {
-			if (inputStream != null)
-				inputStream.close();
-		} catch (Throwable e) {
-		}
-	}
-
-	public static void close(OutputStream outputStream) {
-		try {
-			if (outputStream != null)
-				outputStream.close();
 		} catch (Throwable e) {
 		}
 	}
