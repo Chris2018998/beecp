@@ -131,8 +131,7 @@ public final class BeeDataSource implements DataSource {
 			throw new ExceptionInInitializerError(e);
 		} catch (InvocationTargetException e) {
 			Throwable cause=e.getTargetException();
-			String errorMessage= (cause==null)?"":",cuase:"+cause.getMessage();
-			throw new ExceptionInInitializerError("Failed to init datasource"+errorMessage);
+			throw new ExceptionInInitializerError(cause);
 		}
 	}
 }

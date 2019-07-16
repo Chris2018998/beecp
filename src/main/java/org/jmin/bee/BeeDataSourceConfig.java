@@ -62,12 +62,22 @@ public final class BeeDataSourceConfig {
 	 * pool name
 	 */
 	private String poolName="Pool1";
-
+	
 	/**
 	 * if true,first arrival,first taking if false,competition for all borrower
 	 * to take idle connection
 	 */
 	private boolean fairMode;
+	
+	/**
+	 * check on borrow connection
+	 */
+	private boolean checkOnBorrow;
+	
+	/**
+	 * check on borrow connection
+	 */
+	private boolean checkOnReturn;
 	
 	/**
 	 * pool initialization size
@@ -77,12 +87,7 @@ public final class BeeDataSourceConfig {
 	/**
 	 * pool allow max size
 	 */
-	private int poolMaxSize = Runtime.getRuntime().availableProcessors();
-	
-	/**
-	 * max acquire size of borrower
-	 */
-	private int maxAcquireSize=poolMaxSize;
+	private int poolMaxSize;
 	
 	/**
 	 * 'PreparedStatement' cache size
@@ -103,7 +108,7 @@ public final class BeeDataSourceConfig {
 	/**
 	 * a test SQL to check connection active state
 	 */
-	private String validationQuerySQL = "select 1";
+	private String validationQuerySQL = "select 1 from dual";
 
 	/**
 	 * connection validate timeout:5 seconds
@@ -111,14 +116,15 @@ public final class BeeDataSourceConfig {
 	private int validationQueryTimeout = 5;
 	
 	/**
-	 * BeeCP implementation class name
-	 */
-	private String poolImplementClassName = "org.jmin.bee.pool.ConnectionPool";
-
-	/**
 	 * milliseconds,max inactive time to check active for borrower
 	 */
 	private long maxInactiveTimeToCheck = 1000L;
+	
+	/**
+	 * BeeCP implementation class name
+	 */
+	private String poolImplementClassName = "org.jmin.bee.pool.ConnectionPool";
+	
 
 	public BeeDataSourceConfig(String driver, String url, String user, String password) {
 		this.driverClassName = driver;
@@ -188,7 +194,7 @@ public final class BeeDataSourceConfig {
 			this.connectProperties.remove(key);
 		}
 	}
-
+	
 	public boolean isFairMode() {
 		return fairMode;
 	}
@@ -196,6 +202,24 @@ public final class BeeDataSourceConfig {
 	public void setFairMode(boolean fairMode) {
 		if (!this.inited)
 			this.fairMode = fairMode;
+	}
+	
+	public boolean isCheckOnBorrow() {
+		return checkOnBorrow;
+	}
+
+	public void setCheckOnBorrow(boolean checkOnBorrow) {
+		if(!this.inited)
+		this.checkOnBorrow = checkOnBorrow;
+	}
+
+	public boolean isCheckOnReturn() {
+		return checkOnReturn;
+	}
+
+	public void setCheckOnReturn(boolean checkOnReturn) {
+		if(!this.inited)
+		this.checkOnReturn = checkOnReturn;
 	}
 
 	public String getPoolName() {
@@ -225,20 +249,9 @@ public final class BeeDataSourceConfig {
 	public void setPoolMaxSize(int poolMaxSize) {
 		if (!this.inited && poolMaxSize > 0) {
 			this.poolMaxSize = poolMaxSize;
-			this.maxAcquireSize=poolMaxSize;
 		}
 	}
-
-	public int getMaxAcquireSize() {
-		return maxAcquireSize;
-	}
-
-	public void setMaxAcquireSize(int maxAcquireSize) {
-		if (!this.inited && maxAcquireSize > 0) {
-			this.maxAcquireSize = maxAcquireSize;
-		}
-	}
-
+	
 	public  int getPreparedStatementCacheSize() {
 		return preparedStatementCacheSize;
 	}
@@ -298,7 +311,6 @@ public final class BeeDataSourceConfig {
 			this.maxInactiveTimeToCheck = maxInactiveTimeToCheck;
 		}
 	}
-
 	
 	public String getPoolImplementClassName() {
 		return poolImplementClassName;
@@ -337,7 +349,7 @@ public final class BeeDataSourceConfig {
 		try {
 			this.connectDriver = DriverManager.getDriver(this.connectURL);
 		} catch (SQLException e) {}
-		if(this.connectDriver==null)this.loadJdbcDriver(this.driverClassName);
+		if(this.connectDriver==null)this.connectDriver=loadJdbcDriver(driverClassName);
 		
 		if (this.poolMaxSize <= 0)
 			throw new IllegalArgumentException("Pool max size must be greater than zero");
@@ -349,7 +361,7 @@ public final class BeeDataSourceConfig {
 			throw new IllegalArgumentException("Connection max idle time must be greater than zero");
 		if (this.borrowerMaxWaitTime <= 0)
 			throw new IllegalArgumentException("Borrower max wait time must be greater than zero");
-		if (this.preparedStatementCacheSize < 0)
+		if (this.preparedStatementCacheSize <= 0)
 			throw new IllegalArgumentException("Statement cache size must be greater than zero");
 		
 		//fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 begin
