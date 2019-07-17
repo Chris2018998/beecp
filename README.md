@@ -42,6 +42,7 @@ Connection con = datasource.getConnection();
 
 Performace test
 ---
-1: JMH Test with HikariCP Benchmarks source code</a> 
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/JDBCPool_Oracle11g_20190717.log">JDBCPool_Oracle11g_20190717.log</a>
 
-![Image text](https://github.com/Chris2018998/BeeCP/blob/master/doc/HikariCP-jdbcBech.png)
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/Jdbc_CP_Test.zip">Download performance source </a>
+
