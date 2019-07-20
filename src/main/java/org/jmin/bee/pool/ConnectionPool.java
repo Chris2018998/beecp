@@ -1,22 +1,27 @@
 /*
- * Copyright Chris Liao
+ * Copyright Chris2018998
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.jmin.bee.pool;
 
 import static java.lang.System.currentTimeMillis;
 import static java.lang.System.nanoTime;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jmin.bee.pool.PoolObjectsState.BORROWER_NORMAL;
 import static org.jmin.bee.pool.PoolObjectsState.BORROWER_TIMEOUT;
-import static org.jmin.bee.pool.PoolObjectsState.BORROWER_TRANSFERED;
 import static org.jmin.bee.pool.PoolObjectsState.BORROWER_WAITING;
 import static org.jmin.bee.pool.PoolObjectsState.CONNECTION_CLOSED;
 import static org.jmin.bee.pool.PoolObjectsState.CONNECTION_IDLE;
@@ -68,7 +73,8 @@ public final class ConnectionPool{
 	private final ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
 
 	private volatile boolean surpportQryTimeout=true;
-	private static final long MAX_CONNECTION_IDLE_TIME_IN_CONNECTION_USING=600000L;
+	private final static long TO_NANO_BASE=1000000L;
+	private static final long MAX_IDLE_TIME_IN_USING=MINUTES.toNanos(5);
 	private static final SQLException PoolCloseException = new SQLException("Pool has been closed");
 	private static final SQLException RequestTimeoutException = new SQLException("Request timeout");
 	private static final SQLException RequestInterruptException = new SQLException("Request interrupt");
@@ -104,7 +110,7 @@ public final class ConnectionPool{
 			}
 			
 			createInitConns();
-			poolSemaphore=new Semaphore(info.getPoolMaxSize(),true);
+			poolSemaphore=new Semaphore(info.getPoolMaxSize(),info.isFairMode());
 			System.out.println("BeeCP("+info.getPoolName()+")has been startup{init size:"+connList.size()+",max size:"+poolInfo.getPoolMaxSize()+ ",mode:"+mode +",max wait:"+info.getBorrowerMaxWaitTime()+"ms}");
 			state = POOL_NORMAL;
 			createThread.start();
@@ -243,7 +249,7 @@ public final class ConnectionPool{
 	}
 
 	/**
-	 * borrow a connection from pool
+	 * borrow one connection from pool
 	 * 
 	 * @param wait
 	 *            max wait time for borrower
@@ -275,7 +281,7 @@ public final class ConnectionPool{
 		}
 			
 		try{
-			wait=MILLISECONDS.toNanos(wait);
+			wait=wait*TO_NANO_BASE;
 			long deadlineNanos=nanoTime()+wait;
 			if(acquired=poolSemaphore.tryAcquire(wait,NANOSECONDS)) {	
 				for(PooledConnection sPConn:connList.getArray()) {
@@ -299,24 +305,29 @@ public final class ConnectionPool{
 	// wait one transfered connection 
 	private final Connection getTransferedConnection(Borrower borrower,long deadlineNanos)throws SQLException {
 		boolean timeout=false;
-		Connection conn=null;
+		Object stateObject=null;
 		
 		try{
 			long waitNanos=0;
-			borrower.resetState();//BORROWER_NORMAL	
+			borrower.resetStateObject();//BORROWER_NORMAL	
 			waitQueue.offer(borrower);
 			tryToCreateNewConnByAsyn();
 			 
 			while(true){
-				if(borrower.getState()==BORROWER_TRANSFERED){
- 					if((conn=readTransferPooledConn(borrower))!=null){
- 						return conn;
- 					}else
- 						borrower.resetState();//BORROWER_NORMAL	
- 				}
-				
+				stateObject=borrower.getStateObject();
+				if(stateObject instanceof PooledConnection){
+					PooledConnection pConn=(PooledConnection)stateObject;
+				    if(tansferPolicy.tryCatch(pConn)){
+				    	return createProxyConnection(pConn,borrower);
+				    }else{
+				    	borrower.resetStateObject();
+				    }
+				}else if(stateObject instanceof SQLException){
+					throw (SQLException)stateObject;
+				}
+			
 				if(timeout){
-					if(borrower.compareAndSetState(BORROWER_NORMAL,BORROWER_TIMEOUT))
+					if(borrower.compareAndSetStateObject(BORROWER_NORMAL,BORROWER_TIMEOUT))
 						throw RequestTimeoutException;
 				
 					continue; 
@@ -324,11 +335,11 @@ public final class ConnectionPool{
 				
 				waitNanos=deadlineNanos-nanoTime();
 				if(waitNanos<=0){timeout=true;continue;}
-				if(borrower.getState()==BORROWER_NORMAL && borrower.compareAndSetState(BORROWER_NORMAL,BORROWER_WAITING))
+				if(borrower.getStateObject()==BORROWER_NORMAL && borrower.compareAndSetStateObject(BORROWER_NORMAL,BORROWER_WAITING))
 					LockSupport.parkNanos(borrower,waitNanos);
 			}//while 
 		}finally{
-			while(!waitQueue.remove(borrower));
+			waitQueue.remove(borrower);
 		}
 	}
 	//create proxy to wrap connection as result
@@ -346,21 +357,7 @@ public final class ConnectionPool{
 			LockSupport.unpark(createThread);
 		}
 	}
-	//get connection from transfered value
-	private ProxyConnection readTransferPooledConn(Borrower borrower)throws SQLException{
-		PooledConnection pConn=borrower.getTransferedConn();
-		if(pConn!=null)return (tansferPolicy.tryCatch(pConn))?createProxyConnection(pConn,borrower):null;
-		
-		SQLException exception=borrower.getTransferedException();
-		if(exception!=null)throw exception;
-		return null;
-	}
-		
-
-	/**
-	 * return connection to pool
-	 * @param pConn target connection need release
-	 */
+	
 	/**
 	 * return connection to pool
 	 * @param pConn target connection need release
@@ -371,14 +368,13 @@ public final class ConnectionPool{
 		tansferPolicy.beforeTransferReleaseConnection(pConn);
 		
 		Thread waitThred;
-		int waiterState=-1;
+		Object waiterState=null;
 		for(Borrower waiter:waitQueue){
 			if(pConn.getState()!=chkState)return;
 			
-			waiterState=waiter.getState();
+			waiterState=waiter.getStateObject();
 			waitThred=waiter.getThread();
-			if(waitThred.isAlive() && (waiterState==BORROWER_NORMAL||waiterState==BORROWER_WAITING) && waiter.compareAndSetState(waiterState,BORROWER_TRANSFERED)){
-				waiter.setTransferedConn(pConn);
+			if(waitThred.isAlive() && (waiterState==BORROWER_NORMAL||waiterState==BORROWER_WAITING) && waiter.compareAndSetStateObject(waiterState,pConn)){
 				if(waiterState==BORROWER_WAITING)LockSupport.unpark(waitThred);
 				return;
 			} 
@@ -387,11 +383,10 @@ public final class ConnectionPool{
 		tansferPolicy.onFailTransfer(pConn);
 	}
 	private void transferSQLException(SQLException exception){
-		int waiterState=-1;
+		Object waiterState=null;
 		for(Borrower waiter:waitQueue){
-			waiterState=waiter.getState();
-			if((waiterState==BORROWER_NORMAL||waiterState==BORROWER_WAITING) && waiter.compareAndSetState(waiterState,BORROWER_TRANSFERED)){
-				waiter.setTransferedException(exception);
+			waiterState=waiter.getStateObject();
+			if((waiterState==BORROWER_NORMAL||waiterState==BORROWER_WAITING) && waiter.compareAndSetStateObject(waiterState,exception)){
 				if(waiterState==BORROWER_WAITING)LockSupport.unpark(waiter.getThread());
 				return;
 			}
@@ -417,7 +412,7 @@ public final class ConnectionPool{
 
 				} else if (state == CONNECTION_USING) {
 					final boolean isDead = !isActiveConn(pConn);
-					final boolean isTimeout = ((currentTimeMillis()-pConn.getLastActiveTime()>=MAX_CONNECTION_IDLE_TIME_IN_CONNECTION_USING));
+					final boolean isTimeout = ((currentTimeMillis()-pConn.getLastActiveTime()>=MAX_IDLE_TIME_IN_USING));
 					if ((isDead || isTimeout) && (pConn.compareAndSetState(state,CONNECTION_CLOSED))) {
 
 						pConn.closePhysicalConnection();
@@ -460,7 +455,7 @@ public final class ConnectionPool{
 						connList.remove(pConn);
 					} else if (pConn.getState() == CONNECTION_USING) {
 						final boolean isDead = !isActiveConn(pConn);
-						final boolean isTimeout = ((currentTimeMillis()-pConn.getLastActiveTime()>=MAX_CONNECTION_IDLE_TIME_IN_CONNECTION_USING));
+						final boolean isTimeout = ((currentTimeMillis()-pConn.getLastActiveTime()>=MAX_IDLE_TIME_IN_USING));
 						if ((isDead || isTimeout) && (pConn.compareAndSetState(CONNECTION_USING,CONNECTION_CLOSED))) {
 							pConn.closePhysicalConnection();
 							connList.remove(pConn);
