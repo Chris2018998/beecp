@@ -42,6 +42,9 @@ Connection con = datasource.getConnection();
 
 Performace test
 ---
+<i>Pool statement performance Test(1000Threads x 1000iteration)</i>
+<i>[datasource.getConnection(),connection.prepareStatement,statement.execute(),statement.close(),connection.close()]</i>
+
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I5_4210M_Oracle11g_20190717.log">I5_4210M_Oracle11g_20190717.log</a>
 
 Bee_F(16.37) > Bee_C(18.25) > Vibur(28.79) > HikariCP(34.42) > TOMCAT(67.47) > DBCP(75.28) > Druid(75.97) > C3P0(96.40)
