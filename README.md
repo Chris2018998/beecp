@@ -44,11 +44,18 @@ Performace test
 ---
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I5_4210M_Oracle11g_20190717.log">I5_4210M_Oracle11g_20190717.log</a>
 
+Bee_F(16.37) > Bee_C(18.25) > Vibur(28.79) > HikariCP(34.42) > TOMCAT(67.47) > DBCP(75.28) > Druid(75.97) > C3P0(96.40)
+
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I5_4210M_Oracle11g_20190723.log">I5_4210M_Oracle11g_20190723.log</a>
+
+Bee_F(13.39) > Bee_C(15.25) > Vibur(20.64) > HikariCP(28.79) > TOMCAT(57.93) > DBCP(66.47) > Druid(67.03) > C3P0(71.54)
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I5_4460_Marridb10.3_20190723.log">I5_4460_Marridb10.3_20190723.log</a>
 
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I3_7100_HikariCP_Bech_20190701.png">I3_7100_HikariCP_Bech_20190701.png</a>
+Bee_C(8.05) > Bee_F(8.77) > Vibur(9.20) > HikariCP(11.11) > TOMCAT(26.15) > DBCP(29.72) > Druid(29.96) > C3P0(38.92)
+
+I3_7100_HikariCP_Bech_20190701.png
+<img src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I3_7100_HikariCP_Bech_20190701.png"></img>
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/Jdbc_CP_Test.zip">Download performance source </a>
 
