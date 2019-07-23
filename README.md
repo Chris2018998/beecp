@@ -62,3 +62,10 @@ I3_7100_HikariCP_Bech_20190701.png
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/Jdbc_CP_Test.zip">Download performance source </a>
 
+
+Contact 
+---
+
+Email:Chris2018998@tom.com
+
+WeiXin:Chris2018998
