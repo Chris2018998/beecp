@@ -42,7 +42,13 @@ Connection con = datasource.getConnection();
 
 Performace test
 ---
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/JDBCPool_Oracle11g_20190717.log">JDBCPool_Oracle11g_20190717.log</a>
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I5_4210M_Oracle11g_20190717.log">I5_4210M_Oracle11g_20190717.log</a>
 
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/Jdbc_CP_Test.zip">Download performance source </a>
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I5_4210M_Marridb10.4.20190723.log">I5_4210M_Oracle11g_20190723.log</a>
+
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I5_4460_Marridb10.3_20190723.log">I5_4460_Marridb10.3_20190723.log</a>
+
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I3_7100_HikariCP_Bech_20190701.png">I3_7100_HikariCP_Bech_20190701.png</a>
+
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/Jdbc_CP_Test.zip">Download performance source </a>
 
