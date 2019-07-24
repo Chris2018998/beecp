@@ -68,4 +68,6 @@ Contact
 
 Email:Chris2018998@tom.com
 
-WeiXin:Chris2018998
+<img src="https://github.com/Chris2018998/BeeCP/tree/master/doc/individual/w.png"> </img>
+<img src="https://github.com/Chris2018998/BeeCP/tree/master/doc/individual/z.png"> </img>
+
