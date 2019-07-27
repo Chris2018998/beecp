@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 package org.jmin.bee.pool;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import static org.jmin.bee.pool.PoolObjectsState.BORROWER_NORMAL;
+
+import java.sql.Connection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 /**
  * pooled connection Borrower
@@ -23,17 +26,24 @@ import static org.jmin.bee.pool.PoolObjectsState.BORROWER_NORMAL;
  * @author Chris.Liao
  * @version 1.0
  */
-final class Borrower{
-    volatile Object stateObject;
-	private volatile Thread thread=null;
-	private PooledConnection lastUsedConn=null;
+final class Borrower implements Callable<Connection>{
+	private Thread thread;
+	private ConnectionPool pool;
+	private PooledConnection lastUsedConn;
+	
+	volatile Object stateObject;
 	private final static AtomicReferenceFieldUpdater<Borrower,Object> updater = AtomicReferenceFieldUpdater.newUpdater(Borrower.class,Object.class,"stateObject");
-
+	private long deadlineNanos;
+	
 	public Borrower(ConnectionPool pool) {
+		this.pool=pool;
 		thread = Thread.currentThread();
 	}
 	public Thread getThread() {
 		return thread;
+	}
+	public void resetThread(){
+		thread = Thread.currentThread();
 	}
 	public boolean equals(Object o){
 		return this==o;
@@ -52,5 +62,12 @@ final class Borrower{
 	}
 	public boolean compareAndSetStateObject(Object cur,Object exp) {
 		return updater.compareAndSet(this,cur,exp);
+	}
+	
+	public void setDeadlineNanos(long deadlineNanos){
+		this.deadlineNanos=deadlineNanos;
+	}
+	public Connection call() throws Exception{
+		return pool.takeOneConnection(deadlineNanos,this);
 	}
 }

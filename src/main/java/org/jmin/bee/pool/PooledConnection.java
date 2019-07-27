@@ -82,9 +82,7 @@ final class PooledConnection{
 	
 	public Connection getPhisicConnection() {
 		return connection;
-		
 	}
-
 	public ProxyConnection getProxyConnection() {
 		return proxyConnection;
 	}
@@ -139,11 +137,5 @@ final class PooledConnection{
 		resetConnectionAfterRelease();
 		bindProxyConnection(null);
 		pool.release(this,false);
-	}
-    
-    
-    
-    
-    
-    
+	} 
 }

@@ -58,7 +58,7 @@ import org.jmin.bee.BeeDataSourceConfig;
  * @author Chris.Liao
  * @version 1.0
  */
-public final class ConnectionPool{
+public class ConnectionPool{
 	private volatile int state=POOL_UNINIT;
 	private Timer idleCheckTimer;
 	private ConnectionPoolHook exitHook;
@@ -73,11 +73,11 @@ public final class ConnectionPool{
 	private final ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
 
 	private volatile boolean surpportQryTimeout=true;
-	private final static long TO_NANO_BASE=1000000L;
-	private static final long MAX_IDLE_TIME_IN_USING=MINUTES.toNanos(5);
-	private static final SQLException PoolCloseException = new SQLException("Pool has been closed");
-	private static final SQLException RequestTimeoutException = new SQLException("Request timeout");
-	private static final SQLException RequestInterruptException = new SQLException("Request interrupt");
+	protected final static long TO_NANO_BASE=1000000L;
+	protected static final long MAX_IDLE_TIME_IN_USING=MINUTES.toNanos(5);
+	protected static final SQLException PoolCloseException = new SQLException("Pool has been closed");
+	protected static final SQLException RequestTimeoutException = new SQLException("Request timeout");
+	protected static final SQLException RequestInterruptException = new SQLException("Request interrupt");
 	
 	/**
 	 * initialize pool with configuration
@@ -110,8 +110,8 @@ public final class ConnectionPool{
 			}
 			
 			createInitConns();
-			poolSemaphore=new Semaphore(info.getPoolMaxSize(),info.isFairMode());
-			System.out.println("BeeCP("+info.getPoolName()+")has been startup{init size:"+connList.size()+",max size:"+poolInfo.getPoolMaxSize()+ ",mode:"+mode +",max wait:"+info.getBorrowerMaxWaitTime()+"ms}");
+			poolSemaphore=new Semaphore(info.getPoolConcurrentSize(),info.isFairMode());
+			System.out.println("BeeCP("+info.getPoolName()+")has been startup{init size:"+connList.size()+",max size:"+poolInfo.getPoolMaxSize()+",concurrent size:"+info.getPoolConcurrentSize()+ ",mode:"+mode +",max wait:"+info.getBorrowerMaxWaitTime()+"ms}");
 			state = POOL_NORMAL;
 			createThread.start();
 		} else {
@@ -120,7 +120,7 @@ public final class ConnectionPool{
 	}
 
 	/**
-	 * check some proxy class whether exists
+	 * check some proxy classes whether exists
 	 */
 	private void checkProxyClasses() throws SQLException {
 		try {
@@ -140,8 +140,8 @@ public final class ConnectionPool{
 	private final boolean isClosed() {
 		return state == POOL_CLOSED;
 	}
-	private final boolean existBorrower() {
-		return(poolSemaphore.availablePermits()<info.getPoolMaxSize()||poolSemaphore.hasQueuedThreads());	
+	protected boolean existBorrower() {
+		return(poolSemaphore.availablePermits()<info.getPoolConcurrentSize()||poolSemaphore.hasQueuedThreads());	
 	}
 	private int getIdleConnSize(){
 		int conIdleSize=0;
@@ -261,11 +261,10 @@ public final class ConnectionPool{
 	public final Connection getConnection(long wait) throws SQLException {
 		if(isClosed())throw PoolCloseException;
 		
-		boolean acquired=false;
 		Borrower borrower=null;
 		PooledConnection pConn=null;
 		
-		WeakReference<Borrower> bRef = threadLocal.get();
+		WeakReference<Borrower> bRef=threadLocal.get();
 		if(bRef!=null)borrower=bRef.get();
 		if(borrower==null){
 			borrower = new Borrower(this);
@@ -279,21 +278,22 @@ public final class ConnectionPool{
 				   borrower.setLastUsedConn(null);
 			}
 		}
-			
+		
+		return getConnection(wait,borrower);
+	}
+	
+	//Concurrent control
+	protected Connection getConnection(long wait,Borrower borrower)throws SQLException {
+		boolean acquired=false;
 		try{
-			wait=wait*TO_NANO_BASE;
+			wait=wait * TO_NANO_BASE;
 			long deadlineNanos=nanoTime()+wait;
-			if(acquired=poolSemaphore.tryAcquire(wait,NANOSECONDS)) {	
-				for(PooledConnection sPConn:connList.getArray()) {
-					if(sPConn.compareAndSetState(CONNECTION_IDLE,CONNECTION_USING) && checkOnBorrow(sPConn)) {
-						return createProxyConnection(sPConn, borrower);
-					}
-				}
-				
-				return getTransferedConnection(borrower,deadlineNanos);
-			} else {
+			
+			if(acquired=poolSemaphore.tryAcquire(wait,NANOSECONDS)){
+				return takeOneConnection(deadlineNanos,borrower);
+			}else{
 				throw RequestTimeoutException;
-			}
+			}	
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 			throw RequestInterruptException;
@@ -302,22 +302,30 @@ public final class ConnectionPool{
 		}
 	}
 	
-	// wait one transfered connection 
-	private final Connection getTransferedConnection(Borrower borrower,long deadlineNanos)throws SQLException {
+	//take one connection
+    final Connection takeOneConnection(long deadlineNanos,Borrower borrower)throws SQLException {
+    	for(PooledConnection sPConn:connList.getArray()) {
+			if(sPConn.compareAndSetState(CONNECTION_IDLE,CONNECTION_USING) && checkOnBorrow(sPConn)) {
+				return createProxyConnection(sPConn, borrower);
+			}
+		}
+    	
+    	//wait one transfered connection 
 		boolean timeout=false;
 		Object stateObject=null;
-		
 		try{
 			long waitNanos=0;
+			borrower.resetThread();
 			borrower.resetStateObject();//BORROWER_NORMAL	
 			waitQueue.offer(borrower);
 			tryToCreateNewConnByAsyn();
 			 
-			while(true){
+			for(;;){
 				stateObject=borrower.getStateObject();
 				if(stateObject instanceof PooledConnection){
 					PooledConnection pConn=(PooledConnection)stateObject;
-				    if(tansferPolicy.tryCatch(pConn)){
+				    
+					if(tansferPolicy.tryCatch(pConn)){
 				    	return createProxyConnection(pConn,borrower);
 				    }else{
 				    	borrower.resetStateObject();
@@ -335,13 +343,14 @@ public final class ConnectionPool{
 				
 				waitNanos=deadlineNanos-nanoTime();
 				if(waitNanos<=0){timeout=true;continue;}
-				if(borrower.getStateObject()==BORROWER_NORMAL && borrower.compareAndSetStateObject(BORROWER_NORMAL,BORROWER_WAITING))
+				if(borrower.compareAndSetStateObject(BORROWER_NORMAL,BORROWER_WAITING))
 					LockSupport.parkNanos(borrower,waitNanos);
-			}//while 
+			}//for 
 		}finally{
 			waitQueue.remove(borrower);
 		}
-	}
+    }
+    
 	//create proxy to wrap connection as result
 	private ProxyConnection createProxyConnection(PooledConnection pConn,Borrower borrower)throws SQLException {
 		borrower.setLastUsedConn(pConn);
@@ -494,7 +503,7 @@ public final class ConnectionPool{
    
    private class CreateConnThread extends Thread {
 	   private volatile int state=THREAD_NORMAL;   
-	   public CreateConnThread(){
+	   CreateConnThread(){
 		   this.setDaemon(true);
 	   }
 	   
@@ -513,7 +522,7 @@ public final class ConnectionPool{
 			Driver driver = info.getConnectDriver();
 			Properties prop = info.getConnectProperties();
 			
-			while (true) {
+			for(;;){
 				state=THREAD_WORKING;
 				if(PoolMaxSize>connList.size() && !waitQueue.isEmpty()){
 					try {
@@ -530,7 +539,7 @@ public final class ConnectionPool{
 				}
 				if(state==THREAD_DEAD)break;
 			}
-		}	
+		}
    }
    
    //Transfer Policy
