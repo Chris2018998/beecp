@@ -19,7 +19,6 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
-
 /**
  * Connection pool configuration
  * 
@@ -89,11 +88,16 @@ public final class BeeDataSourceConfig {
 	 * pool initialization size
 	 */
 	private int poolInitSize = 0;
-
+	
 	/**
 	 * pool allow max size
 	 */
 	private int poolMaxSize;
+	
+	/**
+	 * pool concurrent Size
+	 */
+	private int poolConcurrentSize=Runtime.getRuntime().availableProcessors();
 	
 	/**
 	 * 'PreparedStatement' cache size
@@ -255,9 +259,20 @@ public final class BeeDataSourceConfig {
 	public void setPoolMaxSize(int poolMaxSize) {
 		if (!this.inited && poolMaxSize > 0) {
 			this.poolMaxSize = poolMaxSize;
+			this.poolConcurrentSize = poolMaxSize;
 		}
 	}
 	
+	public int getPoolConcurrentSize() {
+		return poolConcurrentSize;
+	}
+
+	public void setPoolConcurrentSize(int poolConcurrentSize) {
+	  if(!this.inited && poolConcurrentSize > 0) {
+		this.poolConcurrentSize = poolConcurrentSize;
+	  }
+	}
+
 	public  int getPreparedStatementCacheSize() {
 		return preparedStatementCacheSize;
 	}
