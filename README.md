@@ -33,7 +33,7 @@ Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0
 | validationQuerySQL |  连接测试查询语句   |    |   |
 
 
-参考案例
+使用参考
 ---
 ```java
 String userId="root";
@@ -69,7 +69,6 @@ Bee_F(0.0006) > Bee_C(0.0980) > HikariCP(0.3053) > Vibur(0.3068) > TOMCAT(1.9001
 
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/Jdbc_CP_Test.zip">性能测试代码下载</a>
-
 
 
 
