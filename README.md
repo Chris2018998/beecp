@@ -28,9 +28,9 @@ Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0
 | poolInitSize  |连接池初始大小  |   |
 | poolMaxSize   |连接池最大个数 |    |
 | maxWaitTime   |连接借用等待最大时间(毫秒)  |   |
-| maxIdleTime   | 连接闲置最大时间(ms)  |    |  |
-| preparedStatementCacheSize | SQL宣言缓存大小 |   
-| validationQuerySQL |  连接测试查询语句   |    |   |
+| maxIdleTime   |连接闲置最大时间(ms)  |    |  |
+| preparedStatementCacheSize |SQL宣言缓存大小 |   
+| validationQuerySQL |连接是否存活测试查询语句   |    |   |
 
 
 使用参考
@@ -49,9 +49,11 @@ Connection con = datasource.getConnection();
 
 性能测试
 ---
-<i>以多线程模拟并发查询(1000个线程各自执行1000次，共100万次)的方式测试各连接池性能，并打印耗时分布以及平均耗时，最后依据平时耗时为各连接池进行名次排列，单次时间统计规则：<i>[datasource.getConnection(),connection.prepareStatement,statement.execute(),statement.close(),connection.close()]</i>
+以多线程查询(1000个线程各自执行1000次，共100万次)的方式测试各连接池性能，并打印耗时分布以及平均耗时，最后依据平时耗时为各连接池进行名次排列，单次时间统计：
 
-1：下面为各连接池在Oracle11G的下测试结果
+[datasource.getConnection(),connection.prepareStatement,statement.execute(),statement.close(),connection.close()]</i>
+
+1：下面为各连接池在Oracle11G的下测试结果（单位：毫秒）
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I5_4210M_Oracle11g_20190717.log">I5_4210M_Oracle11g_20190717.log</a>
 
@@ -66,6 +68,7 @@ Bee_F(13.39) > Bee_C(15.25) > Vibur(20.64) > HikariCP(28.79) > TOMCAT(57.93) > D
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I3_7100_HikariCP_Driver_20190729.log">I3_7100_HikariCP_Driver_20190729.log</a>
 
 Bee_F(0.0006) > Bee_C(0.0980) > HikariCP(0.3053) > Vibur(0.3068) > TOMCAT(1.9001) > DBCP(3.9862) > C3P0(6.3528) > Druid(9.7170)
+
 
 
 性能测试代码请访问项目：https://github.com/Chris2018998/PoolPerformance
