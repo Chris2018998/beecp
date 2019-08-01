@@ -27,9 +27,9 @@ Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0
 | ------------ | ------------ | ------------ |
 | poolInitSize  |连接池初始大小  |   |
 | poolMaxSize   |连接池最大个数 |    |
-| borrowerMaxWaitTime |连接借用等待最大时间(毫秒)  |   |
-| preparedStatementCacheSize | SQL宣言缓存大小 |   |
-| connectionIdleTimeout  | 连接闲置最大时间(ms)  |    |
+| maxWaitTime   |连接借用等待最大时间(毫秒)  |   |
+| maxIdleTime   | 连接闲置最大时间(ms)  |    |  |
+| preparedStatementCacheSize | SQL宣言缓存大小 |   
 | validationQuerySQL |  连接测试查询语句   |    |   |
 
 
@@ -68,8 +68,7 @@ Bee_F(13.39) > Bee_C(15.25) > Vibur(20.64) > HikariCP(28.79) > TOMCAT(57.93) > D
 Bee_F(0.0006) > Bee_C(0.0980) > HikariCP(0.3053) > Vibur(0.3068) > TOMCAT(1.9001) > DBCP(3.9862) > C3P0(6.3528) > Druid(9.7170)
 
 
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/Jdbc_CP_Test.zip">性能测试代码下载</a>
-
+性能测试代码请访问项目：https://github.com/Chris2018998/PoolPerformance
 
 
 支持与联系 
@@ -79,5 +78,9 @@ Email:Chris2018998@tom.com
 
 <img src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/w.png"> </img>
 <img src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/z.png"> </img>
- 
 
+(若您在使用的过程中遇到紧急问题，可通过上述方式联系，请注明：紧急)
+
+最后说明
+---
+测试方法不一定准确，仅用于学习，欢迎各位网友批评与交流，同时欢迎对连接池有兴趣的朋友一起开发和维护
