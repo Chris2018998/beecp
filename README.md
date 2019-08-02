@@ -26,9 +26,9 @@ Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0
 |  Name  |   Description |   Remark |
 | ------------ | ------------ | ------------ |
 | poolInitSize  |连接池初始大小  |   |
-| poolMaxSize   |连接池最大个数 |    |
+| poolMaxSize   |连接池最大个数  |    |
 | maxWaitTime   |连接借用等待最大时间(毫秒)  |   |
-| maxIdleTime   |连接闲置最大时间(ms)  |    |  |
+| maxIdleTime   |连接闲置最大时间(毫秒)     |   |  
 | preparedStatementCacheSize |SQL宣言缓存大小 |   
 | validationQuerySQL |连接是否存活测试查询语句   |    |   |
 
