@@ -10,13 +10,13 @@
 
 Maven下载
 ---
-Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.85/BeeCP-0.85.jar">BeeCP_0.85.jar</a>
+Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.86/BeeCP-0.86.jar">BeeCP_0.86.jar</a>
 
 ```java
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>0.85</version>
+   <version>0.86</version>
 </dependency>
 
 ```
@@ -63,7 +63,7 @@ Bee_F(16.37) > Bee_C(18.25) > Vibur(28.79) > HikariCP(34.42) > TOMCAT(67.47) > D
 
 Bee_F(13.39) > Bee_C(15.25) > Vibur(20.64) > HikariCP(28.79) > TOMCAT(57.93) > DBCP(66.47) > Druid(67.03) > C3P0(71.54)
 
-2：以光连接池的驱动（专用于性能测试的驱动）测试情况如下
+2：以光连接池的驱动（专用于连接池性能测试的驱动）测试情况如下
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I3_7100_HikariCP_Driver_20190729.log">I3_7100_HikariCP_Driver_20190729.log</a>
 
@@ -76,14 +76,11 @@ Bee_F(0.0006) > Bee_C(0.0980) > HikariCP(0.3053) > Vibur(0.3068) > TOMCAT(1.9001
 
 支持与联系 
 ---
-
 Email:Chris2018998@tom.com
 
 <img src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/w.png"> </img>
 <img src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/z.png"> </img>
 
-(若您在使用的过程中遇到紧急问题，可通过上述方式联系，请注明：紧急)
-
-最后说明
+开发邀请
 ---
 欢迎对连接池有兴趣的网友一起开发和维护
