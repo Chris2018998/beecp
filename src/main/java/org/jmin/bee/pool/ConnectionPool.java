@@ -17,7 +17,6 @@ package org.jmin.bee.pool;
 
 import static java.lang.System.currentTimeMillis;
 import static java.lang.System.nanoTime;
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jmin.bee.pool.PoolObjectsState.BORROWER_NORMAL;
@@ -74,7 +73,6 @@ public class ConnectionPool{
 
 	private volatile boolean surpportQryTimeout=true;
 	protected final static long TO_NANO_BASE=1000000L;
-	protected static final long MAX_IDLE_TIME_IN_USING=MINUTES.toNanos(5);
 	protected static final SQLException PoolCloseException = new SQLException("Pool has been closed");
 	protected static final SQLException RequestTimeoutException = new SQLException("Request timeout");
 	protected static final SQLException RequestInterruptException = new SQLException("Request interrupt");
@@ -111,7 +109,7 @@ public class ConnectionPool{
 			
 			createInitConns();
 			poolSemaphore=new Semaphore(info.getPoolConcurrentSize(),info.isFairMode());
-			System.out.println("BeeCP("+info.getPoolName()+")has been startup{init size:"+connList.size()+",max size:"+poolInfo.getPoolMaxSize()+",concurrent size:"+info.getPoolConcurrentSize()+ ",mode:"+mode +",max wait:"+info.getBorrowerMaxWaitTime()+"ms}");
+			System.out.println("BeeCP("+info.getPoolName()+")has been startup{init size:"+connList.size()+",max size:"+poolInfo.getPoolMaxSize()+",concurrent size:"+info.getPoolConcurrentSize()+ ",mode:"+mode +",max wait:"+info.getMaxWaitTime()+"ms}");
 			state = POOL_NORMAL;
 			createThread.start();
 		} else {
@@ -245,7 +243,7 @@ public class ConnectionPool{
 	 * @throws SQLException if pool is closed or waiting timeout,then throw exception
 	 */
 	public final Connection getConnection() throws SQLException {
-		return getConnection(info.getBorrowerMaxWaitTime());
+		return getConnection(info.getMaxWaitTime());
 	}
 
 	/**
@@ -324,8 +322,11 @@ public class ConnectionPool{
 				stateObject=borrower.getStateObject();
 				if(stateObject instanceof PooledConnection){
 					PooledConnection pConn=(PooledConnection)stateObject;
-				    
-					if(tansferPolicy.tryCatch(pConn)){
+					
+					//fix issue:#3 Chris-2019-08-01 begin
+					//if(tansferPolicy.tryCatch(pConn){
+					if(tansferPolicy.tryCatch(pConn)&& this.checkOnBorrow(pConn)){
+					//fix issue:#3 Chris-2019-08-01 end
 				    	return createProxyConnection(pConn,borrower);
 				    }else{
 				    	borrower.resetStateObject();
@@ -413,7 +414,7 @@ public class ConnectionPool{
 				final int state = pConn.getState();
 				if (state == CONNECTION_IDLE) {
 					final boolean isDead = !isActiveConn(pConn);
-					final boolean isTimeout = ((currentTimeMillis()-pConn.getLastActiveTime()>=info.getConnectionIdleTimeout()));
+					final boolean isTimeout = ((currentTimeMillis()-pConn.getLastActiveTime()>=info.getMaxIdleTime()));
 					if ((isDead || isTimeout) && (pConn.compareAndSetState(state,CONNECTION_CLOSED))) {
 						pConn.closePhysicalConnection();
 						badConList.add(pConn);
@@ -421,7 +422,7 @@ public class ConnectionPool{
 
 				} else if (state == CONNECTION_USING) {
 					final boolean isDead = !isActiveConn(pConn);
-					final boolean isTimeout = ((currentTimeMillis()-pConn.getLastActiveTime()>=MAX_IDLE_TIME_IN_USING));
+					final boolean isTimeout = ((currentTimeMillis()-pConn.getLastActiveTime()>=info.getMaxHoldTimeInUnused()));
 					if ((isDead || isTimeout) && (pConn.compareAndSetState(state,CONNECTION_CLOSED))) {
 
 						pConn.closePhysicalConnection();
@@ -464,7 +465,7 @@ public class ConnectionPool{
 						connList.remove(pConn);
 					} else if (pConn.getState() == CONNECTION_USING) {
 						final boolean isDead = !isActiveConn(pConn);
-						final boolean isTimeout = ((currentTimeMillis()-pConn.getLastActiveTime()>=MAX_IDLE_TIME_IN_USING));
+						final boolean isTimeout = ((currentTimeMillis()-pConn.getLastActiveTime()>=info.getMaxHoldTimeInUnused()));
 						if ((isDead || isTimeout) && (pConn.compareAndSetState(CONNECTION_USING,CONNECTION_CLOSED))) {
 							pConn.closePhysicalConnection();
 							connList.remove(pConn);
