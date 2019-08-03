@@ -148,13 +148,13 @@ public final class BeeDataSourceFactory implements ObjectFactory {
 		if (!isNull(initSize))
 			config.setPoolInitSize(Integer.parseInt(initSize));
 		if (!isNull(maxWait))
-			config.setBorrowerMaxWaitTime(Integer.parseInt(maxWait));
+			config.setMaxWaitTime(Integer.parseInt(maxWait));
 		if (!isNull(validationQuerySQL))
 			config.setValidationQuerySQL(validationQuerySQL);
 		if (!isNull(validationQueryTimeout))
 			config.setValidationQueryTimeout(Integer.parseInt(validationQueryTimeout));
 		if (!isNull(connectionIdleTimeout))
-			config.setConnectionIdleTimeout(Integer.parseInt(connectionIdleTimeout));
+			config.setMaxIdleTime(Integer.parseInt(connectionIdleTimeout));
 	
         ra = ref.get(PROP_POOLPREPAREDSTATEMENTS);
         if(ra != null) needStatementCache= ra.getContent().toString(); 

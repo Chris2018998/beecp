@@ -15,6 +15,8 @@
  */
 package org.jmin.bee;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -105,16 +107,21 @@ public final class BeeDataSourceConfig {
 	private int preparedStatementCacheSize = 10;
 
 	/**
-	 * borrower request timeout
+	 * borrower request timeout(milliseconds)
 	 */
-	private long borrowerMaxWaitTime = 180000L;
+	private long maxWaitTime=8000;
 
 	/**
-	 * max idle time for pooledConnection(milliseconds),default value: three
+	 * max idle time for pooledConnection(milliseconds),default value: three minutes
 	 * minutes
 	 */
-	private long connectionIdleTimeout = 180000L;
-
+	private long maxIdleTime=MINUTES.toMillis(3);
+	
+	/** 
+	 * max hold time in Unused(milliseconds),pool will release it by forced 
+	 */
+	private long maxHoldTimeInUnused=MINUTES.toMillis(5);
+	
 	/**
 	 * a test SQL to check connection active state
 	 */
@@ -283,23 +290,33 @@ public final class BeeDataSourceConfig {
 		}
 	}
 
-	public long getConnectionIdleTimeout() {
-		return connectionIdleTimeout;
+	public long getMaxWaitTime() {
+		return maxWaitTime;
 	}
 
-	public void setConnectionIdleTimeout(long connectionIdleTimeout) {
-		if (!this.inited && connectionIdleTimeout > 0) {
-			this.connectionIdleTimeout = connectionIdleTimeout;
+	public void setMaxWaitTime(long maxWaitTime) {
+		if (!this.inited && maxWaitTime > 0) {
+			this.maxWaitTime = maxWaitTime;
 		}
 	}
-
-	public long getBorrowerMaxWaitTime() {
-		return borrowerMaxWaitTime;
+	
+	public long getMaxIdleTime() {
+		return maxIdleTime;
 	}
 
-	public void setBorrowerMaxWaitTime(long borrowerMaxWaitTime) {
-		if (!this.inited && borrowerMaxWaitTime > 0) {
-			this.borrowerMaxWaitTime = borrowerMaxWaitTime;
+	public void setMaxIdleTime(long maxIdleTime) {
+		if (!this.inited && maxIdleTime > 0) {
+			this.maxIdleTime = maxIdleTime;
+		}
+	}
+	
+	public long getMaxHoldTimeInUnused() {
+		return maxHoldTimeInUnused;
+	}
+
+	public void setMaxHoldTimeInUnused(long maxHoldTimeInUnused) {
+		if (!this.inited && maxHoldTimeInUnused > 0) {
+			this.maxHoldTimeInUnused = maxHoldTimeInUnused;
 		}
 	}
 
@@ -358,19 +375,15 @@ public final class BeeDataSourceConfig {
 			throw new IllegalArgumentException("Driver class[" + driverClassName + "]can't be instantiated",e);
 		}
 	}
-	
-	/**
-	 * check pool configuration
-	 */
-	public void check() {
-		if (isNull(this.driverClassName))
-			throw new IllegalArgumentException("Driver class name can't be null");
-		if (isNull(this.connectURL))
-			throw new IllegalArgumentException("Connect url can't be null");
-		try {
+	//check pool configuration
+	public void check()throws SQLException {
+		if(!isNull(driverClassName)){
+			this.connectDriver=loadJdbcDriver(driverClassName);
+		}else if(!isNull(connectURL)){
 			this.connectDriver = DriverManager.getDriver(this.connectURL);
-		} catch (SQLException e) {}
-		if(this.connectDriver==null)this.connectDriver=loadJdbcDriver(driverClassName);
+		}else{
+			throw new IllegalArgumentException("Connect url can't be null");
+		}
 		
 		if (this.poolMaxSize <= 0)
 			throw new IllegalArgumentException("Pool max size must be greater than zero");
@@ -378,9 +391,9 @@ public final class BeeDataSourceConfig {
 			throw new IllegalArgumentException("Pool init size must be greater than zero");
 		if (this.poolInitSize > poolMaxSize)
 			throw new IllegalArgumentException("Error configeruation,pool initiation size must be less than pool max size");
-		if (this.connectionIdleTimeout <= 0)
+		if (this.maxIdleTime <= 0)
 			throw new IllegalArgumentException("Connection max idle time must be greater than zero");
-		if (this.borrowerMaxWaitTime <= 0)
+		if (this.maxWaitTime <= 0)
 			throw new IllegalArgumentException("Borrower max wait time must be greater than zero");
 		if (this.preparedStatementCacheSize <= 0)
 			throw new IllegalArgumentException("Statement cache size must be greater than zero");
