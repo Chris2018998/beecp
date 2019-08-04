@@ -68,7 +68,7 @@ public final class BeeDataSourceConfig {
 	/**
 	 * pool name
 	 */
-	private String poolName="Pool1";
+	private String poolName="";
 	
 	/**
 	 * if true,first arrival,first taking if false,competition for all borrower
