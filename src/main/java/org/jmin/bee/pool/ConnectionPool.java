@@ -47,10 +47,12 @@ import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.LockSupport;
 
 import org.jmin.bee.BeeDataSourceConfig;
+import org.jmin.bee.pool.util.ConnectionUtil;
 /**
  * JDBC Connection Pool base Implementation
  *
@@ -71,6 +73,9 @@ public class ConnectionPool{
 	private final ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
 	private final ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
 
+	private String poolName="";
+	private static String poolNamePrefix="Pool-";
+	private static AtomicInteger poolNameIndex=new AtomicInteger(1);
 	private volatile boolean surpportQryTimeout=true;
 	protected final static long TO_NANO_BASE=1000000L;
 	protected static final SQLException PoolCloseException = new SQLException("Pool has been closed");
@@ -109,7 +114,9 @@ public class ConnectionPool{
 			
 			createInitConns();
 			poolSemaphore=new Semaphore(info.getPoolConcurrentSize(),info.isFairMode());
-			System.out.println("BeeCP("+info.getPoolName()+")has been startup{init size:"+connList.size()+",max size:"+poolInfo.getPoolMaxSize()+",concurrent size:"+info.getPoolConcurrentSize()+ ",mode:"+mode +",max wait:"+info.getMaxWaitTime()+"ms}");
+			
+			poolName=!ConnectionUtil.isNull(info.getPoolName())?info.getPoolName():poolNamePrefix+poolNameIndex.getAndIncrement();
+			System.out.println("BeeCP("+poolName+")has been startup{init size:"+connList.size()+",max size:"+poolInfo.getPoolMaxSize()+",concurrent size:"+info.getPoolConcurrentSize()+ ",mode:"+mode +",max wait:"+info.getMaxWaitTime()+"ms}");
 			state = POOL_NORMAL;
 			createThread.start();
 		} else {
@@ -480,7 +487,7 @@ public class ConnectionPool{
 			try {
 				Runtime.getRuntime().removeShutdownHook(exitHook);
 			} catch (Throwable e) {}
-			System.out.println("BeeCP("+info.getPoolName()+")has been shutdown");
+			System.out.println("BeeCP("+poolName+")has been shutdown");
 		}
 	}
 
