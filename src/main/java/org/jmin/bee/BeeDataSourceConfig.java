@@ -79,12 +79,12 @@ public final class BeeDataSourceConfig {
 	/**
 	 * check on borrow connection
 	 */
-	private boolean checkOnBorrow;
+	private boolean checkOnBorrow=true;
 	
 	/**
 	 * check on borrow connection
 	 */
-	private boolean checkOnReturn;
+	private boolean checkOnReturn=false;
 	
 	/**
 	 * pool initialization size
