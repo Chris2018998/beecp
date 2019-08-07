@@ -89,7 +89,7 @@ public final class BeeDataSourceConfig {
 	/**
 	 * pool initialization size
 	 */
-	private int poolInitSize = 0;
+	private int poolInitSize;
 	
 	/**
 	 * pool allow max size
@@ -99,12 +99,12 @@ public final class BeeDataSourceConfig {
 	/**
 	 * pool concurrent Size
 	 */
-	private int poolConcurrentSize=Runtime.getRuntime().availableProcessors();
+	private int poolConcurrentSize;
 	
 	/**
 	 * 'PreparedStatement' cache size
 	 */
-	private int preparedStatementCacheSize = 10;
+	private int preparedStatementCacheSize = 16;
 
 	/**
 	 * borrower request timeout(milliseconds)
@@ -149,6 +149,10 @@ public final class BeeDataSourceConfig {
 		this.userName = user;
 		this.password = password;
 		this.inited = false;
+		
+		int cpuSize=Runtime.getRuntime().availableProcessors();
+		poolMaxSize=cpuSize*2;
+		poolConcurrentSize=cpuSize;
 	}
 
 	public void setInited(boolean inited) {
