@@ -10,13 +10,13 @@
 
 Maven下载
 ---
-Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.86/BeeCP-0.86.jar">BeeCP_0.86.jar</a>
+Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.87/BeeCP-0.87.jar">BeeCP_0.87.jar</a>
 
 ```java
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>0.86</version>
+   <version>0.87</version>
 </dependency>
 
 ```
@@ -67,8 +67,12 @@ Bee_F(13.39) > Bee_C(15.25) > Vibur(20.64) > HikariCP(28.79) > TOMCAT(57.93) > D
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I3_7100_HikariCP_Driver_20190729.log">I3_7100_HikariCP_Driver_20190729.log</a>
 
+
 Bee_F(0.0006) > Bee_C(0.0980) > HikariCP(0.3053) > Vibur(0.3068) > TOMCAT(1.9001) > DBCP(3.9862) > C3P0(6.3528) > Druid(9.7170)
 
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/G840_HikariCP_Driver_20190807.log">G840_HikariCP_Driver_20190807.log</a>
+
+Bee_C(0.0005) > Vibur(0.1160) > Bee_F(0.1898) > HikariCP(0.3629) > TOMCAT(4.0542) > DBCP(5.4230) > C3P0(7.2740) > Druid(11.8378)
 
 
 性能测试代码请访问项目：https://github.com/Chris2018998/PoolPerformance
