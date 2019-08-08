@@ -49,26 +49,25 @@ Connection con = datasource.getConnection();
 
 性能测试
 ---
-以多线程查询(1000个线程各自执行1000次，共100万次)的方式测试各连接池性能，并打印耗时分布以及平均耗时，最后依据平时耗时为各连接池进行名次排列，单次时间统计：
+以多线程查询(1000个线程各自执行1000次，共100万次)的方式测试各连接池性能，并打印耗时分布以及平均耗时，最后依据平时耗时为各连接池进行名次排列，单次时间统计(机器状态对测试结果与有较大影响)：
 
 [datasource.getConnection(),connection.prepareStatement,statement.execute(),statement.close(),connection.close()]</i>
 
 1：下面为各连接池在Oracle11G的下测试结果（单位：毫秒）
 
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I5_4210M_Oracle11g_20190717.log">I5_4210M_Oracle11g_20190717.log</a>
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20190808_I5_4210M_Orcale11g.log">20190808_I5_4210M_Orcale11g.log</a>
 
-Bee_F(16.37) > Bee_C(18.25) > Vibur(28.79) > HikariCP(34.42) > TOMCAT(67.47) > DBCP(75.28) > Druid(75.97) > C3P0(96.40)
-
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I5_4210M_Oracle11g_20190723.log">I5_4210M_Oracle11g_20190723.log</a>
-
-Bee_F(13.39) > Bee_C(15.25) > Vibur(20.64) > HikariCP(28.79) > TOMCAT(57.93) > DBCP(66.47) > Druid(67.03) > C3P0(71.54)
+Bee_C(30.7656) > HikariCP(38.3209) > Vibur(49.7906) > Bee_F(55.0636) > TOMCAT(121.8306) > Druid(126.8635) > DBCP(127.7240) > C3P0(144.3271)
 
 2：以光连接池的驱动（专用于连接池性能测试的驱动）测试情况如下
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I3_7100_HikariCP_Driver_20190729.log">I3_7100_HikariCP_Driver_20190729.log</a>
 
-
 Bee_F(0.0006) > Bee_C(0.0980) > HikariCP(0.3053) > Vibur(0.3068) > TOMCAT(1.9001) > DBCP(3.9862) > C3P0(6.3528) > Druid(9.7170)
+
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20190808_I5_4210M_HikariCP_Driver.log">20190808_I5_4210M_HikariCP_Driver.log</a>
+
+Bee_C(0.0018) > Vibur(0.0048) > Bee_F(0.1982) > HikariCP(0.3832) > TOMCAT(2.3388) > Druid(3.0775) > DBCP(5.2606) > C3P0(11.9082)
 
 
 性能测试代码请访问项目：https://github.com/Chris2018998/PoolPerformance
