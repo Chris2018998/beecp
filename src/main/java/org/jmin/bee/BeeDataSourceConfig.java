@@ -21,6 +21,8 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
+
+import org.jmin.bee.pool.DefaultConnectionFactory;
 /**
  * Connection pool configuration
  * 
@@ -56,10 +58,10 @@ public final class BeeDataSourceConfig {
 	private String driverClassName;
 
 	/**
-	 * connection driver
+	 * Physical JDBC Connection factory
 	 */
-	private Driver connectDriver = null;
-
+	private ConnectionFactory connectionFactory;
+	
 	/**
 	 * connection extra properties
 	 */
@@ -195,9 +197,15 @@ public final class BeeDataSourceConfig {
 		if (!this.inited)
 			this.password = password;
 	}
+	
+	public ConnectionFactory getConnectionFactory() {
+		return connectionFactory;
+	}
 
-	public Driver getConnectDriver() {
-		return connectDriver;
+	public void setConnectionFactory(ConnectionFactory connectionFactory) {
+		if(!this.inited && connectionFactory!=null) {
+			this.connectionFactory = connectionFactory;
+		}
 	}
 
 	public Properties getConnectProperties() {
@@ -381,12 +389,25 @@ public final class BeeDataSourceConfig {
 	}
 	//check pool configuration
 	public void check()throws SQLException {
-		if(!isNull(driverClassName)){
-			this.connectDriver=loadJdbcDriver(driverClassName);
-		}else if(!isNull(connectURL)){
-			this.connectDriver = DriverManager.getDriver(this.connectURL);
-		}else{
-			throw new IllegalArgumentException("Connect url can't be null");
+		if(connectionFactory==null){
+			Driver connectDriver=null;
+			if(!isNull(driverClassName)){
+				connectDriver=loadJdbcDriver(driverClassName);
+			}else if(!isNull(connectURL)){
+				connectDriver = DriverManager.getDriver(this.connectURL);
+			} 
+			
+			if (isNull(connectURL))
+				throw new IllegalArgumentException("Connect url can't be null");
+			if (connectDriver==null)
+				throw new IllegalArgumentException("Failed to find mathed jdbc Driver");
+			
+			if (!isNull(this.userName))
+				this.connectProperties.put("user", this.userName);
+			if (!isNull(this.password))
+				this.connectProperties.put("password", this.password);
+			
+			connectionFactory= new DefaultConnectionFactory(connectURL,connectDriver,connectProperties);
 		}
 		
 		if (this.poolMaxSize <= 0)
@@ -408,11 +429,6 @@ public final class BeeDataSourceConfig {
 		//fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end	
 			throw new IllegalArgumentException("Connection validate SQL must start with 'select '");
 		//}
-
-		if (!isNull(this.userName))
-			this.connectProperties.put("user", this.userName);
-		if (!isNull(this.password))
-			this.connectProperties.put("password", this.password);
 	}
 
 	private boolean isNull(String value) {
