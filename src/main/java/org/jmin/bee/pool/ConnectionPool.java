@@ -18,6 +18,7 @@ package org.jmin.bee.pool;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.System.nanoTime;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jmin.bee.pool.PoolObjectsState.BORROWER_NORMAL;
 import static org.jmin.bee.pool.PoolObjectsState.BORROWER_TIMEOUT;
@@ -37,21 +38,20 @@ import static org.jmin.bee.pool.util.ConnectionUtil.oclose;
 
 import java.lang.ref.WeakReference;
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 
 import org.jmin.bee.BeeDataSourceConfig;
+import org.jmin.bee.ConnectionFactory;
 import org.jmin.bee.pool.util.ConnectionUtil;
 /**
  * JDBC Connection Pool base Implementation
@@ -232,13 +232,11 @@ public class ConnectionPool{
 	 *             error occurred in creating connections
 	 */
 	private void createInitConns() throws SQLException {
-		String connectURL=info.getConnectURL();
-		Driver connectDriver=info.getConnectDriver();
-		Properties connectProperties= info.getConnectProperties();
+		ConnectionFactory connFactory= info.getConnectionFactory();
 		int size = info.getPoolInitSize();
 		try {
 			for (int i = 0; i < size; i++) 
-			connList.add(new PooledConnection(connectDriver.connect(connectURL,connectProperties),info.getPreparedStatementCacheSize(),this));
+			connList.add(new PooledConnection(connFactory.createConnection(),info.getPreparedStatementCacheSize(),this));
 		} catch (SQLException e) {
 			throw e;
 		}
@@ -291,7 +289,7 @@ public class ConnectionPool{
 	protected Connection getConnection(long wait,Borrower borrower)throws SQLException {
 		boolean acquired=false;
 		try{
-			wait=wait * TO_NANO_BASE;
+			wait=MILLISECONDS.toNanos(wait);
 			long deadlineNanos=nanoTime()+wait;
 			
 			if(acquired=poolSemaphore.tryAcquire(wait,NANOSECONDS)){
@@ -525,16 +523,13 @@ public class ConnectionPool{
 			final ConnectionPool pool = ConnectionPool.this;
 			final int PoolMaxSize = info.getPoolMaxSize();
 			final int CacheSize = info.getPreparedStatementCacheSize();
-
-			String url = info.getConnectURL();
-			Driver driver = info.getConnectDriver();
-			Properties prop = info.getConnectProperties();
+			ConnectionFactory connFactory=  info.getConnectionFactory();
 			
 			for(;;){
 				state=THREAD_WORKING;
 				if(PoolMaxSize>connList.size() && !waitQueue.isEmpty()){
 					try {
-						pConn = new PooledConnection(driver.connect(url,prop),CacheSize,pool);
+						pConn = new PooledConnection(connFactory.createConnection(),CacheSize,pool);
 						pConn.setState(CONNECTION_USING);
 						connList.add(pConn);
 						release(pConn,true);

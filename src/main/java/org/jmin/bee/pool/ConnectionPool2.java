@@ -16,6 +16,7 @@
 package org.jmin.bee.pool;
 
 import static java.lang.System.nanoTime;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.sql.Connection;
@@ -49,7 +50,7 @@ public final class ConnectionPool2 extends ConnectionPool{
 
 	protected Connection getConnection(long wait, Borrower borrower) throws SQLException {
 		try {
-			wait = wait * TO_NANO_BASE;
+			wait=MILLISECONDS.toNanos(wait);
 			borrower.setDeadlineNanos(nanoTime()+wait);
 			Future<Connection> taskFuture = asynTakeExecutor.submit(borrower);
 			return taskFuture.get();
