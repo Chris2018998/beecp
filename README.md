@@ -36,54 +36,34 @@ Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0
 SpringBoot使用参考
 ---
 ```java
-application-dev.properties
+application.properties
 
-#primary
-spring.primary.datasource.username=xx
-spring.primary.datasource.password=xx
-spring.primary.datasource.jdbcUrl=xx
-spring.primary.datasource.driverClassName=oracle.jdbc.OracleDriver
+spring.datasource.username=xx
+spring.datasource.password=xx
+spring.datasource.jdbcUrl=xx
+spring.datasource.driverClassName=oracle.jdbc.OracleDriver
 
-#secondary
-spring.secondary.datasource.username=xx
-spring.secondary.datasource.password=xx
-spring.secondary.datasource.jdbcUrl=xx
-spring.secondary.datasource.driverClassName=oracle.jdbc.OracleDriver
- 
 ```
 
 ```java
 @Configuration
-@Profile({"dev"})
 public class DataSourceConfig {
-
-  @Value("spring.primary.datasource.driverClassName")
+  @Value("spring.datasource.driverClassName")
   private String driver;
-   
-  @Value("spring.primary.datasource.jdbcUrl")
+  @Value("spring.datasource.jdbcUrl")
   private String url;
-   
-  @Value("spring.primary.datasource.username")
+  @Value("spring.datasource.username")
   private String user;
-   
-  @Value("spring.primary.datasource.password")
+  @Value("spring.datasource.password")
   private String password;
 
-  @Bean(name = "primaryDataSource")
   @Primary
-  @ConfigurationProperties(prefix="spring.primary.datasource")
+  @ConfigurationProperties(prefix="spring.datasource")
   public DataSource primaryDataSource() {
     return DataSourceBuilder.create().type(org.jmin.bee.BeeDataSource.class).build();
   }
-
-  @Bean(name = "secondaryDataSource")
-  @ConfigurationProperties(prefix="spring.secondary.datasource")
-  public DataSource secondaryDataSource() {
-    return DataSourceBuilder.create().type(org.jmin.bee.BeeDataSource.class).build();
-  }
-
-  @Bean(name = "threeDataSource")
-  public DataSource threeDataSource(){
+  
+  public DataSource secondDataSource(){
     return new BeeDataSource(new BeeDataSourceConfig(driver,url,user,password));
   }
 }
