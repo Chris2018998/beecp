@@ -54,7 +54,7 @@ public final class DefaultConnectionFactory implements ConnectionFactory{
 	}
 
 	//create one connection
-	public Connection createConnection()throws SQLException{
+	public Connection create()throws SQLException{
 		return connectDriver.connect(connectURL,connectProperties);
 	}
 }

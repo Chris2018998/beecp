@@ -41,7 +41,7 @@ public final class ConnectionPool2 extends ConnectionPool{
 	public ConnectionPool2(BeeDataSourceConfig poolInfo) throws SQLException {
 		super(poolInfo);
 		taskQuue=new LinkedBlockingQueue<Runnable>();
-		asynTakeExecutor=new ThreadPoolExecutor(info.getPoolConcurrentSize(),info.getPoolConcurrentSize(),5,SECONDS,taskQuue);
+		asynTakeExecutor=new ThreadPoolExecutor(poolConfig.getConcurrentSize(),poolConfig.getConcurrentSize(),5,SECONDS,taskQuue);
 	}
 	
 	protected boolean existBorrower() {

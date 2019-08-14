@@ -64,10 +64,11 @@ public class ConnectionPool{
 	private Timer idleCheckTimer;
 	private ConnectionPoolHook exitHook;
 	private boolean validateSQLIsNull;
-	protected final BeeDataSourceConfig info;
+	protected final BeeDataSourceConfig poolConfig;
 
 	private final Semaphore poolSemaphore;
 	private final TransferPolicy tansferPolicy;
+	private final int transferCheckStateCode;
 	private final CreateConnThread createThread=new CreateConnThread();
 	private final PooledConnectionList connList=new PooledConnectionList();
 	private final ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
@@ -77,7 +78,6 @@ public class ConnectionPool{
 	private static String poolNamePrefix="Pool-";
 	private static AtomicInteger poolNameIndex=new AtomicInteger(1);
 	private volatile boolean surpportQryTimeout=true;
-	protected final static long TO_NANO_BASE=1000000L;
 	protected static final SQLException PoolCloseException = new SQLException("Pool has been closed");
 	protected static final SQLException RequestTimeoutException = new SQLException("Request timeout");
 	protected static final SQLException RequestInterruptException = new SQLException("Request interrupt");
@@ -85,38 +85,40 @@ public class ConnectionPool{
 	/**
 	 * initialize pool with configuration
 	 * 
-	 * @param poolInfo data source configuration
+	 * @param config data source configuration
 	 * @throws SQLException check configuration fail or to create initiated connection 
 	 */
-	public ConnectionPool(BeeDataSourceConfig poolInfo) throws SQLException {
-		if (poolInfo == null)
-			throw new SQLException("Pool info can't be null");
+	public ConnectionPool(BeeDataSourceConfig config) throws SQLException {
 		if (state == POOL_UNINIT) {
-			poolInfo.check();
 			checkProxyClasses();
-			info = poolInfo;
-			info.setInited(true);
-			validateSQLIsNull = isNull(info.getValidationQuerySQL());
-
+			if(config == null)throw new SQLException("Datasource configeruation can't be null");
+			
+			poolConfig=config;
+			poolConfig.check();
+			poolConfig.setInited(true);
+			
+			validateSQLIsNull = isNull(poolConfig.getValidationQuery());
 			idleCheckTimer = new Timer(true);
-			idleCheckTimer.schedule(new PooledConnectionIdleTask(), 60000, 180000);
+			idleCheckTimer.schedule(new PooledConnectionIdleTask(), 60000L, 180000L);
 			exitHook = new ConnectionPoolHook();
 			Runtime.getRuntime().addShutdownHook(exitHook);
 			
 			String mode = "";
-			if (info.isFairMode()) {
+			if (poolConfig.isFairQueue()) {
 				mode = "fair";
 				tansferPolicy = new FairTransferPolicy();
+				transferCheckStateCode=tansferPolicy.getCheckStateCode();
 			} else {
 				mode = "compete";
 				tansferPolicy = new CompeteTransferPolicy();
+				transferCheckStateCode=tansferPolicy.getCheckStateCode();
 			}
-			
+				
 			createInitConns();
-			poolSemaphore=new Semaphore(info.getPoolConcurrentSize(),info.isFairMode());
+			poolSemaphore=new Semaphore(poolConfig.getConcurrentSize(),poolConfig.isFairQueue());
 			
-			poolName=!ConnectionUtil.isNull(info.getPoolName())?info.getPoolName():poolNamePrefix+poolNameIndex.getAndIncrement();
-			System.out.println("BeeCP("+poolName+")has been startup{init size:"+connList.size()+",max size:"+poolInfo.getPoolMaxSize()+",concurrent size:"+info.getPoolConcurrentSize()+ ",mode:"+mode +",max wait:"+info.getMaxWaitTime()+"ms}");
+			poolName=!ConnectionUtil.isNull(poolConfig.getPoolName())?poolConfig.getPoolName():poolNamePrefix+poolNameIndex.getAndIncrement();
+			System.out.println("BeeCP("+poolName+")has been startup{init size:"+connList.size()+",max size:"+config.getMaximumPoolSize()+",concurrent size:"+poolConfig.getConcurrentSize()+ ",mode:"+mode +",max wait:"+poolConfig.getMaxWait()+"ms}");
 			state = POOL_NORMAL;
 			createThread.start();
 		} else {
@@ -146,7 +148,7 @@ public class ConnectionPool{
 		return state == POOL_CLOSED;
 	}
 	protected boolean existBorrower() {
-		return(poolSemaphore.availablePermits()<info.getPoolConcurrentSize()||poolSemaphore.hasQueuedThreads());	
+		return(poolSemaphore.availablePermits()<poolConfig.getConcurrentSize()||poolSemaphore.hasQueuedThreads());	
 	}
 	private int getIdleConnSize(){
 		int conIdleSize=0;
@@ -158,7 +160,7 @@ public class ConnectionPool{
 	}
 	public Map<String,Integer> getPoolSnapshot(){
 		Map<String,Integer> snapshotMap = new LinkedHashMap<String,Integer>();
-		snapshotMap.put("PoolMaxSize", info.getPoolMaxSize());
+		snapshotMap.put("PoolMaxSize", poolConfig.getMaximumPoolSize());
 		snapshotMap.put("ConCurSize",connList.size());
 		snapshotMap.put("ConIdleSize",getIdleConnSize());
 		return snapshotMap;
@@ -172,7 +174,7 @@ public class ConnectionPool{
 		final Connection conn = pConn.getPhisicConnection();
 		if (validateSQLIsNull) {
 			try {
-				return conn.isValid(info.getValidationQueryTimeout());
+				return conn.isValid(poolConfig.getValidationQueryTimeout());
 			} catch (SQLException e) {
 				return false;
 			}
@@ -181,7 +183,7 @@ public class ConnectionPool{
 			try {
 				st = conn.createStatement();
 				setsetQueryTimeout(st);
-				st.execute(info.getValidationQuerySQL());
+				st.execute(poolConfig.getValidationQuery());
 				return true;
 			} catch (SQLException e) {
 				return false;
@@ -194,7 +196,7 @@ public class ConnectionPool{
 	private final void setsetQueryTimeout(Statement st) {
 		if(surpportQryTimeout){
 			try {
-				st.setQueryTimeout(info.getValidationQueryTimeout());
+				st.setQueryTimeout(poolConfig.getValidationQueryTimeout());
 			} catch (SQLException e) {
 				surpportQryTimeout=false;
 			}
@@ -209,7 +211,7 @@ public class ConnectionPool{
 	 * @return if is valid,then return true,otherwise false;
 	 */
 	private boolean checkConnection(PooledConnection pConn) {
-		if(currentTimeMillis()-pConn.getLastActiveTime()<=info.getMaxInactiveTimeToCheck()) 
+		if(currentTimeMillis()-pConn.getLastActiveTime()<=poolConfig.getValidationInterval()) 
 			return true;
 		
 		if(isActiveConn(pConn))return true;
@@ -219,10 +221,10 @@ public class ConnectionPool{
 		return false;
 	}
 	private boolean checkOnBorrow(PooledConnection pConn) {
-		return info.isCheckOnBorrow()?checkConnection(pConn):true;
+		return poolConfig.isTestOnBorrow()?checkConnection(pConn):true;
 	}
 	private boolean checkOnReturn(PooledConnection pConn) {
-		return info.isCheckOnReturn()?checkConnection(pConn):true;
+		return poolConfig.isTestOnReturn()?checkConnection(pConn):true;
 	}
 	
 	/**
@@ -232,11 +234,16 @@ public class ConnectionPool{
 	 *             error occurred in creating connections
 	 */
 	private void createInitConns() throws SQLException {
-		ConnectionFactory connFactory= info.getConnectionFactory();
-		int size = info.getPoolInitSize();
+		Connection con=null;
+		int size = poolConfig.getInitialSize();
+		ConnectionFactory connFactory= poolConfig.getConnectionFactory();
+		
 		try {
-			for (int i = 0; i < size; i++) 
-			connList.add(new PooledConnection(connFactory.createConnection(),info.getPreparedStatementCacheSize(),this));
+			for (int i = 0; i < size; i++){ 
+				con=connFactory.create();
+				initNewConneciton(con);
+				connList.add(new PooledConnection(con,poolConfig.getPreparedStatementCacheSize(),this));
+			}
 		} catch (SQLException e) {
 			throw e;
 		}
@@ -248,7 +255,7 @@ public class ConnectionPool{
 	 * @throws SQLException if pool is closed or waiting timeout,then throw exception
 	 */
 	public final Connection getConnection() throws SQLException {
-		return getConnection(info.getMaxWaitTime());
+		return getConnection(poolConfig.getMaxWait());
 	}
 
 	/**
@@ -367,7 +374,7 @@ public class ConnectionPool{
 	}
  	//notify to create connections to pool 
 	private void tryToCreateNewConnByAsyn() {
-		if(createThread.state==THREAD_WAITING && info.getPoolMaxSize()>connList.size()){
+		if(createThread.state==THREAD_WAITING && poolConfig.getMaximumPoolSize()>connList.size()){
 			createThread.state=THREAD_WORKING;
 			LockSupport.unpark(createThread);
 		}
@@ -379,16 +386,15 @@ public class ConnectionPool{
 	 */
 	void release(PooledConnection pConn,boolean isNew) {
 		if(!isNew && !checkOnReturn(pConn))return;
-		int chkState = tansferPolicy.getCheckStateCode();
 		tansferPolicy.beforeTransferReleaseConnection(pConn);
 		
 		Thread waitThred;
 		Object waiterState=null;
 		for(Borrower waiter:waitQueue){
-			if(pConn.getState()!=chkState)return;
+			if(pConn.getState()!=transferCheckStateCode)return;
 			
-			waiterState=waiter.getStateObject();
 			waitThred=waiter.getThread();
+			waiterState=waiter.getStateObject();
 			if(waitThred.isAlive() && (waiterState==BORROWER_NORMAL||waiterState==BORROWER_WAITING) && waiter.compareAndSetStateObject(waiterState,pConn)){
 				if(waiterState==BORROWER_WAITING)LockSupport.unpark(waitThred);
 				return;
@@ -407,6 +413,11 @@ public class ConnectionPool{
 			}
 		}
 	}
+	//set some inited parameter
+	private final void initNewConneciton(Connection connection)throws SQLException{
+		connection.setAutoCommit(poolConfig.isDefaultAutoCommit());
+		connection.setTransactionIsolation(poolConfig.getDefaultTransactionIsolation());
+	}
 	
 	/**
 	 * inner timer will call the method to clear some idle timeout connections
@@ -419,7 +430,7 @@ public class ConnectionPool{
 				final int state = pConn.getState();
 				if (state == CONNECTION_IDLE) {
 					final boolean isDead = !isActiveConn(pConn);
-					final boolean isTimeout = ((currentTimeMillis()-pConn.getLastActiveTime()>=info.getMaxIdleTime()));
+					final boolean isTimeout = ((currentTimeMillis()-pConn.getLastActiveTime()>=poolConfig.getIdleTimeout()));
 					if ((isDead || isTimeout) && (pConn.compareAndSetState(state,CONNECTION_CLOSED))) {
 						pConn.closePhysicalConnection();
 						badConList.add(pConn);
@@ -427,7 +438,7 @@ public class ConnectionPool{
 
 				} else if (state == CONNECTION_USING) {
 					final boolean isDead = !isActiveConn(pConn);
-					final boolean isTimeout = ((currentTimeMillis()-pConn.getLastActiveTime()>=info.getMaxHoldTimeInUnused()));
+					final boolean isTimeout = ((currentTimeMillis()-pConn.getLastActiveTime()>=poolConfig.getMaxHoldTimeInUnused()));
 					if ((isDead || isTimeout) && (pConn.compareAndSetState(state,CONNECTION_CLOSED))) {
 
 						pConn.closePhysicalConnection();
@@ -470,7 +481,7 @@ public class ConnectionPool{
 						connList.remove(pConn);
 					} else if (pConn.getState() == CONNECTION_USING) {
 						final boolean isDead = !isActiveConn(pConn);
-						final boolean isTimeout = ((currentTimeMillis()-pConn.getLastActiveTime()>=info.getMaxHoldTimeInUnused()));
+						final boolean isTimeout = ((currentTimeMillis()-pConn.getLastActiveTime()>=poolConfig.getMaxHoldTimeInUnused()));
 						if ((isDead || isTimeout) && (pConn.compareAndSetState(CONNECTION_USING,CONNECTION_CLOSED))) {
 							pConn.closePhysicalConnection();
 							connList.remove(pConn);
@@ -518,18 +529,21 @@ public class ConnectionPool{
 		   LockSupport.unpark(this);
 	   }
 	   public void run() {
+		     Connection con=null;
 			state=THREAD_WORKING;
 			PooledConnection pConn = null;
 			final ConnectionPool pool = ConnectionPool.this;
-			final int PoolMaxSize = info.getPoolMaxSize();
-			final int CacheSize = info.getPreparedStatementCacheSize();
-			ConnectionFactory connFactory=  info.getConnectionFactory();
+			final int PoolMaxSize = poolConfig.getMaximumPoolSize();
+			final int CacheSize = poolConfig.getPreparedStatementCacheSize();
+			ConnectionFactory connFactory= poolConfig.getConnectionFactory();
 			
 			for(;;){
 				state=THREAD_WORKING;
 				if(PoolMaxSize>connList.size() && !waitQueue.isEmpty()){
 					try {
-						pConn = new PooledConnection(connFactory.createConnection(),CacheSize,pool);
+						con=connFactory.create();
+						initNewConneciton(con);
+						pConn = new PooledConnection(con,CacheSize,pool);
 						pConn.setState(CONNECTION_USING);
 						connList.add(pConn);
 						release(pConn,true);

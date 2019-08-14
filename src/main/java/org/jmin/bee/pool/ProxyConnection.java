@@ -28,14 +28,9 @@ public abstract class ProxyConnection implements Connection {
 	private boolean isClosed;
 	protected Connection delegate;
 	private PooledConnection pooledConnection;
-	private boolean autoCommitValue = false;
-	private boolean autoCommitChanged = false;
-	private boolean transactionLevlChanged = false;
-
 	public ProxyConnection(PooledConnection pooledConnection) {
 		this.pooledConnection = pooledConnection;
 		this.delegate = pooledConnection.getPhisicConnection();
-		this.autoCommitValue = pooledConnection.isAutoCommit();
 	}
 	public boolean isClosed() {
 		return isClosed;
@@ -46,34 +41,11 @@ public abstract class ProxyConnection implements Connection {
 	protected StatementCache getStatementCache() {
 	  return pooledConnection.getStatementCache();
 	}
-	public boolean isAutoCommitChanged() {
-		return autoCommitChanged;
-	}
-
-	public boolean isTransactionLevlChanged() {
-		return transactionLevlChanged;
-	}
 	protected void updateLastActivityTime() throws SQLException {
 		if (isClosed)throw new SQLException("Connection has been closed");
 		this.pooledConnection.updateLastActivityTime();
 	}
-	public void setAutoCommit(boolean autoCommit) throws SQLException {
-		this.updateLastActivityTime();
-		this.autoCommitValue = autoCommit;
-		this.delegate.setAutoCommit(autoCommit);
-		this.autoCommitChanged = (autoCommit != pooledConnection.isAutoCommit());
-	}
-
-	public boolean isAutoCommitValue() {
-		return autoCommitValue;
-	}
-
-	public void setTransactionIsolation(int level) throws SQLException {
-		updateLastActivityTime();
-		delegate.setTransactionIsolation(level);
-		transactionLevlChanged = (level != pooledConnection.getTransactionIsolationLevl());
-	}
-
+	
 	void setConnectionDataToNull() {
 		isClosed = true;
 		delegate = null;
