@@ -27,31 +27,38 @@ import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 import org.jmin.bee.pool.ConnectionPool;
+
 /**
  * BeeCP DataSource implementation
  * 
  * @author Chris.Liao
  * @version 1.0
  */
-public final class BeeDataSource implements DataSource {
+public final class BeeDataSource extends BeeDataSourceConfig implements DataSource {
 	
 	/**
 	 * connection pool
 	 */
-	private ConnectionPool pool=null;
+	private volatile ConnectionPool pool=null;
+
+	/**
+	 * constructor
+	 */
+	public BeeDataSource() {}
 	
 	/**
 	 * constructor
 	 * @param config data source configuration
+ 	 * @throws SQLException
+	 *             if fail to create pool
 	 */
-	public BeeDataSource(final BeeDataSourceConfig config) {
-		pool = createPool(config);
+	public BeeDataSource(final BeeDataSourceConfig config){
+		pool=createPool(config);
 	}
 	
-	/**
-	 * @return pool internal information
-	 */
-	public Map<String,Integer> getPoolSnapshot(){
+	//return pool internal information
+	public Map<String,Integer> getPoolSnapshot()throws SQLException{
+		if(pool==null)throw new SQLException("Datasource not initialized");
 		return pool.getPoolSnapshot();
 	}
 	
@@ -64,6 +71,13 @@ public final class BeeDataSource implements DataSource {
 	 *             if pool is closed or waiting timeout,then throw exception
 	 */
 	public Connection getConnection() throws SQLException {
+		if (pool == null) {
+			synchronized(this) {
+				if(pool== null)
+				 pool=createPool(this);
+			}
+		}
+		
 		return pool.getConnection();
 	}
 
@@ -108,7 +122,6 @@ public final class BeeDataSource implements DataSource {
 	public boolean isWrapperFor(java.lang.Class<?> iface) throws SQLException {
 		throw new SQLException("Not supported");
 	}
-
 	/**
 	 * create a pool instance by specified class name in configuration,
 	 * and initialize the pool with configuration
@@ -118,13 +131,18 @@ public final class BeeDataSource implements DataSource {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private ConnectionPool createPool(BeeDataSourceConfig config){
+		String poolImplementClassName=config.getPoolImplementClassName();
+		
 		try {
-			Class poolClass = Class.forName(config.getPoolImplementClassName(),true,BeeDataSource.class.getClassLoader());
+			if(poolImplementClassName==null || poolImplementClassName.trim().length()==0)
+				poolImplementClassName="org.jmin.bee.pool.ConnectionPool";
+			
+			Class poolClass = Class.forName(poolImplementClassName,true,BeeDataSource.class.getClassLoader());
 			Constructor constructor = poolClass.getDeclaredConstructor(new Class[] {BeeDataSourceConfig.class});
 			ConnectionPool pool = (ConnectionPool) constructor.newInstance(new Object[]{config});
 			return pool;
 		} catch (ClassNotFoundException e) {
-			throw new ExceptionInInitializerError("Not found conneciton pool implementation class:" + config.getPoolImplementClassName());
+			throw new ExceptionInInitializerError("Not found conneciton pool implementation class:" + poolImplementClassName);
 		} catch (NoSuchMethodException e) {
 			throw new ExceptionInInitializerError(e);
 		} catch (SecurityException e) {

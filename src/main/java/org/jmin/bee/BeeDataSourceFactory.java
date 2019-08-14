@@ -126,8 +126,12 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         if(ra != null) jdbcUser= ra.getContent().toString();
         ra = ref.get(PROP_PASSWORD);
         if(ra != null) password= ra.getContent().toString(); 
-		BeeDataSourceConfig config = new BeeDataSourceConfig(driverClass,jdbcURL,jdbcUser,password);
-	
+        BeeDataSourceConfig config = new BeeDataSourceConfig();
+		config.setDriverClassName(driverClass);
+		config.setJdbcUrl(jdbcURL);
+		config.setUsername(jdbcUser);
+		config.setPassword(password);
+ 
 	    ra = ref.get(PROP_INITIALSIZE);
         if(ra != null) initSize= ra.getContent().toString(); 
 	    ra = ref.get(PROP_MAXACTIVE);
@@ -144,17 +148,17 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         if(ra != null) connectionIdleTimeout= ra.getContent().toString(); 
        
 		if (!isNull(maxSize))
-			config.setPoolMaxSize(Integer.parseInt(maxSize));
+			config.setMaximumPoolSize(Integer.parseInt(maxSize));
 		if (!isNull(initSize))
-			config.setPoolInitSize(Integer.parseInt(initSize));
+			config.setInitialSize(Integer.parseInt(initSize));
 		if (!isNull(maxWait))
-			config.setMaxWaitTime(Integer.parseInt(maxWait));
+			config.setMaxWait(Integer.parseInt(maxWait));
 		if (!isNull(validationQuerySQL))
-			config.setValidationQuerySQL(validationQuerySQL);
+			config.setValidationQuery(validationQuerySQL);
 		if (!isNull(validationQueryTimeout))
 			config.setValidationQueryTimeout(Integer.parseInt(validationQueryTimeout));
 		if (!isNull(connectionIdleTimeout))
-			config.setMaxIdleTime(Integer.parseInt(connectionIdleTimeout));
+			config.setIdleTimeout(Integer.parseInt(connectionIdleTimeout));
 	
         ra = ref.get(PROP_POOLPREPAREDSTATEMENTS);
         if(ra != null) needStatementCache= ra.getContent().toString(); 

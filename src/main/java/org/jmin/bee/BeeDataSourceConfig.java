@@ -17,12 +17,14 @@ package org.jmin.bee;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
+import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
 import org.jmin.bee.pool.DefaultConnectionFactory;
+
 /**
  * Connection pool configuration
  * 
@@ -30,7 +32,7 @@ import org.jmin.bee.pool.DefaultConnectionFactory;
  * @version 1.0
  */
 
-public final class BeeDataSourceConfig {
+public class BeeDataSourceConfig{
 
 	/**
 	 * indicator to not allow to modify configuration after initialization
@@ -40,7 +42,7 @@ public final class BeeDataSourceConfig {
 	/**
 	 *  User
 	 */
-	private String userName;
+	private String username;
 
 	/**
 	 * Password
@@ -50,12 +52,17 @@ public final class BeeDataSourceConfig {
 	/**
 	 *  URL
 	 */
-	private String connectURL;
+	private String jdbcUrl;
 	
 	/**
 	 * driver class name
 	 */
-	private String driverClassName;
+	private String driverClassName; 
+	
+	/**
+	 * Physical JDBC Connection factory class name
+	 */
+	private String connectionFactoryClassName;
 
 	/**
 	 * Physical JDBC Connection factory
@@ -76,48 +83,68 @@ public final class BeeDataSourceConfig {
 	 * if true,first arrival,first taking if false,competition for all borrower
 	 * to take idle connection
 	 */
-	private boolean fairMode;
-	
-	/**
-	 * check on borrow connection
-	 */
-	private boolean checkOnBorrow=true;
-	
-	/**
-	 * check on borrow connection
-	 */
-	private boolean checkOnReturn=false;
+	private boolean fairQueue;
 	
 	/**
 	 * pool initialization size
 	 */
-	private int poolInitSize;
+	private int initialSize;
 	
 	/**
 	 * pool allow max size
 	 */
-	private int poolMaxSize;
+	private int maximumPoolSize;
 	
 	/**
 	 * pool concurrent Size
 	 */
-	private int poolConcurrentSize;
+	private int concurrentSize;
 	
 	/**
 	 * 'PreparedStatement' cache size
 	 */
 	private int preparedStatementCacheSize = 16;
+	
+	/**
+	 * check on borrow connection
+	 */
+	private boolean testOnBorrow=true;
+	
+	/**
+	 * check on borrow connection
+	 */
+	private boolean testOnReturn=false;
+
+	/**
+	 * connection.setAutoCommit(boolean);
+	 */
+	private boolean defaultAutoCommit=true;
+	
+	/**
+	 * if connection.isAutoCommit() is true,then roll back or not
+	 */
+	private boolean rollbackOnReturn=false;
+	
+	/**
+	 * if connection.isAutoCommit() is true,then commit or not
+	 */
+	private boolean commitOnReturn=false;
+	
+	/**
+	 * default Transaction Isolation
+	 */
+	private int defaultTransactionIsolation;
 
 	/**
 	 * borrower request timeout(milliseconds)
 	 */
-	private long maxWaitTime=8000;
+	private long maxWait=8000;
 
 	/**
 	 * max idle time for pooledConnection(milliseconds),default value: three minutes
 	 * minutes
 	 */
-	private long maxIdleTime=MINUTES.toMillis(3);
+	private long idleTimeout=MINUTES.toMillis(3);
 	
 	/** 
 	 * max hold time in Unused(milliseconds),pool will release it by forced 
@@ -127,246 +154,222 @@ public final class BeeDataSourceConfig {
 	/**
 	 * a test SQL to check connection active state
 	 */
-	private String validationQuerySQL = "select 1 from dual";
+	private String validationQuery = "select 1 from dual";
 
 	/**
 	 * connection validate timeout:5 seconds
 	 */
 	private int validationQueryTimeout = 5;
-	
+	 
 	/**
 	 * milliseconds,max inactive time to check active for borrower
 	 */
-	private long maxInactiveTimeToCheck = 1000L;
+	private long validationInterval = 500L;
 	
 	/**
 	 * BeeCP implementation class name
 	 */
 	private String poolImplementClassName = "org.jmin.bee.pool.ConnectionPool";
 	
-
-	public BeeDataSourceConfig(String driver, String url, String user, String password) {
-		this.driverClassName = driver;
-		this.connectURL = url;
-		this.userName = user;
-		this.password = password;
-		this.inited = false;
-		
-		int cpuSize=Runtime.getRuntime().availableProcessors();
-		poolMaxSize=cpuSize*2;
-		poolConcurrentSize=cpuSize;
+	public BeeDataSourceConfig() {
+      this(null,null,null,null);
 	}
-
+	public BeeDataSourceConfig(String driver, String url, String user, String password) {
+		this.jdbcUrl = url;
+		this.username = user;
+		this.password = password;
+		this.driverClassName = driver;
+	
+		int cpuSize=Runtime.getRuntime().availableProcessors();
+		maximumPoolSize=cpuSize*2;
+		concurrentSize=maximumPoolSize;
+		defaultTransactionIsolation=Connection.TRANSACTION_READ_COMMITTED;
+	}
+	
+	public boolean isInited() {
+		return inited;
+	}
+	
 	public void setInited(boolean inited) {
 		if (!this.inited)
 			this.inited = inited;
 	}
 
-	public String getDriver() {
-		return driverClassName;
+	public String getUsername() {
+		return username;
 	}
-
-	public String getConnectURL() {
-		return connectURL;
+	public void setUsername(String username) {
+		if(!this.inited) 
+		 this.username = username;
 	}
-
-	public String getUserName() {
-		return userName;
-	}
-
 	public String getPassword() {
 		return password;
 	}
-
-	public void setDriverClassName(String driver) {
-		if (!this.inited)
-			this.driverClassName = driver;
-	}
-
-	public void setConnectionURL(String driverURL) {
-		if (!this.inited)
-			this.connectURL = driverURL;
-	}
-
-	public void setUserName(String userName) {
-		if (!this.inited)
-			this.userName = userName;
-	}
-
 	public void setPassword(String password) {
 		if (!this.inited)
-			this.password = password;
+		this.password = password;
 	}
-	
+	public String getJdbcUrl() {
+		return jdbcUrl;
+	}
+	public void setJdbcUrl(String jdbcUrl) {
+		if(!this.inited && !isNull(jdbcUrl))
+		this.jdbcUrl = jdbcUrl;
+	}
+	public String getDriverClassName() {
+		return driverClassName;
+	}
+	public void setDriverClassName(String driverClassName) {
+		if(!this.inited && !isNull(driverClassName))
+		this.driverClassName = driverClassName;
+	}
+	public String getConnectionFactoryClassName() {
+		return connectionFactoryClassName;
+	}
+	public void setConnectionFactoryClassName(String connectionFactoryClassName) {
+		if(!this.inited && !isNull(connectionFactoryClassName))
+		 this.connectionFactoryClassName = connectionFactoryClassName;
+	}
 	public ConnectionFactory getConnectionFactory() {
 		return connectionFactory;
 	}
-
 	public void setConnectionFactory(ConnectionFactory connectionFactory) {
-		if(!this.inited && connectionFactory!=null) {
-			this.connectionFactory = connectionFactory;
-		}
-	}
-
-	public Properties getConnectProperties() {
-		return new Properties(connectProperties);
-	}
-
-	public void addProperty(String key, String value) {
-		if (!this.inited) {
-			this.connectProperties.put(key, value);
-		}
-	}
-
-	public void removeProperty(String key) {
-		if (!this.inited) {
-			this.connectProperties.remove(key);
-		}
-	}
-	
-	public boolean isFairMode() {
-		return fairMode;
-	}
-
-	public void setFairMode(boolean fairMode) {
-		if (!this.inited)
-			this.fairMode = fairMode;
-	}
-	
-	public boolean isCheckOnBorrow() {
-		return checkOnBorrow;
-	}
-
-	public void setCheckOnBorrow(boolean checkOnBorrow) {
 		if(!this.inited)
-		this.checkOnBorrow = checkOnBorrow;
+		this.connectionFactory = connectionFactory;
 	}
-
-	public boolean isCheckOnReturn() {
-		return checkOnReturn;
-	}
-
-	public void setCheckOnReturn(boolean checkOnReturn) {
-		if(!this.inited)
-		this.checkOnReturn = checkOnReturn;
-	}
-
+	 
 	public String getPoolName() {
 		return poolName;
 	}
-
 	public void setPoolName(String poolName) {
-		if (!this.inited && !isNull(poolName)) {
-			this.poolName = poolName;
-		}
+		if(!this.inited)
+		this.poolName = poolName;
 	}
-
-	public int getPoolInitSize() {
-		return poolInitSize;
+	public boolean isFairQueue() {
+		return fairQueue;
 	}
-
-	public void setPoolInitSize(int poolInitSize) {
-		if (!this.inited && poolInitSize >= 0) {
-			this.poolInitSize = poolInitSize;
-		}
+	public void setFairQueue(boolean fairQueue) {
+		if(!this.inited)
+		this.fairQueue = fairQueue;
 	}
-
-	public  int getPoolMaxSize() {
-		return poolMaxSize;
+	public int getInitialSize() {
+		return initialSize;
 	}
-
-	public void setPoolMaxSize(int poolMaxSize) {
-		if (!this.inited && poolMaxSize > 0) {
-			this.poolMaxSize = poolMaxSize;
-			this.poolConcurrentSize = poolMaxSize;
-		}
+	public void setInitialSize(int initialSize) {
+		if(!this.inited && initialSize>0)
+		this.initialSize = initialSize;
 	}
-	
-	public int getPoolConcurrentSize() {
-		return poolConcurrentSize;
+	public int getMaximumPoolSize() {
+		return maximumPoolSize;
 	}
-
-	public void setPoolConcurrentSize(int poolConcurrentSize) {
-	  if(!this.inited && poolConcurrentSize > 0) {
-		this.poolConcurrentSize = poolConcurrentSize;
-	  }
+	public void setMaximumPoolSize(int maximumPoolSize) {
+		if(!this.inited && maximumPoolSize>0)
+		this.maximumPoolSize = maximumPoolSize;
 	}
-
-	public  int getPreparedStatementCacheSize() {
+	public int getConcurrentSize() {
+		return concurrentSize;
+	}
+	public void setConcurrentSize(int concurrentSize) {
+		if(!this.inited && concurrentSize>0)
+		this.concurrentSize = concurrentSize;
+	}
+	public int getPreparedStatementCacheSize() {
 		return preparedStatementCacheSize;
 	}
-
-	public void setPreparedStatementCacheSize(int statementCacheSize) {
-		if (!this.inited && statementCacheSize >= 0) {
-			this.preparedStatementCacheSize = statementCacheSize;
-		}
+	public void setPreparedStatementCacheSize(int preparedStatementCacheSize) {
+		if(!this.inited && preparedStatementCacheSize>0)
+		this.preparedStatementCacheSize = preparedStatementCacheSize;
 	}
-
-	public long getMaxWaitTime() {
-		return maxWaitTime;
+	public boolean isTestOnBorrow() {
+		return testOnBorrow;
 	}
-
-	public void setMaxWaitTime(long maxWaitTime) {
-		if (!this.inited && maxWaitTime > 0) {
-			this.maxWaitTime = maxWaitTime;
-		}
+	public void setTestOnBorrow(boolean testOnBorrow) {
+		if(!this.inited)
+		this.testOnBorrow = testOnBorrow;
 	}
-	
-	public long getMaxIdleTime() {
-		return maxIdleTime;
+	public boolean isTestOnReturn() {
+		return testOnReturn;
 	}
-
-	public void setMaxIdleTime(long maxIdleTime) {
-		if (!this.inited && maxIdleTime > 0) {
-			this.maxIdleTime = maxIdleTime;
-		}
+	public void setTestOnReturn(boolean testOnReturn) {
+		if(!this.inited)
+		this.testOnReturn = testOnReturn;
 	}
-	
+	public boolean isDefaultAutoCommit() {
+		return defaultAutoCommit;
+	}
+	public void setDefaultAutoCommit(boolean defaultAutoCommit) {
+		if(!this.inited)
+		this.defaultAutoCommit = defaultAutoCommit;
+	}
+	public boolean isRollbackOnReturn() {
+		return rollbackOnReturn;
+	}
+	public void setRollbackOnReturn(boolean rollbackOnReturn) {
+		if(!this.inited)
+		this.rollbackOnReturn = rollbackOnReturn;
+	}
+	public boolean isCommitOnReturn() {
+		return commitOnReturn;
+	}
+	public void setCommitOnReturn(boolean commitOnReturn) {
+		if(!this.inited)
+		this.commitOnReturn = commitOnReturn;
+	}
+	public int getDefaultTransactionIsolation() {
+		return defaultTransactionIsolation;
+	}
+	public void setDefaultTransactionIsolation(int defaultTransactionIsolation) {
+		if(!this.inited && defaultTransactionIsolation>=0)
+		this.defaultTransactionIsolation = defaultTransactionIsolation;
+	}
+	public long getMaxWait() {
+		return maxWait;
+	}
+	public void setMaxWait(long maxWait) {
+	  if(!this.inited && maxWait>0) 
+		this.maxWait = maxWait;
+	}
+	public long getIdleTimeout() {
+		return idleTimeout;
+	}
+	public void setIdleTimeout(long idleTimeout) {
+	  if(!this.inited && idleTimeout>0) 
+		this.idleTimeout = idleTimeout;
+	}
 	public long getMaxHoldTimeInUnused() {
 		return maxHoldTimeInUnused;
 	}
-
 	public void setMaxHoldTimeInUnused(long maxHoldTimeInUnused) {
-		if (!this.inited && maxHoldTimeInUnused > 0) {
-			this.maxHoldTimeInUnused = maxHoldTimeInUnused;
-		}
+		if(!this.inited && maxHoldTimeInUnused>0) 
+		this.maxHoldTimeInUnused = maxHoldTimeInUnused;
 	}
-
-	public String getValidationQuerySQL() {
-		return validationQuerySQL;
+	public String getValidationQuery() {
+		return validationQuery;
 	}
-
-	public void setValidationQuerySQL(String validationQuerySQL) {
-		if (!this.inited && validationQuerySQL != null && validationQuerySQL.trim().length() > 0) {
-			this.validationQuerySQL = validationQuerySQL;
-		}
+	public void setValidationQuery(String validationQuery) {
+	if (!this.inited && !isNull(validationQuery)) 
+		this.validationQuery = validationQuery;
 	}
-
 	public int getValidationQueryTimeout() {
 		return validationQueryTimeout;
 	}
-
 	public void setValidationQueryTimeout(int validationQueryTimeout) {
-		if (!this.inited && validationQueryTimeout > 0) {
-			this.validationQueryTimeout = validationQueryTimeout;
-		}
+		if(!this.inited && validationQueryTimeout>0) 
+		this.validationQueryTimeout = validationQueryTimeout;
 	}
-
-	public long getMaxInactiveTimeToCheck() {
-		return maxInactiveTimeToCheck;
+	public long getValidationInterval() {
+		return validationInterval;
 	}
-
-	public void setMaxInactiveTimeToCheck(long maxInactiveTimeToCheck) {
-		if (!this.inited && maxInactiveTimeToCheck > 0) {
-			this.maxInactiveTimeToCheck = maxInactiveTimeToCheck;
-		}
+	public void setValidationInterval(long validationInterval) {
+		if(!this.inited && validationInterval>0) 
+		this.validationInterval = validationInterval;
 	}
 	
 	public String getPoolImplementClassName() {
 		return poolImplementClassName;
 	}
 	public void setPoolImplementClassName(String poolImplementClassName) {
-		if (!this.inited && poolImplementClassName != null && poolImplementClassName.trim().length() > 0) {
+		if (!this.inited &&!isNull(poolImplementClassName)) {
 			this.poolImplementClassName = poolImplementClassName;
 		}
 	}
@@ -375,7 +378,7 @@ public final class BeeDataSourceConfig {
 		try {
 			Class<?> driverClass = Class.forName(driverClassName,true,this.getClass().getClassLoader());
 			Driver driver=(Driver)driverClass.newInstance();
-			if(!driver.acceptsURL(this.connectURL))throw new InstantiationException();
+			if(!driver.acceptsURL(this.jdbcUrl))throw new InstantiationException();
 			return driver;
 		} catch (ClassNotFoundException e) {
 			throw new IllegalArgumentException("Driver class[" + driverClassName + "]not found");
@@ -389,43 +392,54 @@ public final class BeeDataSourceConfig {
 	}
 	//check pool configuration
 	public void check()throws SQLException {
-		if(connectionFactory==null){
+		if(connectionFactory==null && isNull(this.connectionFactoryClassName)){
 			Driver connectDriver=null;
 			if(!isNull(driverClassName)){
 				connectDriver=loadJdbcDriver(driverClassName);
-			}else if(!isNull(connectURL)){
-				connectDriver = DriverManager.getDriver(this.connectURL);
+			}else if(!isNull(jdbcUrl)){
+				connectDriver = DriverManager.getDriver(this.jdbcUrl);
 			} 
 			
-			if (isNull(connectURL))
+			if (isNull(jdbcUrl))
 				throw new IllegalArgumentException("Connect url can't be null");
 			if (connectDriver==null)
 				throw new IllegalArgumentException("Failed to find mathed jdbc Driver");
 			
-			if (!isNull(this.userName))
-				this.connectProperties.put("user", this.userName);
+			if (!isNull(this.username))
+				this.connectProperties.put("user", this.username);
 			if (!isNull(this.password))
 				this.connectProperties.put("password", this.password);
 			
-			connectionFactory= new DefaultConnectionFactory(connectURL,connectDriver,connectProperties);
+			connectionFactory= new DefaultConnectionFactory(jdbcUrl,connectDriver,connectProperties);
+		}else if(connectionFactory==null && !isNull(this.connectionFactoryClassName)){
+			try {
+ 				Class<?> conFactClass=Class.forName(connectionFactoryClassName,true,BeeDataSourceConfig.class.getClassLoader());
+				connectionFactory=(ConnectionFactory)conFactClass.newInstance();
+			} catch (ClassNotFoundException e) {
+				throw new IllegalArgumentException("Class("+connectionFactoryClassName+")not found ");
+			} catch (InstantiationException e) {
+				throw new IllegalArgumentException("failed ot instantiated connection factory class:"+connectionFactoryClassName,e);
+			} catch (IllegalAccessException e) {
+				throw new IllegalArgumentException("failed ot instantiated connection factory class:"+connectionFactoryClassName,e);
+			}
 		}
-		
-		if (this.poolMaxSize <= 0)
+
+		if (this.maximumPoolSize <= 0)
 			throw new IllegalArgumentException("Pool max size must be greater than zero");
-		if (this.poolInitSize < 0)
+		if (this.initialSize < 0)
 			throw new IllegalArgumentException("Pool init size must be greater than zero");
-		if (this.poolInitSize > poolMaxSize)
+		if (this.initialSize > maximumPoolSize)
 			throw new IllegalArgumentException("Error configeruation,pool initiation size must be less than pool max size");
-		if (this.maxIdleTime <= 0)
+		if (this.idleTimeout <= 0)
 			throw new IllegalArgumentException("Connection max idle time must be greater than zero");
-		if (this.maxWaitTime <= 0)
+		if (this.maxWait <= 0)
 			throw new IllegalArgumentException("Borrower max wait time must be greater than zero");
 		if (this.preparedStatementCacheSize <= 0)
 			throw new IllegalArgumentException("Statement cache size must be greater than zero");
 		
 		//fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 begin
 		//if (this.validationQuerySQL != null && validationQuerySQL.trim().length() == 0) {
-		if (!isNull(this.validationQuerySQL) && !this.validationQuerySQL.trim().toLowerCase().startsWith("select "))
+		if (!isNull(this.validationQuery) && !this.validationQuery.trim().toLowerCase().startsWith("select "))
 		//fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end	
 			throw new IllegalArgumentException("Connection validate SQL must start with 'select '");
 		//}
