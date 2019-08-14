@@ -2,7 +2,7 @@
 
 产品介绍 <img height="50px" width="50px" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img>
 ---
-小蜜蜂是一款轻量级（15个文件，2000行源码）无锁高性能Java连接池
+小蜜蜂是一款轻量级（15个文件，2000行源码）高性能Java连接池
 
 命名缘由
 ---
@@ -10,13 +10,13 @@
 
 Maven下载
 ---
-Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.87/BeeCP-0.87.jar">BeeCP_0.87.jar</a>
+Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.88/BeeCP-0.88.jar">BeeCP_0.88.jar</a>
 
 ```java
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>0.87</version>
+   <version>0.88</version>
 </dependency>
 
 ```
@@ -25,27 +25,70 @@ Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0
 ---
 |  Name  |   Description |   Remark |
 | ------------ | ------------ | ------------ |
-| poolInitSize  |连接池初始大小  |   |
-| poolMaxSize   |连接池最大个数  |    |
-| maxWaitTime   |连接借用等待最大时间(毫秒)  |   |
-| maxIdleTime   |连接闲置最大时间(毫秒)     |   |  
+| initialSize     |连接池初始大小  |   |
+| maximumPoolSize |连接池最大个数  |    |
+| maxWait         |连接借用等待最大时间(毫秒)  |   |
+| idleTimeout     |连接闲置最大时间(毫秒)     |   |  
 | preparedStatementCacheSize |SQL宣言缓存大小 |   
-| validationQuerySQL |连接是否存活测试查询语句   |    |   |
+| validationQuery |连接是否存活测试查询语句   |    |   |
 
 
-使用参考
+SpringBoot使用参考
 ---
 ```java
-String userId="root";
-String password="";
-String driver="com.mysql.jdbc.Driver";
-String URL="jdbc:mysql://localhost/test";
-BeeDataSourceConfig config = new BeeDataSourceConfig(driver,URL,userId,password);
-DataSource datasource = new BeeDataSource(config);
-Connection con = datasource.getConnection();
-....................
+application-dev.properties
 
+#primary
+spring.primary.datasource.username=xx
+spring.primary.datasource.password=xx
+spring.primary.datasource.jdbcUrl=xx
+spring.primary.datasource.driverClassName=oracle.jdbc.OracleDriver
+
+#secondary
+spring.secondary.datasource.username=xx
+spring.secondary.datasource.password=xx
+spring.secondary.datasource.jdbcUrl=xx
+spring.secondary.datasource.driverClassName=oracle.jdbc.OracleDriver
+ 
 ```
+
+```java
+@Configuration
+@Profile({"dev"})
+public class DataSourceConfig {
+
+  @Value("spring.primary.datasource.driverClassName")
+  private String driver;
+   
+  @Value("spring.primary.datasource.jdbcUrl")
+  private String url;
+   
+  @Value("spring.primary.datasource.username")
+  private String user;
+   
+  @Value("spring.primary.datasource.password")
+  private String password;
+
+  @Bean(name = "primaryDataSource")
+  @Primary
+  @ConfigurationProperties(prefix="spring.primary.datasource")
+  public DataSource primaryDataSource() {
+    return DataSourceBuilder.create().type(org.jmin.bee.BeeDataSource.class).build();
+  }
+
+  @Bean(name = "secondaryDataSource")
+  @ConfigurationProperties(prefix="spring.secondary.datasource")
+  public DataSource secondaryDataSource() {
+    return DataSourceBuilder.create().type(org.jmin.bee.BeeDataSource.class).build();
+  }
+
+  @Bean(name = "threeDataSource")
+  public DataSource threeDataSource(){
+    return new BeeDataSource(new BeeDataSourceConfig(driver,url,user,password));
+  }
+}
+```
+
 
 性能测试
 ---
@@ -55,9 +98,14 @@ Connection con = datasource.getConnection();
 
 1：下面为各连接池在Oracle11G的下测试结果（单位：毫秒）
 
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20190808_I5_4210M_Orcale11g.log">20190808_I5_4210M_Orcale11g.log</a>
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I5_4210M_Oracle11g_20190717.log">20190808_I5_4210M_Orcale11g.log</a>
 
-Bee_C(30.7656) > HikariCP(38.3209) > Vibur(49.7906) > Bee_F(55.0636) > TOMCAT(121.8306) > Druid(126.8635) > DBCP(127.7240) > C3P0(144.3271)
+Bee_F(16.37) > Bee_C(18.25) > Vibur(28.79) > HikariCP(34.42) > TOMCAT(67.47) > DBCP(75.28) > Druid(75.97) > C3P0(96.40)
+
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I5_4210M_Oracle11g_20190723.log">20190808_I5_4210M_Orcale11g.log</a>
+
+Bee_F(13.39) > Bee_C(15.25) > Vibur(20.64) > HikariCP(28.79) > TOMCAT(57.93) > DBCP(66.47) > Druid(67.03) > C3P0(71.54)
+
 
 2：以光连接池的驱动（专用于连接池性能测试的驱动）测试情况如下
 
