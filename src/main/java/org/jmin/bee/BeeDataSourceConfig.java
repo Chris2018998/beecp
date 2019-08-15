@@ -121,19 +121,19 @@ public class BeeDataSourceConfig{
 	private boolean defaultAutoCommit=true;
 	
 	/**
-	 * if connection.isAutoCommit() is true,then roll back or not
-	 */
-	private boolean rollbackOnReturn=false;
-	
-	/**
-	 * if connection.isAutoCommit() is true,then commit or not
-	 */
-	private boolean commitOnReturn=false;
-	
-	/**
 	 * default Transaction Isolation
 	 */
 	private int defaultTransactionIsolation;
+	
+	/**
+	 *connection.setCatalog
+	 */
+	private String catalog="";
+	
+	/**
+	 * connection.setReadOnly
+	 */
+	private boolean readOnly=false;
 
 	/**
 	 * borrower request timeout(milliseconds)
@@ -301,26 +301,28 @@ public class BeeDataSourceConfig{
 		if(!this.inited)
 		this.defaultAutoCommit = defaultAutoCommit;
 	}
-	public boolean isRollbackOnReturn() {
-		return rollbackOnReturn;
-	}
-	public void setRollbackOnReturn(boolean rollbackOnReturn) {
-		if(!this.inited)
-		this.rollbackOnReturn = rollbackOnReturn;
-	}
-	public boolean isCommitOnReturn() {
-		return commitOnReturn;
-	}
-	public void setCommitOnReturn(boolean commitOnReturn) {
-		if(!this.inited)
-		this.commitOnReturn = commitOnReturn;
-	}
+	
 	public int getDefaultTransactionIsolation() {
 		return defaultTransactionIsolation;
 	}
 	public void setDefaultTransactionIsolation(int defaultTransactionIsolation) {
 		if(!this.inited && defaultTransactionIsolation>=0)
 		this.defaultTransactionIsolation = defaultTransactionIsolation;
+	}
+	
+	public String getCatalog() {
+		return catalog;
+	}
+	public void setCatalog(String catalog) {
+	  if(!this.isNull(catalog))
+		this.catalog = catalog;
+	}
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+	public void setReadOnly(boolean readOnly) {
+	   if(!this.inited)
+		this.readOnly = readOnly;
 	}
 	public long getMaxWait() {
 		return maxWait;

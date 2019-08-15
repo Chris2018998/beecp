@@ -49,8 +49,6 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	/**
 	 * constructor
 	 * @param config data source configuration
- 	 * @throws SQLException
-	 *             if fail to create pool
 	 */
 	public BeeDataSource(final BeeDataSourceConfig config){
 		pool=createPool(config);
