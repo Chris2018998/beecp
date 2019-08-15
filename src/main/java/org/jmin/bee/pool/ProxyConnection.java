@@ -18,6 +18,8 @@ package org.jmin.bee.pool;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.jmin.bee.BeeDataSourceConfig;
+
 /**
  * physical connection wrapper
  * 
@@ -27,33 +29,80 @@ import java.sql.SQLException;
 public abstract class ProxyConnection implements Connection {
 	private boolean isClosed;
 	protected Connection delegate;
-	private PooledConnection pooledConnection;
-	public ProxyConnection(PooledConnection pooledConnection) {
-		this.pooledConnection = pooledConnection;
-		this.delegate = pooledConnection.getPhisicConnection();
+	private PooledConnection pooledConn;
+	
+	private boolean autoCommitVal=true;
+	private boolean readOnlValChanged=false;
+	private boolean catalogValChanged=false;
+	private boolean autoCommitChanged=false;
+	private boolean transactionLevlChanged=false;
+	private BeeDataSourceConfig poolConfig;
+	public ProxyConnection(PooledConnection pooledConn) {
+		this.pooledConn=pooledConn;
+		this.delegate=pooledConn.getPhisicConnection();
+		this.poolConfig=pooledConn.poolConfig;
+		autoCommitVal=poolConfig.isDefaultAutoCommit();
 	}
 	public boolean isClosed() {
 		return isClosed;
 	}
 	public PooledConnection getPooledConnection() {
-		 return pooledConnection;
+		 return pooledConn;
 	}
 	protected StatementCache getStatementCache() {
-	  return pooledConnection.getStatementCache();
+	  return pooledConn.getStatementCache();
 	}
 	protected void updateLastActivityTime() throws SQLException {
 		if (isClosed)throw new SQLException("Connection has been closed");
-		this.pooledConnection.updateLastActivityTime();
+		this.pooledConn.updateLastActivityTime();
+	}
+	
+	public boolean isReadOnlValChanged() {
+		return readOnlValChanged;
+	}
+	public boolean isAutoCommitChanged() {
+		return autoCommitChanged;
+	}
+	public boolean getAutoCommitValue() {
+		return autoCommitVal;
+	}
+	public boolean isTransactionLevlChanged() {
+		return transactionLevlChanged;
+	}
+	public boolean isCatalogValChanged() {
+		return catalogValChanged;
+	}
+	public void setCatalog(String catalog) throws SQLException {
+		updateLastActivityTime();
+		delegate.setCatalog(catalog);
+		catalogValChanged=!poolConfig.getCatalog().equals(catalog);
+	}
+	
+	public void setReadOnly(boolean readOnly) throws SQLException {
+		updateLastActivityTime();
+		delegate.setReadOnly(readOnly);
+		readOnlValChanged=(readOnly!=poolConfig.isReadOnly());
+	}
+	public void setAutoCommit(boolean autoCommit) throws SQLException {
+		this.updateLastActivityTime();
+		this.autoCommitVal=autoCommit;
+		this.delegate.setAutoCommit(autoCommit);
+		this.autoCommitChanged=(autoCommit != poolConfig.isDefaultAutoCommit());
+	}
+	public void setTransactionIsolation(int level) throws SQLException {
+		updateLastActivityTime();
+		delegate.setTransactionIsolation(level);
+		transactionLevlChanged = (level!=poolConfig.getDefaultTransactionIsolation());
 	}
 	
 	void setConnectionDataToNull() {
 		isClosed = true;
 		delegate = null;
-		pooledConnection = null;
+		pooledConn = null;
 	}
 
 	public void close() throws SQLException {
 		updateLastActivityTime();
-		pooledConnection.returnToPoolBySelf();
+		pooledConn.returnToPoolBySelf();
 	}
 }

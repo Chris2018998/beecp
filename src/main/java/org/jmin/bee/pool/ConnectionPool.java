@@ -189,7 +189,7 @@ public class ConnectionPool{
 				return false;
 			} finally {
 				oclose(st);
-			}
+			}	
 		}
 	}
 
@@ -416,6 +416,9 @@ public class ConnectionPool{
 	//set some inited parameter
 	private final void initNewConneciton(Connection connection)throws SQLException{
 		connection.setAutoCommit(poolConfig.isDefaultAutoCommit());
+		connection.setReadOnly(poolConfig.isReadOnly());
+		if(ConnectionUtil.isNull(poolConfig.getCatalog()))
+		  connection.setCatalog(poolConfig.getCatalog());
 		connection.setTransactionIsolation(poolConfig.getDefaultTransactionIsolation());
 	}
 	

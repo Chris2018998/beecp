@@ -45,8 +45,8 @@ final class PooledConnection{
 	// physical connection wrapper
 	private ProxyConnection proxyConnection;
 	//pool info
-	private BeeDataSourceConfig poolConfig;
-
+	BeeDataSourceConfig poolConfig;
+	
 	private final static AtomicIntegerFieldUpdater<PooledConnection> updater = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class,"state");
 	
 	public PooledConnection(Connection connection, ConnectionPool connPool) {
@@ -98,21 +98,22 @@ final class PooledConnection{
 	private void resetConnectionBeforeRelease() {
 		try {
 			if (proxyConnection != null) {
-				boolean isAutoCommit=connection.getAutoCommit();
 				
-				if(isAutoCommit){
-					if(poolConfig.isCommitOnReturn()){
-						connection.commit();
-					}else if(poolConfig.isRollbackOnReturn()){
-						connection.rollback();
-					}
-				}
-				if(isAutoCommit!=poolConfig.isDefaultAutoCommit()){
+				if(proxyConnection.isAutoCommitChanged()){
+					if(proxyConnection.getAutoCommitValue())connection.rollback();
 					connection.setAutoCommit(poolConfig.isDefaultAutoCommit());
 				}
-				if(connection.getTransactionIsolation()!=poolConfig.getDefaultTransactionIsolation()){
+				
+				if(proxyConnection.isTransactionLevlChanged()){
 					connection.setTransactionIsolation(poolConfig.getDefaultTransactionIsolation());
 				}
+				if(proxyConnection.isCatalogValChanged()){
+					connection.setCatalog(poolConfig.getCatalog());
+				}
+				if(proxyConnection.isReadOnlValChanged()){
+					connection.setReadOnly(poolConfig.isReadOnly());
+				}
+				
 				
 				proxyConnection.setConnectionDataToNull();
 				proxyConnection = null;
