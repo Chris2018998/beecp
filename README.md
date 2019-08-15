@@ -56,13 +56,15 @@ public class DataSourceConfig {
   private String user;
   @Value("spring.datasource.password")
   private String password;
-
+  
+  @Bean
   @Primary
   @ConfigurationProperties(prefix="spring.datasource")
   public DataSource primaryDataSource() {
     return DataSourceBuilder.create().type(org.jmin.bee.BeeDataSource.class).build();
   }
   
+  @Bean
   public DataSource secondDataSource(){
     return new BeeDataSource(new BeeDataSourceConfig(driver,url,user,password));
   }
