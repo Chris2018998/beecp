@@ -54,4 +54,14 @@ public final class ConnectionUtil {
 		} catch (Throwable e) {
 		}
 	}
+	
+	public static boolean equals(String v1,String v2) {
+		if(v1!=null){
+			return v1.equals(v2);
+		}else if(v2!=null){
+			return v2.equals(v1);
+		}else{
+			return true;
+		}
+	}
 }
