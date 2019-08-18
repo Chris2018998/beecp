@@ -118,7 +118,7 @@ public class BeeDataSourceConfig{
 	/**
 	 * connection.setAutoCommit(boolean);
 	 */
-	private boolean defaultAutoCommit=true;
+	private final boolean defaultAutoCommit=true;
 	
 	/**
 	 * default Transaction Isolation
@@ -128,7 +128,7 @@ public class BeeDataSourceConfig{
 	/**
 	 *connection.setCatalog
 	 */
-	private String catalog="";
+	private String catalog=null;
 	
 	/**
 	 * connection.setReadOnly
@@ -296,10 +296,6 @@ public class BeeDataSourceConfig{
 	}
 	public boolean isDefaultAutoCommit() {
 		return defaultAutoCommit;
-	}
-	public void setDefaultAutoCommit(boolean defaultAutoCommit) {
-		if(!this.inited)
-		this.defaultAutoCommit = defaultAutoCommit;
 	}
 	
 	public int getDefaultTransactionIsolation() {
