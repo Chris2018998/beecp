@@ -17,8 +17,8 @@ package org.jmin.bee.pool;
 
 import static java.lang.System.currentTimeMillis;
 import static java.lang.System.nanoTime;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jmin.bee.pool.PoolObjectsState.BORROWER_NORMAL;
 import static org.jmin.bee.pool.PoolObjectsState.BORROWER_TIMEOUT;
@@ -240,9 +240,9 @@ public class ConnectionPool{
 		
 		try {
 			for (int i = 0; i < size; i++){ 
-				con=connFactory.create();
-				initNewConneciton(con);
-				connList.add(new PooledConnection(con,poolConfig.getPreparedStatementCacheSize(),this));
+				if((con=connFactory.create())!=null)
+					setDefaultOnConnection(con);
+					connList.add(new PooledConnection(con,poolConfig.getPreparedStatementCacheSize(),this));
 			}
 		} catch (SQLException e) {
 			throw e;
@@ -326,7 +326,7 @@ public class ConnectionPool{
 		try{
 			long waitNanos=0;
 			borrower.resetThread();
-			borrower.resetStateObject();//BORROWER_NORMAL	
+			borrower.resetStateObject();// BORROWER_NORMAL	
 			waitQueue.offer(borrower);
 			tryToCreateNewConnByAsyn();
 			 
@@ -341,7 +341,7 @@ public class ConnectionPool{
 					//fix issue:#3 Chris-2019-08-01 end
 				    	return createProxyConnection(pConn,borrower);
 				    }else{
-				    	borrower.resetStateObject();
+				    	borrower.resetStateObject();//BORROWER_NORMAL	
 				    }
 				}else if(stateObject instanceof SQLException){
 					throw (SQLException)stateObject;
@@ -363,14 +363,21 @@ public class ConnectionPool{
 			waitQueue.remove(borrower);
 		}
     }
-    
-	//create proxy to wrap connection as result
-	private ProxyConnection createProxyConnection(PooledConnection pConn,Borrower borrower)throws SQLException {
-		borrower.setLastUsedConn(pConn);
-		ProxyConnection proxyConn = ProxyConnectionFactory.createProxyConnection(pConn);
-		pConn.bindProxyConnection(proxyConn);
-		pConn.updateLastActivityTime();
-		return proxyConn; 
+    //create proxy to wrap connection as result
+  	private ProxyConnection createProxyConnection(PooledConnection pConn,Borrower borrower)throws SQLException {
+  		borrower.setLastUsedConn(pConn);
+  		ProxyConnection proxyConn = ProxyConnectionFactory.createProxyConnection(pConn);
+  		pConn.bindProxyConnection(proxyConn);
+  		pConn.updateLastActivityTime();
+  		return proxyConn; 
+  	}
+	//set default on Connection
+	private final void setDefaultOnConnection(Connection connection)throws SQLException{
+		connection.setAutoCommit(poolConfig.isDefaultAutoCommit());
+		connection.setTransactionIsolation(poolConfig.getDefaultTransactionIsolation());
+		connection.setReadOnly(poolConfig.isReadOnly());
+		if(!ConnectionUtil.isNull(poolConfig.getCatalog()))
+		  connection.setCatalog(poolConfig.getCatalog());
 	}
  	//notify to create connections to pool 
 	private void tryToCreateNewConnByAsyn() {
@@ -413,14 +420,7 @@ public class ConnectionPool{
 			}
 		}
 	}
-	//set some inited parameter
-	private final void initNewConneciton(Connection connection)throws SQLException{
-		connection.setAutoCommit(poolConfig.isDefaultAutoCommit());
-		connection.setReadOnly(poolConfig.isReadOnly());
-		if(ConnectionUtil.isNull(poolConfig.getCatalog()))
-		  connection.setCatalog(poolConfig.getCatalog());
-		connection.setTransactionIsolation(poolConfig.getDefaultTransactionIsolation());
-	}
+
 	
 	/**
 	 * inner timer will call the method to clear some idle timeout connections
@@ -532,7 +532,7 @@ public class ConnectionPool{
 		   LockSupport.unpark(this);
 	   }
 	   public void run() {
-		     Connection con=null;
+		    Connection con=null;
 			state=THREAD_WORKING;
 			PooledConnection pConn = null;
 			final ConnectionPool pool = ConnectionPool.this;
@@ -544,14 +544,18 @@ public class ConnectionPool{
 				state=THREAD_WORKING;
 				if(PoolMaxSize>connList.size() && !waitQueue.isEmpty()){
 					try {
-						con=connFactory.create();
-						initNewConneciton(con);
-						pConn = new PooledConnection(con,CacheSize,pool);
-						pConn.setState(CONNECTION_USING);
-						connList.add(pConn);
-						release(pConn,true);
+						if((con=connFactory.create())!=null){
+							setDefaultOnConnection(con);
+							pConn = new PooledConnection(con,CacheSize,pool);
+							pConn.setState(CONNECTION_USING);
+							connList.add(pConn);
+							release(pConn,true);
+						}
 					} catch (SQLException e) {
+						if(con!=null)ConnectionUtil.oclose(con);
 						transferSQLException(e);
+					}finally{
+						con=null;
 					}
 				}else{
 					state=THREAD_WAITING;

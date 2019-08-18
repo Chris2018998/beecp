@@ -19,6 +19,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.jmin.bee.BeeDataSourceConfig;
+import org.jmin.bee.pool.util.ConnectionUtil;
 
 /**
  * physical connection wrapper
@@ -30,18 +31,11 @@ public abstract class ProxyConnection implements Connection {
 	private boolean isClosed;
 	protected Connection delegate;
 	private PooledConnection pooledConn;
-	
-	private boolean autoCommitVal=true;
-	private boolean readOnlValChanged=false;
-	private boolean catalogValChanged=false;
-	private boolean autoCommitChanged=false;
-	private boolean transactionLevlChanged=false;
 	private BeeDataSourceConfig poolConfig;
 	public ProxyConnection(PooledConnection pooledConn) {
 		this.pooledConn=pooledConn;
 		this.delegate=pooledConn.getPhisicConnection();
 		this.poolConfig=pooledConn.poolConfig;
-		autoCommitVal=poolConfig.isDefaultAutoCommit();
 	}
 	public boolean isClosed() {
 		return isClosed;
@@ -56,43 +50,26 @@ public abstract class ProxyConnection implements Connection {
 		if (isClosed)throw new SQLException("Connection has been closed");
 		this.pooledConn.updateLastActivityTime();
 	}
-	
-	public boolean isReadOnlValChanged() {
-		return readOnlValChanged;
-	}
-	public boolean isAutoCommitChanged() {
-		return autoCommitChanged;
-	}
-	public boolean getAutoCommitValue() {
-		return autoCommitVal;
-	}
-	public boolean isTransactionLevlChanged() {
-		return transactionLevlChanged;
-	}
-	public boolean isCatalogValChanged() {
-		return catalogValChanged;
-	}
-	public void setCatalog(String catalog) throws SQLException {
-		updateLastActivityTime();
-		delegate.setCatalog(catalog);
-		catalogValChanged=!poolConfig.getCatalog().equals(catalog);
-	}
-	
-	public void setReadOnly(boolean readOnly) throws SQLException {
-		updateLastActivityTime();
-		delegate.setReadOnly(readOnly);
-		readOnlValChanged=(readOnly!=poolConfig.isReadOnly());
-	}
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
-		this.updateLastActivityTime();
-		this.autoCommitVal=autoCommit;
-		this.delegate.setAutoCommit(autoCommit);
-		this.autoCommitChanged=(autoCommit != poolConfig.isDefaultAutoCommit());
+		updateLastActivityTime();
+		delegate.setAutoCommit(autoCommit);
+		pooledConn.setCurAutoCommit(autoCommit);
+		pooledConn.setChangedInd(PooledConnection.Pos_AutoCommitInd,autoCommit!=poolConfig.isDefaultAutoCommit());
 	}
 	public void setTransactionIsolation(int level) throws SQLException {
 		updateLastActivityTime();
 		delegate.setTransactionIsolation(level);
-		transactionLevlChanged = (level!=poolConfig.getDefaultTransactionIsolation());
+		pooledConn.setChangedInd(PooledConnection.Pos_TransactionIsolationInd,level!=poolConfig.getDefaultTransactionIsolation());
+	}
+	public void setReadOnly(boolean readOnly) throws SQLException {
+		updateLastActivityTime();
+		delegate.setReadOnly(readOnly);
+		pooledConn.setChangedInd(PooledConnection.Pos_ReadOnlyInd,readOnly!=poolConfig.isReadOnly());
+	}
+	public void setCatalog(String catalog) throws SQLException {
+		updateLastActivityTime();
+		delegate.setCatalog(catalog);
+		pooledConn.setChangedInd(PooledConnection.Pos_CatalogInd,!ConnectionUtil.equals(poolConfig.getCatalog(),catalog));
 	}
 	
 	void setConnectionDataToNull() {

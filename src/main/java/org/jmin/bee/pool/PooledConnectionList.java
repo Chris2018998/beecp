@@ -35,46 +35,42 @@ public final class PooledConnectionList {
 	}
 	
 	public synchronized void add(PooledConnection pooledCon) {
-		final PooledConnection[] arrayOld=array;
-		int oldLen = arrayOld.length;
+		int oldLen = array.length;
 		PooledConnection[] arrayNew = new PooledConnection[oldLen + 1];
 	
-		arrayNew[0] = pooledCon;//add at head
-		System.arraycopy(arrayOld,0,arrayNew,1,oldLen);
+		arrayNew[0]=pooledCon;//add at head
+		System.arraycopy(array,0,arrayNew,1,oldLen);
 		setArray(arrayNew);
 	}
 	
 	public synchronized void addAll(List<PooledConnection> col) {
-		final PooledConnection[] arrayOld=array;
-		int oldLen=arrayOld.length;
-		
+		int oldLen=array.length;
 		int addLen=col.size();
 		PooledConnection[] arrayAdd =col.toArray(new PooledConnection[addLen]);
 		PooledConnection[] arrayNew = new PooledConnection[oldLen+addLen];
 		System.arraycopy(arrayAdd,0,arrayNew,0,addLen);//add at head
-		System.arraycopy(arrayOld,0,arrayNew,addLen,oldLen);
+		System.arraycopy(array,0,arrayNew,addLen,oldLen);
 		setArray(arrayNew); 
 	}
 	
 	public synchronized void remove(PooledConnection pooledCon){ 
-		PooledConnection[] arrayOld=array;
 		int index =-1;
-		for (int i=0,l=arrayOld.length;i<l;i++) {
-			 if(arrayOld[i]==pooledCon){
+		for (int i=0,l=array.length;i<l;i++) {
+			 if(array[i]==pooledCon){
 				 index=i;
 				 break;
 			 }
 		}
 		
 		if(index >=0){
-			PooledConnection[] arrayNew = new PooledConnection[arrayOld.length-1];
+			PooledConnection[] arrayNew = new PooledConnection[array.length-1];
 			if(index==0){
-				System.arraycopy(arrayOld,1,arrayNew,0,arrayNew.length);
-			}else if(index==arrayOld.length-1){
-				System.arraycopy(arrayOld,0, arrayNew,0, arrayNew.length);
+				System.arraycopy(array,1,arrayNew,0,arrayNew.length);
+			}else if(index==array.length-1){
+				System.arraycopy(array,0, arrayNew,0, arrayNew.length);
 			}else{
-				System.arraycopy(arrayOld,0,arrayNew,0,index+1);
-				System.arraycopy(arrayOld,index+1, arrayNew,index,(arrayOld.length-index-1));
+				System.arraycopy(array,0,arrayNew,0,index+1);
+				System.arraycopy(array,index+1, arrayNew,index,(array.length-index-1));
 			}
 			setArray(arrayNew);
 		}

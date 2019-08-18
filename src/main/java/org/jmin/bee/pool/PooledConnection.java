@@ -30,7 +30,6 @@ import org.jmin.bee.BeeDataSourceConfig;
  * @author Chris.Liao
  * @version 1.0
  */
-
 final class PooledConnection{
 	// state
 	private volatile int state;
@@ -46,7 +45,14 @@ final class PooledConnection{
 	private ProxyConnection proxyConnection;
 	//pool info
 	BeeDataSourceConfig poolConfig;
-	
+	private boolean curAutoCommit=true;
+	//changed indicator
+	private boolean[] changedInds=new boolean[4]; //0:autoCommit,1:transactionIsolation,2:readOnly,3:catalog
+	private short changedFieldsts=Short.parseShort("0000",2); //pos:last ---> head;0:unchanged,1:changed
+	public static short Pos_AutoCommitInd=0;
+	public static short Pos_TransactionIsolationInd=1;
+	public static short Pos_ReadOnlyInd=2;
+	public static short Pos_CatalogInd=3;
 	private final static AtomicIntegerFieldUpdater<PooledConnection> updater = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class,"state");
 	
 	public PooledConnection(Connection connection, ConnectionPool connPool) {
@@ -57,6 +63,7 @@ final class PooledConnection{
 		connection= phConn;
 		state =CONNECTION_IDLE;
 		poolConfig=connPool.poolConfig;
+		curAutoCommit=poolConfig.isDefaultAutoCommit();
 	    mapCache = new StatementCache((stCacheSize<=0)?16:stCacheSize);
 		updateLastActivityTime();
 	}
@@ -66,11 +73,9 @@ final class PooledConnection{
 	public long getLastActiveTime() {
 		return lastActiveTime;
 	}
-
 	public void updateLastActivityTime() {
 		lastActiveTime=currentTimeMillis();
 	}
-	
 	public Connection getPhisicConnection() {
 		return connection;
 	}
@@ -94,32 +99,62 @@ final class PooledConnection{
 	public boolean compareAndSetState(int expect, int update) {
 		return updater.compareAndSet(this, expect, update);
 	}
-
+	
+	int getChangedInd(int pos){
+		return (changedFieldsts>>pos)&1 ;
+	}
+    void setChangedInd(int pos,boolean changed){
+    	int bitV=changed?1:0;
+    	changedFieldsts=changedFieldsts^=(changedFieldsts&(1<<pos))^(bitV<<pos);
+    	changedInds[pos]=changed;
+    }
+	void setCurAutoCommit(boolean curAutoCommit) {
+		this.curAutoCommit = curAutoCommit;
+	}
 	private void resetConnectionBeforeRelease() {
-		try {
-			if (proxyConnection != null) {
-				
-				if(proxyConnection.isAutoCommitChanged()){
-					if(proxyConnection.getAutoCommitValue())connection.rollback();
+		if (changedFieldsts > 0) {// exists field changed
+			if (changedInds[0]) {
+				try {
+					if(!curAutoCommit)connection.rollback();
 					connection.setAutoCommit(poolConfig.isDefaultAutoCommit());
+					changedInds[0]=false;
+				} catch (SQLException e) {
+					e.printStackTrace();
 				}
-				
-				if(proxyConnection.isTransactionLevlChanged()){
-					connection.setTransactionIsolation(poolConfig.getDefaultTransactionIsolation());
-				}
-				if(proxyConnection.isCatalogValChanged()){
-					connection.setCatalog(poolConfig.getCatalog());
-				}
-				if(proxyConnection.isReadOnlValChanged()){
-					connection.setReadOnly(poolConfig.isReadOnly());
-				}
-				
-				
-				proxyConnection.setConnectionDataToNull();
-				proxyConnection = null;
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
+
+			if (changedInds[1]) {
+				try {
+					connection.setTransactionIsolation(poolConfig.getDefaultTransactionIsolation());
+					changedInds[1] = false;
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+
+			if (changedInds[2]) {
+				try {
+					connection.setReadOnly(poolConfig.isReadOnly());
+					changedInds[2] = false;
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+
+			if (changedInds[3]) {
+				try {
+					connection.setCatalog(poolConfig.getCatalog());
+					changedInds[3] = false;
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			changedFieldsts=0;
+		}
+		
+		if(proxyConnection!=null){
+			proxyConnection.setConnectionDataToNull();
+			proxyConnection = null;
 		}
 	}
 	
