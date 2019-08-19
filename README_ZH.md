@@ -44,8 +44,8 @@ application.properties
 spring.datasource.username=xx
 spring.datasource.password=xx
 spring.datasource.jdbcUrl=xx
-spring.datasource.driverClassName=oracle.jdbc.OracleDriver
-
+spring.datasource.driverClassName=xxx
+spring.datasource.datasourceJndiName=xxx
 ```
 
 ```java
@@ -59,6 +59,9 @@ public class DataSourceConfig {
   private String user;
   @Value("spring.datasource.password")
   private String password;
+  @Value("spring.datasource.datasourceJndiName")
+  private String datasourceJndiName;
+  private BeeDataSourceFactory dataSourceFactory = new BeeDataSourceFactory();
   
   @Bean
   @Primary
@@ -70,6 +73,15 @@ public class DataSourceConfig {
   @Bean
   public DataSource secondDataSource(){
     return new BeeDataSource(new BeeDataSourceConfig(driver,url,user,password));
+  }
+  
+  @Bean
+  public DataSource thirdDataSource()throws SQLException {
+    try{
+       return dataSourceFactory.lookup(datasourceJndiName);
+     }catch(NamingException e){
+       throw new SQLException("Jndi DataSource not found："+datasourceJndiName);
+     }
   }
 }
 ```
