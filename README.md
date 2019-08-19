@@ -43,7 +43,8 @@ application.properties
 spring.datasource.username=xx
 spring.datasource.password=xx
 spring.datasource.jdbcUrl=xx
-spring.datasource.driverClassName=oracle.jdbc.OracleDriver
+spring.datasource.driverClassName=xxx
+spring.datasource.datasourceJndiName=test
 
 ```
 
@@ -88,7 +89,7 @@ public class DataSourceConfig {
 
 Performance
 ---
-The performance of each connection pool is tested by multi-threaded query (1000 threads execute 1000 times each, totally 1 million times), and the time-consuming distribution and average time-consuming are printed. Finally, the connection pools are ranked according to the usual time-consuming. Single time statistics (machine status has a great impact on the test results):
+The performance of each connection pool is tested by multi-threaded query (1000 threads execute 1000 times each, totally 1 million times), and the time-consuming distribution and average time-consuming are printed. Finally, the connection pools are ranked according to the usual time-consuming. Single time statistics (machine status impact on the test results):
 
 [datasource.getConnection(),connection.prepareStatement,statement.execute(),statement.close(),connection.close()]</i>
 
