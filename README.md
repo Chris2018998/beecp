@@ -44,8 +44,7 @@ spring.datasource.username=xx
 spring.datasource.password=xx
 spring.datasource.jdbcUrl=xx
 spring.datasource.driverClassName=xxx
-spring.datasource.datasourceJndiName=test
-
+spring.datasource.datasourceJndiName=xxx
 ```
 
 ```java
