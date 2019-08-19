@@ -58,6 +58,9 @@ public class DataSourceConfig {
   private String user;
   @Value("spring.datasource.password")
   private String password;
+  @Value("spring.datasource.datasourceJndiName")
+  private String datasourceJndiName;
+  private BeeDataSourceFactory dataSourceFactory = new BeeDataSourceFactory();
   
   @Bean
   @Primary
@@ -70,11 +73,20 @@ public class DataSourceConfig {
   public DataSource secondDataSource(){
     return new BeeDataSource(new BeeDataSourceConfig(driver,url,user,password));
   }
+  
+  @Bean
+  public DataSource thirdDataSource()throws SQLException {
+    try{
+       return dataSourceFactory.lookup(datasourceJndiName);
+     }catch(NamingException e){
+       throw new SQLException("Jndi DataSource not found："+datasourceJndiName);
+     }
+  }
 }
 ```
 
 
-Performance test
+Performance
 ---
 The performance of each connection pool is tested by multi-threaded query (1000 threads execute 1000 times each, totally 1 million times), and the time-consuming distribution and average time-consuming are printed. Finally, the connection pools are ranked according to the usual time-consuming. Single time statistics (machine status has a great impact on the test results):
 
