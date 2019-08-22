@@ -20,7 +20,6 @@ import static java.lang.System.nanoTime;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.jmin.bee.pool.PoolObjectsState.BorrowStatus;
 import static org.jmin.bee.pool.PoolObjectsState.BORROWER_NORMAL;
 import static org.jmin.bee.pool.PoolObjectsState.BORROWER_TIMEOUT;
 import static org.jmin.bee.pool.PoolObjectsState.BORROWER_WAITING;
