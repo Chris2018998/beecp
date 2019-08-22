@@ -20,6 +20,7 @@ import static java.lang.System.nanoTime;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.jmin.bee.pool.PoolObjectsState.BorrowStatus;
 import static org.jmin.bee.pool.PoolObjectsState.BORROWER_NORMAL;
 import static org.jmin.bee.pool.PoolObjectsState.BORROWER_TIMEOUT;
 import static org.jmin.bee.pool.PoolObjectsState.BORROWER_WAITING;
@@ -323,6 +324,7 @@ public class ConnectionPool{
     	//wait one transfered connection 
 		boolean timeout=false;
 		Object stateObject=null;
+		PooledConnection pConn=null;
 		try{
 			long waitNanos=0;
 			borrower.resetThread();
@@ -333,31 +335,27 @@ public class ConnectionPool{
 			for(;;){
 				stateObject=borrower.getStateObject();
 				if(stateObject instanceof PooledConnection){
-					PooledConnection pConn=(PooledConnection)stateObject;
-					
+					pConn=(PooledConnection)stateObject;
 					//fix issue:#3 Chris-2019-08-01 begin
 					//if(tansferPolicy.tryCatch(pConn){
-					if(tansferPolicy.tryCatch(pConn)&& this.checkOnBorrow(pConn)){
+					if(tansferPolicy.tryCatch(pConn)&& this.checkOnBorrow(pConn))
 					//fix issue:#3 Chris-2019-08-01 end
-				    	return createProxyConnection(pConn,borrower);
-				    }else{
-				    	borrower.resetStateObject();//BORROWER_NORMAL	
+				       return createProxyConnection(pConn,borrower);
+				    else{
+				       borrower.resetStateObject();//BORROWER_NORMAL
+				       continue;
 				    }
 				}else if(stateObject instanceof SQLException){
 					throw (SQLException)stateObject;
-				}
-			
-				if(timeout){
+				}else if(timeout){
 					if(borrower.compareAndSetStateObject(BORROWER_NORMAL,BORROWER_TIMEOUT))
 						throw RequestTimeoutException;
-				
-					continue; 
+				}else{
+					waitNanos=deadlineNanos-nanoTime();
+					if(timeout=(waitNanos<=0))continue;
+					if(borrower.compareAndSetStateObject(BORROWER_NORMAL,BORROWER_WAITING))
+						LockSupport.parkNanos(borrower,waitNanos);
 				}
-				
-				waitNanos=deadlineNanos-nanoTime();
-				if(waitNanos<=0){timeout=true;continue;}
-				if(borrower.compareAndSetStateObject(BORROWER_NORMAL,BORROWER_WAITING))
-					LockSupport.parkNanos(borrower,waitNanos);
 			}//for 
 		}finally{
 			waitQueue.remove(borrower);
