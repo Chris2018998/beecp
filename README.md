@@ -35,7 +35,7 @@ Configuration
 | validationQuery |Connection active Query Statement |    |   |
 
 
-Refence demo in SpringBoot
+Refence demo With SpringBoot
 ---
 ```java
 application.properties
