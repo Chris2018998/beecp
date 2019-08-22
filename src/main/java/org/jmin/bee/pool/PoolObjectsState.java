@@ -41,8 +41,9 @@ class PoolObjectsState {
 	public static final int THREAD_DEAD           = 3;  
 	
 	//BORROWER THREAD ACTIVE STATE
-	public static final Object BORROWER_NORMAL    = new Object();
-	public static final Object BORROWER_WAITING   = new Object();
-	public static final Object BORROWER_TIMEOUT   = new Object();
+	static class BorrowStatus{}
+	public static final Object BORROWER_NORMAL    = new BorrowStatus();
+	public static final Object BORROWER_WAITING   = new BorrowStatus();
+	public static final Object BORROWER_TIMEOUT   = new BorrowStatus();
 	
 }
