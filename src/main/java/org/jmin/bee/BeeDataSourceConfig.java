@@ -372,6 +372,18 @@ public class BeeDataSourceConfig{
 		}
 	}
 	
+	public void removeDriverConnectProperty(String key){
+		if(!this.inited){
+			connectProperties.remove(key);
+		}
+	}
+	
+	public void addDriverConnectProperty(String key,String value){
+		if(!this.inited){
+			connectProperties.put(key, value);
+		}
+	}
+	
 	private Driver loadJdbcDriver(String driverClassName) throws IllegalArgumentException {
 		try {
 			Class<?> driverClass = Class.forName(driverClassName,true,this.getClass().getClassLoader());
@@ -432,8 +444,8 @@ public class BeeDataSourceConfig{
 			throw new IllegalArgumentException("Connection max idle time must be greater than zero");
 		if (this.maxWait <= 0)
 			throw new IllegalArgumentException("Borrower max wait time must be greater than zero");
-		if (this.preparedStatementCacheSize <= 0)
-			throw new IllegalArgumentException("Statement cache size must be greater than zero");
+//		if (this.preparedStatementCacheSize <= 0)
+//			throw new IllegalArgumentException("Statement cache size must be greater than zero");
 		
 		//fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 begin
 		//if (this.validationQuerySQL != null && validationQuerySQL.trim().length() == 0) {
