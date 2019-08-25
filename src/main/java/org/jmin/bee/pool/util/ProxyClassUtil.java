@@ -229,6 +229,7 @@ public final class ProxyClassUtil {
 					ctResultSetIntfProxyImplClass,
 					ctProxyObjectFactoryClass};
 		}catch(Throwable e){
+			e.printStackTrace();
 			throw new Exception(e);
 		}
 	}
@@ -269,23 +270,35 @@ public final class ProxyClassUtil {
 			if(methodName.equals("createStatement")){
 				methodBuffer.append("return new ProxyStatement(delegate.createStatement($$),this,false);");	
 			}else if(methodName.equals("prepareStatement")){
-				methodBuffer.append("StatementCache cache = getStatementCache();"); 
-				methodBuffer.append("Object key=StatementCacheUtil.createPsCaecheKey($$);");
- 				methodBuffer.append("PreparedStatement statement=cache.get(key);");
-				methodBuffer.append("if(statement==null){");
-				methodBuffer.append("  statement=delegate.prepareStatement($$);");
-				methodBuffer.append("  cache.put(key,statement);");
+				methodBuffer.append("PreparedStatement statement=null;"); 
+				methodBuffer.append("boolean cacheInd= isStatementCacheInd();"); 
+				methodBuffer.append("if(cacheInd){"); 
+				methodBuffer.append(" StatementCache cache = getStatementCache();"); 
+				methodBuffer.append(" Object key=StatementCacheUtil.createPsCaecheKey($$);");
+ 				methodBuffer.append(" statement=cache.get(key);");
+				methodBuffer.append(" if(statement==null){");
+				methodBuffer.append("   statement=delegate.prepareStatement($$);");
+				methodBuffer.append("   cache.put(key,statement);");
+				methodBuffer.append(" }");
+				methodBuffer.append("}else{");
+				methodBuffer.append(" statement=delegate.prepareStatement($$);");
 				methodBuffer.append("}");
-				methodBuffer.append("return new ProxyPsStatement(statement,this,true);");	
+				methodBuffer.append("return new ProxyPsStatement(statement,this,cacheInd);");
 			}else if(methodName.equals("prepareCall")){
-				methodBuffer.append("StatementCache cache = getStatementCache();"); 
-				methodBuffer.append("Object key = StatementCacheUtil.createCsCaecheKey($$);");
-				methodBuffer.append("CallableStatement statement=(CallableStatement)cache.get(key);");
-				methodBuffer.append("if(statement==null){");
+				methodBuffer.append("CallableStatement statement=null;"); 
+				methodBuffer.append("boolean cacheInd= isStatementCacheInd();"); 
+				methodBuffer.append("if(cacheInd){"); 
+				methodBuffer.append(" StatementCache cache = getStatementCache();"); 
+				methodBuffer.append(" Object key = StatementCacheUtil.createCsCaecheKey($$);");
+				methodBuffer.append(" CallableStatement statement=(CallableStatement)cache.get(key);");
+				methodBuffer.append(" if(statement==null){");
+				methodBuffer.append("   statement=delegate.prepareCall($$);");
+				methodBuffer.append("   cache.put(key,statement);");
+				methodBuffer.append(" }");
+				methodBuffer.append("}else{");
 				methodBuffer.append("  statement=delegate.prepareCall($$);");
-				methodBuffer.append("  cache.put(key,statement);");
 				methodBuffer.append("}");
-			    methodBuffer.append("return new ProxyCsStatement(statement,this,true);");	
+			    methodBuffer.append("return new ProxyCsStatement(statement,this,cacheInd);");	
 			}else if(methodName.equals("close")){
 				methodBuffer.append("super."+methodName + "($$);");
 			}else{
