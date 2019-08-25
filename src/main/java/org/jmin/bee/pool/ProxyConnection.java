@@ -31,55 +31,70 @@ public abstract class ProxyConnection implements Connection {
 	private boolean isClosed;
 	protected Connection delegate;
 	private PooledConnection pooledConn;
-	private BeeDataSourceConfig poolConfig;
+	protected boolean statementCacheInd;
+	protected StatementCache mapCache;
+	
+	private boolean defaultAutoCommit;
+	private int defaultTransactionIsolation;
+	private boolean defaultReadOnly;
+	private String defaultCatalog;
+
 	public ProxyConnection(PooledConnection pooledConn) {
 		this.pooledConn=pooledConn;
 		this.delegate=pooledConn.getPhisicConnection();
-		this.poolConfig=pooledConn.poolConfig;
+		pooledConn.bindProxyConnection(this);
+		
+		BeeDataSourceConfig poolConfig=pooledConn.poolConfig;
+		defaultAutoCommit=poolConfig.isDefaultAutoCommit();
+		defaultTransactionIsolation=poolConfig.getDefaultTransactionIsolation();
+		defaultReadOnly=poolConfig.isReadOnly();
+		defaultCatalog=poolConfig.getCatalog();
+		statementCacheInd=pooledConn.isStatementCacheInd();
+		mapCache=pooledConn.getStatementCache();
 	}
-	public boolean isClosed() {
-		return isClosed;
-	}
-	public PooledConnection getPooledConnection() {
-		 return pooledConn;
+	
+	protected boolean isStatementCacheInd() {
+		return statementCacheInd;
 	}
 	protected StatementCache getStatementCache() {
-	  return pooledConn.getStatementCache();
+	  return mapCache;
 	}
 	protected void updateLastActivityTime() throws SQLException {
-		if (isClosed)throw new SQLException("Connection has been closed");
-		this.pooledConn.updateLastActivityTime();
+		if(isClosed)throw new SQLException("Connection has been closed");
+		pooledConn.updateLastActivityTime();
 	}
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
 		updateLastActivityTime();
 		delegate.setAutoCommit(autoCommit);
 		pooledConn.setCurAutoCommit(autoCommit);
-		pooledConn.setChangedInd(PooledConnection.Pos_AutoCommitInd,autoCommit!=poolConfig.isDefaultAutoCommit());
+		pooledConn.setChangedInd(PooledConnection.Pos_AutoCommitInd,autoCommit!=defaultAutoCommit);
 	}
 	public void setTransactionIsolation(int level) throws SQLException {
 		updateLastActivityTime();
 		delegate.setTransactionIsolation(level);
-		pooledConn.setChangedInd(PooledConnection.Pos_TransactionIsolationInd,level!=poolConfig.getDefaultTransactionIsolation());
+		pooledConn.setChangedInd(PooledConnection.Pos_TransactionIsolationInd,level!=defaultTransactionIsolation);
 	}
 	public void setReadOnly(boolean readOnly) throws SQLException {
 		updateLastActivityTime();
 		delegate.setReadOnly(readOnly);
-		pooledConn.setChangedInd(PooledConnection.Pos_ReadOnlyInd,readOnly!=poolConfig.isReadOnly());
+		pooledConn.setChangedInd(PooledConnection.Pos_ReadOnlyInd,readOnly!=defaultReadOnly);
 	}
 	public void setCatalog(String catalog) throws SQLException {
 		updateLastActivityTime();
 		delegate.setCatalog(catalog);
-		pooledConn.setChangedInd(PooledConnection.Pos_CatalogInd,!ConnectionUtil.equals(poolConfig.getCatalog(),catalog));
+		pooledConn.setChangedInd(PooledConnection.Pos_CatalogInd,!ConnectionUtil.equals(catalog,defaultCatalog));
 	}
-	
 	void setConnectionDataToNull() {
 		isClosed = true;
 		delegate = null;
 		pooledConn = null;
 	}
-
 	public void close() throws SQLException {
-		updateLastActivityTime();
-		pooledConn.returnToPoolBySelf();
+		try{
+			isClosed = true;
+			pooledConn.returnToPoolBySelf();
+		}finally{
+			setConnectionDataToNull();
+		}
 	}
 }

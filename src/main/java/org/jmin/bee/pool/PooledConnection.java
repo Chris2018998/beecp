@@ -53,19 +53,23 @@ final class PooledConnection{
 	public static short Pos_TransactionIsolationInd=1;
 	public static short Pos_ReadOnlyInd=2;
 	public static short Pos_CatalogInd=3;
+	
+	private boolean statementCacheInd;
 	private final static AtomicIntegerFieldUpdater<PooledConnection> updater = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class,"state");
 	
-	public PooledConnection(Connection connection, ConnectionPool connPool) {
-		this(connection, 16, connPool);
-	}
-	public PooledConnection(Connection phConn, int stCacheSize, ConnectionPool connPool) {
+	public PooledConnection(Connection phConn, ConnectionPool connPool) {
 		pool = connPool;
 		connection= phConn;
 		state =CONNECTION_IDLE;
 		poolConfig=connPool.poolConfig;
 		curAutoCommit=poolConfig.isDefaultAutoCommit();
-	    mapCache = new StatementCache((stCacheSize<=0)?16:stCacheSize);
+		int stCacheSize=poolConfig.getPreparedStatementCacheSize();
+		statementCacheInd=connPool.isStatementCacheInd();
+		if(statementCacheInd)mapCache = new StatementCache(stCacheSize);
 		updateLastActivityTime();
+	}
+	public boolean isStatementCacheInd() {
+		return statementCacheInd;
 	}
 	public StatementCache getStatementCache() {
 		return mapCache;
@@ -85,6 +89,7 @@ final class PooledConnection{
 
 	public void bindProxyConnection(ProxyConnection proxyConnection) {
 		this.proxyConnection = proxyConnection;
+		updateLastActivityTime();
 	}
 	public boolean equals(Object obj) {
 		return this==obj;
@@ -151,24 +156,28 @@ final class PooledConnection{
 			}
 			changedFieldsts=0;
 		}
-		
-		if(proxyConnection!=null){
-			proxyConnection.setConnectionDataToNull();
-			proxyConnection = null;
-		}
 	}
 	
 	//called for pool
 	void closePhysicalConnection() {
-		resetConnectionBeforeRelease();
-		bindProxyConnection(null);
-		
-		mapCache.clear();
-		oclose(connection);
+		try{
+			resetConnectionBeforeRelease();
+			mapCache.clear();
+			oclose(connection);
+		}finally{
+			if(proxyConnection!=null){
+				proxyConnection.setConnectionDataToNull();
+				proxyConnection = null;
+			}
+		}
 	}
     void returnToPoolBySelf() throws SQLException {
-		resetConnectionBeforeRelease();
-		bindProxyConnection(null);
-		pool.release(this,false);
+    	try{
+	    	updateLastActivityTime();
+			resetConnectionBeforeRelease();
+			pool.release(this,false);
+    	}finally{
+    		proxyConnection = null;
+		}
 	} 
 }

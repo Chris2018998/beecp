@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 final class Borrower implements Callable<Connection>{
 	private Thread thread;
 	private ConnectionPool pool;
+	private boolean hasHoldNewOne=false;
 	private PooledConnection lastUsedConn;
 	
 	volatile Object stateObject;
@@ -37,22 +38,31 @@ final class Borrower implements Callable<Connection>{
 	
 	public Borrower(ConnectionPool pool) {
 		this.pool=pool;
-		thread = Thread.currentThread();
 	}
 	public Thread getThread() {
 		return thread;
 	}
-	public void resetThread(){
+	public Thread resetThread(){
 		thread = Thread.currentThread();
+		return thread;
 	}
 	public boolean equals(Object o){
 		return this==o;
 	}
+	
+	public void resetInBorrowing(){
+		hasHoldNewOne=false;
+	}
+	public boolean isHasHoldNewOne() {
+		return hasHoldNewOne;
+	}
+	
 	public PooledConnection getLastUsedConn() {
 		return lastUsedConn;
 	}
 	public void setLastUsedConn(PooledConnection pConn) {
 		lastUsedConn = pConn;
+		hasHoldNewOne=true;
 	}
 	public Object getStateObject() {
 		return updater.get(this);

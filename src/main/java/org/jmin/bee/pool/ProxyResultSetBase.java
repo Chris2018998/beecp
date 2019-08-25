@@ -44,6 +44,7 @@ public abstract class ProxyResultSetBase implements ResultSet {
 	public void close() throws SQLException {
 		updateLastActivityTime();
 		isClosed = true;
+
 		oclose(delegate);
 		delegate = null;
 		proxyStatement = null;

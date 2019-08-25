@@ -29,12 +29,12 @@ public class ProxyStatementBase {
 	protected boolean isClosed;
 	protected Statement delegate;
 	protected ProxyConnection proxyConnection;
-	protected boolean cacheAble;
+	protected boolean cacheInd;
 
-	public ProxyStatementBase(Statement delegate, ProxyConnection proxyConnection, boolean cacheAble) {
+	public ProxyStatementBase(Statement delegate, ProxyConnection proxyConnection, boolean cacheInd) {
 		this.delegate = delegate;
 		this.proxyConnection = proxyConnection;
-		this.cacheAble = cacheAble;
+		this.cacheInd = cacheInd;
 		this.isClosed = false;
 	}
 
@@ -49,10 +49,8 @@ public class ProxyStatementBase {
 	public void close() throws SQLException {
 		updateLastActivityTime();
 		this.isClosed = true;
-		if (!this.cacheAble) {
-			oclose(delegate);
-			this.delegate = null;
-			this.proxyConnection =null;
-		}
+		if(!cacheInd)oclose(delegate);
+		this.delegate = null;
+		this.proxyConnection =null;
 	}
 }

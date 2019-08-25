@@ -29,6 +29,7 @@ import java.util.Map;
  * @version 1.0
  */
 public class StatementCache{
+	
 	private int capacity;
 	public CacheNode head=null;//old
 	public CacheNode tail=null;//new
