@@ -12,13 +12,13 @@ Bees are a kind of beneficial insects to human beings. In recent years, the numb
 
 Release download
 ---
-Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.92/BeeCP-0.92.jar">BeeCP_0.92.jar</a>
+Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.93/BeeCP-0.93.jar">BeeCP_0.93.jar</a>
 
 ```java
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>0.92</version>
+   <version>0.93</version>
 </dependency>
 
 ```
