@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package org.jmin.bee.pool;
-import static java.lang.System.currentTimeMillis;
 import static org.jmin.bee.pool.PoolObjectsState.CONNECTION_IDLE;
 import static org.jmin.bee.pool.util.ConnectionUtil.oclose;
 
@@ -31,21 +30,17 @@ import org.jmin.bee.BeeDataSourceConfig;
  * @version 1.0
  */
 final class PooledConnection{
-	// state
-	private volatile int state;
-	// last activity time
-	private volatile long lastActiveTime;
-	// related pool
-	private ConnectionPool pool;
-	// physical connection
-	private Connection connection;
-	// Statement cache
-	private StatementCache mapCache;
-	// physical connection wrapper
-	private ProxyConnection proxyConnection;
-	//pool info
+	volatile int state;
+	boolean stmCacheInd;
+	StatementCache stmCache;
+	Connection connection;
 	BeeDataSourceConfig poolConfig;
+	
+	private ConnectionPool pool;
+	private volatile long lastAccessTime;
+	private ProxyConnection proxyConnection;
 	private boolean curAutoCommit=true;
+	
 	//changed indicator
 	private boolean[] changedInds=new boolean[4]; //0:autoCommit,1:transactionIsolation,2:readOnly,3:catalog
 	private short changedFieldsts=Short.parseShort("0000",2); //pos:last ---> head;0:unchanged,1:changed
@@ -53,32 +48,34 @@ final class PooledConnection{
 	public static short Pos_TransactionIsolationInd=1;
 	public static short Pos_ReadOnlyInd=2;
 	public static short Pos_CatalogInd=3;
-	
-	private boolean statementCacheInd;
 	private final static AtomicIntegerFieldUpdater<PooledConnection> updater = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class,"state");
 	
 	public PooledConnection(Connection phConn, ConnectionPool connPool) {
 		pool = connPool;
 		connection= phConn;
-		state =CONNECTION_IDLE;
+		state=CONNECTION_IDLE;
 		poolConfig=connPool.poolConfig;
 		curAutoCommit=poolConfig.isDefaultAutoCommit();
 		int stCacheSize=poolConfig.getPreparedStatementCacheSize();
-		statementCacheInd=connPool.isStatementCacheInd();
-		if(statementCacheInd)mapCache = new StatementCache(stCacheSize);
-		updateLastActivityTime();
+		stmCacheInd=connPool.isStatementCacheInd();
+		if(stmCacheInd)stmCache = new StatementCache(stCacheSize);
+		updateAccessTime();
 	}
-	public boolean isStatementCacheInd() {
-		return statementCacheInd;
+	
+	public int getState() {
+		return updater.get(this);
 	}
-	public StatementCache getStatementCache() {
-		return mapCache;
+	public void setState(int update) {
+		updater.set(this,update);
 	}
-	public long getLastActiveTime() {
-		return lastActiveTime;
+	public boolean compareAndSetState(int expect, int update) {
+		return updater.compareAndSet(this, expect, update);
 	}
-	public void updateLastActivityTime() {
-		lastActiveTime=currentTimeMillis();
+	public long getLastAccessTime() {
+		return lastAccessTime;
+	}
+	public void updateAccessTime() {
+		lastAccessTime=System.currentTimeMillis();
 	}
 	public Connection getPhisicConnection() {
 		return connection;
@@ -86,23 +83,11 @@ final class PooledConnection{
 	public ProxyConnection getProxyConnection() {
 		return proxyConnection;
 	}
-
 	public void bindProxyConnection(ProxyConnection proxyConnection) {
 		this.proxyConnection = proxyConnection;
-		updateLastActivityTime();
 	}
 	public boolean equals(Object obj) {
 		return this==obj;
-	}
-	
-	public int getState() {
-		return state;
-	}
-	public void setState(int update) {
-		state=update;
-	}
-	public boolean compareAndSetState(int expect, int update) {
-		return updater.compareAndSet(this, expect, update);
 	}
 	
 	int getChangedInd(int pos){
@@ -123,6 +108,7 @@ final class PooledConnection{
 					if(!curAutoCommit)connection.rollback();
 					connection.setAutoCommit(poolConfig.isDefaultAutoCommit());
 					changedInds[0]=false;
+					updateAccessTime();
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
@@ -132,6 +118,7 @@ final class PooledConnection{
 				try {
 					connection.setTransactionIsolation(poolConfig.getDefaultTransactionIsolation());
 					changedInds[1] = false;
+					updateAccessTime();
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
@@ -141,6 +128,7 @@ final class PooledConnection{
 				try {
 					connection.setReadOnly(poolConfig.isReadOnly());
 					changedInds[2] = false;
+					updateAccessTime();
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
@@ -150,10 +138,12 @@ final class PooledConnection{
 				try {
 					connection.setCatalog(poolConfig.getCatalog());
 					changedInds[3] = false;
+					updateAccessTime();
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
 			}
+			
 			changedFieldsts=0;
 		}
 	}
@@ -162,7 +152,9 @@ final class PooledConnection{
 	void closePhysicalConnection() {
 		try{
 			resetConnectionBeforeRelease();
-			mapCache.clear();
+			stmCache.clear();
+			stmCache=null;
+			poolConfig=null;
 			oclose(connection);
 		}finally{
 			if(proxyConnection!=null){
@@ -173,7 +165,6 @@ final class PooledConnection{
 	}
     void returnToPoolBySelf() throws SQLException {
     	try{
-	    	updateLastActivityTime();
 			resetConnectionBeforeRelease();
 			pool.release(this,false);
     	}finally{

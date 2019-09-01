@@ -48,15 +48,12 @@ public final class ConnectionPool2 extends ConnectionPool{
 		return taskQuue.size() > 0;
 	}
 
-	protected Connection getConnection(long wait, Borrower borrower) throws SQLException {
+	protected Connection getConnection(long wait, Borrower borrower)throws SQLException,InterruptedException {
 		try {
 			wait=MILLISECONDS.toNanos(wait);
 			borrower.setDeadlineNanos(nanoTime()+wait);
 			Future<Connection> taskFuture = asynTakeExecutor.submit(borrower);
 			return taskFuture.get();
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw RequestInterruptException;
 		} catch (ExecutionException e) {
 			if (e.getCause() instanceof SQLException) {
 				throw (SQLException) e.getCause();

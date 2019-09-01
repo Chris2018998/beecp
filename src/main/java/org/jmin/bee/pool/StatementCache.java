@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 package org.jmin.bee.pool;
-import static org.jmin.bee.pool.util.ConnectionUtil.oclose;
-
 import java.sql.PreparedStatement;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import static org.jmin.bee.pool.util.ConnectionUtil.oclose;
 
 /**
  * Statement cache
@@ -28,8 +27,7 @@ import java.util.Map;
  * @author Chris.liao
  * @version 1.0
  */
-public class StatementCache{
-	
+public class StatementCache {
 	private int capacity;
 	public CacheNode head=null;//old
 	public CacheNode tail=null;//new
@@ -38,10 +36,10 @@ public class StatementCache{
 		this.nodeMap = new HashMap<Object,CacheNode>((int)Math.ceil(capacity/0.75f)+1,0.75f);
 		this.capacity = capacity;
 	}
-	public PreparedStatement get(Object key) {
-		if(nodeMap.isEmpty())return null;
+	public PreparedStatement get(Object k) {
+		if(nodeMap.size()==0)return null;
 		
-		CacheNode n=nodeMap.get(key);
+		CacheNode n=nodeMap.get(k);
 		if(n!=null){
 			moveToTail(n);
 			return n.v;
@@ -95,10 +93,10 @@ public class StatementCache{
 	private void moveToTail(CacheNode n) {
 		if(n==tail)return;
 		//remove from chain
-		if (head == n) {
+		if (head == n) {//at head
 			head = n.next;
 			head.pre = null;
-		} else {
+		} else {//at middle
 			n.pre.next = n.next;
 			n.next.pre = n.pre;
 		}

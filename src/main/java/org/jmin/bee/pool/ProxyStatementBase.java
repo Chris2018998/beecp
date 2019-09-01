@@ -15,6 +15,7 @@
  */
 package org.jmin.bee.pool;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import static org.jmin.bee.pool.util.ConnectionUtil.oclose;
@@ -26,31 +27,41 @@ import static org.jmin.bee.pool.util.ConnectionUtil.oclose;
  * @version 1.0
  */
 public class ProxyStatementBase {
-	protected boolean isClosed;
+	protected volatile boolean isClosed;
+	protected boolean cacheInd;
 	protected Statement delegate;
 	protected ProxyConnection proxyConnection;
-	protected boolean cacheInd;
-
+	PooledConnection pooledConn;
+	
 	public ProxyStatementBase(Statement delegate, ProxyConnection proxyConnection, boolean cacheInd) {
 		this.delegate = delegate;
 		this.proxyConnection = proxyConnection;
 		this.cacheInd = cacheInd;
-		this.isClosed = false;
+		pooledConn=proxyConnection.pooledConn;
 	}
-
 	public boolean isClosed() {
 		return isClosed;
 	}
-	protected void updateLastActivityTime() throws SQLException {
-		if (isClosed)throw new SQLException("Statement has been closed,access forbidden");
-		this.proxyConnection.updateLastActivityTime();
+	public Connection getConnection() throws SQLException{
+		checkClose();
+		return (Connection)proxyConnection;
 	}
-
+	protected void checkClose() throws SQLException {
+		if(isClosed)throw new SQLException("Statement has been closed,access forbidden");
+		proxyConnection.checkClose();
+	}
+	protected void updateAccessTime() throws SQLException {
+		pooledConn.updateAccessTime();
+	}
 	public void close() throws SQLException {
-		updateLastActivityTime();
-		this.isClosed = true;
-		if(!cacheInd)oclose(delegate);
-		this.delegate = null;
-		this.proxyConnection =null;
+		try{
+			checkClose();
+		}finally{
+			this.isClosed = true;
+			if(!cacheInd)oclose(delegate);
+			this.delegate = null;
+			this.proxyConnection =null;
+			pooledConn=null;
+		}
 	}
 }

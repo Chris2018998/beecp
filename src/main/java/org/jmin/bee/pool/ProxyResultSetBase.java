@@ -15,9 +15,11 @@
  */
 package org.jmin.bee.pool;
 
+import static org.jmin.bee.pool.util.ConnectionUtil.oclose;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import static org.jmin.bee.pool.util.ConnectionUtil.oclose;
+import java.sql.Statement;
 
 /**
  * Statement resultset proxy super class
@@ -26,27 +28,39 @@ import static org.jmin.bee.pool.util.ConnectionUtil.oclose;
  * @version 1.0
  */
 public abstract class ProxyResultSetBase implements ResultSet {
-	private boolean isClosed;
+	private volatile boolean isClosed;
 	protected ResultSet delegate;
 	private ProxyStatementBase proxyStatement;
+	private PooledConnection pooledConn;
 	
-	public ProxyResultSetBase(ResultSet delegate, ProxyStatementBase proxyStatement) {
+	public ProxyResultSetBase(ResultSet delegate,ProxyStatementBase proxyStatement) {
 		this.delegate = delegate;
 		this.proxyStatement = proxyStatement;
+		pooledConn=proxyStatement.pooledConn;
 	}
-	public boolean isClosed() {
+	public boolean isClosed()throws SQLException{
 		return isClosed;
 	}
-	protected void updateLastActivityTime() throws SQLException {
+	protected void checkClose() throws SQLException {
 		if (isClosed)throw new SQLException("ResultSet has been closed,access forbidden");
-		proxyStatement.updateLastActivityTime();
+		proxyStatement.checkClose();
+	}
+	protected void updateAccessTime() throws SQLException {
+		pooledConn.updateAccessTime();
+	}
+	public Statement getStatement() throws SQLException{
+		checkClose();
+		return (Statement)proxyStatement;
 	}
 	public void close() throws SQLException {
-		updateLastActivityTime();
-		isClosed = true;
-
-		oclose(delegate);
-		delegate = null;
-		proxyStatement = null;
+		try{
+			checkClose();
+		}finally{
+			isClosed = true;
+			oclose(delegate);
+			delegate = null;
+			proxyStatement=null;
+			pooledConn=null;
+		}
 	}
 }
