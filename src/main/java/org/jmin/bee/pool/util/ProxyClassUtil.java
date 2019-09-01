@@ -108,7 +108,7 @@ public final class ProxyClassUtil {
 		
 			CtConstructor subClassConstructor = new CtConstructor(conCreateParam,ctConIntfProxyImplClass);
 			subClassConstructor.setModifiers(Modifier.PUBLIC);
-			StringBuffer body = new StringBuffer();
+			StringBuilder body = new StringBuilder();
 			body.append("{");
 			body.append("super($$);");
 			body.append("}");
@@ -258,7 +258,7 @@ public final class ProxyClassUtil {
 		LinkedList<CtMethod> linkedList = new LinkedList<CtMethod>();
 		resolveInterfaceMethods(ctConIntf,linkedList,notNeedAddProxyMethods);
 		
-		StringBuffer methodBuffer = new StringBuffer();
+		StringBuilder methodBuffer = new StringBuilder();
 		for(CtMethod ctMethod:linkedList){
 			String methodName = ctMethod.getName();
 			CtMethod newCtMethodm = CtNewMethod.copy(ctMethod, ctConIntfProxyClass, null);
@@ -266,47 +266,53 @@ public final class ProxyClassUtil {
 			
 			methodBuffer.delete(0, methodBuffer.length());
 			methodBuffer.append("{");
-			methodBuffer.append("updateLastActivityTime();");
+			methodBuffer.append("checkClose();");
 			if(methodName.equals("createStatement")){
-				methodBuffer.append("return new ProxyStatement(delegate.createStatement($$),this,false);");	
+				methodBuffer.append(" Statement stm=delegate.createStatement($$);");	
+				methodBuffer.append(" updateAccessTime();");	
+				methodBuffer.append(" return new ProxyStatement(stm,this,false);");	
 			}else if(methodName.equals("prepareStatement")){
-				methodBuffer.append("PreparedStatement statement=null;"); 
-				methodBuffer.append("boolean cacheInd= isStatementCacheInd();"); 
-				methodBuffer.append("if(cacheInd){"); 
-				methodBuffer.append(" StatementCache cache = getStatementCache();"); 
-				methodBuffer.append(" Object key=StatementCacheUtil.createPsCaecheKey($$);");
- 				methodBuffer.append(" statement=cache.get(key);");
-				methodBuffer.append(" if(statement==null){");
-				methodBuffer.append("   statement=delegate.prepareStatement($$);");
-				methodBuffer.append("   cache.put(key,statement);");
-				methodBuffer.append(" }");
+				methodBuffer.append("    if(stmCacheInd){"); 
+				methodBuffer.append("      Object key=StatementCacheUtil.createPsCaecheKey($$);");
+ 				methodBuffer.append("      PreparedStatement pstm=stmCache.get(key);");
+				methodBuffer.append("      if(pstm==null){");
+				methodBuffer.append("        pstm=delegate.prepareStatement($$);");
+				methodBuffer.append(" 		 updateAccessTime();");						
+				methodBuffer.append("        stmCache.put(key,pstm);");
+				methodBuffer.append("      }");
+				methodBuffer.append("     return new ProxyPsStatement(pstm,this,true);");
 				methodBuffer.append("}else{");
-				methodBuffer.append(" statement=delegate.prepareStatement($$);");
+				methodBuffer.append("    PreparedStatement pstm=delegate.prepareStatement($$);");	
+				methodBuffer.append("    updateAccessTime();");	
+				methodBuffer.append("    return new ProxyPsStatement(pstm,this,false);");
 				methodBuffer.append("}");
-				methodBuffer.append("return new ProxyPsStatement(statement,this,cacheInd);");
 			}else if(methodName.equals("prepareCall")){
-				methodBuffer.append("CallableStatement statement=null;"); 
-				methodBuffer.append("boolean cacheInd= isStatementCacheInd();"); 
-				methodBuffer.append("if(cacheInd){"); 
-				methodBuffer.append(" StatementCache cache = getStatementCache();"); 
-				methodBuffer.append(" Object key = StatementCacheUtil.createCsCaecheKey($$);");
-				methodBuffer.append(" CallableStatement statement=(CallableStatement)cache.get(key);");
-				methodBuffer.append(" if(statement==null){");
-				methodBuffer.append("   statement=delegate.prepareCall($$);");
-				methodBuffer.append("   cache.put(key,statement);");
-				methodBuffer.append(" }");
-				methodBuffer.append("}else{");
-				methodBuffer.append("  statement=delegate.prepareCall($$);");
-				methodBuffer.append("}");
-			    methodBuffer.append("return new ProxyCsStatement(statement,this,cacheInd);");	
+				methodBuffer.append("    if(stmCacheInd){"); 
+				methodBuffer.append("      Object key = StatementCacheUtil.createCsCaecheKey($$);");
+				methodBuffer.append("      CallableStatement cstm=(CallableStatement)stmCache.get(key);");
+				methodBuffer.append("      if(cstm==null){");
+				methodBuffer.append("         cstm=delegate.prepareCall($$);");
+				methodBuffer.append(" 		  updateAccessTime();");	
+				methodBuffer.append("         stmCache.put(key,cstm);");
+				methodBuffer.append("      }");
+				methodBuffer.append("      return new ProxyCsStatement(cstm,this,true);");	
+				methodBuffer.append("    }else{");
+				methodBuffer.append(" 	   CallableStatement cstm=delegate.prepareCall($$);");	
+				methodBuffer.append(" 	   updateAccessTime();");	
+				methodBuffer.append("      return new ProxyCsStatement(cstm,this,false);");
+				methodBuffer.append("    }");
 			}else if(methodName.equals("close")){
 				methodBuffer.append("super."+methodName + "($$);");
 			}else{
-				if (newCtMethodm.getReturnType() == CtClass.voidType)
+				if (newCtMethodm.getReturnType() == CtClass.voidType){
 					methodBuffer.append(" delegate." + methodName + "($$);");
-				else
-					methodBuffer.append(" return delegate." + methodName + "($$);");
-		   }
+					methodBuffer.append(" updateAccessTime();");	
+				}else{
+					methodBuffer.append(newCtMethodm.getReturnType().getName() +" re=delegate." + methodName + "($$);");
+					methodBuffer.append(" updateAccessTime();");	
+					methodBuffer.append(" return re;");	
+				}
+		    }
 			methodBuffer.append("}");
 			newCtMethodm.setBody(methodBuffer.toString());
 			ctConIntfProxyClass.addMethod(newCtMethodm);
@@ -315,7 +321,6 @@ public final class ProxyClassUtil {
 		return ctConIntfProxyClass.toClass();
 	}
 	
-	 
 	private Class createProxyStatementClass(ClassPool classPool, CtClass ctStatementProxyClass,CtClass ctStatementIntf, CtClass ctStatementSuperClass) throws Exception {
 		CtMethod[] ctSuperClassMethods = ctStatementSuperClass.getDeclaredMethods();
 		HashSet superClassSignatureSet = new HashSet();
@@ -330,7 +335,7 @@ public final class ProxyClassUtil {
 		LinkedList<CtMethod> linkedList = new LinkedList();
 		resolveInterfaceMethods(ctStatementIntf, linkedList, superClassSignatureSet);
 
-		StringBuffer methodBuffer = new StringBuffer();
+		StringBuilder methodBuffer = new StringBuilder();
 		for (CtMethod ctMethod : linkedList) {
 			String methodName = ctMethod.getName();
 			CtMethod newCtMethodm = CtNewMethod.copy(ctMethod, ctStatementProxyClass, null);
@@ -338,19 +343,24 @@ public final class ProxyClassUtil {
 
 			methodBuffer.delete(0, methodBuffer.length());
 			methodBuffer.append("{");
-			methodBuffer.append("updateLastActivityTime();");
-			if (methodName.equals("executeQuery")) {
-				methodBuffer.append(" return new ProxyResultSet(delegate.executeQuery($$),this);");
+			methodBuffer.append("checkClose();");
+			if(methodName.equals("executeQuery") || methodName.equals("getResultSet")){
+				methodBuffer.append("ResultSet rest=delegate."+methodName+"($$);");
+				methodBuffer.append("updateAccessTime();");	
+				methodBuffer.append("return new ProxyResultSet(rest,this);");	
 			}else if (methodName.equals("close")){
-				methodBuffer.append("super."+methodName + "($$);");
+				methodBuffer.append("super."+methodName +"($$);");
 			}else{
-				if (newCtMethodm.getReturnType() == CtClass.voidType)
-					methodBuffer.append(" delegate." + methodName + "($$);");
-				else
-					methodBuffer.append(" return delegate." + methodName + "($$);");
+				if (newCtMethodm.getReturnType() == CtClass.voidType){
+					methodBuffer.append("delegate."+methodName + "($$);");
+					methodBuffer.append("updateAccessTime();");	
+				}else{
+					methodBuffer.append(newCtMethodm.getReturnType().getName() +" re=delegate." + methodName + "($$);");
+					methodBuffer.append("updateAccessTime();");	
+					methodBuffer.append("return re;");	
+				}
 			}
 			methodBuffer.append("}");
-
 			newCtMethodm.setBody(methodBuffer.toString());
 			ctStatementProxyClass.addMethod(newCtMethodm);
 
@@ -373,7 +383,7 @@ public final class ProxyClassUtil {
 		LinkedList<CtMethod> linkedList = new LinkedList();
 		resolveInterfaceMethods(ctPsStatementIntf,linkedList,superClassSignatureSet);
 		
-		StringBuffer methodBuffer = new StringBuffer();
+		StringBuilder methodBuffer = new StringBuilder();
 		for(CtMethod ctMethod:linkedList){
 			String methodName = ctMethod.getName();
 			CtMethod newCtMethodm = CtNewMethod.copy(ctMethod, ctPsStatementProxyClass, null);
@@ -381,18 +391,23 @@ public final class ProxyClassUtil {
 			
 			methodBuffer.delete(0, methodBuffer.length());
 			methodBuffer.append("{");
-			methodBuffer.append("updateLastActivityTime();");
-			methodBuffer.append("PreparedStatement delegate=(PreparedStatement)delegate;");
-			
-			if(methodName.equals("executeQuery")){
-			  methodBuffer.append(" return new ProxyResultSet(delegate.executeQuery($$),this);");		
+			methodBuffer.append("checkClose();");
+			methodBuffer.append("PreparedStatement psmt=(PreparedStatement)delegate;");
+			if(methodName.equals("executeQuery") || methodName.equals("getResultSet")){
+				methodBuffer.append("ResultSet rest=psmt."+methodName+"($$);");
+				methodBuffer.append("updateAccessTime();");	
+				methodBuffer.append("return new ProxyResultSet(rest,this);");	 
 			}else if (methodName.equals("close")) {
-				methodBuffer.append("super."+methodName + "($$);");
+				methodBuffer.append("super."+methodName+"($$);");
 			}else{
-				if(newCtMethodm.getReturnType() == CtClass.voidType)
-					methodBuffer.append(" delegate." + methodName + "($$);");
-				else
-					methodBuffer.append(" return delegate." + methodName + "($$);");
+				if(newCtMethodm.getReturnType() == CtClass.voidType){
+					methodBuffer.append("psmt." + methodName + "($$);");
+					methodBuffer.append("updateAccessTime();");	
+				}else{
+					methodBuffer.append(newCtMethodm.getReturnType().getName()+" re=psmt."+methodName + "($$);");
+					methodBuffer.append("updateAccessTime();");	
+					methodBuffer.append("return re;");	
+				}
 			}
 			methodBuffer.append("}");
 			
@@ -417,7 +432,7 @@ public final class ProxyClassUtil {
 		LinkedList<CtMethod> linkedList = new LinkedList();
 		resolveInterfaceMethods(ctCsStatementIntf,linkedList,superClassSignatureSet);
 		
-		StringBuffer methodBuffer = new StringBuffer();
+		StringBuilder methodBuffer = new StringBuilder();
 		for(CtMethod ctMethod:linkedList){
 			String methodName = ctMethod.getName();
 			CtMethod newCtMethodm = CtNewMethod.copy(ctMethod, ctCsStatementProxyClass, null);
@@ -425,21 +440,25 @@ public final class ProxyClassUtil {
 			
 			methodBuffer.delete(0, methodBuffer.length());
 			methodBuffer.append("{");
-			methodBuffer.append("updateLastActivityTime();");
-			methodBuffer.append("CallableStatement delegate=(CallableStatement)delegate;");
-			
-			if(methodName.equals("getResultSet")){
-				methodBuffer.append(" return new ProxyResultSet(delegate.getResultSet($$),this);");		
+			methodBuffer.append("checkClose();");
+			methodBuffer.append("CallableStatement cstm=(CallableStatement)delegate;");
+			if(methodName.equals("executeQuery") || methodName.equals("getResultSet")){
+				methodBuffer.append("ResultSet rest=cstm."+methodName+"($$);");
+				methodBuffer.append("updateAccessTime();");	
+				methodBuffer.append("return new ProxyResultSet(rest,this);");	 
 			}else if (methodName.equals("close")) {
-				methodBuffer.append("super."+methodName + "($$);");
-			} else {
-				if(newCtMethodm.getReturnType() == CtClass.voidType)
-					methodBuffer.append(" delegate." + methodName + "($$);");
-				else
-					methodBuffer.append(" return delegate." + methodName + "($$);");
+				methodBuffer.append("super."+methodName+"($$);");
+			}else{
+				if(newCtMethodm.getReturnType() == CtClass.voidType){
+					methodBuffer.append("cstm." + methodName + "($$);");
+					methodBuffer.append("updateAccessTime();");	
+				}else{
+					methodBuffer.append(newCtMethodm.getReturnType().getName()+" re=cstm."+methodName + "($$);");
+					methodBuffer.append("updateAccessTime();");	
+					methodBuffer.append("return re;");	
+				}
 			}
 			methodBuffer.append("}");
-			
 			newCtMethodm.setBody(methodBuffer.toString());
 			ctCsStatementProxyClass.addMethod(newCtMethodm);
 			 
@@ -460,7 +479,7 @@ public final class ProxyClassUtil {
 		
 		LinkedList<CtMethod> linkedList = new LinkedList();
 		resolveInterfaceMethods(ctResultSetIntf,linkedList,superClassSignatureSet);
-		StringBuffer methodBuffer = new StringBuffer();
+		StringBuilder methodBuffer = new StringBuilder();
 		
 		for(CtMethod ctMethod:linkedList){
 			String methodName = ctMethod.getName();
@@ -469,14 +488,18 @@ public final class ProxyClassUtil {
 			
 			methodBuffer.delete(0, methodBuffer.length());
 			methodBuffer.append("{");
-			methodBuffer.append("updateLastActivityTime();");
+			methodBuffer.append("checkClose();");
 			if (methodName.equals("close")) {
 				methodBuffer.append("super." + methodName + "($$);");
 			} else {
-				if (ctMethod.getReturnType() == CtClass.voidType)
+				if(newCtMethodm.getReturnType() == CtClass.voidType){
 					methodBuffer.append("delegate." + methodName + "($$);");
-				else
-					methodBuffer.append("return delegate." + methodName + "($$);");
+					methodBuffer.append("updateAccessTime();");	
+				}else{
+					methodBuffer.append(newCtMethodm.getReturnType().getName()+" re=delegate."+methodName+"($$);");
+					methodBuffer.append("updateAccessTime();");	
+					methodBuffer.append("return re;");	
+				}
 			}
 			methodBuffer.append("}");
 			newCtMethodm.setBody(methodBuffer.toString());
