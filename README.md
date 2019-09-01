@@ -98,7 +98,7 @@ The performance of each connection pool is tested by multi-threaded query (1000 
 
 Bee_F(16.37) > Bee_C(18.25) > Vibur(28.79) > HikariCP(34.42) > TOMCAT(67.47) > DBCP(75.28) > Druid(75.97) > C3P0(96.40)
 
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I5_4210M_Oracle11g_20190723.log">20190808_I5_4210M_Orcale11g.log</a>
+<img src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I5_4210M_Oracle11g_20190723.log">20190808_I5_4210M_Orcale11g.log</a>
 
 Bee_F(13.39) > Bee_C(15.25) > Vibur(20.64) > HikariCP(28.79) > TOMCAT(57.93) > DBCP(66.47) > Druid(67.03) > C3P0(71.54)
 
@@ -113,6 +113,8 @@ Bee_F(0.0006) > Bee_C(0.0980) > HikariCP(0.3053) > Vibur(0.3068) > TOMCAT(1.9001
 
 Bee_C(0.0018) > Vibur(0.0048) > Bee_F(0.1982) > HikariCP(0.3832) > TOMCAT(2.3388) > Druid(3.0775) > DBCP(5.2606) > C3P0(11.9082)
 
+
+<img src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I3_7100_HikariCP_Bech_20190901.png">
 
 project for performance test code,please visit：https://github.com/Chris2018998/PoolPerformance
 
