@@ -12,13 +12,13 @@ Bees are a kind of beneficial insects to human beings. In recent years, the numb
 
 Release download
 ---
-Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.93/BeeCP-0.93.jar">BeeCP_0.93.jar</a>
+Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.94/BeeCP-0.94.jar">BeeCP_0.94.jar</a>
 
 ```java
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>0.93</version>
+   <version>0.94</version>
 </dependency>
 
 ```
@@ -115,6 +115,7 @@ Bee_C(0.0018) > Vibur(0.0048) > Bee_F(0.1982) > HikariCP(0.3832) > TOMCAT(2.3388
 
 
 <img src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I3_7100_HikariCP_Bech_20190902.png">
+
 
 project for performance test code,please visit：https://github.com/Chris2018998/PoolPerformance
 
