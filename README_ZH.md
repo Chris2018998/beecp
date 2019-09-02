@@ -13,13 +13,13 @@
 
 Maven下载
 ---
-Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.93/BeeCP-0.93.jar">BeeCP_0.93.jar</a>
+Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.94/BeeCP-0.94.jar">BeeCP_0.94.jar</a>
 
 ```java
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>0.93</version>
+   <version>0.94</version>
 </dependency>
 
 ```
