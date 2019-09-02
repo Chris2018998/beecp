@@ -66,10 +66,15 @@ public class ConnectionPool{
 	private boolean validateSQLIsNull;
 	protected final BeeDataSourceConfig poolConfig;
 
+	private final boolean testOnBorrow;
+	private final boolean testOnReturn;
+	private final long defaultMaxWaitMills;
+	private final long validationIntervalMills;
+	private final boolean statementCacheInd;
+	private final int transferCheckStateCode;
 	private final Semaphore poolSemaphore;
 	private final TransferPolicy tansferPolicy;
-	private final int transferCheckStateCode;
-	private final boolean statementCacheInd;
+	
 	private final CreateConnThread createThread=new CreateConnThread();
 	private final PooledConnectionList connList=new PooledConnectionList();
 	private final ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
@@ -104,6 +109,10 @@ public class ConnectionPool{
 			exitHook = new ConnectionPoolHook();
 			Runtime.getRuntime().addShutdownHook(exitHook);
 			statementCacheInd=poolConfig.getPreparedStatementCacheSize()>0;
+			defaultMaxWaitMills=poolConfig.getMaxWait();
+			validationIntervalMills=poolConfig.getValidationInterval();
+			testOnBorrow=poolConfig.isTestOnBorrow();
+			testOnReturn=poolConfig.isTestOnReturn();		
 			
 			String mode = "";
 			if (poolConfig.isFairQueue()) {
@@ -216,7 +225,7 @@ public class ConnectionPool{
 	 * @return if is valid,then return true,otherwise false;
 	 */
 	private boolean testConnection(PooledConnection pConn) {
-		if(currentTimeMillis()-pConn.getLastAccessTime()<=poolConfig.getValidationInterval()) 
+		if(currentTimeMillis()-pConn.getLastAccessTime()<=validationIntervalMills) 
 			return true;
 		
 		if(isActiveConn(pConn))return true;
@@ -226,10 +235,10 @@ public class ConnectionPool{
 		return false;
 	}
 	private boolean testOnBorrow(PooledConnection pConn) {
-		return poolConfig.isTestOnBorrow()?testConnection(pConn):true;
+		return testOnBorrow?testConnection(pConn):true;	
 	}
 	private boolean testOnReturn(PooledConnection pConn) {
-		return poolConfig.isTestOnReturn()?testConnection(pConn):true;
+		return testOnReturn?testConnection(pConn):true;
 	}
 	
 	/**
@@ -265,7 +274,7 @@ public class ConnectionPool{
 	 * @throws SQLException if pool is closed or waiting timeout,then throw exception
 	 */
 	public final Connection getConnection() throws SQLException {
-		return getConnection(poolConfig.getMaxWait());
+		return getConnection(defaultMaxWaitMills);
 	}
 
 	/**
@@ -383,7 +392,7 @@ public class ConnectionPool{
     //create proxy to wrap connection as result
   	private ProxyConnection createProxyConnection(PooledConnection pConn,Borrower borrower)throws SQLException {
   		borrower.setLastUsedConn(pConn);
-  		ProxyConnection proxyConn= ProxyConnectionFactory.createProxyConnection(pConn);
+  		ProxyConnection proxyConn=ProxyConnectionFactory.createProxyConnection(pConn);
   		pConn.bindProxyConnection(proxyConn);
   		return proxyConn;
   	}
@@ -411,8 +420,7 @@ public class ConnectionPool{
 		if(!isNew && !testOnReturn(pConn))return;
 		
 		tansferPolicy.beforeTransferReleaseConnection(pConn);
-		Thread waiterThread=null;
-		Object waiterState=null;
+		Thread waiterThread=null;Object waiterState=null;
 		for(Borrower waiter:waitQueue){
 			if(pConn.getState()!=transferCheckStateCode)return;
 			
