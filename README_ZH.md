@@ -115,19 +115,7 @@ Bee_F(0.0006) > Bee_C(0.0980) > HikariCP(0.3053) > Vibur(0.3068) > TOMCAT(1.9001
 Bee_C(0.0018) > Vibur(0.0048) > Bee_F(0.1982) > HikariCP(0.3832) > TOMCAT(2.3388) > Druid(3.0775) > DBCP(5.2606) > C3P0(11.9082)
 
 采用光连接池的性能基准测试结果
-<img src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I3_7100_HikariCP_Bech_20190901.png">
+<img src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I3_7100_HikariCP_Bech_20190902.png">
 
 
 性能测试代码请访问项目：https://github.com/Chris2018998/PoolPerformance
-
-
-支持与联系 
----
-Email:Chris2018998@tom.com
-
-<img src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/w.png"> </img>
-<img src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/z.png"> </img>
-
-开发邀请
----
-欢迎对连接池有兴趣的网友一起开发和维护
