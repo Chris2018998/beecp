@@ -92,7 +92,7 @@ The performance of each connection pool is tested by multi-threaded query (1000 
 
 [datasource.getConnection(),connection.prepareStatement,statement.execute(),statement.close(),connection.close()]</i>
 
-1：Below are the test results of each connection pool at Oracle11G (in milliseconds)
+1：Below are the test results of each connection pool at Oracle11G (milliseconds)
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I5_4210M_Oracle11g_20190717.log">20190808_I5_4210M_Orcale11g.log</a>
 
@@ -114,7 +114,11 @@ Bee_F(0.0006) > Bee_C(0.0980) > HikariCP(0.3053) > Vibur(0.3068) > TOMCAT(1.9001
 Bee_C(0.0018) > Vibur(0.0048) > Bee_F(0.1982) > HikariCP(0.3832) > TOMCAT(2.3388) > Druid(3.0775) > DBCP(5.2606) > C3P0(11.9082)
 
 
-<img src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I3_7100_HikariCP_Bech_20190902-1.png">
-
 project for performance test code,please visit：https://github.com/Chris2018998/PoolPerformance
+ 
+3：Test with HikariCP benchmark
+
+<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I3_7100_HikariCP_Bech_20190902-1.png"></img>
+
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/BenchBase.java">Donload BenchBase.java</a>
 
