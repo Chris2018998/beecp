@@ -345,19 +345,14 @@ public final class ProxyClassUtil {
 			methodBuffer.append("{");
 			methodBuffer.append("checkClose();");
 			if(methodName.equals("executeQuery") || methodName.equals("getResultSet")){
-				methodBuffer.append("ResultSet rest=delegate."+methodName+"($$);");
-				methodBuffer.append("updateAccessTime();");	
-				methodBuffer.append("return new ProxyResultSet(rest,this);");	
+				methodBuffer.append("return new ProxyResultSet(delegate."+methodName+"($$),this);");	
 			}else if (methodName.equals("close")){
 				methodBuffer.append("super."+methodName +"($$);");
 			}else{
 				if (newCtMethodm.getReturnType() == CtClass.voidType){
 					methodBuffer.append("delegate."+methodName + "($$);");
-					methodBuffer.append("updateAccessTime();");	
 				}else{
-					methodBuffer.append(newCtMethodm.getReturnType().getName() +" re=delegate." + methodName + "($$);");
-					methodBuffer.append("updateAccessTime();");	
-					methodBuffer.append("return re;");	
+					methodBuffer.append("return delegate."+methodName + "($$);");
 				}
 			}
 			methodBuffer.append("}");
@@ -394,19 +389,15 @@ public final class ProxyClassUtil {
 			methodBuffer.append("checkClose();");
 			methodBuffer.append("PreparedStatement psmt=(PreparedStatement)delegate;");
 			if(methodName.equals("executeQuery") || methodName.equals("getResultSet")){
-				methodBuffer.append("ResultSet rest=psmt."+methodName+"($$);");
-				methodBuffer.append("updateAccessTime();");	
-				methodBuffer.append("return new ProxyResultSet(rest,this);");	 
+				methodBuffer.append("return new ProxyResultSet(psmt."+methodName+"($$),this);");	 
 			}else if (methodName.equals("close")) {
 				methodBuffer.append("super."+methodName+"($$);");
 			}else{
 				if(newCtMethodm.getReturnType() == CtClass.voidType){
 					methodBuffer.append("psmt." + methodName + "($$);");
-					methodBuffer.append("updateAccessTime();");	
 				}else{
-					methodBuffer.append(newCtMethodm.getReturnType().getName()+" re=psmt."+methodName + "($$);");
-					methodBuffer.append("updateAccessTime();");	
-					methodBuffer.append("return re;");	
+					methodBuffer.append("return psmt."+methodName + "($$);");
+		
 				}
 			}
 			methodBuffer.append("}");
@@ -443,19 +434,14 @@ public final class ProxyClassUtil {
 			methodBuffer.append("checkClose();");
 			methodBuffer.append("CallableStatement cstm=(CallableStatement)delegate;");
 			if(methodName.equals("executeQuery") || methodName.equals("getResultSet")){
-				methodBuffer.append("ResultSet rest=cstm."+methodName+"($$);");
-				methodBuffer.append("updateAccessTime();");	
-				methodBuffer.append("return new ProxyResultSet(rest,this);");	 
+				methodBuffer.append("return new ProxyResultSet(cstm."+methodName+"($$),this);");	 
 			}else if (methodName.equals("close")) {
 				methodBuffer.append("super."+methodName+"($$);");
 			}else{
 				if(newCtMethodm.getReturnType() == CtClass.voidType){
 					methodBuffer.append("cstm." + methodName + "($$);");
-					methodBuffer.append("updateAccessTime();");	
 				}else{
-					methodBuffer.append(newCtMethodm.getReturnType().getName()+" re=cstm."+methodName + "($$);");
-					methodBuffer.append("updateAccessTime();");	
-					methodBuffer.append("return re;");	
+					methodBuffer.append("return cstm."+methodName + "($$);");	
 				}
 			}
 			methodBuffer.append("}");
@@ -494,11 +480,8 @@ public final class ProxyClassUtil {
 			} else {
 				if(newCtMethodm.getReturnType() == CtClass.voidType){
 					methodBuffer.append("delegate." + methodName + "($$);");
-					methodBuffer.append("updateAccessTime();");	
 				}else{
-					methodBuffer.append(newCtMethodm.getReturnType().getName()+" re=delegate."+methodName+"($$);");
-					methodBuffer.append("updateAccessTime();");	
-					methodBuffer.append("return re;");	
+					methodBuffer.append("return delegate."+methodName+"($$);");
 				}
 			}
 			methodBuffer.append("}");
