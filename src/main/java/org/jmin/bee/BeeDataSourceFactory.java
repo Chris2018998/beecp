@@ -131,7 +131,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         if(ra != null) password= ra.getContent().toString(); 
         BeeDataSourceConfig config = new BeeDataSourceConfig();
 		config.setDriverClassName(driverClass);
-		config.setJdbcUrl(jdbcURL);
+		config.setUrl(jdbcURL);
 		config.setUsername(jdbcUser);
 		config.setPassword(password);
  

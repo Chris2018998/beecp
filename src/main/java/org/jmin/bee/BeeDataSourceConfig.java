@@ -209,10 +209,10 @@ public class BeeDataSourceConfig{
 		if (!this.inited)
 		this.password = password;
 	}
-	public String getJdbcUrl() {
+	public String getUrl() {
 		return jdbcUrl;
 	}
-	public void setJdbcUrl(String jdbcUrl) {
+	public void setUrl(String jdbcUrl) {
 		if(!this.inited && !isNull(jdbcUrl))
 		this.jdbcUrl = jdbcUrl;
 	}
@@ -242,7 +242,7 @@ public class BeeDataSourceConfig{
 		return poolName;
 	}
 	public void setPoolName(String poolName) {
-		if(!this.inited)
+		if(!this.inited && !isNull(poolName))
 		this.poolName = poolName;
 	}
 	public boolean isFairQueue() {
