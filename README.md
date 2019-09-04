@@ -12,13 +12,13 @@ Bees are a kind of beneficial insects to human beings. In recent years, the numb
 
 Release download
 ---
-Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.94/BeeCP-0.94.jar">BeeCP_0.94.jar</a>
+Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.95/BeeCP-0.95.jar">BeeCP_0.95.jar</a>
 
 ```java
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>0.94</version>
+   <version>0.95</version>
 </dependency>
 
 ```
@@ -118,7 +118,7 @@ project for performance test code,please visit：https://github.com/Chris2018998
  
 3：Test with HikariCP benchmark
 
-<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I3_7100_HikariCP_Bech_20190902-1.png"></img>
+<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I3_7100_HikariCP_Bech_20190903-1.png"></img>
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/BenchBase.java">Donload BenchBase.java</a>
 
