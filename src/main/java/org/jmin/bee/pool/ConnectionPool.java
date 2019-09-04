@@ -63,9 +63,11 @@ public class ConnectionPool{
 	private volatile int state=POOL_UNINIT;
 	private Timer idleCheckTimer;
 	private ConnectionPoolHook exitHook;
-	private boolean validateSQLIsNull;
 	protected final BeeDataSourceConfig poolConfig;
-
+	
+	private final String validationQuery;
+	private final boolean validateSQLIsNull;
+	private final int validationQueryTimeout;
 	private final boolean testOnBorrow;
 	private final boolean testOnReturn;
 	private final long defaultMaxWaitMills;
@@ -103,7 +105,9 @@ public class ConnectionPool{
 			poolConfig.check();
 			poolConfig.setInited(true);
 			
-			validateSQLIsNull = isNull(poolConfig.getValidationQuery());
+			validationQuery=poolConfig.getValidationQuery();
+			validateSQLIsNull=isNull(validationQuery);
+			validationQueryTimeout=poolConfig.getValidationQueryTimeout();
 			idleCheckTimer = new Timer(true);
 			idleCheckTimer.schedule(new PooledConnectionIdleTask(), 60000L, 180000L);
 			exitHook = new ConnectionPoolHook();
@@ -186,7 +190,7 @@ public class ConnectionPool{
 		final Connection conn = pConn.getPhisicConnection();
 		if (validateSQLIsNull) {
 			try {
-				boolean isValid=conn.isValid(poolConfig.getValidationQueryTimeout());
+				boolean isValid=conn.isValid(validationQueryTimeout);
 				pConn.updateAccessTime();
 				return isValid;
 			} catch (SQLException e) {
@@ -197,7 +201,7 @@ public class ConnectionPool{
 			try {
 				st = conn.createStatement();
 				setsetQueryTimeout(st);
-				st.execute(poolConfig.getValidationQuery());
+				st.execute(validationQuery);
 				pConn.updateAccessTime();
 				return true;
 			} catch (SQLException e) {
@@ -211,7 +215,7 @@ public class ConnectionPool{
 	private final void setsetQueryTimeout(Statement st) {
 		if(surpportQryTimeout){
 			try {
-				st.setQueryTimeout(poolConfig.getValidationQueryTimeout());
+				st.setQueryTimeout(validationQueryTimeout);
 			} catch (SQLException e) {
 				surpportQryTimeout=false;
 			}

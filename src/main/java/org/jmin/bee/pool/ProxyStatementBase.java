@@ -31,13 +31,11 @@ public class ProxyStatementBase {
 	protected boolean cacheInd;
 	protected Statement delegate;
 	protected ProxyConnection proxyConnection;
-	PooledConnection pooledConn;
 	
 	public ProxyStatementBase(Statement delegate, ProxyConnection proxyConnection, boolean cacheInd) {
 		this.delegate = delegate;
 		this.proxyConnection = proxyConnection;
 		this.cacheInd = cacheInd;
-		pooledConn=proxyConnection.pooledConn;
 	}
 	public boolean isClosed() {
 		return isClosed;
@@ -50,9 +48,6 @@ public class ProxyStatementBase {
 		if(isClosed)throw new SQLException("Statement has been closed,access forbidden");
 		proxyConnection.checkClose();
 	}
-	protected void updateAccessTime() throws SQLException {
-		pooledConn.updateAccessTime();
-	}
 	public void close() throws SQLException {
 		try{
 			checkClose();
@@ -61,7 +56,6 @@ public class ProxyStatementBase {
 			if(!cacheInd)oclose(delegate);
 			this.delegate = null;
 			this.proxyConnection =null;
-			pooledConn=null;
 		}
 	}
 }

@@ -30,7 +30,7 @@ import org.jmin.bee.pool.util.ConnectionUtil;
 public abstract class ProxyConnection implements Connection {
 	private volatile boolean isClosed;
 	protected Connection delegate;
-	PooledConnection pooledConn;
+	private PooledConnection pooledConn;
 	
 	protected boolean stmCacheInd;
 	protected StatementCache stmCache;

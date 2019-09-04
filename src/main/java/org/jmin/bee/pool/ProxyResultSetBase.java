@@ -31,22 +31,17 @@ public abstract class ProxyResultSetBase implements ResultSet {
 	private volatile boolean isClosed;
 	protected ResultSet delegate;
 	private ProxyStatementBase proxyStatement;
-	private PooledConnection pooledConn;
 	
 	public ProxyResultSetBase(ResultSet delegate,ProxyStatementBase proxyStatement) {
 		this.delegate = delegate;
 		this.proxyStatement = proxyStatement;
-		pooledConn=proxyStatement.pooledConn;
 	}
 	public boolean isClosed()throws SQLException{
 		return isClosed;
 	}
 	protected void checkClose() throws SQLException {
-		if (isClosed)throw new SQLException("ResultSet has been closed,access forbidden");
+		if(isClosed)throw new SQLException("ResultSet has been closed,access forbidden");
 		proxyStatement.checkClose();
-	}
-	protected void updateAccessTime() throws SQLException {
-		pooledConn.updateAccessTime();
 	}
 	public Statement getStatement() throws SQLException{
 		checkClose();
@@ -60,7 +55,6 @@ public abstract class ProxyResultSetBase implements ResultSet {
 			oclose(delegate);
 			delegate = null;
 			proxyStatement=null;
-			pooledConn=null;
 		}
 	}
 }
