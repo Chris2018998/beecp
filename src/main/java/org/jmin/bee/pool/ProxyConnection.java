@@ -66,13 +66,13 @@ public abstract class ProxyConnection implements Connection {
 		checkClose();
 		delegate.setReadOnly(readOnly);
 		updateAccessTime();
-		pooledConn.setChangedInd(PooledConnection.Pos_ReadOnlyInd,readOnly!=poolConfig.isReadOnly());
+		pooledConn.setChangedInd(PooledConnection.Pos_ReadOnlyInd,readOnly!=poolConfig.isDefaultReadOnly());
 	}
 	public void setCatalog(String catalog) throws SQLException {
 		checkClose();
 		delegate.setCatalog(catalog);
 		updateAccessTime();
-		pooledConn.setChangedInd(PooledConnection.Pos_CatalogInd,!ConnectionUtil.equals(catalog, poolConfig.getCatalog()));
+		pooledConn.setChangedInd(PooledConnection.Pos_CatalogInd,!ConnectionUtil.equals(catalog, poolConfig.getDefaultCatalog()));
 	}
 	void setConnectionDataToNull() {
 		isClosed=true;

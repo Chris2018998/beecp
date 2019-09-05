@@ -29,6 +29,7 @@ import static org.jmin.bee.pool.PoolObjectsState.CONNECTION_USING;
 import static org.jmin.bee.pool.PoolObjectsState.POOL_CLOSED;
 import static org.jmin.bee.pool.PoolObjectsState.POOL_NORMAL;
 import static org.jmin.bee.pool.PoolObjectsState.POOL_UNINIT;
+import static org.jmin.bee.pool.PoolObjectsState.POOL_RESTING;
 import static org.jmin.bee.pool.PoolObjectsState.THREAD_DEAD;
 import static org.jmin.bee.pool.PoolObjectsState.THREAD_NORMAL;
 import static org.jmin.bee.pool.PoolObjectsState.THREAD_WAITING;
@@ -48,6 +49,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.locks.LockSupport;
 
 import org.jmin.bee.BeeDataSourceConfig;
@@ -86,9 +88,10 @@ public class ConnectionPool{
 	private static String poolNamePrefix="Pool-";
 	private static AtomicInteger poolNameIndex=new AtomicInteger(1);
 	private volatile boolean surpportQryTimeout=true;
-	protected static final SQLException PoolCloseException = new SQLException("Pool has been closed");
 	protected static final SQLException RequestTimeoutException = new SQLException("Request timeout");
 	protected static final SQLException RequestInterruptException = new SQLException("Request interrupt");
+	protected static final SQLException PoolCloseException = new SQLException("Pool has been closed or in resting");
+	private final static AtomicIntegerFieldUpdater<ConnectionPool> stateUpdater = AtomicIntegerFieldUpdater.newUpdater(ConnectionPool.class,"state");
 	
 	/**
 	 * initialize pool with configuration
@@ -133,7 +136,7 @@ public class ConnectionPool{
 			poolSemaphore=new Semaphore(poolConfig.getConcurrentSize(),poolConfig.isFairQueue());
 			
 			poolName=!ConnectionUtil.isNull(poolConfig.getPoolName())?poolConfig.getPoolName():poolNamePrefix+poolNameIndex.getAndIncrement();
-			System.out.println("BeeCP("+poolName+")has been startup{init size:"+connList.size()+",max size:"+config.getMaximumPoolSize()+",concurrent size:"+poolConfig.getConcurrentSize()+ ",mode:"+mode +",max wait:"+poolConfig.getMaxWait()+"ms}");
+			System.out.println("BeeCP("+poolName+")has been startup{init size:"+connList.size()+",max size:"+config.getMaxActive()+",concurrent size:"+poolConfig.getConcurrentSize()+ ",mode:"+mode +",max wait:"+poolConfig.getMaxWait()+"ms}");
 			state = POOL_NORMAL;
 			createThread.start();
 		} else {
@@ -175,7 +178,7 @@ public class ConnectionPool{
 	}
 	public Map<String,Integer> getPoolSnapshot(){
 		Map<String,Integer> snapshotMap = new LinkedHashMap<String,Integer>();
-		snapshotMap.put("PoolMaxSize", poolConfig.getMaximumPoolSize());
+		snapshotMap.put("PoolMaxSize", poolConfig.getMaxActive());
 		snapshotMap.put("concurrentSize", poolConfig.getConcurrentSize());
 		snapshotMap.put("ConCurSize",connList.size());
 		snapshotMap.put("ConIdleSize",getIdleConnSize());
@@ -292,7 +295,8 @@ public class ConnectionPool{
 	 *             if pool is closed or waiting timeout,then throw exception
 	 */
 	public final Connection getConnection(long wait) throws SQLException {
-		if(state == POOL_CLOSED)throw PoolCloseException;
+		if(stateUpdater.get(this)!= POOL_NORMAL)throw PoolCloseException;
+		
 		Borrower borrower = null;
 		PooledConnection pConn = null;
 		
@@ -404,13 +408,13 @@ public class ConnectionPool{
 	private final void setDefaultOnConnection(Connection connection)throws SQLException{
 		connection.setAutoCommit(poolConfig.isDefaultAutoCommit());
 		connection.setTransactionIsolation(poolConfig.getDefaultTransactionIsolation());
-		connection.setReadOnly(poolConfig.isReadOnly());
-		if(!ConnectionUtil.isNull(poolConfig.getCatalog()))
-		  connection.setCatalog(poolConfig.getCatalog());
+		connection.setReadOnly(poolConfig.isDefaultReadOnly());
+		if(!ConnectionUtil.isNull(poolConfig.getDefaultCatalog()))
+		  connection.setCatalog(poolConfig.getDefaultCatalog());
 	}
  	//notify to create connections to pool 
 	private void tryToCreateNewConnByAsyn() {
-		if(createThread.state==THREAD_WAITING && poolConfig.getMaximumPoolSize()>connList.size()){
+		if(createThread.state==THREAD_WAITING && poolConfig.getMaxActive()>connList.size()){
 			createThread.state=THREAD_WORKING;
 			LockSupport.unpark(createThread);
 		}
@@ -490,29 +494,55 @@ public class ConnectionPool{
 			}
 		}
 	}
-
-	/**
-	 * resource release on pool closing
-	 */
-	public void destroy() {
-		if (isNormal()) {
-			state = POOL_CLOSED;
-			idleCheckTimer.cancel();
-			
-			long parkNanos=SECONDS.toNanos(1);
-			while(existBorrower())LockSupport.parkNanos(parkNanos);
-			
-			createThread.shutdown();
 	
-			//clear all connections
-			while (connList.size() > 0) {
-				for (PooledConnection pConn : connList.getArray()) {
-					if (pConn.compareAndSetState(CONNECTION_IDLE,CONNECTION_CLOSED)) {
-						pConn.closePhysicalConnection();
-						connList.remove(pConn);
-					} else if (pConn.getState() ==CONNECTION_CLOSED) {
-						connList.remove(pConn);
-					} else if (pConn.getState() == CONNECTION_USING) {
+	//close all connections
+	public void reset() {
+		reset(false);//wait borrower release connection,then close them 
+	}
+	//close all connections
+	public void reset(boolean force) {
+		if(stateUpdater.compareAndSet(this,POOL_NORMAL,POOL_RESTING)){
+			removeAllConnections(force);
+			stateUpdater.set(this,POOL_NORMAL);//restore state;
+		}
+	}
+	//shutdown pool
+	public void destroy() {
+		long parkNanos=SECONDS.toNanos(3);
+		for(;;) {
+			if(stateUpdater.compareAndSet(this,POOL_NORMAL,POOL_CLOSED)) {
+				removeAllConnections(poolConfig.isForceShutdown());
+				idleCheckTimer.cancel();
+				createThread.shutdown();
+				try {
+					Runtime.getRuntime().removeShutdownHook(exitHook);
+				} catch (Throwable e) {}
+				System.out.println("BeeCP(" + poolName + ")has been shutdown");
+				break;
+			} else if(stateUpdater.get(this)==POOL_CLOSED){
+				break;
+			}else{
+				LockSupport.parkNanos(parkNanos);//wait 3 seconds
+			}
+		}
+	}
+	//remove all connections
+	private void removeAllConnections(boolean force){
+		long parkNanos=SECONDS.toNanos(3);
+		while (connList.size()>0) {
+			for(PooledConnection pConn : connList.getArray()) {
+				if (pConn.compareAndSetState(CONNECTION_IDLE,CONNECTION_CLOSED)) {
+					pConn.closePhysicalConnection();
+					connList.remove(pConn);
+				} else if (pConn.getState()==CONNECTION_CLOSED) {
+					connList.remove(pConn);
+				} else if (pConn.getState()==CONNECTION_USING) {
+					if(force){
+						if (pConn.compareAndSetState(CONNECTION_USING,CONNECTION_CLOSED)) {
+							pConn.closePhysicalConnection();
+							connList.remove(pConn);
+						}
+					}else{
 						final boolean isDead = !isActiveConn(pConn);
 						final boolean isTimeout = ((currentTimeMillis()-pConn.getLastAccessTime()>=poolConfig.getMaxHoldTimeInUnused()));
 						if ((isDead || isTimeout) && (pConn.compareAndSetState(CONNECTION_USING,CONNECTION_CLOSED))) {
@@ -520,19 +550,14 @@ public class ConnectionPool{
 							connList.remove(pConn);
 						}
 					}
-				}//for
-				
-				if (connList.size() > 0)
-					LockSupport.parkNanos(parkNanos);
-			}//while
+				}
+			}//for
 			
-			try {
-				Runtime.getRuntime().removeShutdownHook(exitHook);
-			} catch (Throwable e) {}
-			System.out.println("BeeCP("+poolName+")has been shutdown");
-		}
+			if (connList.size() > 0)
+				LockSupport.parkNanos(parkNanos);
+		}//while
 	}
-
+	
 	/**
 	 * a inner task to scan idle timeout connections or dead
 	 */
@@ -566,7 +591,7 @@ public class ConnectionPool{
 			state=THREAD_WORKING;
 			PooledConnection pConn = null;
 			final ConnectionPool pool = ConnectionPool.this;
-			final int PoolMaxSize = poolConfig.getMaximumPoolSize();
+			final int PoolMaxSize = poolConfig.getMaxActive();
 			ConnectionFactory connFactory= poolConfig.getConnectionFactory();
 			
 			for(;;){

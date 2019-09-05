@@ -126,7 +126,7 @@ final class PooledConnection{
 
 			if (changedInds[2]) {
 				try {
-					connection.setReadOnly(poolConfig.isReadOnly());
+					connection.setReadOnly(poolConfig.isDefaultReadOnly());
 					changedInds[2] = false;
 					updateAccessTime();
 				} catch (SQLException e) {
@@ -136,7 +136,7 @@ final class PooledConnection{
 
 			if (changedInds[3]) {
 				try {
-					connection.setCatalog(poolConfig.getCatalog());
+					connection.setCatalog(poolConfig.getDefaultCatalog());
 					changedInds[3] = false;
 					updateAccessTime();
 				} catch (SQLException e) {
