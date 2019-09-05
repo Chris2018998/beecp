@@ -93,7 +93,7 @@ public class BeeDataSourceConfig{
 	/**
 	 * pool allow max size
 	 */
-	private int maximumPoolSize;
+	private int maxActive;
 	
 	/**
 	 * pool concurrent Size
@@ -128,13 +128,18 @@ public class BeeDataSourceConfig{
 	/**
 	 *connection.setCatalog
 	 */
-	private String catalog=null;
+	private String defaultCatalog=null;
 	
 	/**
 	 * connection.setReadOnly
 	 */
-	private boolean readOnly=false;
-
+	private boolean defaultReadOnly=false;
+	
+	/**
+	 * close all connections in force when shutdown
+	 */
+	private boolean forceShutdown=false;
+	
 	/**
 	 * borrower request timeout(milliseconds)
 	 */
@@ -181,8 +186,8 @@ public class BeeDataSourceConfig{
 		this.driverClassName = driver;
 	
 		int cpuSize=Runtime.getRuntime().availableProcessors();
-		maximumPoolSize=cpuSize*2;
-		concurrentSize=maximumPoolSize;
+		maxActive=cpuSize*2;
+		concurrentSize=maxActive;
 		defaultTransactionIsolation=Connection.TRANSACTION_READ_COMMITTED;
 	}
 	
@@ -259,12 +264,12 @@ public class BeeDataSourceConfig{
 		if(!this.inited && initialSize>0)
 		this.initialSize = initialSize;
 	}
-	public int getMaximumPoolSize() {
-		return maximumPoolSize;
+	public int getMaxActive() {
+		return maxActive;
 	}
-	public void setMaximumPoolSize(int maximumPoolSize) {
-		if(!this.inited && maximumPoolSize>0)
-		this.maximumPoolSize = maximumPoolSize;
+	public void setMaxActive(int maxActive) {
+		if(!this.inited && maxActive>0)
+		this.maxActive = maxActive;
 	}
 	public int getConcurrentSize() {
 		return concurrentSize;
@@ -306,19 +311,26 @@ public class BeeDataSourceConfig{
 		this.defaultTransactionIsolation = defaultTransactionIsolation;
 	}
 	
-	public String getCatalog() {
-		return catalog;
+	public String getDefaultCatalog() {
+		return defaultCatalog;
 	}
-	public void setCatalog(String catalog) {
+	public void setDefaultCatalog(String catalog) {
 	  if(!this.isNull(catalog))
-		this.catalog = catalog;
+		this.defaultCatalog = catalog;
 	}
-	public boolean isReadOnly() {
-		return readOnly;
+	public boolean isDefaultReadOnly() {
+		return defaultReadOnly;
 	}
-	public void setReadOnly(boolean readOnly) {
+	public void setDefaultReadOnly(boolean readOnly) {
 	   if(!this.inited)
-		this.readOnly = readOnly;
+		this.defaultReadOnly = readOnly;
+	}
+	public boolean isForceShutdown() {
+		return forceShutdown;
+	}
+	public void setForceShutdown(boolean forceShutdown) {
+       if(!this.inited)
+		this.forceShutdown = forceShutdown;
 	}
 	public long getMaxWait() {
 		return maxWait;
@@ -434,11 +446,11 @@ public class BeeDataSourceConfig{
 			}
 		}
 
-		if (this.maximumPoolSize <= 0)
+		if (this.maxActive <= 0)
 			throw new IllegalArgumentException("Pool max size must be greater than zero");
 		if (this.initialSize < 0)
 			throw new IllegalArgumentException("Pool init size must be greater than zero");
-		if (this.initialSize > maximumPoolSize)
+		if (this.initialSize > maxActive)
 			throw new IllegalArgumentException("Error configeruation,pool initiation size must be less than pool max size");
 		if (this.idleTimeout <= 0)
 			throw new IllegalArgumentException("Connection max idle time must be greater than zero");

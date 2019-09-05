@@ -151,7 +151,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         if(ra != null) connectionIdleTimeout= ra.getContent().toString(); 
        
 		if (!isNull(maxSize))
-			config.setMaximumPoolSize(Integer.parseInt(maxSize));
+			config.setMaxActive(Integer.parseInt(maxSize));
 		if (!isNull(initSize))
 			config.setInitialSize(Integer.parseInt(initSize));
 		if (!isNull(maxWait))
