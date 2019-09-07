@@ -13,13 +13,13 @@
 
 Maven下载
 ---
-Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.95/BeeCP-0.95.jar">BeeCP_0.95.jar</a>
+Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.96/BeeCP-0.96.jar">BeeCP_0.96.jar</a>
 
 ```java
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>0.95</version>
+   <version>0.96</version>
 </dependency>
 
 ```
@@ -29,7 +29,7 @@ Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0
 |  Name  |   Description |   Remark |
 | ------------ | ------------ | ------------ |
 | initialSize     |连接池初始大小  |   |
-| maximumPoolSize |连接池最大个数  |    |
+| maxActive       |连接池最大个数  |    |
 | maxWait         |连接借用等待最大时间(毫秒)  |   |
 | idleTimeout     |连接闲置最大时间(毫秒)     |   |  
 | preparedStatementCacheSize |SQL宣言缓存大小 |   
@@ -43,7 +43,7 @@ application.properties
 
 spring.datasource.username=xx
 spring.datasource.password=xx
-spring.datasource.jdbcUrl=xx
+spring.datasource.url=xx
 spring.datasource.driverClassName=xxx
 spring.datasource.datasourceJndiName=xxx
 ```
