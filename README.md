@@ -52,7 +52,7 @@ spring.datasource.datasourceJndiName=xxx
 public class DataSourceConfig {
   @Value("spring.datasource.driverClassName")
   private String driver;
-  @Value("spring.datasource.jdbcUrl")
+  @Value("spring.datasource.url")
   private String url;
   @Value("spring.datasource.username")
   private String user;
