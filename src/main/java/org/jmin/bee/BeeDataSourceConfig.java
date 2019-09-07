@@ -136,11 +136,6 @@ public class BeeDataSourceConfig{
 	private boolean defaultReadOnly=false;
 	
 	/**
-	 * close all connections in force when shutdown
-	 */
-	private boolean forceShutdown=false;
-	
-	/**
 	 * borrower request timeout(milliseconds)
 	 */
 	private long maxWait=8000;
@@ -171,6 +166,16 @@ public class BeeDataSourceConfig{
 	 */
 	private long validationInterval = 500L;
 	
+	/**
+	 * close all connections in force when shutdown
+	 */
+	private boolean forceShutdown=false;
+	
+	/**
+	 * seconds,wait for retry to clear all connections
+	 */
+	private long waitTimeToClearPool=3;
+
 	/**
 	 * BeeCP implementation class name
 	 */
@@ -325,13 +330,6 @@ public class BeeDataSourceConfig{
 	   if(!this.inited)
 		this.defaultReadOnly = readOnly;
 	}
-	public boolean isForceShutdown() {
-		return forceShutdown;
-	}
-	public void setForceShutdown(boolean forceShutdown) {
-       if(!this.inited)
-		this.forceShutdown = forceShutdown;
-	}
 	public long getMaxWait() {
 		return maxWait;
 	}
@@ -374,7 +372,22 @@ public class BeeDataSourceConfig{
 		if(!this.inited && validationInterval>0) 
 		this.validationInterval = validationInterval;
 	}
+
+	public boolean isForceShutdown() {
+		return forceShutdown;
+	}
+	public void setForceShutdown(boolean forceShutdown) {
+       if(!this.inited)
+		this.forceShutdown = forceShutdown;
+	}
 	
+	public long getWaitTimeToClearPool() {
+		return waitTimeToClearPool;
+	}
+	public void setWaitTimeToClearPool(long waitTimeToClearPool) {
+	  if(!this.inited && waitTimeToClearPool>0)
+		this.waitTimeToClearPool = waitTimeToClearPool;
+	}
 	public String getPoolImplementClassName() {
 		return poolImplementClassName;
 	}
@@ -383,7 +396,6 @@ public class BeeDataSourceConfig{
 			this.poolImplementClassName = poolImplementClassName;
 		}
 	}
-	
 	public void removeDriverConnectProperty(String key){
 		if(!this.inited){
 			connectProperties.remove(key);
