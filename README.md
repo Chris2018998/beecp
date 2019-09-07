@@ -12,13 +12,13 @@ Bees are a kind of beneficial insects to human beings. In recent years, the numb
 
 Release download
 ---
-Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.95/BeeCP-0.95.jar">BeeCP_0.95.jar</a>
+Download<a href="http://central.maven.org/maven2/com/github/chris2018998/BeeCP/0.96/BeeCP-0.96.jar">BeeCP_0.96.jar</a>
 
 ```java
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>0.95</version>
+   <version>0.96</version>
 </dependency>
 
 ```
@@ -28,7 +28,7 @@ Configuration
 |  Name           |  Description |   Remark |
 | ----------------| ------------ | ------------ |
 | initialSize     |Connection pool initial size|   |
-| maximumPoolSize |Maximum number of connection pools|    |
+| maxActive       |Maximum number of connection pools|    |
 | maxWait         |Maximum borrowing waiting time (milliseconds)|   |
 | idleTimeout     |connection maximum idleness time(milliseconds)|   |  
 | preparedStatementCacheSize |preparedStatement cache Size |   
