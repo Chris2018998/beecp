@@ -243,7 +243,7 @@ public final class ProxyClassUtil {
 		  CtMethod createProxyConnectionMethod=ctProxyObjectFactoryClass.getDeclaredMethod("createProxyConnection", conCreateParam);
 		  body.delete(0, body.length());
 		  body.append("{");
-		  body.append("return new ProxyConnectionImpl($$);");
+		  body.append("return new ProxyConnection($$);");
 		  body.append("}");
 		  createProxyConnectionMethod.setBody(body.toString());
 		  
