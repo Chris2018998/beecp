@@ -1,0 +1,162 @@
+Pool statement performance Test(1000Threads x 1000iteration)
+[datasource.getConnection(),connection.prepareStatement,statement.execute(),statement.close(),connection.close()]
+
+OS:Win7_64,CPU:I5-4210M(2.6*4),Momery:8G,DB:Oracle11G
+Pool init size:0,max size:10
+Pool List:C3P0,DBCP,TOMCAT,Druid,HikariCP,Vibur,Bee_0.84(two mode)
+
+
+Pool[C3P0 -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+Pool[C3P0 -- Multiple thread query] -- Execution count:1000000,total time:71542058ms,avg time:71.54ms,min time:0ms,max time:5251ms
+success count       :1000000
+fail count          :0
+avr(ms)             :71.54
+min(ms)             :0
+max(ms)             :5251
+time==0ms           :337066
+1ms=<time<=10ms     :81748
+10ms<time<=50ms     :244467
+50ms<time<=100ms    :135215
+100ms<time<=200ms   :107063
+200ms<time<=500ms   :74037
+500ms<time<=1000ms  :16847
+1000ms<time<=2000ms :3061
+2000ms<time<=8000ms :496
+time>8000ms         :0
+Pool[DBCP -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+Pool[DBCP -- Multiple thread query] -- Execution count:1000000,total time:66473191ms,avg time:66.47ms,min time:0ms,max time:380ms
+success count       :1000000
+fail count          :0
+avr(ms)             :66.47
+min(ms)             :0
+max(ms)             :380
+time==0ms           :2958
+1ms=<time<=10ms     :90
+10ms<time<=50ms     :4850
+50ms<time<=100ms    :976593
+100ms<time<=200ms   :13505
+200ms<time<=500ms   :2004
+500ms<time<=1000ms  :0
+1000ms<time<=2000ms :0
+2000ms<time<=8000ms :0
+time>8000ms         :0
+Pool[Tomcat -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+Pool[Tomcat -- Multiple thread query] -- Execution count:1000000,total time:57931653ms,avg time:57.93ms,min time:6ms,max time:481ms
+success count       :1000000
+fail count          :0
+avr(ms)             :57.93
+min(ms)             :6
+max(ms)             :481
+time==0ms           :0
+1ms=<time<=10ms     :2
+10ms<time<=50ms     :2631
+50ms<time<=100ms    :989104
+100ms<time<=200ms   :7248
+200ms<time<=500ms   :1015
+500ms<time<=1000ms  :0
+1000ms<time<=2000ms :0
+2000ms<time<=8000ms :0
+time>8000ms         :0
+Pool[Druid -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+Pool[Druid -- Multiple thread query] -- Execution count:1000000,total time:67033541ms,avg time:67.03ms,min time:0ms,max time:1726ms
+success count       :1000000
+fail count          :0
+avr(ms)             :67.03
+min(ms)             :0
+max(ms)             :1726
+time==0ms           :390815
+1ms=<time<=10ms     :51058
+10ms<time<=50ms     :11150
+50ms<time<=100ms    :303799
+100ms<time<=200ms   :175342
+200ms<time<=500ms   :65054
+500ms<time<=1000ms  :2724
+1000ms<time<=2000ms :58
+2000ms<time<=8000ms :0
+time>8000ms         :0
+Pool[HikariCP -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+Pool[HikariCP -- Multiple thread query] -- Execution count:1000000,total time:28794780ms,avg time:28.79ms,min time:0ms,max time:36666ms
+success count       :1000000
+fail count          :0
+avr(ms)             :28.79
+min(ms)             :0
+max(ms)             :36666
+time==0ms           :986884
+1ms=<time<=10ms     :4382
+10ms<time<=50ms     :1999
+50ms<time<=100ms    :779
+100ms<time<=200ms   :614
+200ms<time<=500ms   :729
+500ms<time<=1000ms  :761
+1000ms<time<=2000ms :715
+2000ms<time<=8000ms :1967
+time>8000ms         :1170
+Pool[Vibur -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+Pool[Vibur -- Multiple thread query] -- Execution count:1000000,total time:20638034ms,avg time:20.64ms,min time:0ms,max time:32036ms
+success count       :1000000
+fail count          :0
+avr(ms)             :20.64
+min(ms)             :0
+max(ms)             :32036
+time==0ms           :996091
+1ms=<time<=10ms     :1534
+10ms<time<=50ms     :898
+50ms<time<=100ms    :200
+100ms<time<=200ms   :44
+200ms<time<=500ms   :11
+500ms<time<=1000ms  :19
+1000ms<time<=2000ms :45
+2000ms<time<=8000ms :215
+time>8000ms         :943
+Pool[BeeCP_Fair -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+Pool[BeeCP_Fair -- Multiple thread query] -- Execution count:1000000,total time:13393976ms,avg time:13.39ms,min time:0ms,max time:10199ms
+success count       :1000000
+fail count          :0
+avr(ms)             :13.39
+min(ms)             :0
+max(ms)             :10199
+time==0ms           :991307
+1ms=<time<=10ms     :4533
+10ms<time<=50ms     :811
+50ms<time<=100ms    :380
+100ms<time<=200ms   :181
+200ms<time<=500ms   :311
+500ms<time<=1000ms  :194
+1000ms<time<=2000ms :351
+2000ms<time<=8000ms :1403
+time>8000ms         :529
+Pool[BeeCP_Compete -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:1000000,total time:15250046ms,avg time:15.25ms,min time:0ms,max time:26786ms
+success count       :1000000
+fail count          :0
+avr(ms)             :15.25
+min(ms)             :0
+max(ms)             :26786
+time==0ms           :996388
+1ms=<time<=10ms     :838
+10ms<time<=50ms     :955
+50ms<time<=100ms    :461
+100ms<time<=200ms   :172
+200ms<time<=500ms   :48
+500ms<time<=1000ms  :38
+1000ms<time<=2000ms :54
+2000ms<time<=8000ms :264
+time>8000ms         :782
+[Multiple thread query]Performace analysis:Bee_F(13.39) > Bee_C(15.25) > Vibur(20.64) > HikariCP(28.79) > TOMCAT(57.93) > DBCP(66.47) > Druid(67.03) > C3P0(71.54)
+|Sumary|C3P0|DBCP|TOMCAT|Druid|HikariCP|Vibur|Bee_F|Bee_C|
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+|success Count|1000000|1000000|1000000|1000000|1000000|1000000|1000000|1000000|
+|fail count|0|0|0|0|0|0|0|0|
+|avr(ms)|71.54|66.47|57.93|67.03|28.79|20.64|13.39|15.25|
+|min(ms)|0|0|6|0|0|0|0|0|
+|max(ms)|5251|380|481|1726|36666|32036|10199|26786|
+|time=0ms|337066|2958|0|390815|986884|996091|991307|996388|
+|1ms=<time<=10ms|81748|90|2|51058|4382|1534|4533|838|
+|10ms<time<=50ms|244467|4850|2631|11150|1999|898|811|955|
+|50ms<time<=100ms|135215|976593|989104|303799|779|200|380|461|
+|100ms<time<=200ms|107063|13505|7248|175342|614|44|181|172|
+|200ms<time<=500ms|74037|2004|1015|65054|729|11|311|48|
+|500ms<time<=1000ms|16847|0|0|2724|761|19|194|38|
+|1000ms<time<=2000ms|3061|0|0|58|715|45|351|54|
+|2000ms<time<=800ms|496|0|0|0|1967|215|1403|264|
+|8000ms<time|0|0|0|0|1170|943|529|782||
