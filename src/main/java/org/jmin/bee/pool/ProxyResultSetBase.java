@@ -41,7 +41,7 @@ public abstract class ProxyResultSetBase implements ResultSet {
 	}
 	protected void checkClose() throws SQLException {
 		if(isClosed)throw new SQLException("ResultSet has been closed,access forbidden");
-		proxyStatement.checkClose();
+		if(proxyStatement!=null)proxyStatement.checkClose();
 	}
 	public Statement getStatement() throws SQLException{
 		checkClose();

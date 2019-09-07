@@ -22,7 +22,7 @@ import java.util.List;
  * @author Chris.Liao
  * @version 1.0
  */
-public final class PooledConnectionList {
+final class PooledConnectionList {
 	private volatile PooledConnection[] array = new PooledConnection[0];
 	public int size() {
 		return array.length;
@@ -33,7 +33,6 @@ public final class PooledConnectionList {
 	void setArray(PooledConnection[] a) {
 		array = a;
 	}
-	
 	public synchronized void add(PooledConnection pooledCon) {
 		int oldLen = array.length;
 		PooledConnection[] arrayNew = new PooledConnection[oldLen + 1];
@@ -42,7 +41,19 @@ public final class PooledConnectionList {
 		System.arraycopy(array,0,arrayNew,1,oldLen);
 		setArray(arrayNew);
 	}
-	
+	public synchronized void remove(PooledConnection pooledCon){ 
+		int oldLen = array.length;
+		PooledConnection[] arrayNew = new PooledConnection[oldLen-1];
+		for (int i=0;i<oldLen;i++) {
+			 if(array[i]==pooledCon){
+				 System.arraycopy(array,i+1,arrayNew,i,oldLen-i-1);
+				 break;
+			 }else{
+				 arrayNew[i]=array[i];
+			 }
+		}
+		setArray(arrayNew);
+	}
 	public synchronized void addAll(List<PooledConnection> col) {
 		int oldLen=array.length;
 		int addLen=col.size();
@@ -52,30 +63,6 @@ public final class PooledConnectionList {
 		System.arraycopy(array,0,arrayNew,addLen,oldLen);
 		setArray(arrayNew); 
 	}
-	
-	public synchronized void remove(PooledConnection pooledCon){ 
-		int index =-1;
-		for (int i=0,l=array.length;i<l;i++) {
-			 if(array[i]==pooledCon){
-				 index=i;
-				 break;
-			 }
-		}
-		
-		if(index >=0){
-			PooledConnection[] arrayNew = new PooledConnection[array.length-1];
-			if(index==0){
-				System.arraycopy(array,1,arrayNew,0,arrayNew.length);
-			}else if(index==array.length-1){
-				System.arraycopy(array,0, arrayNew,0, arrayNew.length);
-			}else{
-				System.arraycopy(array,0,arrayNew,0,index+1);
-				System.arraycopy(array,index+1, arrayNew,index,(array.length-index-1));
-			}
-			setArray(arrayNew);
-		}
-	}
-	
 	public synchronized void removeAll(List<PooledConnection> col){ 
 		PooledConnection[] arrayOld=array;
 		PooledConnection[] tempNew = new PooledConnection[arrayOld.length];

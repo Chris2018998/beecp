@@ -28,9 +28,8 @@ class PoolObjectsState {
 	public static final int POOL_UNINIT         = 0;
 	public static final int POOL_NORMAL         = 1;
 	public static final int POOL_CLOSED         = 2;
-        public static final int POOL_RESTING        = 3;
+	public static final int POOL_RESTING        = 3;
 	
- 
 	//POOLED CONNECTION STATE
 	public static final int CONNECTION_IDLE      = 0;
 	public static final int CONNECTION_USING     = 1;

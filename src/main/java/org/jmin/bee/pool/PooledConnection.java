@@ -38,7 +38,7 @@ final class PooledConnection{
 	
 	private ConnectionPool pool;
 	private volatile long lastAccessTime;
-	private ProxyConnection proxyConnection;
+	private ProxyConnectionBase proxyConnection;
 	private boolean curAutoCommit=true;
 	
 	//changed indicator
@@ -80,10 +80,10 @@ final class PooledConnection{
 	public Connection getPhisicConnection() {
 		return connection;
 	}
-	public ProxyConnection getProxyConnection() {
+	public ProxyConnectionBase getProxyConnection() {
 		return proxyConnection;
 	}
-	public void bindProxyConnection(ProxyConnection proxyConnection) {
+	public void bindProxyConnection(ProxyConnectionBase proxyConnection) {
 		this.proxyConnection = proxyConnection;
 	}
 	public boolean equals(Object obj) {

@@ -28,8 +28,8 @@ import static org.jmin.bee.pool.PoolObjectsState.CONNECTION_IDLE;
 import static org.jmin.bee.pool.PoolObjectsState.CONNECTION_USING;
 import static org.jmin.bee.pool.PoolObjectsState.POOL_CLOSED;
 import static org.jmin.bee.pool.PoolObjectsState.POOL_NORMAL;
-import static org.jmin.bee.pool.PoolObjectsState.POOL_UNINIT;
 import static org.jmin.bee.pool.PoolObjectsState.POOL_RESTING;
+import static org.jmin.bee.pool.PoolObjectsState.POOL_UNINIT;
 import static org.jmin.bee.pool.PoolObjectsState.THREAD_DEAD;
 import static org.jmin.bee.pool.PoolObjectsState.THREAD_NORMAL;
 import static org.jmin.bee.pool.PoolObjectsState.THREAD_WAITING;
@@ -42,7 +42,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -150,17 +149,19 @@ public class ConnectionPool{
 	private void checkProxyClasses() throws SQLException {
 		try {
 			ClassLoader classLoader = getClass().getClassLoader();
-			Class.forName("org.jmin.bee.pool.ProxyConnectionImpl", true, classLoader);
-			Class.forName("org.jmin.bee.pool.ProxyStatement", true, classLoader);
-			Class.forName("org.jmin.bee.pool.ProxyPsStatement", true, classLoader);
-			Class.forName("org.jmin.bee.pool.ProxyCsStatement", true, classLoader);
-			Class.forName("org.jmin.bee.pool.ProxyResultSet", true, classLoader);
+			Class.forName("org.jmin.bee.pool.ProxyConnection",true,classLoader);
+			Class.forName("org.jmin.bee.pool.ProxyStatement", true,classLoader);
+			Class.forName("org.jmin.bee.pool.ProxyPsStatement",true,classLoader);
+			Class.forName("org.jmin.bee.pool.ProxyCsStatement",true,classLoader);
+			Class.forName("org.jmin.bee.pool.ProxyDatabaseMetaData",true,classLoader);
+			Class.forName("org.jmin.bee.pool.ProxyResultSet",true,classLoader);
 		} catch (ClassNotFoundException e) {
 			throw new SQLException("some pool jdbc proxy classes are missed");
 		}
 	}
+	
 	private final boolean isNormal() {
-		return state == POOL_NORMAL;
+		return stateUpdater.get(this) == POOL_NORMAL;
 	}
 	boolean isStatementCacheInd() {
 		return statementCacheInd;
@@ -236,16 +237,20 @@ public class ConnectionPool{
 			return true;
 		
 		if(isActiveConn(pConn))return true;
+		
 		pConn.setState(CONNECTION_CLOSED);
-		pConn.closePhysicalConnection();
-		connList.remove(pConn);
-		return false;
+		removePooledConnection(pConn);
+		return false;//bad connection
 	}
 	private boolean testOnBorrow(PooledConnection pConn) {
 		return testOnBorrow?testConnection(pConn):true;	
 	}
 	private boolean testOnReturn(PooledConnection pConn) {
 		return testOnReturn?testConnection(pConn):true;
+	}
+	private void removePooledConnection(PooledConnection pConn){
+		pConn.closePhysicalConnection();
+		connList.remove(pConn);
 	}
 	
 	/**
@@ -267,10 +272,8 @@ public class ConnectionPool{
 				}
 			}
 		} catch (SQLException e) {
-			for(PooledConnection sPConn:connList.getArray()) {
-				sPConn.closePhysicalConnection();
-				connList.remove(sPConn);
-			}
+			for(PooledConnection pConn:connList.getArray()) 
+				removePooledConnection(pConn);
 			throw e;
 		}
 	}
@@ -398,9 +401,9 @@ public class ConnectionPool{
 		}
     }
     //create proxy to wrap connection as result
-  	private ProxyConnection createProxyConnection(PooledConnection pConn,Borrower borrower)throws SQLException {
+  	private ProxyConnectionBase createProxyConnection(PooledConnection pConn,Borrower borrower)throws SQLException {
   		borrower.setLastUsedConn(pConn);
-  		ProxyConnection proxyConn=ProxyConnectionFactory.createProxyConnection(pConn);
+  		ProxyConnectionBase proxyConn=ProxyConnectionFactory.createProxyConnection(pConn);
   		pConn.bindProxyConnection(proxyConn);
   		return proxyConn;
   	}
@@ -425,7 +428,12 @@ public class ConnectionPool{
 	 * @param pConn target connection need release
 	 */
 	void release(PooledConnection pConn,boolean isNew) {
-		if(!isNew && !testOnReturn(pConn))return;
+		if(stateUpdater.get(this)==POOL_RESTING && pConn.compareAndSetState(CONNECTION_USING,CONNECTION_CLOSED)){
+			removePooledConnection(pConn);
+			return;
+		}
+		
+		if(!isNew && !testOnReturn(pConn))return;//bad connection
 		
 		tansferPolicy.beforeTransferReleaseConnection(pConn);
 		Thread waiterThread=null;Object waiterState=null;
@@ -462,35 +470,23 @@ public class ConnectionPool{
 	 */
 	private void closeIdleTimeoutConnection() {
 		if (isNormal() && !existBorrower()){
-			LinkedList<PooledConnection> badConList = new LinkedList<PooledConnection>();
 			for (PooledConnection pConn:connList.getArray()) {
 				final int state = pConn.getState();
 				if (state == CONNECTION_IDLE) {
 					final boolean isDead = !isActiveConn(pConn);
 					final boolean isTimeout = ((currentTimeMillis()-pConn.getLastAccessTime()>=poolConfig.getIdleTimeout()));
 					if ((isDead || isTimeout) && (pConn.compareAndSetState(state,CONNECTION_CLOSED))) {
-						pConn.closePhysicalConnection();
-						badConList.add(pConn);
+						removePooledConnection(pConn);
 					}
-
 				} else if (state == CONNECTION_USING) {
 					final boolean isDead = !isActiveConn(pConn);
 					final boolean isTimeout = ((currentTimeMillis()-pConn.getLastAccessTime()>=poolConfig.getMaxHoldTimeInUnused()));
 					if ((isDead || isTimeout) && (pConn.compareAndSetState(state,CONNECTION_CLOSED))) {
-
-						pConn.closePhysicalConnection();
-						badConList.add(pConn);
+						removePooledConnection(pConn);
 					}
-				} else if (state ==CONNECTION_CLOSED) {
-					pConn.closePhysicalConnection();
-					badConList.add(pConn);
+				} else if (state==CONNECTION_CLOSED) {
+					removePooledConnection(pConn);
 				}
-			}
-		
-			if (!badConList.isEmpty()) {
-				connList.removeAll(badConList);
-				badConList.clear();
-				badConList = null;
 			}
 		}
 	}
@@ -508,7 +504,8 @@ public class ConnectionPool{
 	}
 	//shutdown pool
 	public void destroy() {
-		long parkNanos=SECONDS.toNanos(3);
+		long parkNanos=SECONDS.toNanos(poolConfig.getWaitTimeToClearPool());
+		
 		for(;;) {
 			if(stateUpdater.compareAndSet(this,POOL_NORMAL,POOL_CLOSED)) {
 				removeAllConnections(poolConfig.isForceShutdown());
@@ -517,6 +514,7 @@ public class ConnectionPool{
 				try {
 					Runtime.getRuntime().removeShutdownHook(exitHook);
 				} catch (Throwable e) {}
+				
 				System.out.println("BeeCP(" + poolName + ")has been shutdown");
 				break;
 			} else if(stateUpdater.get(this)==POOL_CLOSED){
@@ -528,33 +526,29 @@ public class ConnectionPool{
 	}
 	//remove all connections
 	private void removeAllConnections(boolean force){
-		long parkNanos=SECONDS.toNanos(3);
+		long parkNanos=SECONDS.toNanos(poolConfig.getWaitTimeToClearPool());
 		while (connList.size()>0) {
 			for(PooledConnection pConn : connList.getArray()) {
 				if (pConn.compareAndSetState(CONNECTION_IDLE,CONNECTION_CLOSED)) {
-					pConn.closePhysicalConnection();
-					connList.remove(pConn);
+					removePooledConnection(pConn);
 				} else if (pConn.getState()==CONNECTION_CLOSED) {
-					connList.remove(pConn);
+					removePooledConnection(pConn);
 				} else if (pConn.getState()==CONNECTION_USING) {
 					if(force){
 						if (pConn.compareAndSetState(CONNECTION_USING,CONNECTION_CLOSED)) {
-							pConn.closePhysicalConnection();
-							connList.remove(pConn);
+							removePooledConnection(pConn);
 						}
 					}else{
 						final boolean isDead = !isActiveConn(pConn);
 						final boolean isTimeout = ((currentTimeMillis()-pConn.getLastAccessTime()>=poolConfig.getMaxHoldTimeInUnused()));
 						if ((isDead || isTimeout) && (pConn.compareAndSetState(CONNECTION_USING,CONNECTION_CLOSED))) {
-							pConn.closePhysicalConnection();
-							connList.remove(pConn);
+							removePooledConnection(pConn);
 						}
 					}
 				}
 			}//for
-			
-			if (connList.size() > 0)
-				LockSupport.parkNanos(parkNanos);
+		
+			if(connList.size()>0)LockSupport.parkNanos(parkNanos);
 		}//while
 	}
 	

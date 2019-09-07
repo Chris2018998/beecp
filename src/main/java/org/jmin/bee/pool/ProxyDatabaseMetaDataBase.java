@@ -15,16 +15,24 @@
  */
 package org.jmin.bee.pool;
 
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 /**
- * Connection proxy factory
+ * DatabaseMetaDataBase wrapper
  * 
  * @author Chris.Liao
  * @version 1.0
  */
-public final class ProxyConnectionFactory {
-	public static ProxyConnectionBase createProxyConnection(PooledConnection pooledConnection)throws SQLException{
-		 throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassUtil' after project compile");
+public abstract class ProxyDatabaseMetaDataBase implements DatabaseMetaData {
+	protected DatabaseMetaData delegate;
+	protected ProxyConnectionBase proxyConnection;
+	public ProxyDatabaseMetaDataBase(DatabaseMetaData metaData,ProxyConnectionBase proxyConnection){
+		this.delegate=metaData; 
+		this.proxyConnection=proxyConnection;
+	}
+	public Connection getConnection() throws SQLException{
+		return proxyConnection;
 	}
 }
