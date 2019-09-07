@@ -94,18 +94,18 @@ The performance of each connection pool is tested by multi-threaded query (1000 
 
 1：Below are the test results of each connection pool at Oracle11G (milliseconds)
 
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I5_4210M_Oracle11g_20190717.log">20190808_I5_4210M_Orcale11g.log</a>
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20190717_I5_4210M_Oracle11g.log">20190808_I5_4210M_Orcale11g.log</a>
 
 Bee_F(16.37) > Bee_C(18.25) > Vibur(28.79) > HikariCP(34.42) > TOMCAT(67.47) > DBCP(75.28) > Druid(75.97) > C3P0(96.40)
 
-<img src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I5_4210M_Oracle11g_20190723.log">20190808_I5_4210M_Orcale11g.log</a>
+<img src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20190723_I5_4210M_Oracle11g.log">20190808_I5_4210M_Orcale11g.log</a>
 
 Bee_F(13.39) > Bee_C(15.25) > Vibur(20.64) > HikariCP(28.79) > TOMCAT(57.93) > DBCP(66.47) > Druid(67.03) > C3P0(71.54)
 
 
 2：Test with HikariCP driver(Dedicated to performance testing),result are following
 
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I3_7100_HikariCP_Driver_20190729.log">I3_7100_HikariCP_Driver_20190729.log</a>
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20190729_I3_7100_HikariCP_Driver.log">20190729_I3_7100_HikariCP_Driver.log</a>
 
 Bee_F(0.0006) > Bee_C(0.0980) > HikariCP(0.3053) > Vibur(0.3068) > TOMCAT(1.9001) > DBCP(3.9862) > C3P0(6.3528) > Druid(9.7170)
 
@@ -118,7 +118,7 @@ project for performance test code,please visit：https://github.com/Chris2018998
  
 3：Test with HikariCP benchmark
 
-<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/I3_7100_HikariCP_Bech_20190903-1.png"></img>
+<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20190903_I3_7100_HikariCP_Bech_1.png"></img>
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/BenchBase.java">Donload BenchBase.java</a>
 
