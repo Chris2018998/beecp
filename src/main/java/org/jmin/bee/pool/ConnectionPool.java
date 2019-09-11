@@ -102,10 +102,12 @@ public class ConnectionPool{
 		if (state == POOL_UNINIT) {
 			checkProxyClasses();
 			if(config == null)throw new SQLException("Datasource configeruation can't be null");
-			
 			poolConfig=config;
 			poolConfig.check();
 			poolConfig.setInited(true);
+			
+			poolName=!ConnectionUtil.isNull(config.getPoolName())?config.getPoolName():poolNamePrefix+poolNameIndex.getAndIncrement();
+			System.out.println("BeeCP("+poolName+")starting....");
 			
 			validationQuery=poolConfig.getValidationQuery();
 			validateSQLIsNull=isNull(validationQuery);
@@ -133,8 +135,6 @@ public class ConnectionPool{
 			
 			createInitConns();
 			poolSemaphore=new Semaphore(poolConfig.getConcurrentSize(),poolConfig.isFairQueue());
-			
-			poolName=!ConnectionUtil.isNull(poolConfig.getPoolName())?poolConfig.getPoolName():poolNamePrefix+poolNameIndex.getAndIncrement();
 			System.out.println("BeeCP("+poolName+")has been startup{init size:"+connList.size()+",max size:"+config.getMaxActive()+",concurrent size:"+poolConfig.getConcurrentSize()+ ",mode:"+mode +",max wait:"+poolConfig.getMaxWait()+"ms}");
 			state = POOL_NORMAL;
 			createThread.start();
@@ -472,7 +472,7 @@ public class ConnectionPool{
 		if (isNormal() && !existBorrower()){
 			for (PooledConnection pConn:connList.getArray()) {
 				final int state = pConn.getState();
-				if (state == CONNECTION_IDLE) {
+				if (state == CONNECTION_IDLE && !existBorrower()) {
 					final boolean isDead = !isActiveConn(pConn);
 					final boolean isTimeout = ((currentTimeMillis()-pConn.getLastAccessTime()>=poolConfig.getIdleTimeout()));
 					if ((isDead || isTimeout) && (pConn.compareAndSetState(state,CONNECTION_CLOSED))) {
