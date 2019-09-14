@@ -54,6 +54,7 @@ import java.util.concurrent.locks.LockSupport;
 import org.jmin.bee.BeeDataSourceConfig;
 import org.jmin.bee.ConnectionFactory;
 import org.jmin.bee.pool.util.ConnectionUtil;
+
 /**
  * JDBC Connection Pool base Implementation
  *
@@ -204,9 +205,9 @@ public class ConnectionPool{
 			Statement st = null;
 			try {
 				st = conn.createStatement();
+				pConn.updateAccessTime();
 				setsetQueryTimeout(st);
 				st.execute(validationQuery);
-				pConn.updateAccessTime();
 				return true;
 			} catch (SQLException e) {
 				return false;
@@ -469,19 +470,19 @@ public class ConnectionPool{
 	 * or dead connections,or long time not active connections in using state
 	 */
 	private void closeIdleTimeoutConnection() {
-		if (isNormal() && !existBorrower()){
+		if (isNormal()){
 			for (PooledConnection pConn:connList.getArray()) {
 				final int state = pConn.getState();
 				if (state == CONNECTION_IDLE && !existBorrower()) {
 					final boolean isDead = !isActiveConn(pConn);
-					final boolean isTimeout = ((currentTimeMillis()-pConn.getLastAccessTime()>=poolConfig.getIdleTimeout()));
+					final boolean isTimeout = ((currentTimeMillis()-pConn.getLastAccessTime()-poolConfig.getIdleTimeout()>=0));
 					if ((isDead || isTimeout) && (pConn.compareAndSetState(state,CONNECTION_CLOSED))) {
 						removePooledConnection(pConn);
 					}
 				} else if (state == CONNECTION_USING) {
-					final boolean isDead = !isActiveConn(pConn);
-					final boolean isTimeout = ((currentTimeMillis()-pConn.getLastAccessTime()>=poolConfig.getMaxHoldTimeInUnused()));
-					if ((isDead || isTimeout) && (pConn.compareAndSetState(state,CONNECTION_CLOSED))) {
+					//final boolean isDead = !isActiveConn(pConn);
+					final boolean isTimeout = ((currentTimeMillis()-pConn.getLastAccessTime()-poolConfig.getMaxHoldTimeInUnused()>=0));
+					if (isTimeout && (pConn.compareAndSetState(state,CONNECTION_CLOSED))) {
 						removePooledConnection(pConn);
 					}
 				} else if (state==CONNECTION_CLOSED) {
@@ -508,9 +509,11 @@ public class ConnectionPool{
 		
 		for(;;) {
 			if(stateUpdater.compareAndSet(this,POOL_NORMAL,POOL_CLOSED)) {
+				poolSemaphore.drainPermits();
 				removeAllConnections(poolConfig.isForceShutdown());
 				idleCheckTimer.cancel();
 				createThread.shutdown();
+				
 				try {
 					Runtime.getRuntime().removeShutdownHook(exitHook);
 				} catch (Throwable e) {}
