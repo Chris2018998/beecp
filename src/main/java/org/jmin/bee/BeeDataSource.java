@@ -29,7 +29,24 @@ import javax.sql.DataSource;
 import org.jmin.bee.pool.ConnectionPool;
 
 /**
- * BeeCP DataSource implementation
+ * Bee DataSource,there are three pool implementation for it.
+ * 
+ * 1) org.jmin.bee.pool.ConnectionPool: base implementation with semaphore
+ * 2) org.jmin.bee.pool.ConnectionPool2: extended implementation with blockingQueue and threadPool
+ * 3) org.jmin.bee.pool.ConnectionPool3: extended implementation,return raw connections to borrowers directly(why? why? why? 'Bee node' is coming) 
+ * 
+ * Thank you for reading these source code(I bet they are not bad).
+ * I am a junior Java programmer from China,I am studying java concurrent 
+ * technology and created a simple JDBC connection pool.Some News reported that bees 
+ * was decreasing,which effect crops production,and effect human‘s food,life by further,
+ * so I named the pool as BeeCP,hope Bees are paid attention by more people,then to protect nature.
+ * Although the pool is in growing up by step,I will try best to make it lighter,faster and simpler,
+ * and hope it is useful to Java world. I have spend some time on it, of cause I would be accept help, 
+ * advice,criticism,donation and so on from good people.thanks.
+ * 
+ * Email:  Chris2018998@tom.com
+ * Paypal: Chris2018998@tom.com
+ * Project: https://github.com/Chris2018998/BeeCP
  * 
  * @author Chris.Liao
  * @version 1.0
