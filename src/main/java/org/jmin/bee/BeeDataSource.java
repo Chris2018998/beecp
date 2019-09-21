@@ -33,7 +33,7 @@ import org.jmin.bee.pool.ConnectionPool;
  * 
  * 1) org.jmin.bee.pool.ConnectionPool: base implementation with semaphore
  * 2) org.jmin.bee.pool.ConnectionPool2: extended implementation with blockingQueue and threadPool
- * 3) org.jmin.bee.pool.ConnectionPool3: extended implementation,return raw connections to borrowers directly(why? why? why? 'Bee node' is coming) 
+ * 3) org.jmin.bee.pool.ConnectionPool3: extended implementation,return raw connections to borrowers directly
  * 
  * Thank you for reading these source code(I bet they are not bad).
  * I am a junior Java programmer from China,I am studying java concurrent 
