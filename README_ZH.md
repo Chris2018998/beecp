@@ -13,7 +13,7 @@
 
 Maven下载
 ---
-Download<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/release/BeeCP-0.98.jar">BeeCP_0.98.jar</a>
+Download<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/release/BeeCP-0.99.jar">BeeCP_0.99.jar</a>
 
 ```java
 <dependency>
