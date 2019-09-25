@@ -122,3 +122,8 @@ Bee_C(0.0018) > Vibur(0.0048) > Bee_F(0.1982) > HikariCP(0.3832) > TOMCAT(2.3388
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/BenchBase.java">下载光连接池基准文件</a>
 
+Avg time(纳秒)
+<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20190925_I3_7100_HikariCP_Bech.png"></img>
+
+
+
