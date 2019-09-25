@@ -122,3 +122,9 @@ project for performance test code,please visit：https://github.com/Chris2018998
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/BenchBase.java">Donload BenchBase.java</a>
 
+Avg time(NANOSECONDS)
+<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20190925_I3_7100_HikariCP_Bech-1.png"></img>
+
+
+
+
