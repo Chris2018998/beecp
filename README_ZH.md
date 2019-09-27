@@ -51,15 +51,15 @@ spring.datasource.datasourceJndiName=xxx
 ```java
 @Configuration
 public class DataSourceConfig {
-  @Value("spring.datasource.driverClassName")
+  @Value("${spring.datasource.driverClassName}")
   private String driver;
-  @Value("spring.datasource.url")
+  @Value("${spring.datasource.url}")
   private String url;
-  @Value("spring.datasource.username")
+  @Value("${spring.datasource.username}")
   private String user;
-  @Value("spring.datasource.password")
+  @Value("${spring.datasource.password}")
   private String password;
-  @Value("spring.datasource.datasourceJndiName")
+  @Value("${spring.datasource.datasourceJndiName}")
   private String datasourceJndiName;
   private BeeDataSourceFactory dataSourceFactory = new BeeDataSourceFactory();
   
