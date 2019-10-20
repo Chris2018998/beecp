@@ -19,7 +19,7 @@ Download<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/release/B
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>0.96</version>
+   <version>1.0</version>
 </dependency>
 
 ```
@@ -67,7 +67,7 @@ public class DataSourceConfig {
   @Primary
   @ConfigurationProperties(prefix="spring.datasource")
   public DataSource primaryDataSource() {
-    return DataSourceBuilder.create().type(org.jmin.bee.BeeDataSource.class).build();
+    return DataSourceBuilder.create().type(cn.bee.dbcp.BeeDataSource.class).build();
   }
   
   @Bean
