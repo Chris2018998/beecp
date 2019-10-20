@@ -45,19 +45,19 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 import one.datasource.DataSourceImpl;
-import org.jmin.bee.BeeDataSource;
-import org.jmin.bee.BeeDataSourceConfig;
+import cn.bee.dbcp.BeeDataSource;
+import cn.bee.dbcp.BeeDataSourceConfig;
 
 @State(Scope.Benchmark)
 public class BenchBase
 {
     protected static final int MIN_POOL_SIZE = 0;
 
-    @Param({ "hikari", "dbcp2", "tomcat", "c3p0", "vibur", "druid", "druid-stat", "druid-stat-merge","beeCP-compete","beeCP-fair"})
-	//@Param({"hikari", "beeCP-compete","beeCP-fair"})
+    //@Param({ "hikari", "dbcp2", "tomcat", "c3p0", "vibur", "druid", "druid-stat", "druid-stat-merge","beeCP-compete","beeCP-fair"})
+	@Param({"beeCP-compete","beeCP-fair"})
     public String pool;
 
-    @Param({ "8" })
+    @Param({ "16" })
     public int maxPoolSize;
 
     @Param({ "jdbc:stub" })
@@ -346,7 +346,7 @@ public class BenchBase
         vibur.setNetworkTimeoutExecutor(Executors.newFixedThreadPool(1));
         vibur.setClearSQLWarnings(true);
         vibur.setResetDefaultsAfterUse(true);
-		vibur.setPoolFair(false);
+		vibur.setPoolFair(true);
         vibur.start();
 
         DS = vibur;
