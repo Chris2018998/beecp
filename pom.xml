@@ -77,7 +77,10 @@
 							<goal>java</goal>
 						</goals>
 						<configuration>
-							<mainClass>org.jmin.bee.pool.util.ProxyClassUtil</mainClass>
+							<mainClass>cn.bee.dbcp.pool.util.ProxyClassUtil</mainClass>
+							<arguments>
+							    <argument>${project.basedir}/target/classes</argument>
+							</arguments>
 						</configuration>
 					</execution>
 				</executions>
