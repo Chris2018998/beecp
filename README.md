@@ -18,7 +18,7 @@ Download<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/release/B
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>0.96</version>
+   <version>1.0</version>
 </dependency>
 
 ```
