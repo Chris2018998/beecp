@@ -118,12 +118,9 @@ project for performance test code,please visit：https://github.com/Chris2018998
  
 3：Test with HikariCP benchmark
 
-<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20190903_I3_7100_HikariCP_Bech_1.png"></img>
+<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191025_I3_7100_HikariCP_Bech_Pict.png"></img>
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/BenchBase.java">Donload BenchBase.java</a>
-
-Avg time(NANOSECONDS)
-<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20190925_I3_7100_HikariCP_Bech-1.png"></img>
 
 
 
