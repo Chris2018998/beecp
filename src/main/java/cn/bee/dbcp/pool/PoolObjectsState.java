@@ -25,21 +25,20 @@ package cn.bee.dbcp.pool;
 class PoolObjectsState {
 	
 	//POOL STATE
-	public static final int POOL_UNINIT         = 0;
-	public static final int POOL_NORMAL         = 1;
-	public static final int POOL_CLOSED         = 2;
-	public static final int POOL_RESTING        = 3;
+	public static final int POOL_UNINIT         = 1;
+	public static final int POOL_NORMAL         = 2;
+	public static final int POOL_CLOSED         = 3;
+	public static final int POOL_RESTING        = 4;
 	
 	//POOLED CONNECTION STATE
-	public static final int CONNECTION_IDLE      = 0;
-	public static final int CONNECTION_USING     = 1;
-	public static final int CONNECTION_CLOSED    = 2;
-	public static final int CONNECTION_CHECKING  = 3;
+	public static final int CONNECTION_IDLE      = 1;
+	public static final int CONNECTION_USING     = 2;
+	public static final int CONNECTION_CLOSED    = 3;
+	public static final int CONNECTION_CHECKING  = 4;
 	
 	//WORK THREAD STATE
-	public static final int THREAD_NORMAL         = 0;
-	public static final int THREAD_WAITING        = 1;
-	public static final int THREAD_WORKING        = 2;
+	public static final int THREAD_WORKING        = 1;
+	public static final int THREAD_WAITING        = 2;
 	public static final int THREAD_DEAD           = 3;  
 
 	//BORROWER STATE

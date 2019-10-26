@@ -53,12 +53,20 @@ public final class ConnectionPool2 extends ConnectionPool{
 			wait=MILLISECONDS.toNanos(wait);
 			borrower.setDeadlineNanos(nanoTime()+wait);
 			Future<Connection> taskFuture = asynTakeExecutor.submit(borrower);
-			return taskFuture.get();
+			Connection con=taskFuture.get();
+			if(con!=null)return con;
+			
+			if(Thread.currentThread().isInterrupted())
+			throw RequestInterruptException;
+			throw RequestTimeoutException;
 		} catch (ExecutionException e) {
-			if (e.getCause() instanceof SQLException) {
-				throw (SQLException) e.getCause();
+			 Throwable cause=  e.getCause();
+			if(cause instanceof SQLException) {
+				throw (SQLException)cause;
+			}else if(cause instanceof InterruptedException){
+				throw (InterruptedException)cause;
 			} else {
-				throw new SQLException("Request failed", e.getCause());
+				throw new SQLException("Failed to take connection",cause);
 			}
 		}
 	}
