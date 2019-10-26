@@ -301,9 +301,9 @@ public final class ProxyClassUtil {
 			methodBuffer.append("{");
 			methodBuffer.append("checkClose();");
 			if (newCtMethodm.getReturnType() == ctStatementIntf) {
-				methodBuffer.append(" Statement stm=delegate.createStatement($$);");	
-				methodBuffer.append(" updateAccessTime();");	
-				methodBuffer.append(" return new ProxyStatement(stm,this,false);");	
+				methodBuffer.append("Statement stm=delegate.createStatement($$);");	
+				methodBuffer.append("updateAccessTime();");	
+				methodBuffer.append("return new ProxyStatement(stm,this,false);");	
 			}else if(newCtMethodm.getReturnType() == ctPsStatementIntf){
 				methodBuffer.append("Object key=null;");
 				methodBuffer.append("PreparedStatement pstm=null;");
