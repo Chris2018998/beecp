@@ -50,7 +50,7 @@ final class PooledConnection{
 	public static short Pos_TransactionIsolationInd=1;
 	public static short Pos_ReadOnlyInd=2;
 	public static short Pos_CatalogInd=3;
-		
+	
 	public PooledConnection(Connection phConn, ConnectionPool connPool) {
 		pool = connPool;
 		connection= phConn;
