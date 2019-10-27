@@ -123,7 +123,3 @@ project for performance test code,please visit：https://github.com/Chris2018998
 <img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191027_I3_7100_HikariCP_Bech.png"></img>
 
 Download <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/BenchBase.java">BenchBase.java</a>
-
-
-
-
