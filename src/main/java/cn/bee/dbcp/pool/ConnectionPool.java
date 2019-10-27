@@ -49,6 +49,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.locks.LockSupport;
@@ -97,6 +98,7 @@ public class ConnectionPool{
 	protected static final SQLException RequestTimeoutException = new SQLException("Request timeout");
 	protected static final SQLException RequestInterruptException = new SQLException("Request interrupt");
 	protected static final SQLException PoolCloseException = new SQLException("Pool has been closed or in resting");
+	protected static final SQLException WaitTimeException = new SQLException("Wait time must be greater than zero");
 	private final static int maxTimedSpins = (Runtime.getRuntime().availableProcessors()<2)?0:32;
 	private final static AtomicIntegerFieldUpdater<PooledConnection>ConnStateUpdater=AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class,"state");
 	private final static AtomicReferenceFieldUpdater<Borrower,Object>TansferStateUpdater=AtomicReferenceFieldUpdater.newUpdater(Borrower.class,Object.class,"stateObject");
@@ -297,29 +299,26 @@ public class ConnectionPool{
 	 *             if pool is closed or waiting timeout,then throw exception
 	 */
 	public Connection getConnection(long wait) throws SQLException {
+		if(wait<=0)throw WaitTimeException;
 		if(poolState.get()!= POOL_NORMAL)throw PoolCloseException;
-		if(wait<=0)throw new SQLException("wait time must be greater than zero");
-		
-		PooledConnection pConn = null;
+	
 		WeakReference<Borrower> bRef=threadLocal.get();
 		Borrower borrower=(bRef!=null)?bRef.get():null;
 		
 		try {
-			if (borrower == null) {
+			if(borrower == null) {
 				borrower = new Borrower(this);
 				threadLocal.set(new WeakReference<Borrower>(borrower));
 			} else {
-				borrower.resetInBorrowing();
-				if ((pConn = borrower.getLastUsedConn()) != null) {
-					if(ConnStateUpdater.compareAndSet(pConn,CONNECTION_IDLE,CONNECTION_USING)) {	
-						if(testOnBorrow(pConn))
-							return createProxyConnection(pConn, borrower);
-						else
-							borrower.setLastUsedConn(null);
-					}
+				borrower.resetAsInBorrowing();
+				PooledConnection pConn=borrower.getLastUsedConn();
+				if(pConn!=null && ConnStateUpdater.compareAndSet(pConn,CONNECTION_IDLE,CONNECTION_USING)) {	
+					if(testOnBorrow(pConn))
+						return createProxyConnection(pConn, borrower);
+					else
+						borrower.setLastUsedConn(null);
 				}
 			}
-			
 			return getConnection(wait,borrower);
 		} catch (Throwable e) {
 			if (borrower != null && borrower.isHasHoldNewOne()) {//has borrowed one
@@ -455,14 +454,15 @@ public class ConnectionPool{
 				return;
 
 			state=TansferStateUpdater.get(borrower);
-			while(state==BORROWER_NORMAL || state==BORROWER_WAITING){
-				if(TansferStateUpdater.compareAndSet(borrower, state, pConn)){
+			while(state==BORROWER_NORMAL||state==BORROWER_WAITING){
+				if(TansferStateUpdater.compareAndSet(borrower,state,pConn)){
 					if(state==BORROWER_WAITING)LockSupport.unpark(borrower.thread);
 					return;
 				}
 				state = TansferStateUpdater.get(borrower);
 			}
 		}
+		
 		tansferPolicy.onFailTransfer(pConn);
 	}
 	
@@ -473,7 +473,7 @@ public class ConnectionPool{
 		Object state=null;
 		for(Borrower borrower:waitQueue){
 			state=TansferStateUpdater.get(borrower);
-			while(state==BORROWER_NORMAL ||state ==BORROWER_WAITING){
+			while(state==BORROWER_NORMAL||state ==BORROWER_WAITING){
 				if(TansferStateUpdater.compareAndSet(borrower, state, exception)){
 					if(state==BORROWER_WAITING)LockSupport.unpark(borrower.thread);
 					return;

@@ -43,7 +43,7 @@ final class Borrower implements Callable<Connection>{
 	public boolean equals(Object o){
 		return this==o;
 	}
-	public void resetInBorrowing(){
+	public void resetAsInBorrowing(){
 		hasHoldNewOne=false;
 	}
 	public boolean isHasHoldNewOne() {

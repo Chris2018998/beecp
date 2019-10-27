@@ -16,8 +16,6 @@
 package cn.bee.dbcp.pool;
 
 import static cn.bee.dbcp.pool.util.ConnectionUtil.oclose;
-
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -37,13 +35,6 @@ public class ProxyStatementBase {
 		this.delegate = delegate;
 		this.proxyConnection = proxyConnection;
 		this.cacheInd = cacheInd;
-	}
-	public boolean isClosed() {
-		return isClosed;
-	}
-	public Connection getConnection() throws SQLException{
-		checkClose();
-		return proxyConnection;
 	}
 	protected void checkClose() throws SQLException {
 		if(isClosed)throw new SQLException("Statement has been closed,access forbidden");

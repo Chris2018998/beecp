@@ -36,9 +36,6 @@ public abstract class ProxyResultSetBase implements ResultSet {
 		this.delegate = delegate;
 		this.proxyStatement = proxyStatement;
 	}
-	public boolean isClosed()throws SQLException{
-		return isClosed;
-	}
 	protected void checkClose() throws SQLException {
 		if(isClosed)throw new SQLException("ResultSet has been closed,access forbidden");
 		if(proxyStatement!=null)proxyStatement.checkClose();
