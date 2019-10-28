@@ -28,16 +28,17 @@ import java.sql.Statement;
  * @version 1.0
  */
 public abstract class ProxyResultSetBase implements ResultSet {
-	private volatile boolean isClosed;
 	protected ResultSet delegate;
+	private volatile boolean isClosed=false;
 	private ProxyStatementBase proxyStatement;
+	private static final SQLException ClosedException = new SQLException("ResultSet has been closed,access forbidden");
 	
 	public ProxyResultSetBase(ResultSet delegate,ProxyStatementBase proxyStatement) {
 		this.delegate = delegate;
 		this.proxyStatement = proxyStatement;
 	}
 	protected void checkClose() throws SQLException {
-		if(isClosed)throw new SQLException("ResultSet has been closed,access forbidden");
+		if(isClosed)throw ClosedException;
 		if(proxyStatement!=null)proxyStatement.checkClose();
 	}
 	public Statement getStatement() throws SQLException{

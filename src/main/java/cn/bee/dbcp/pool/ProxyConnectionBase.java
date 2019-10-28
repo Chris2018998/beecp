@@ -17,7 +17,6 @@ package cn.bee.dbcp.pool;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-
 import cn.bee.dbcp.BeeDataSourceConfig;
 import cn.bee.dbcp.pool.util.ConnectionUtil;
 
@@ -27,24 +26,26 @@ import cn.bee.dbcp.pool.util.ConnectionUtil;
  * @author Chris.Liao
  * @version 1.0
  */
-public abstract class ProxyConnectionBase implements Connection {
-	private volatile boolean isClosed;
+public abstract class ProxyConnectionBase implements Connection{
 	protected Connection delegate;
 	private PooledConnection pooledConn;
+	private volatile boolean isClosed=false;
 	
 	protected boolean stmCacheInd;
 	protected StatementCache stmCache;
 	private BeeDataSourceConfig poolConfig;
-
+	private static final SQLException ClosedException = new SQLException("Connection has been closed");
+	
 	public ProxyConnectionBase(PooledConnection pooledConn) {
 		this.pooledConn=pooledConn;
-		this.poolConfig=pooledConn.poolConfig;
 		this.delegate=pooledConn.connection;
+		this.poolConfig=pooledConn.poolConfig;
 		stmCache=pooledConn.stmCache;
 		stmCacheInd=pooledConn.stmCacheInd;
 	}
+	
 	protected void checkClose() throws SQLException {
-		if(isClosed)throw new SQLException("Connection has been closed");
+		if(isClosed)throw ClosedException;
 	}
 	protected void updateAccessTime() throws SQLException {
 		pooledConn.updateAccessTime();

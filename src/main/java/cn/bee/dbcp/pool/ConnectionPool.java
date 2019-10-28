@@ -218,7 +218,7 @@ public class ConnectionPool{
 				try {
 					st=pConn.getPhisicConnection().createStatement();
 					pConn.updateAccessTime();
-					setsetQueryTimeout(st);
+					setQueryTimeout(st);
 					st.execute(validationQuery);
 				} catch (SQLException e) {
 					isActive = false;
@@ -235,7 +235,7 @@ public class ConnectionPool{
 			}
 		}
 	}
-	private final void setsetQueryTimeout(Statement st) {
+	private final void setQueryTimeout(Statement st) {
 		if(surpportQryTimeout){
 			try {
 				st.setQueryTimeout(validationQueryTimeout);
@@ -651,36 +651,36 @@ public class ConnectionPool{
 		}
    }
    //Transfer Policy
-   static abstract class TransferPolicy {
-		protected abstract int getCheckStateCode();
-		protected abstract boolean tryCatch(PooledConnection pConn);
-		protected abstract void onFailTransfer(PooledConnection pConn);
-		protected abstract void beforeTransfer(PooledConnection pConn);
+   static interface TransferPolicy {
+		int getCheckStateCode();
+		boolean tryCatch(PooledConnection pConn);
+	    void onFailTransfer(PooledConnection pConn);
+	    void beforeTransfer(PooledConnection pConn);
   	}
-   static final class CompeteTransferPolicy extends TransferPolicy {
-  		protected int getCheckStateCode(){
+   static final class CompeteTransferPolicy implements TransferPolicy {
+  		public int getCheckStateCode(){
   			return CONNECTION_IDLE;
   		}
-		protected boolean tryCatch(PooledConnection pConn){
+  		public boolean tryCatch(PooledConnection pConn){
 			return ConnStateUpdater.compareAndSet(pConn,CONNECTION_IDLE,CONNECTION_USING);
 		}
-		protected void onFailTransfer(PooledConnection pConn){
+  		public void onFailTransfer(PooledConnection pConn){
 		}
-		protected void beforeTransfer(PooledConnection pConn){
+  		public void beforeTransfer(PooledConnection pConn){
 			ConnStateUpdater.set(pConn,CONNECTION_IDLE);
 		}
   	}
-   static final class FairTransferPolicy extends TransferPolicy {
-  		protected int getCheckStateCode(){
+   static final class FairTransferPolicy implements TransferPolicy {
+	   public int getCheckStateCode(){
   			return CONNECTION_USING;
-  		}
-		protected boolean tryCatch(PooledConnection pConn){
+  	   }
+	   public boolean tryCatch(PooledConnection pConn){
 			return ConnStateUpdater.get(pConn)==CONNECTION_USING;
-		}
-		protected void onFailTransfer(PooledConnection pConn){
+	   }
+	   public void onFailTransfer(PooledConnection pConn){
 			ConnStateUpdater.set(pConn,CONNECTION_IDLE);
-		}
-		protected void beforeTransfer(PooledConnection pConn){ 
-		}
+	   }
+	   public void beforeTransfer(PooledConnection pConn){ 
+	   }
   	}
 }

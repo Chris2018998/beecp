@@ -26,10 +26,11 @@ import java.sql.Statement;
  * @version 1.0
  */
 public class ProxyStatementBase {
-	protected volatile boolean isClosed;
 	protected boolean cacheInd;
 	protected Statement delegate;
+	private volatile boolean isClosed=false;
 	protected ProxyConnectionBase proxyConnection;
+	private static final SQLException ClosedException = new SQLException("Statement has been closed,access forbidden");
 	
 	public ProxyStatementBase(Statement delegate, ProxyConnectionBase proxyConnection, boolean cacheInd) {
 		this.delegate = delegate;
@@ -37,7 +38,7 @@ public class ProxyStatementBase {
 		this.cacheInd = cacheInd;
 	}
 	protected void checkClose() throws SQLException {
-		if(isClosed)throw new SQLException("Statement has been closed,access forbidden");
+		if(isClosed)throw ClosedException;
 		proxyConnection.checkClose();
 	}
 	public void close() throws SQLException {
