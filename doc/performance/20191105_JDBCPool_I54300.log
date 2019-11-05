@@ -1,0 +1,108 @@
+PC: Win7 I5-4300 8G mysql5.6.46_64
+Pool:init size0, max size:8
+DB restart after evry pool test
+
+[INFO]2019-11-05 18:42:23-[JDBC INFO]
+[INFO]2019-11-05 18:42:23-[Driver:com.mysql.jdbc.Driver]
+[INFO]2019-11-05 18:42:23-[URL:jdbc:mysql://localhost/test]
+[INFO]2019-11-05 18:42:23-
+
+[INFO]2019-11-05 18:42:23-HikariPool-1 - Starting...
+[INFO]2019-11-05 18:42:23-HikariPool-1 - Start completed.
+[INFO]2019-11-05 18:42:23-Pool[HikariCP -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2019-11-05 18:42:37-Pool[HikariCP -- Multiple thread query] -- Execution count:1000000,total time:9017550ms,avg time:9.0176ms,min time:0ms,max time:4580ms
+[INFO]2019-11-05 18:42:37-success count       :1000000
+[INFO]2019-11-05 18:42:37-fail count          :0
+[INFO]2019-11-05 18:42:37-avr(ms)             :9.0176
+[INFO]2019-11-05 18:42:37-min(ms)             :0
+[INFO]2019-11-05 18:42:37-max(ms)             :4580
+[INFO]2019-11-05 18:42:37-time==0ms           :975941
+[INFO]2019-11-05 18:42:37-1ms=<time<=10ms     :2176
+[INFO]2019-11-05 18:42:37-10ms<time<=50ms     :3559
+[INFO]2019-11-05 18:42:37-50ms<time<=100ms    :2537
+[INFO]2019-11-05 18:42:37-100ms<time<=200ms   :3576
+[INFO]2019-11-05 18:42:37-200ms<time<=500ms   :5914
+[INFO]2019-11-05 18:42:37-500ms<time<=1000ms  :4089
+[INFO]2019-11-05 18:42:37-1000ms<time<=2000ms :1938
+[INFO]2019-11-05 18:42:37-2000ms<time<=8000ms :270
+[INFO]2019-11-05 18:42:37-time>8000ms         :0
+[INFO]2019-11-05 18:42:37-
+
+[INFO]2019-11-05 18:42:37-HikariPool-1 - Shutdown initiated...
+[INFO]2019-11-05 18:42:37-HikariPool-1 - Shutdown completed.
+[INFO]2019-11-05 18:43:53-[JDBC INFO]
+[INFO]2019-11-05 18:43:53-[Driver:com.mysql.jdbc.Driver]
+[INFO]2019-11-05 18:43:53-[URL:jdbc:mysql://localhost/test]
+[INFO]2019-11-05 18:43:53-
+
+[INFO]2019-11-05 18:43:53-Pool[Vibur -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2019-11-05 18:44:06-Pool[Vibur -- Multiple thread query] -- Execution count:1000000,total time:6543662ms,avg time:6.5437ms,min time:0ms,max time:5619ms
+[INFO]2019-11-05 18:44:06-success count       :1000000
+[INFO]2019-11-05 18:44:06-fail count          :0
+[INFO]2019-11-05 18:44:06-avr(ms)             :6.5437
+[INFO]2019-11-05 18:44:06-min(ms)             :0
+[INFO]2019-11-05 18:44:06-max(ms)             :5619
+[INFO]2019-11-05 18:44:06-time==0ms           :996511
+[INFO]2019-11-05 18:44:06-1ms=<time<=10ms     :886
+[INFO]2019-11-05 18:44:06-10ms<time<=50ms     :117
+[INFO]2019-11-05 18:44:06-50ms<time<=100ms    :43
+[INFO]2019-11-05 18:44:06-100ms<time<=200ms   :57
+[INFO]2019-11-05 18:44:06-200ms<time<=500ms   :163
+[INFO]2019-11-05 18:44:06-500ms<time<=1000ms  :227
+[INFO]2019-11-05 18:44:06-1000ms<time<=2000ms :527
+[INFO]2019-11-05 18:44:06-2000ms<time<=8000ms :1469
+[INFO]2019-11-05 18:44:06-time>8000ms         :0
+[INFO]2019-11-05 18:44:06-
+
+[INFO]2019-11-05 18:44:57-[JDBC INFO]
+[INFO]2019-11-05 18:44:57-[Driver:com.mysql.jdbc.Driver]
+[INFO]2019-11-05 18:44:57-[URL:jdbc:mysql://localhost/test]
+[INFO]2019-11-05 18:44:57-
+
+
+[INFO]2019-11-05 18:44:57-Pool[BeeCP_Fair -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2019-11-05 18:45:09-Pool[BeeCP_Fair -- Multiple thread query] -- Execution count:1000000,total time:6849202ms,avg time:6.8492ms,min time:0ms,max time:1794ms
+[INFO]2019-11-05 18:45:09-success count       :1000000
+[INFO]2019-11-05 18:45:09-fail count          :0
+[INFO]2019-11-05 18:45:09-avr(ms)             :6.8492
+[INFO]2019-11-05 18:45:09-min(ms)             :0
+[INFO]2019-11-05 18:45:09-max(ms)             :1794
+[INFO]2019-11-05 18:45:09-time==0ms           :972983
+[INFO]2019-11-05 18:45:09-1ms=<time<=10ms     :8511
+[INFO]2019-11-05 18:45:09-10ms<time<=50ms     :1791
+[INFO]2019-11-05 18:45:09-50ms<time<=100ms    :1888
+[INFO]2019-11-05 18:45:09-100ms<time<=200ms   :3327
+[INFO]2019-11-05 18:45:09-200ms<time<=500ms   :7542
+[INFO]2019-11-05 18:45:09-500ms<time<=1000ms  :2539
+[INFO]2019-11-05 18:45:09-1000ms<time<=2000ms :1419
+[INFO]2019-11-05 18:45:09-2000ms<time<=8000ms :0
+[INFO]2019-11-05 18:45:09-time>8000ms         :0
+[INFO]2019-11-05 18:45:09-
+
+
+[INFO]2019-11-05 18:46:04-[JDBC INFO]
+[INFO]2019-11-05 18:46:04-[Driver:com.mysql.jdbc.Driver]
+[INFO]2019-11-05 18:46:04-[URL:jdbc:mysql://localhost/test]
+[INFO]2019-11-05 18:46:04-
+
+[INFO]2019-11-05 18:46:04-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2019-11-05 18:46:16-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:1000000,total time:5362293ms,avg time:5.3623ms,min time:0ms,max time:5827ms
+[INFO]2019-11-05 18:46:16-success count       :1000000
+[INFO]2019-11-05 18:46:16-fail count          :0
+[INFO]2019-11-05 18:46:16-avr(ms)             :5.3623
+[INFO]2019-11-05 18:46:16-min(ms)             :0
+[INFO]2019-11-05 18:46:16-max(ms)             :5827
+[INFO]2019-11-05 18:46:16-time==0ms           :996331
+[INFO]2019-11-05 18:46:16-1ms=<time<=10ms     :1737
+[INFO]2019-11-05 18:46:16-10ms<time<=50ms     :104
+[INFO]2019-11-05 18:46:16-50ms<time<=100ms    :18
+[INFO]2019-11-05 18:46:16-100ms<time<=200ms   :12
+[INFO]2019-11-05 18:46:16-200ms<time<=500ms   :55
+[INFO]2019-11-05 18:46:16-500ms<time<=1000ms  :151
+[INFO]2019-11-05 18:46:16-1000ms<time<=2000ms :316
+[INFO]2019-11-05 18:46:16-2000ms<time<=8000ms :1276
+[INFO]2019-11-05 18:46:16-time>8000ms         :0
+[INFO]2019-11-05 18:46:16-
+
+
+Performance Result:Bee_C(5.3623) > Vibur(6.5437) > Bee_F(6.8492) > HikariCP(9.0176)
