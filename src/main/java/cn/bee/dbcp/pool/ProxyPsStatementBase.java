@@ -16,43 +16,31 @@
 package cn.bee.dbcp.pool;
 
 import static cn.bee.dbcp.pool.util.ConnectionUtil.oclose;
-
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import static cn.bee.dbcp.pool.PoolExceptionList.ResultSetClosedException;
+import java.sql.PreparedStatement;
 
 /**
- * ResultSet proxy base class
+ * ProxyPStatementBase
  * 
  * @author Chris.Liao
  * @version 1.0
  */
-public abstract class ProxyResultSetBase implements ResultSet {
-	private boolean isClosed;
-	protected ResultSet delegate;
-	private ProxyStatementTop proxyStatement;
-	
-	public ProxyResultSetBase(ResultSet delegate,ProxyStatementTop proxyStatement) {
+public abstract class ProxyPsStatementBase extends ProxyStatementTop{
+	private boolean cacheInd;
+	protected PreparedStatement delegate;
+	public ProxyPsStatementBase(PreparedStatement delegate,ProxyConnectionBase proxyConnection, boolean cacheInd) {
+		super(proxyConnection);
 		this.delegate = delegate;
-		this.proxyStatement = proxyStatement;
-	}
-	protected void checkClose() throws SQLException {
-		if(isClosed)throw ResultSetClosedException;
-		proxyStatement.checkClose();
-	}
-	public Statement getStatement() throws SQLException{
-		checkClose();
-		return (Statement)proxyStatement;
+		this.cacheInd = cacheInd;
 	}
 	public void close() throws SQLException {
 		try{
 			checkClose();
 		}finally{
-			isClosed = true;
-			oclose(delegate);
-			delegate = null;
-			proxyStatement=null;
+			this.isClosed=true;
+			if(!cacheInd)oclose(delegate);
+			this.delegate = null;
+			this.proxyConnection =null;
 		}
 	}
 }

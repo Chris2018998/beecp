@@ -26,23 +26,22 @@ import cn.bee.dbcp.BeeDataSourceConfig;
 import cn.bee.dbcp.pool.util.ConnectionUtil;
 
 /**
- * JDBC connection wrapper
+ * Pooled Connection
  *
  * @author Chris.Liao
  * @version 1.0
  */
-final class PooledConnection{
+public final class PooledConnection{
 	volatile int state;
-	boolean stmCacheInd;
-	StatementCache stmCache;
 	Connection connection;
+	StatementCache stmCache=null;
 	BeeDataSourceConfig poolConfig;
+	ProxyConnectionBase proxyConnCurInstance;
+	long lastAccessTime;
 	
 	private ConnectionPool pool;
-	private volatile long lastAccessTime;
-	private ProxyConnectionBase proxyConnection;
 	private boolean curAutoCommit=true;
-	
+
 	//changed indicator
 	private boolean[] changedInds=new boolean[4]; //0:autoCommit,1:transactionIsolation,2:readOnly,3:catalog
 	private short changedFieldsts=Short.parseShort("0000",2); //pos:last ---> head;0:unchanged,1:changed
@@ -51,20 +50,24 @@ final class PooledConnection{
 	public static short Pos_ReadOnlyInd=2;
 	public static short Pos_CatalogInd=3;
 	
-	public PooledConnection(Connection phConn, ConnectionPool connPool) {
-		pool = connPool;
+	public PooledConnection(Connection phConn,ConnectionPool connPool,BeeDataSourceConfig config) {
+		 this(phConn,connPool,config,CONNECTION_IDLE);
+	}
+	
+	public PooledConnection(Connection phConn,ConnectionPool connPool,BeeDataSourceConfig config,int connState) {
+		pool=connPool;
 		connection= phConn;
-		
-		state=CONNECTION_IDLE;
-		poolConfig=connPool.poolConfig;
+
+		state=connState;
+		poolConfig=config;
 		curAutoCommit=poolConfig.isDefaultAutoCommit();
-		int stCacheSize=poolConfig.getPreparedStatementCacheSize();
-		stmCacheInd=connPool.isStatementCacheInd();
-		if(stmCacheInd)stmCache = new StatementCache(stCacheSize);
+		
+		if(poolConfig.getPreparedStatementCacheSize()>0)
+		 stmCache = new StatementCache(poolConfig.getPreparedStatementCacheSize());
 		setDefault();
 		updateAccessTime();
 	}
-
+	
 	private void setDefault(){
 		try {
 			connection.setAutoCommit(poolConfig.isDefaultAutoCommit());
@@ -89,20 +92,8 @@ final class PooledConnection{
 		}
 	}
 	
-	public long getLastAccessTime() {
-		return lastAccessTime;
-	}
 	public void updateAccessTime() {
 	  lastAccessTime=currentTimeMillis();
-	}
-	public Connection getPhisicConnection() {
-		return connection;
-	}
-	public ProxyConnectionBase getProxyConnection() {
-		return proxyConnection;
-	}
-	public void bindProxyConnection(ProxyConnectionBase proxyConnection) {
-		this.proxyConnection = proxyConnection;
 	}
 	public boolean equals(Object obj) {
 		return this==obj;
@@ -170,14 +161,17 @@ final class PooledConnection{
 	void closePhysicalConnection() {
 		try{
 			resetConnectionBeforeRelease();
-			stmCache.clear();
-			stmCache=null;
+			if(stmCache!=null){
+			  stmCache.clear();
+			  stmCache=null;
+			}
+			
 			poolConfig=null;
 			oclose(connection);
 		}finally{
-			if(proxyConnection!=null){
-				proxyConnection.setConnectionDataToNull();
-				proxyConnection = null;
+			if(proxyConnCurInstance!=null){
+				proxyConnCurInstance.setConnectionDataToNull();
+				proxyConnCurInstance = null;
 			}
 		}
 	}
@@ -186,7 +180,7 @@ final class PooledConnection{
 			resetConnectionBeforeRelease();
 			pool.release(this,true);
     	}finally{
-    		proxyConnection = null;
+    		proxyConnCurInstance = null;
 		}
 	} 
 }

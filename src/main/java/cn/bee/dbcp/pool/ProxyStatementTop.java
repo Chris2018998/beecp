@@ -15,25 +15,29 @@
  */
 package cn.bee.dbcp.pool;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import static cn.bee.dbcp.pool.PoolExceptionList.StatementClosedException;
+
 /**
- * pooled connection Borrower
- *
+ * ProxyStatementTop
+ * 
  * @author Chris.Liao
  * @version 1.0
  */
-final class Borrower {
-	Thread thread;
-	boolean hasHoldNewOne;
-	PooledConnection lastUsedConn;
-	volatile Object stateObject;
-	public Borrower() {
-		this.thread = Thread.currentThread();
+public abstract class ProxyStatementTop {
+	protected boolean isClosed;
+	protected ProxyConnectionBase proxyConnection;
+
+	public ProxyStatementTop(ProxyConnectionBase proxyConnection) {
+		this.proxyConnection = proxyConnection;
 	}
-	public boolean equals(Object o) {
-		return this == o;
+	public Connection getConnection() throws SQLException{
+		return proxyConnection;
 	}
-	public void setBorrowedConnection(PooledConnection conn) {
-		lastUsedConn = conn;
-		hasHoldNewOne = true;
+	protected void checkClose() throws SQLException {
+		if(isClosed)throw StatementClosedException;
+		proxyConnection.checkClose();
 	}
 }

@@ -16,6 +16,7 @@
 package cn.bee.dbcp.pool;
 
 import static cn.bee.dbcp.pool.util.ConnectionUtil.oclose;
+
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -25,28 +26,18 @@ import java.sql.Statement;
  * @author Chris.Liao
  * @version 1.0
  */
-public class ProxyStatementBase {
-	protected boolean cacheInd;
+public abstract class ProxyStatementBase extends ProxyStatementTop{
 	protected Statement delegate;
-	private volatile boolean isClosed=false;
-	protected ProxyConnectionBase proxyConnection;
-	private static final SQLException ClosedException = new SQLException("Statement has been closed,access forbidden");
-	
-	public ProxyStatementBase(Statement delegate, ProxyConnectionBase proxyConnection, boolean cacheInd) {
+	public ProxyStatementBase(Statement delegate,ProxyConnectionBase proxyConnection) {
+		super(proxyConnection);
 		this.delegate = delegate;
-		this.proxyConnection = proxyConnection;
-		this.cacheInd = cacheInd;
-	}
-	protected void checkClose() throws SQLException {
-		if(isClosed)throw ClosedException;
-		proxyConnection.checkClose();
 	}
 	public void close() throws SQLException {
 		try{
 			checkClose();
 		}finally{
-			this.isClosed = true;
-			if(!cacheInd)oclose(delegate);
+			this.isClosed=true;
+			oclose(delegate);
 			this.delegate = null;
 			this.proxyConnection =null;
 		}

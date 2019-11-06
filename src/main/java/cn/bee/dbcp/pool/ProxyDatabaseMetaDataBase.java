@@ -27,12 +27,15 @@ import java.sql.SQLException;
  */
 public abstract class ProxyDatabaseMetaDataBase implements DatabaseMetaData {
 	protected DatabaseMetaData delegate;
-	protected ProxyConnectionBase proxyConnection;
+	private ProxyConnectionBase proxyConnection;
 	public ProxyDatabaseMetaDataBase(DatabaseMetaData metaData,ProxyConnectionBase proxyConnection){
 		this.delegate=metaData; 
 		this.proxyConnection=proxyConnection;
 	}
 	public Connection getConnection() throws SQLException{
 		return proxyConnection;
+	}
+	protected void checkClose() throws SQLException {
+		proxyConnection.checkClose();
 	}
 }

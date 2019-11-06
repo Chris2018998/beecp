@@ -15,11 +15,13 @@
  */
 package cn.bee.dbcp.pool;
 
+import static cn.bee.dbcp.pool.PoolExceptionList.ConnectionClosedException;
+
 import java.sql.Connection;
 import java.sql.SQLException;
+
 import cn.bee.dbcp.BeeDataSourceConfig;
 import cn.bee.dbcp.pool.util.ConnectionUtil;
-
 /**
  * physical connection wrapper
  * 
@@ -27,52 +29,46 @@ import cn.bee.dbcp.pool.util.ConnectionUtil;
  * @version 1.0
  */
 public abstract class ProxyConnectionBase implements Connection{
+	private boolean isClosed;
 	protected Connection delegate;
-	private PooledConnection pooledConn;
-	private volatile boolean isClosed=false;
-	
-	protected boolean stmCacheInd;
+	protected PooledConnection pooledConn;
+	protected boolean stmCacheValid;
 	protected StatementCache stmCache;
 	private BeeDataSourceConfig poolConfig;
-	private static final SQLException ClosedException = new SQLException("Connection has been closed");
-	
+			
 	public ProxyConnectionBase(PooledConnection pooledConn) {
 		this.pooledConn=pooledConn;
-		this.delegate=pooledConn.connection;
 		this.poolConfig=pooledConn.poolConfig;
+		this.delegate=pooledConn.connection;
 		stmCache=pooledConn.stmCache;
-		stmCacheInd=pooledConn.stmCacheInd;
+		stmCacheValid=stmCache!=null;
 	}
-	
 	protected void checkClose() throws SQLException {
-		if(isClosed)throw ClosedException;
-	}
-	protected void updateAccessTime() throws SQLException {
-		pooledConn.updateAccessTime();
+		if(isClosed)throw ConnectionClosedException;
 	}
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
 		checkClose();
 		delegate.setAutoCommit(autoCommit);
-		updateAccessTime();
+		pooledConn.updateAccessTime();
 		pooledConn.setCurAutoCommit(autoCommit);
 		pooledConn.setChangedInd(PooledConnection.Pos_AutoCommitInd,autoCommit!=poolConfig.isDefaultAutoCommit()); 
 	}
 	public void setTransactionIsolation(int level) throws SQLException {
 		checkClose();
 		delegate.setTransactionIsolation(level);
-		updateAccessTime();
+		pooledConn.updateAccessTime();
 		pooledConn.setChangedInd(PooledConnection.Pos_TransactionIsolationInd,level!=poolConfig.getDefaultTransactionIsolation());
 	}
 	public void setReadOnly(boolean readOnly) throws SQLException {
 		checkClose();
 		delegate.setReadOnly(readOnly);
-		updateAccessTime();
+		pooledConn.updateAccessTime();
 		pooledConn.setChangedInd(PooledConnection.Pos_ReadOnlyInd,readOnly!=poolConfig.isDefaultReadOnly());
 	}
 	public void setCatalog(String catalog) throws SQLException {
 		checkClose();
 		delegate.setCatalog(catalog);
-		updateAccessTime();
+		pooledConn.updateAccessTime();
 		pooledConn.setChangedInd(PooledConnection.Pos_CatalogInd,!ConnectionUtil.equals(catalog, poolConfig.getDefaultCatalog()));
 	}
 	void setConnectionDataToNull() {

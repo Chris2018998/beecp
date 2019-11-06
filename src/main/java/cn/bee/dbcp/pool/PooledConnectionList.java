@@ -24,23 +24,15 @@ import java.util.List;
  * @version 1.0
  */
 final class PooledConnectionList {
-	private volatile PooledConnection[] array = new PooledConnection[0];
+	volatile PooledConnection[] array = new PooledConnection[0];
 	public int size() {
 		return array.length;
 	}
-	public PooledConnection[] getArray() {
-		return array;
-	}
-	void setArray(PooledConnection[] a) {
-		array = a;
-	}
 	public synchronized void add(PooledConnection pooledCon) {
-		int oldLen = array.length;
-		PooledConnection[] arrayNew = new PooledConnection[oldLen + 1];
-	
+		PooledConnection[] arrayNew = new PooledConnection[array.length + 1];
 		arrayNew[0]=pooledCon;//add at head
-		System.arraycopy(array,0,arrayNew,1,oldLen);
-		setArray(arrayNew);
+		System.arraycopy(array,0,arrayNew,1,array.length);
+		array=arrayNew;
 	}
 	public synchronized void remove(PooledConnection pooledCon){ 
 		int oldLen = array.length;
@@ -53,7 +45,7 @@ final class PooledConnectionList {
 				 arrayNew[i]=array[i];
 			 }
 		}
-		setArray(arrayNew);
+		array=arrayNew;
 	}
 	public synchronized void addAll(List<PooledConnection> col) {
 		int oldLen=array.length;
@@ -62,7 +54,7 @@ final class PooledConnectionList {
 		PooledConnection[] arrayNew = new PooledConnection[oldLen+addLen];
 		System.arraycopy(arrayAdd,0,arrayNew,0,addLen);//add at head
 		System.arraycopy(array,0,arrayNew,addLen,oldLen);
-		setArray(arrayNew); 
+		array=arrayNew;
 	}
 	public synchronized void removeAll(List<PooledConnection> col){ 
 		PooledConnection[] arrayOld=array;
@@ -84,6 +76,6 @@ final class PooledConnectionList {
 		
 		PooledConnection[] arrayNew = new PooledConnection[tempIndex];
 		System.arraycopy(tempNew,0,arrayNew, 0, tempIndex);
-		setArray(arrayNew);
+		array=arrayNew;
 	}
 }

@@ -23,7 +23,6 @@ package cn.bee.dbcp.pool;
  */
 
 class PoolObjectsState {
-	
 	//POOL STATE
 	public static final int POOL_UNINIT         = 1;
 	public static final int POOL_NORMAL         = 2;
