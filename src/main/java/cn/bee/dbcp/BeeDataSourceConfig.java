@@ -23,7 +23,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import cn.bee.dbcp.pool.DefaultConnectionFactory;
+import cn.bee.dbcp.pool.JdbcConnectionFactory;
 
 /**
  * Connection pool configuration
@@ -31,7 +31,6 @@ import cn.bee.dbcp.pool.DefaultConnectionFactory;
  * @author Chris.Liao
  * @version 1.0
  */
-
 public class BeeDataSourceConfig{
 
 	/**
@@ -184,7 +183,7 @@ public class BeeDataSourceConfig{
 	/**
 	 * Default implementation class name
 	 */
-	static final String DefaultImplementClassName = "cn.bee.dbcp.pool.ConnectionPool";
+	static final String DefaultImplementClassName = "cn.bee.dbcp.pool.FastConnectionPool";
 	
 	public BeeDataSourceConfig() {
       this(null,null,null,null);
@@ -448,11 +447,14 @@ public class BeeDataSourceConfig{
 			if (!isNull(this.password))
 				this.connectProperties.put("password", this.password);
 			
-			connectionFactory= new DefaultConnectionFactory(jdbcUrl,connectDriver,connectProperties);
+			connectionFactory= new JdbcConnectionFactory(jdbcUrl,connectDriver,connectProperties);
 		}else if(connectionFactory==null && !isNull(this.connectionFactoryClassName)){
 			try {
  				Class<?> conFactClass=Class.forName(connectionFactoryClassName,true,BeeDataSourceConfig.class.getClassLoader());
-				connectionFactory=(ConnectionFactory)conFactClass.newInstance();
+				if(!ConnectionFactory.class.isAssignableFrom(conFactClass))
+					throw new IllegalArgumentException("Custom connection factory class must be implemented 'ConnectionFactory' interface");
+				
+ 				connectionFactory=(ConnectionFactory)conFactClass.newInstance();
 			} catch (ClassNotFoundException e) {
 				throw new IllegalArgumentException("Class("+connectionFactoryClassName+")not found ");
 			} catch (InstantiationException e) {
@@ -461,7 +463,7 @@ public class BeeDataSourceConfig{
 				throw new IllegalArgumentException("failed ot instantiated connection factory class:"+connectionFactoryClassName,e);
 			}
 		}
-			
+		
 		if (this.maxActive <= 0)
 			throw new IllegalArgumentException("Pool max size must be greater than zero");
 		if (this.initialSize < 0)

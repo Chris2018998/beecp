@@ -16,12 +16,12 @@
 package cn.bee.dbcp;
 
 import java.io.PrintWriter;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.Map;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
 import javax.sql.DataSource;
@@ -31,9 +31,8 @@ import cn.bee.dbcp.pool.ConnectionPool;
 /**
  * Bee DataSource,there are three pool implementation for it.
  * 
- * 1) cn.bee.dbcp.pool.ConnectionPool: base implementation with semaphore
- * 2) cn.bee.dbcp.pool.ConnectionPool2: extended implementation with blockingQueue and threadPool
- * 3) cn.bee.dbcp.pool.ConnectionPool3: extended implementation,return raw connections to borrowers directly
+ * 1) cn.bee.dbcp.pool.FastConnectionPool:base implementation with semaphore
+ * 3) cn.bee.dbcp.pool.RawConnectionPool:return raw connections to borrowers directly(maybe used for BeeNode)
  * 
  * Email:  Chris2018998@tom.com
  * Project: https://github.com/Chris2018998/BeeCP
@@ -42,6 +41,8 @@ import cn.bee.dbcp.pool.ConnectionPool;
  * @version 1.0
  */
 public final class BeeDataSource extends BeeDataSourceConfig implements DataSource {
+	ReentrantLock lock=new ReentrantLock();
+	Condition condition=lock.newCondition();
 	
 	/**
 	 * connection pool
@@ -66,16 +67,7 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 		if(pool==null)throw new SQLException("Datasource not initialized");
 		return pool.getPoolSnapshot();
 	}
-	
-	public void init()throws SQLException{
-		if (pool == null) {
-			synchronized(this) {
-				if(pool== null)
-				 pool=createPool(this);
-			}
-		}
-	}
-	
+
 	/**
 	 * borrow a connection from pool
 	 * 
@@ -85,7 +77,12 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	 *             if pool is closed or waiting timeout,then throw exception
 	 */
 	public Connection getConnection() throws SQLException {
-		init();
+		if(pool==null){
+			 synchronized(this){
+			   if(pool==null)pool=createPool(this);
+			 }
+		}
+	
 		return pool.getConnection();
 	}
 	
@@ -137,7 +134,6 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	 * @param config  pool configuration
 	 * @return a initialized pool for data source
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private ConnectionPool createPool(BeeDataSourceConfig config){
 		String poolImplementClassName=config.getPoolImplementClassName();
 		
@@ -145,14 +141,17 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 			if(poolImplementClassName==null || poolImplementClassName.trim().length()==0)
 				poolImplementClassName=BeeDataSourceConfig.DefaultImplementClassName;
 			
-			Class poolClass = Class.forName(poolImplementClassName,true,BeeDataSource.class.getClassLoader());
-			Constructor constructor = poolClass.getDeclaredConstructor(new Class[] {BeeDataSourceConfig.class});
-			ConnectionPool pool = (ConnectionPool) constructor.newInstance(new Object[]{config});
+			Class<?> poolClass = Class.forName(poolImplementClassName,true,BeeDataSource.class.getClassLoader());
+			if(!ConnectionPool.class.isAssignableFrom(poolClass))
+			 throw new IllegalArgumentException("Connection pool class must be implemented 'ConnectionPool' interface");
+			 
+			ConnectionPool pool=(ConnectionPool)poolClass.newInstance();
+			pool.init(config);
 			return pool;
+		} catch (SQLException e) {
+			throw new ExceptionInInitializerError(e);
 		} catch (ClassNotFoundException e) {
 			throw new ExceptionInInitializerError("Not found conneciton pool implementation class:" + poolImplementClassName);
-		} catch (NoSuchMethodException e) {
-			throw new ExceptionInInitializerError(e);
 		} catch (SecurityException e) {
 			throw new ExceptionInInitializerError(e);
 		} catch (InstantiationException e) {
@@ -161,9 +160,6 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 			throw new ExceptionInInitializerError(e);
 		} catch (IllegalArgumentException e) {
 			throw new ExceptionInInitializerError(e);
-		} catch (InvocationTargetException e) {
-			Throwable cause=e.getTargetException();
-			throw new ExceptionInInitializerError(cause);
 		}
 	}
 }
