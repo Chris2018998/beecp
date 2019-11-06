@@ -1,6 +1,6 @@
 PC: Win7 I5-4300 8G mysql5.6.46_64
 Pool:init size0, max size:8
-DB restart after evry pool test
+DB restart after every pool test
 
 [INFO]2019-11-05 18:42:23-[JDBC INFO]
 [INFO]2019-11-05 18:42:23-[Driver:com.mysql.jdbc.Driver]
