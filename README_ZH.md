@@ -13,13 +13,13 @@
 
 Maven下载
 ---
-Download<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/release/BeeCP-1.1.1.jar">BeeCP_1.1.1.jar</a>
+Download<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/release/BeeCP-1.2.jar">BeeCP_1.2.jar</a>
 
 ```java
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>1.1.1</version>
+   <version>1.2</version>
 </dependency>
 
 ```
@@ -93,27 +93,13 @@ public class DataSourceConfig {
 
 [datasource.getConnection(),connection.prepareStatement,statement.execute(),statement.close(),connection.close()]</i>
 
-1：下面为各连接池在Oracle11G的下测试结果（单位：毫秒）
-
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20190717_I5_4210M_Oracle11g.log">20190808_I5_4210M_Orcale11g.log</a>
-
-Bee_F(16.37) > Bee_C(18.25) > Vibur(28.79) > HikariCP(34.42) > TOMCAT(67.47) > DBCP(75.28) > Druid(75.97) > C3P0(96.40)
-
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20190723_I5_4210M_Oracle11g.log">20190808_I5_4210M_Orcale11g.log</a>
-
-Bee_F(13.39) > Bee_C(15.25) > Vibur(20.64) > HikariCP(28.79) > TOMCAT(57.93) > DBCP(66.47) > Druid(67.03) > C3P0(71.54)
+1：下面为各连接池在mysql5.6的下测试结果（单位：毫秒）
 
 
-2：以光连接池的驱动（专用于连接池性能测试的驱动）测试情况如下
+Bee_C(5.3623) > Vibur(6.5437) > Bee_F(6.8492) > HikariCP(9.0176)
 
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20190729_I3_7100_HikariCP_Driver.log">20190729_I3_7100_HikariCP_Driver.log</a>
-
-Bee_F(0.0006) > Bee_C(0.0980) > HikariCP(0.3053) > Vibur(0.3068) > TOMCAT(1.9001) > DBCP(3.9862) > C3P0(6.3528) > Druid(9.7170)
-
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20190808_I5_4210M_HikariCP_Driver.log">20190808_I5_4210M_HikariCP_Driver.log</a>
-
-Bee_C(0.0018) > Vibur(0.0048) > Bee_F(0.1982) > HikariCP(0.3832) > TOMCAT(2.3388) > Druid(3.0775) > DBCP(5.2606) > C3P0(11.9082)
-
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191105_JDBCPool_I54300.log">20191105_JDBCPool_I54300.log</a>
+ 
 性能测试代码请访问项目：https://github.com/Chris2018998/PoolPerformance
 
 
