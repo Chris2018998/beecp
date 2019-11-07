@@ -31,17 +31,17 @@ import cn.bee.dbcp.pool.util.ConnectionUtil;
 public abstract class ProxyConnectionBase implements Connection{
 	private boolean isClosed;
 	protected Connection delegate;
-	protected PooledConnection pooledConn;
 	protected boolean stmCacheValid;
 	protected StatementCache stmCache;
+	protected PooledConnection pooledConn;
 	private BeeDataSourceConfig poolConfig;
-			
+	
 	public ProxyConnectionBase(PooledConnection pooledConn) {
 		this.pooledConn=pooledConn;
-		this.poolConfig=pooledConn.poolConfig;
-		this.delegate=pooledConn.connection;
+		delegate=pooledConn.connection;
+		poolConfig=pooledConn.poolConfig;
+		stmCacheValid=pooledConn.stmCacheValid;
 		stmCache=pooledConn.stmCache;
-		stmCacheValid=stmCache!=null;
 	}
 	protected void checkClose() throws SQLException {
 		if(isClosed)throw ConnectionClosedException;

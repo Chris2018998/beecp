@@ -34,6 +34,7 @@ import cn.bee.dbcp.pool.util.ConnectionUtil;
 public final class PooledConnection{
 	volatile int state;
 	Connection connection;
+	boolean stmCacheValid=false;
 	StatementCache stmCache=null;
 	BeeDataSourceConfig poolConfig;
 	ProxyConnectionBase proxyConnCurInstance;
@@ -61,9 +62,8 @@ public final class PooledConnection{
 		state=connState;
 		poolConfig=config;
 		curAutoCommit=poolConfig.isDefaultAutoCommit();
-		
-		if(poolConfig.getPreparedStatementCacheSize()>0)
-		 stmCache = new StatementCache(poolConfig.getPreparedStatementCacheSize());
+		if(stmCacheValid=poolConfig.getPreparedStatementCacheSize()>0)
+		  stmCache = new StatementCache(poolConfig.getPreparedStatementCacheSize());
 		setDefault();
 		updateAccessTime();
 	}
