@@ -54,10 +54,10 @@ public class BenchBase
     protected static final int MIN_POOL_SIZE = 0;
 
     //@Param({ "hikari", "dbcp2", "tomcat", "c3p0", "vibur", "druid", "druid-stat", "druid-stat-merge","beeCP-compete","beeCP-fair"})
-	@Param({"beeCP-compete","beeCP-fair"})
+	@Param({"hikari","beeCP-compete","beeCP-fair"})
     public String pool;
 
-    @Param({ "16" })
+    @Param({ "32" })
     public int maxPoolSize;
 
     @Param({ "jdbc:stub" })
@@ -353,32 +353,32 @@ public class BenchBase
     }
 
     private void setupBeeCPWithCompete(){
-		BeeDataSourceConfig sourceInfo = new BeeDataSourceConfig(
+		BeeDataSourceConfig config = new BeeDataSourceConfig(
 				"com.zaxxer.hikari.benchmark.stubs.StubDriver", 
 				jdbcUrl,
 				"brettw", 
 				"");
-		sourceInfo.setMaxActive(maxPoolSize);
-		sourceInfo.setInitialSize(MIN_POOL_SIZE);
-		sourceInfo.setMaxWait(8000);
-		sourceInfo.setValidationQuery("select 1");
-		sourceInfo.setTestOnBorrow(true);
-		DS = new BeeDataSource(sourceInfo);
+		config.setMaxActive(maxPoolSize);
+		config.setInitialSize(MIN_POOL_SIZE);
+		config.setMaxWait(8000);
+		config.setValidationQuery("select 1");
+		config.setTestOnBorrow(true);
+		DS = new BeeDataSource(config);
     }
 	
     private void setupBeeCPWithFair(){
-		BeeDataSourceConfig sourceInfo = new BeeDataSourceConfig(
+		BeeDataSourceConfig config = new BeeDataSourceConfig(
 				"com.zaxxer.hikari.benchmark.stubs.StubDriver", 
 				jdbcUrl,
 				"brettw", 
 				"");
-		sourceInfo.setMaxActive(maxPoolSize);
-		sourceInfo.setInitialSize(MIN_POOL_SIZE);
-		sourceInfo.setMaxWait(8000);
-		sourceInfo.setValidationQuery("select 1");
-		sourceInfo.setTestOnBorrow(true);
-		sourceInfo.setFairQueue(true);
-		DS = new BeeDataSource(sourceInfo);
+		config.setMaxActive(maxPoolSize);
+		config.setInitialSize(MIN_POOL_SIZE);
+		config.setMaxWait(8000);
+		config.setValidationQuery("select 1");
+		config.setTestOnBorrow(true);
+		config.setFairQueue(true);
+		DS = new BeeDataSource(config);
     }
 
     private void setupOne()
