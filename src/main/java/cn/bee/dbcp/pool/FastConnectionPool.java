@@ -88,7 +88,7 @@ public final class FastConnectionPool implements ConnectionPool {
 	private volatile boolean surpportQryTimeout=true;
 	private final CreateConnThread createThread=new CreateConnThread();
 	private final AtomicInteger createThreadState=createThread.state;
-	private final PooledConnectionList connList=new PooledConnectionList();
+	private volatile PooledConnection[] connArray = new PooledConnection[0];
 	private final ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
 	private final ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
 	
@@ -143,14 +143,35 @@ public final class FastConnectionPool implements ConnectionPool {
 			
 			createInitConns();
 			poolSemaphore=new Semaphore(poolConfig.getConcurrentSize(),poolConfig.isFairQueue());
-			System.out.println("BeeCP("+poolName+")has been startup{init size:"+connList.size()+",max size:"+config.getMaxActive()+",concurrent size:"+poolConfig.getConcurrentSize()+ ",mode:"+mode +",max wait:"+poolConfig.getMaxWait()+"ms}");
+			System.out.println("BeeCP("+poolName+")has been startup{init size:"+connArray.length+",max size:"+config.getMaxActive()+",concurrent size:"+poolConfig.getConcurrentSize()+ ",mode:"+mode +",max wait:"+poolConfig.getMaxWait()+"ms}");
 			poolState.set(POOL_NORMAL); 
 			createThread.start();
 		} else {
 			throw new SQLException("Pool has been initialized");
 		}
 	}
-
+	
+	private synchronized void addPooledConn(PooledConnection pooledCon) {
+		int oldLen = connArray.length;
+		PooledConnection[] arrayNew = new PooledConnection[oldLen+1];
+		arrayNew[0]=pooledCon;//add at head
+		System.arraycopy(connArray,0,arrayNew,1,oldLen);
+		connArray=arrayNew;
+	}
+	private synchronized void removePooledConn(PooledConnection pooledCon){ 
+		int oldLen = connArray.length;
+		PooledConnection[] arrayNew = new PooledConnection[oldLen-1];
+		for (int i=0;i<oldLen;i++) {
+			 if(connArray[i]==pooledCon){
+				 System.arraycopy(connArray,i+1,arrayNew,i,oldLen-i-1);
+				 break;
+			 }else{
+				 arrayNew[i]=connArray[i];
+			 }
+		}
+		connArray=arrayNew;
+	}
+	
 	/**
 	 * check some proxy classes whether exists
 	 */
@@ -168,15 +189,15 @@ public final class FastConnectionPool implements ConnectionPool {
 		}
 	}
 	
-	private boolean isNormal() {
-		return poolState.get() == POOL_NORMAL;
-	}
 	private boolean existBorrower() {
-		return(poolConfig.getConcurrentSize()-poolSemaphore.availablePermits()+poolSemaphore.getQueueLength())>0;	
+		return getBorrowerSize()>0;	
+	}
+	private int getBorrowerSize(){
+		return poolConfig.getConcurrentSize()-poolSemaphore.availablePermits()+poolSemaphore.getQueueLength();
 	}
 	private int getIdleConnSize(){
 		int conIdleSize=0;
-		for (PooledConnection pConn:connList.array) {
+		for (PooledConnection pConn:connArray) {
 			if(ConnStateUpdater.get(pConn) == CONNECTION_IDLE)
 				conIdleSize++;
 		}
@@ -184,10 +205,10 @@ public final class FastConnectionPool implements ConnectionPool {
 	}
 	public Map<String,Integer> getPoolSnapshot(){
 		Map<String,Integer> snapshotMap = new LinkedHashMap<String,Integer>();
-		snapshotMap.put("PoolMaxSize", poolConfig.getMaxActive());
-		snapshotMap.put("concurrentSize", poolConfig.getConcurrentSize());
-		snapshotMap.put("ConCurSize",connList.size());
-		snapshotMap.put("ConIdleSize",getIdleConnSize());
+		snapshotMap.put("maxSize", poolConfig.getMaxActive());
+		snapshotMap.put("activeSize",connArray.length);
+		snapshotMap.put("idleSize",getIdleConnSize());
+		snapshotMap.put("borrowerSize",getBorrowerSize());
 		return snapshotMap;
 	}
 	 
@@ -245,7 +266,7 @@ public final class FastConnectionPool implements ConnectionPool {
 	}
 	private void removePooledConnection(PooledConnection pConn){
 		pConn.closePhysicalConnection();
-		connList.remove(pConn);
+		this.removePooledConn(pConn);
 	}
 	
 	/**
@@ -262,11 +283,11 @@ public final class FastConnectionPool implements ConnectionPool {
 		try {
 			for (int i = 0; i < size; i++){ 
 				if((con=connFactory.create())!=null){
-					connList.add(new PooledConnection(con,this,poolConfig));
+					this.addPooledConn(new PooledConnection(con,this,poolConfig));
 				}
 			}
 		} catch (SQLException e) {
-			for(PooledConnection pConn:connList.array) 
+			for(PooledConnection pConn:connArray) 
 				removePooledConnection(pConn);
 			throw e;
 		}
@@ -346,7 +367,7 @@ public final class FastConnectionPool implements ConnectionPool {
 	
 	//take one PooledConnection
     private Connection takeOneConnection(long deadlineNanos,Borrower borrower)throws SQLException,InterruptedException{
-    	for(PooledConnection pConn:connList.array) {
+    	for(PooledConnection pConn:connArray) {
     		  if(ConnStateUpdater.compareAndSet(pConn,CONNECTION_IDLE,CONNECTION_USING)&& testOnBorrow(pConn)) {
     			  return createProxyConnection(pConn,borrower);
 			}
@@ -421,7 +442,7 @@ public final class FastConnectionPool implements ConnectionPool {
   	}
  	//notify to create connections to pool 
 	private void tryToCreateNewConnByAsyn() {
-		if(createThreadState.get()==THREAD_WAITING &&connList.size()<PoolMaxSize&&createThreadState.compareAndSet(THREAD_WAITING,THREAD_WORKING)){
+		if(createThreadState.get()==THREAD_WAITING &&connArray.length<PoolMaxSize&&createThreadState.compareAndSet(THREAD_WAITING,THREAD_WORKING)){
 			LockSupport.unpark(createThread);
 		}
 	}
@@ -475,8 +496,8 @@ public final class FastConnectionPool implements ConnectionPool {
 	 * or dead connections,or long time not active connections in using state
 	 */
 	private void closeIdleTimeoutConnection() {
-		if (isNormal()){
-			for (PooledConnection pConn:connList.array) {
+		if (poolState.get()== POOL_NORMAL){
+			for (PooledConnection pConn:connArray) {
 				final int state = ConnStateUpdater.get(pConn);
 				if (state == CONNECTION_IDLE && !existBorrower()) {
 					final boolean isTimeoutInIdle = ((currentTimeMillis()-pConn.lastAccessTime-poolConfig.getIdleTimeout()>=0));
@@ -501,7 +522,7 @@ public final class FastConnectionPool implements ConnectionPool {
 				}
 			}
 			
-			if(!waitQueue.isEmpty() && connList.size()==0){
+			if(!waitQueue.isEmpty() && connArray.length==0){
 				tryToCreateNewConnByAsyn();
 			}
 		}
@@ -550,8 +571,8 @@ public final class FastConnectionPool implements ConnectionPool {
 		}
 		
 		long parkNanos=SECONDS.toNanos(poolConfig.getWaitTimeToClearPool());
-		while (connList.size()>0) {
-			for(PooledConnection pConn : connList.array) {
+		while (connArray.length>0) {
+			for(PooledConnection pConn:connArray) {
 				if(ConnStateUpdater.compareAndSet(pConn,CONNECTION_IDLE,CONNECTION_CLOSED)) {	
 					removePooledConnection(pConn);
 				 }else if (ConnStateUpdater.compareAndSet(pConn,CONNECTION_CHECKING,CONNECTION_CLOSED)) {	
@@ -572,7 +593,7 @@ public final class FastConnectionPool implements ConnectionPool {
 				}
 			}//for
 		
-			if(connList.size()>0)LockSupport.parkNanos(parkNanos);
+			if(connArray.length>0)LockSupport.parkNanos(parkNanos);
 		}//while
 	}
 	
@@ -617,11 +638,11 @@ public final class FastConnectionPool implements ConnectionPool {
 			ConnectionFactory connFactory= poolConfig.getConnectionFactory();
 			
 			while(state.get()==THREAD_WORKING){
-				if(PoolMaxSize>connList.size() && !waitQueue.isEmpty()){
+				if(PoolMaxSize>connArray.length && !waitQueue.isEmpty()){
 					try {
 						if((con=connFactory.create())!=null){
 							pConn=new PooledConnection(con,pool,poolConfig,CONNECTION_USING);
-							connList.add(pConn);
+							pool.addPooledConn(pConn);
 							release(pConn,false);
 						}
 					} catch (SQLException e) {

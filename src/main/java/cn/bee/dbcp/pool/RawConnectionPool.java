@@ -42,9 +42,10 @@ public final class RawConnectionPool implements ConnectionPool {
 	private Map<String,Integer> snapshotMap;
 	
 	/**
-	 * initialize connection pool
-	 * @param config
-	 * @throws SQLException
+	 * initialize pool with configuration
+	 * 
+	 * @param config data source configuration
+	 * @throws SQLException check configuration fail or to create initiated connection 
 	 */
 	public void init(BeeDataSourceConfig config)throws SQLException{
 		poolConfig=config;
@@ -52,10 +53,9 @@ public final class RawConnectionPool implements ConnectionPool {
 		snapshotMap = new LinkedHashMap<String,Integer>();
 		poolSemaphore=new Semaphore(poolConfig.getConcurrentSize(),poolConfig.isFairQueue());
 		
-		snapshotMap.put("PoolMaxSize",poolConfig.getMaxActive());
-		snapshotMap.put("concurrentSize",poolConfig.getConcurrentSize());
-		snapshotMap.put("ConCurSize",0);
-		snapshotMap.put("ConIdleSize",0);
+		snapshotMap.put("maxSize", poolConfig.getMaxActive());
+		snapshotMap.put("activeSize",0);
+		snapshotMap.put("idleSize",0);
 	}
 	
 	/**
@@ -103,8 +103,10 @@ public final class RawConnectionPool implements ConnectionPool {
 	 * get pool snapshot
 	 * 
 	 * @return pool current info
+	 * @throws SQLException if is not initialized or closed, will throw SQLException
 	 */
 	public Map<String,Integer> getPoolSnapshot()throws SQLException{
+		snapshotMap.put("borrowerSize",poolConfig.getConcurrentSize()-poolSemaphore.availablePermits()+poolSemaphore.getQueueLength());
 		return snapshotMap;
 	}
 	

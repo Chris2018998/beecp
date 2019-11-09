@@ -30,9 +30,10 @@ import cn.bee.dbcp.BeeDataSourceConfig;
 public interface ConnectionPool {
 
 	/**
-	 * initialize connection pool
-	 * @param config
-	 * @throws SQLException
+	 * initialize pool with configuration
+	 * 
+	 * @param config data source configuration
+	 * @throws SQLException check configuration fail or to create initiated connection 
 	 */
 	public void init(BeeDataSourceConfig config)throws SQLException;
 	
@@ -66,6 +67,7 @@ public interface ConnectionPool {
 	 * get pool snapshot
 	 * 
 	 * @return pool current info
+	 * @throws SQLException if is not initialized or closed, will throw SQLException
 	 */
 	public Map<String,Integer> getPoolSnapshot()throws SQLException;
 	
