@@ -13,13 +13,12 @@
 
 Maven下载
 ---
-Download<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/release/BeeCP-1.2.jar">BeeCP_1.2.jar</a>
 
 ```java
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>1.2</version>
+   <version>1.3</version>
 </dependency>
 
 ```
