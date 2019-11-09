@@ -399,13 +399,13 @@ public class BeeDataSourceConfig{
 			this.poolImplementClassName = poolImplementClassName;
 		}
 	}
-	public void removeDriverConnectProperty(String key){
+	public void removeConnectProperty(String key){
 		if(!this.inited){
 			connectProperties.remove(key);
 		}
 	}
 	
-	public void addDriverConnectProperty(String key,String value){
+	public void addConnectProperty(String key,String value){
 		if(!this.inited){
 			connectProperties.put(key, value);
 		}
