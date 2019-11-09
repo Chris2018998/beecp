@@ -11,14 +11,12 @@ Naming Reasons
 Bees are a kind of beneficial insects to human beings. In recent years, the number of bees reported in the news is declining, which will directly affect the production of human food. Hope to attract more friends'attention and attention: although bees are small, they play a great role, Protecting the environment and caring for nature.
 
 Release download
----
-Download<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/release/BeeCP-1.2.jar">BeeCP_1.2.jar</a>
 
 ```java
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>1.2</version>
+   <version>1.3</version>
 </dependency>
 
 ```
