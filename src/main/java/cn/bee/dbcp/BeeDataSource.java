@@ -20,7 +20,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.Map;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
@@ -41,14 +40,17 @@ import cn.bee.dbcp.pool.ConnectionPool;
  * @version 1.0
  */
 public final class BeeDataSource extends BeeDataSourceConfig implements DataSource {
-	ReentrantLock lock=new ReentrantLock();
-	Condition condition=lock.newCondition();
-	
+
 	/**
 	 * connection pool
 	 */
 	private volatile ConnectionPool pool=null;
-
+	
+	/**
+	 * locker
+	 */
+	private ReentrantLock lock=new ReentrantLock();
+	
 	/**
 	 * constructor
 	 */
@@ -59,15 +61,16 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	 * @param config data source configuration
 	 */
 	public BeeDataSource(final BeeDataSourceConfig config){
-		pool=createPool(config);
+		config.copyTo(this);
+		pool=createPool(this);
 	}
 	
 	//return pool internal information
 	public Map<String,Integer> getPoolSnapshot()throws SQLException{
-		if(pool==null)throw new SQLException("Datasource not initialized");
+		if(pool==null)throw new SQLException("Datasource not be initialized");
 		return pool.getPoolSnapshot();
 	}
-
+	
 	/**
 	 * borrow a connection from pool
 	 * 
@@ -78,12 +81,15 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	 */
 	public Connection getConnection() throws SQLException {
 		if(pool==null){
-			 synchronized(this){
-			   if(pool==null)pool=createPool(this);
-			 }
+			lock.lock();
+			try {
+				if(pool==null)pool=createPool(this);
+			} finally {
+				lock.unlock();
+			}
 		}
-	
-		return pool.getConnection();
+		
+		return pool.getConnection(maxWait);
 	}
 	
 	/**

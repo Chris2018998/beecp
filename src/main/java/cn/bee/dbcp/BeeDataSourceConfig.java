@@ -137,7 +137,7 @@ public class BeeDataSourceConfig{
 	/**
 	 * borrower request timeout(milliseconds)
 	 */
-	private long maxWait=8000;
+	protected long maxWait=8000;
 
 	/**
 	 * max idle time for pooledConnection(milliseconds),default value: three minutes
@@ -408,6 +408,39 @@ public class BeeDataSourceConfig{
 	public void addConnectProperty(String key,String value){
 		if(!this.inited){
 			connectProperties.put(key, value);
+		}
+	}
+	
+	void copyTo(BeeDataSourceConfig config){
+		if(!config.inited){
+			config.username=this.username;
+			config.password=this.password;
+			config.jdbcUrl=this.jdbcUrl;
+			config.driverClassName=this.driverClassName; 
+			config.connectionFactoryClassName=this.connectionFactoryClassName;
+			config.connectionFactory=this.connectionFactory;
+			config.connectProperties=new Properties(this.connectProperties);
+			config.poolName=this.poolName;
+			config.fairQueue=this.fairQueue;
+			config.initialSize=this.initialSize;
+			config.maxActive=this.maxActive;
+			config.concurrentSize=this.concurrentSize;
+			config.preparedStatementCacheSize=this.preparedStatementCacheSize;
+			config.testOnBorrow=this.testOnBorrow;
+			config.testOnReturn=this.testOnReturn;
+			//config.defaultAutoCommit=this.defaultAutoCommit;
+			config.defaultTransactionIsolation=this.defaultTransactionIsolation;
+			config.defaultCatalog=this.defaultCatalog;
+			config.defaultReadOnly=this.defaultReadOnly;
+			config.maxWait=this.maxWait;
+			config.idleTimeout=this.idleTimeout;
+			config.maxHoldTimeInUnused=this.idleTimeout;
+			config.validationQuery=this.validationQuery;
+			config.validationQueryTimeout=this.validationQueryTimeout;
+			config.validationInterval=this.validationInterval;
+			config.forceCloseConnection=this.forceCloseConnection;
+			config.waitTimeToClearPool=this.waitTimeToClearPool;
+			config.poolImplementClassName=this.poolImplementClassName;
 		}
 	}
 	
