@@ -86,16 +86,16 @@ public final class FastConnectionPool implements ConnectionPool {
 	private Semaphore poolSemaphore;
 	private TransferPolicy tansferPolicy;
 	private volatile boolean surpportQryTimeout=true;
-	private final CreateConnThread createThread=new CreateConnThread();
-	private final AtomicInteger createThreadState=createThread.state;
+	private CreateConnThread createThread=new CreateConnThread();
+	private AtomicInteger createThreadState=createThread.state;
 	private volatile PooledConnection[] connArray = new PooledConnection[0];
-	private final ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
-	private final ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
+	private ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
+	private ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
 	
 	private String poolName="";
 	private static String poolNamePrefix="Pool-";
 	private static AtomicInteger poolNameIndex=new AtomicInteger(1);
-	private final AtomicInteger poolState=new AtomicInteger(POOL_UNINIT);
+	private AtomicInteger poolState=new AtomicInteger(POOL_UNINIT);
 	private static final int maxTimedSpins = (Runtime.getRuntime().availableProcessors()<2)?0:32;
 	private static final AtomicIntegerFieldUpdater<PooledConnection>ConnStateUpdater=AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class,"state");
 	private static final AtomicReferenceFieldUpdater<Borrower,Object>TansferStateUpdater=AtomicReferenceFieldUpdater.newUpdater(Borrower.class,Object.class,"stateObject");
@@ -153,12 +153,13 @@ public final class FastConnectionPool implements ConnectionPool {
 	
 	private synchronized void addPooledConn(PooledConnection pooledCon) {
 		int oldLen = connArray.length;
-		PooledConnection[] arrayNew = new PooledConnection[oldLen+1];
-		arrayNew[0]=pooledCon;//add at head
-		System.arraycopy(connArray,0,arrayNew,1,oldLen);
+		PooledConnection[] arrayNew = new PooledConnection[oldLen+1];	
+		
+		arrayNew[oldLen]=pooledCon;//add at tail
+		System.arraycopy(connArray,0,arrayNew,0,oldLen);	
 		connArray=arrayNew;
 	}
-	private synchronized void removePooledConn(PooledConnection pooledCon){ 
+	private synchronized void removePooledConn(PooledConnection pooledCon){
 		int oldLen = connArray.length;
 		PooledConnection[] arrayNew = new PooledConnection[oldLen-1];
 		for (int i=0;i<oldLen;i++) {
@@ -335,10 +336,10 @@ public final class FastConnectionPool implements ConnectionPool {
 			}
 		
 			wait=MILLISECONDS.toNanos(wait);
-			long deadlineNanos=nanoTime()+wait;
-			if(poolSemaphore.tryAcquire(wait,NANOSECONDS)){
+			long deadline=nanoTime()+wait;
+		    if(poolSemaphore.tryAcquire(wait,NANOSECONDS)){
 				try{
-					Connection con=takeOneConnection(deadlineNanos,borrower);
+					Connection con=takeOneConnection(deadline,borrower);
 					if(con!=null)return con;
 					
 					if(Thread.currentThread().isInterrupted())
@@ -366,14 +367,13 @@ public final class FastConnectionPool implements ConnectionPool {
 	}
 	
 	//take one PooledConnection
-    private Connection takeOneConnection(long deadlineNanos,Borrower borrower)throws SQLException,InterruptedException{
+    private Connection takeOneConnection(long deadline,Borrower borrower)throws SQLException,InterruptedException{
     	for(PooledConnection pConn:connArray) {
     		  if(ConnStateUpdater.compareAndSet(pConn,CONNECTION_IDLE,CONNECTION_USING)&& testOnBorrow(pConn)) {
     			  return createProxyConnection(pConn,borrower);
 			}
 		}
-    	
-		long waitNanos=0;
+    	long waitTime=0;
 		boolean isTimeout=false;
 		Object stateObject=null;
 		PooledConnection pConn=null;
@@ -414,7 +414,7 @@ public final class FastConnectionPool implements ConnectionPool {
 					continue;
 				}
 				
-				if((waitNanos=deadlineNanos-nanoTime())<=0){
+				if((waitTime=deadline-nanoTime())<=0){
 					isTimeout=true;
 					if(TansferStateUpdater.compareAndSet(borrower,stateObject,BORROWER_TIMEOUT))
 					return null;
@@ -423,7 +423,7 @@ public final class FastConnectionPool implements ConnectionPool {
 
 				if(spinSize-->0)continue;//spin
 				if(TansferStateUpdater.compareAndSet(borrower,stateObject,BORROWER_WAITING)) {
-					LockSupport.parkNanos(borrower,waitNanos);
+					LockSupport.parkNanos(borrower,waitTime);
 					if(TansferStateUpdater.get(borrower)==BORROWER_WAITING) {
 						TansferStateUpdater.compareAndSet(borrower,BORROWER_WAITING,BORROWER_NORMAL);
 					}
@@ -642,8 +642,8 @@ public final class FastConnectionPool implements ConnectionPool {
 					try {
 						if((con=connFactory.create())!=null){
 							pConn=new PooledConnection(con,pool,poolConfig,CONNECTION_USING);
-							pool.addPooledConn(pConn);
 							release(pConn,false);
+							addPooledConn(pConn);
 						}
 					} catch (SQLException e) {
 						if(con!=null)ConnectionUtil.oclose(con);
