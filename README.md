@@ -105,4 +105,9 @@ project for performance test code,please visit：https://github.com/Chris2018998
 
 <img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191108_I3_7100_HikariCP_Bech.png"></img>
 
+connection cycle and preparedStatement cycle (mysql5.6.46)
+
+<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191111_I3_7100_HikariCP_Bech_Mysql5.6.46.png"></img>
+
+
 Download <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/BenchBase.java">BenchBase.java</a>
