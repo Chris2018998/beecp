@@ -642,8 +642,8 @@ public final class FastConnectionPool implements ConnectionPool {
 					try {
 						if((con=connFactory.create())!=null){
 							pConn=new PooledConnection(con,pool,poolConfig,CONNECTION_USING);
-							release(pConn,false);
 							addPooledConn(pConn);
+							release(pConn,false);
 						}
 					} catch (SQLException e) {
 						if(con!=null)ConnectionUtil.oclose(con);
