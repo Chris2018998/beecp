@@ -20,7 +20,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
 import javax.sql.DataSource;
@@ -31,7 +31,7 @@ import cn.bee.dbcp.pool.ConnectionPool;
  * Bee DataSource,there are three pool implementation for it.
  * 
  * 1) cn.bee.dbcp.pool.FastConnectionPool:base implementation with semaphore
- * 3) cn.bee.dbcp.pool.RawConnectionPool:return raw connections to borrowers directly(maybe used for BeeNode)
+ * 2) cn.bee.dbcp.pool.RawConnectionPool:return raw connections to borrowers directly(maybe used for BeeNode)
  * 
  * Email:  Chris2018998@tom.com
  * Project: https://github.com/Chris2018998/BeeCP
@@ -47,9 +47,19 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	private volatile ConnectionPool pool=null;
 	
 	/**
-	 * locker
+	 * read Write Locker
 	 */
-	private ReentrantLock lock=new ReentrantLock();
+	private ReentrantReadWriteLock lock=new ReentrantReadWriteLock();
+	
+	/**
+	 * read Locker
+	 */
+	private ReentrantReadWriteLock.ReadLock readLock=lock.readLock();
+	
+	/**
+	 *  write Locker
+	 */
+	private ReentrantReadWriteLock.WriteLock writeLock=lock.writeLock();
 	
 	/**
 	 * constructor
@@ -63,6 +73,18 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	public BeeDataSource(final BeeDataSourceConfig config){
 		config.copyTo(this);
 		pool=createPool(this);
+	}
+	
+	/**
+	 * constructor
+	 * @param driver driver class name
+	 * @param url JDBC url
+	 * @param user JDBC user name
+	 * @param password JDBC password
+	 * 
+	 */
+	public BeeDataSource(String driver, String url, String user, String password) {
+		super(driver,url,user,password);
 	}
 	
 	//return pool internal information
@@ -80,12 +102,20 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	 *             if pool is closed or waiting timeout,then throw exception
 	 */
 	public Connection getConnection() throws SQLException {
-		if(pool==null){
-			lock.lock();
-			try {
-				if(pool==null)pool=createPool(this);
-			} finally {
-				lock.unlock();
+		if(pool== null) {
+			if(writeLock.tryLock()) {
+				try {
+					if(pool==null)pool=createPool(this);
+				} finally {
+					writeLock.unlock();
+				}
+			}else{
+				try{
+					readLock.lock();
+					//do nothing
+				} finally {
+					readLock.unlock();
+				}
 			}
 		}
 		
