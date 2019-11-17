@@ -22,7 +22,7 @@
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>1.3.1</version>
+   <version>1.3.2</version>
 </dependency>
 
 ```
@@ -114,11 +114,12 @@ Bee_C(5.3623) > Vibur(6.5437) > Bee_F(6.8492) > HikariCP(9.0176)
 
 Download <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/BenchBase.java">BenchBase.java</a>
 
-七：期望与愿景
+七：结束语
 ---
-1：开发此连接池纯碎业余学习爱好，由于它是一款新开发的连接池，期待网友们的更多参与和实践检验。
+1：热忱欢迎各位网友帮忙开箱验货^-^。
 
-2：若它能成熟稳健，希望它能为Java界贡献一点点小力量（向中国广大程序工作者致敬^-^）。
+2：由于它是新开发的作品，还存在一些问题和不足，真心希望网友们帮忙审阅，指正。
 
-3：窗前的读者：如果您有更好更快的方案，请分享给我们大家，同时也期待您更多的批评和指正意见。
+3：如果您有更好更快的方案，期待您的分享。
 
+4：最后祝福各位网友们工作顺利，丰收2019。
