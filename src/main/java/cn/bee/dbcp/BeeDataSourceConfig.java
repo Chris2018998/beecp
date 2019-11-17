@@ -36,7 +36,7 @@ public class BeeDataSourceConfig{
 	/**
 	 * indicator to not allow to modify configuration after initialization
 	 */
-	private boolean inited;
+	private boolean checked;
 	
 	/**
 	 *  User
@@ -82,7 +82,7 @@ public class BeeDataSourceConfig{
 	 * if true,first arrival,first taking if false,competition for all borrower
 	 * to take idle connection
 	 */
-	private boolean fairQueue;
+	private boolean fairMode;
 	
 	/**
 	 * pool initialization size
@@ -148,7 +148,7 @@ public class BeeDataSourceConfig{
 	/** 
 	 * max hold time in Unused(milliseconds),pool will release it by forced 
 	 */
-	private long maxHoldTimeInUnused=MINUTES.toMillis(5);
+	private long holdIdleTimeout=MINUTES.toMillis(5);
 	
 	/**
 	 * a test SQL to check connection active state
@@ -197,57 +197,57 @@ public class BeeDataSourceConfig{
 		defaultTransactionIsolation=Connection.TRANSACTION_READ_COMMITTED;
 	}
 	
-	public boolean isInited() {
-		return inited;
+	boolean isChecked() {
+		return checked;
 	}
-	public void setInited(boolean inited) {
-		if(!this.inited)
-			this.inited = inited;
+	void setChecked(boolean checked) {
+		if(!this.checked)
+			this.checked = checked;
 	}
 	public String getUsername() {
 		return username;
 	}
 	public void setUsername(String username) {
-		if(!this.inited) 
+		if(!this.checked) 
 		 this.username = username;
 	}
 	public String getPassword() {
 		return password;
 	}
 	public void setPassword(String password) {
-		if (!this.inited)
+		if (!this.checked)
 		this.password = password;
 	}
 	public String getUrl() {
 		return jdbcUrl;
 	}
 	public void setUrl(String jdbcUrl) {
-		if(!this.inited && !isNull(jdbcUrl))
+		if(!this.checked && !isNull(jdbcUrl))
 		this.jdbcUrl = jdbcUrl;
 	}
 	public void setJdbcUrl(String jdbcUrl) {
-		if(!this.inited && !isNull(jdbcUrl))
+		if(!this.checked && !isNull(jdbcUrl))
 		this.jdbcUrl = jdbcUrl;
 	}
 	public String getDriverClassName() {
 		return driverClassName;
 	}
 	public void setDriverClassName(String driverClassName) {
-		if(!this.inited && !isNull(driverClassName))
+		if(!this.checked && !isNull(driverClassName))
 		this.driverClassName = driverClassName;
 	}
 	public String getConnectionFactoryClassName() {
 		return connectionFactoryClassName;
 	}
 	public void setConnectionFactoryClassName(String connectionFactoryClassName) {
-		if(!this.inited && !isNull(connectionFactoryClassName))
+		if(!this.checked && !isNull(connectionFactoryClassName))
 		 this.connectionFactoryClassName = connectionFactoryClassName;
 	}
 	public ConnectionFactory getConnectionFactory() {
 		return connectionFactory;
 	}
 	public void setConnectionFactory(ConnectionFactory connectionFactory) {
-		if(!this.inited)
+		if(!this.checked)
 		this.connectionFactory = connectionFactory;
 	}
 	 
@@ -255,56 +255,56 @@ public class BeeDataSourceConfig{
 		return poolName;
 	}
 	public void setPoolName(String poolName) {
-		if(!this.inited && !isNull(poolName))
+		if(!this.checked && !isNull(poolName))
 		this.poolName = poolName;
 	}
-	public boolean isFairQueue() {
-		return fairQueue;
+	public boolean isFairMode() {
+		return fairMode;
 	}
-	public void setFairQueue(boolean fairQueue) {
-		if(!this.inited)
-		this.fairQueue = fairQueue;
+	public void setFairMode(boolean fairMode) {
+		if(!this.checked)
+		this.fairMode = fairMode;
 	}
 	public int getInitialSize() {
 		return initialSize;
 	}
 	public void setInitialSize(int initialSize) {
-		if(!this.inited && initialSize>0)
+		if(!this.checked && initialSize>0)
 		this.initialSize = initialSize;
 	}
 	public int getMaxActive() {
 		return maxActive;
 	}
 	public void setMaxActive(int maxActive) {
-		if(!this.inited && maxActive>0)
+		if(!this.checked && maxActive>0)
 		this.maxActive = maxActive;
 	}
 	public int getConcurrentSize() {
 		return concurrentSize;
 	}
 	public void setConcurrentSize(int concurrentSize) {
-		if(!this.inited && concurrentSize>0)
+		if(!this.checked && concurrentSize>0)
 		this.concurrentSize = concurrentSize;
 	}
 	public int getPreparedStatementCacheSize() {
 		return preparedStatementCacheSize;
 	}
 	public void setPreparedStatementCacheSize(int preparedStatementCacheSize) {
-		if(!this.inited && preparedStatementCacheSize>0)
+		if(!this.checked && preparedStatementCacheSize>0)
 		this.preparedStatementCacheSize = preparedStatementCacheSize;
 	}
 	public boolean isTestOnBorrow() {
 		return testOnBorrow;
 	}
 	public void setTestOnBorrow(boolean testOnBorrow) {
-		if(!this.inited)
+		if(!this.checked)
 		this.testOnBorrow = testOnBorrow;
 	}
 	public boolean isTestOnReturn() {
 		return testOnReturn;
 	}
 	public void setTestOnReturn(boolean testOnReturn) {
-		if(!this.inited)
+		if(!this.checked)
 		this.testOnReturn = testOnReturn;
 	}
 	public boolean isDefaultAutoCommit() {
@@ -315,7 +315,7 @@ public class BeeDataSourceConfig{
 		return defaultTransactionIsolation;
 	}
 	public void setDefaultTransactionIsolation(int defaultTransactionIsolation) {
-		if(!this.inited && defaultTransactionIsolation>=0)
+		if(!this.checked && defaultTransactionIsolation>=0)
 		this.defaultTransactionIsolation = defaultTransactionIsolation;
 	}
 	
@@ -330,49 +330,49 @@ public class BeeDataSourceConfig{
 		return defaultReadOnly;
 	}
 	public void setDefaultReadOnly(boolean readOnly) {
-	   if(!this.inited)
+	   if(!this.checked)
 		this.defaultReadOnly = readOnly;
 	}
 	public long getMaxWait() {
 		return maxWait;
 	}
 	public void setMaxWait(long maxWait) {
-	  if(!this.inited && maxWait>0) 
+	  if(!this.checked && maxWait>0) 
 		this.maxWait = maxWait;
 	}
 	public long getIdleTimeout() {
 		return idleTimeout;
 	}
 	public void setIdleTimeout(long idleTimeout) {
-	  if(!this.inited && idleTimeout>0) 
+	  if(!this.checked && idleTimeout>0) 
 		this.idleTimeout = idleTimeout;
 	}
-	public long getMaxHoldTimeInUnused() {
-		return maxHoldTimeInUnused;
+	public long getHoldIdleTimeout() {
+		return holdIdleTimeout;
 	}
-	public void setMaxHoldTimeInUnused(long maxHoldTimeInUnused) {
-		if(!this.inited && maxHoldTimeInUnused>0) 
-		this.maxHoldTimeInUnused = maxHoldTimeInUnused;
+	public void setHoldIdleTimeout(long maxHoldTimeInUnused) {
+		if(!this.checked && maxHoldTimeInUnused>0) 
+		this.holdIdleTimeout = maxHoldTimeInUnused;
 	}
 	public String getValidationQuery() {
 		return validationQuery;
 	}
 	public void setValidationQuery(String validationQuery) {
-	if (!this.inited && !isNull(validationQuery)) 
+	if (!this.checked && !isNull(validationQuery)) 
 		this.validationQuery = validationQuery;
 	}
 	public int getValidationQueryTimeout() {
 		return validationQueryTimeout;
 	}
 	public void setValidationQueryTimeout(int validationQueryTimeout) {
-		if(!this.inited && validationQueryTimeout>0) 
+		if(!this.checked && validationQueryTimeout>0) 
 		this.validationQueryTimeout = validationQueryTimeout;
 	}
 	public long getValidationInterval() {
 		return validationInterval;
 	}
 	public void setValidationInterval(long validationInterval) {
-		if(!this.inited && validationInterval>0) 
+		if(!this.checked && validationInterval>0) 
 		this.validationInterval = validationInterval;
 	}
 
@@ -380,7 +380,7 @@ public class BeeDataSourceConfig{
 		return forceCloseConnection;
 	}
 	public void setForceCloseConnection(boolean forceCloseConnection) {
-       if(!this.inited)
+       if(!this.checked)
 		this.forceCloseConnection = forceCloseConnection;
 	}
 	
@@ -388,31 +388,31 @@ public class BeeDataSourceConfig{
 		return waitTimeToClearPool;
 	}
 	public void setWaitTimeToClearPool(long waitTimeToClearPool) {
-	  if(!this.inited && waitTimeToClearPool>0)
+	  if(!this.checked && waitTimeToClearPool>0)
 		this.waitTimeToClearPool = waitTimeToClearPool;
 	}
 	public String getPoolImplementClassName() {
 		return poolImplementClassName;
 	}
 	public void setPoolImplementClassName(String poolImplementClassName) {
-		if (!this.inited &&!isNull(poolImplementClassName)) {
+		if (!this.checked &&!isNull(poolImplementClassName)) {
 			this.poolImplementClassName = poolImplementClassName;
 		}
 	}
 	public void removeConnectProperty(String key){
-		if(!this.inited){
+		if(!this.checked){
 			connectProperties.remove(key);
 		}
 	}
 	
 	public void addConnectProperty(String key,String value){
-		if(!this.inited){
+		if(!this.checked){
 			connectProperties.put(key, value);
 		}
 	}
 	
 	void copyTo(BeeDataSourceConfig config){
-		if(!config.inited){
+		if(!config.checked){
 			config.username=this.username;
 			config.password=this.password;
 			config.jdbcUrl=this.jdbcUrl;
@@ -421,7 +421,7 @@ public class BeeDataSourceConfig{
 			config.connectionFactory=this.connectionFactory;
 			config.connectProperties=new Properties(this.connectProperties);
 			config.poolName=this.poolName;
-			config.fairQueue=this.fairQueue;
+			config.fairMode=this.fairMode;
 			config.initialSize=this.initialSize;
 			config.maxActive=this.maxActive;
 			config.concurrentSize=this.concurrentSize;
@@ -434,7 +434,7 @@ public class BeeDataSourceConfig{
 			config.defaultReadOnly=this.defaultReadOnly;
 			config.maxWait=this.maxWait;
 			config.idleTimeout=this.idleTimeout;
-			config.maxHoldTimeInUnused=this.idleTimeout;
+			config.holdIdleTimeout=this.idleTimeout;
 			config.validationQuery=this.validationQuery;
 			config.validationQueryTimeout=this.validationQueryTimeout;
 			config.validationInterval=this.validationInterval;

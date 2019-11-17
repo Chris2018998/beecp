@@ -181,6 +181,8 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 			if(!ConnectionPool.class.isAssignableFrom(poolClass))
 			 throw new IllegalArgumentException("Connection pool class must be implemented 'ConnectionPool' interface");
 			 
+			config.check();
+			config.setChecked(true);
 			ConnectionPool pool=(ConnectionPool)poolClass.newInstance();
 			pool.init(config);
 			return pool;
