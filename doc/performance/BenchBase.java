@@ -377,7 +377,7 @@ public class BenchBase
 		config.setMaxWait(8000);
 		config.setValidationQuery("select 1");
 		config.setTestOnBorrow(true);
-		config.setFairQueue(true);
+		config.setFairMode(true);
 		DS = new BeeDataSource(config);
     }
 
