@@ -38,7 +38,7 @@ public final class PooledConnection{
 	StatementCache stmCache=null;
 	BeeDataSourceConfig poolConfig;
 	ProxyConnectionBase proxyConnCurInstance;
-	volatile long lastAccessTime;
+	long lastAccessTime;
 	
 	private ConnectionPool pool;
 	private boolean curAutoCommit=true;

@@ -39,7 +39,6 @@ public final class RawConnectionPool implements ConnectionPool {
 	private Semaphore poolSemaphore;
 	private long DefaultMaxWaitMills;
 	private BeeDataSourceConfig poolConfig;
-	private Map<String,Integer> snapshotMap;
 	
 	/**
 	 * initialize pool with configuration
@@ -50,12 +49,7 @@ public final class RawConnectionPool implements ConnectionPool {
 	public void init(BeeDataSourceConfig config)throws SQLException{
 		poolConfig=config;
 		DefaultMaxWaitMills=poolConfig.getMaxWait();
-		snapshotMap = new LinkedHashMap<String,Integer>();
-		poolSemaphore=new Semaphore(poolConfig.getConcurrentSize(),poolConfig.isFairQueue());
-		
-		snapshotMap.put("maxSize", poolConfig.getMaxActive());
-		snapshotMap.put("activeSize",0);
-		snapshotMap.put("idleSize",0);
+		poolSemaphore=new Semaphore(poolConfig.getConcurrentSize(),poolConfig.isFairMode());
 	}
 	
 	/**
@@ -106,7 +100,13 @@ public final class RawConnectionPool implements ConnectionPool {
 	 * @throws SQLException if is not initialized or closed, will throw SQLException
 	 */
 	public Map<String,Integer> getPoolSnapshot()throws SQLException{
-		snapshotMap.put("borrowerSize",poolConfig.getConcurrentSize()-poolSemaphore.availablePermits()+poolSemaphore.getQueueLength());
+		Map<String,Integer> snapshotMap = new LinkedHashMap<String,Integer>();
+		snapshotMap.put("totalConnections",0);
+		snapshotMap.put("idleConnections",0);
+		snapshotMap.put("activeConnections",0);
+		snapshotMap.put("semaphoreAcquiredSize",poolConfig.getConcurrentSize()-poolSemaphore.availablePermits());
+		snapshotMap.put("semaphoreWatingSize",poolSemaphore.getQueueLength());
+		snapshotMap.put("transferWatingSize",0);
 		return snapshotMap;
 	}
 	
