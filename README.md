@@ -93,7 +93,7 @@ The performance of each connection pool is tested by multi-threaded query (1000 
 
 1：Below are the test results of each connection pool at Mysql5.6 (milliseconds)
 
-Bee_C(5.3623) > Vibur(6.5437) > Bee_F(6.8492) > HikariCP(9.0176)
+Bee_C(5.3623) > Bee_F(6.8492) > HikariCP(9.0176)
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191105_JDBCPool_I54300.log">20191105_JDBCPool_I54300.log</a>
 
