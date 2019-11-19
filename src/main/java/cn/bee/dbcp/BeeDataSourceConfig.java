@@ -174,6 +174,16 @@ public class BeeDataSourceConfig{
 	 * seconds,wait for retry to clear all connections
 	 */
 	private long waitTimeToClearPool=3;
+	
+	/**
+	 * milliseconds,idle Check Time Period 
+	 */
+	private long idleCheckTimePeriod=180000L;
+	
+	/**
+	 * milliseconds,idle Check Time initialize delay
+	 */
+	private long idleCheckTimeInitDelay=60000L;
 
 	/**
 	 * BeeCP implementation class name
@@ -390,6 +400,21 @@ public class BeeDataSourceConfig{
 	public void setWaitTimeToClearPool(long waitTimeToClearPool) {
 	  if(!this.checked && waitTimeToClearPool>0)
 		this.waitTimeToClearPool = waitTimeToClearPool;
+	}
+
+	public long getIdleCheckTimePeriod() {
+		return idleCheckTimePeriod;
+	}
+	public void setIdleCheckTimePeriod(long idleCheckTimePeriod) {
+		if(!this.checked && idleCheckTimePeriod>1000L)
+		this.idleCheckTimePeriod = idleCheckTimePeriod;
+	}
+	public long getIdleCheckTimeInitDelay() {
+		return idleCheckTimeInitDelay;
+	}
+	public void setIdleCheckTimeInitDelay(long idleCheckTimeInitDelay) {
+		if(!this.checked && idleCheckTimeInitDelay>1000L)
+		this.idleCheckTimeInitDelay = idleCheckTimeInitDelay;
 	}
 	public String getPoolImplementClassName() {
 		return poolImplementClassName;
