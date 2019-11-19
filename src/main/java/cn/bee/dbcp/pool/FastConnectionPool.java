@@ -52,6 +52,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
@@ -94,8 +95,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool {
 	private ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
 	private ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
 	private ScheduledFuture<?> idleCheckSchFuture=null;
-	private ScheduledThreadPoolExecutor idleSchExecutor=new ScheduledThreadPoolExecutor(1);
-	
+	private ScheduledThreadPoolExecutor idleSchExecutor = new ScheduledThreadPoolExecutor(1,new ThreadFactory() {
+		public Thread newThread(Runnable r) {
+			Thread idleScanThread=new Thread(r);
+			idleScanThread.setDaemon(true);
+			idleScanThread.setName("IdleScanThread");
+			return idleScanThread;
+		}
+	});
+
 	private String poolName="";
 	private static String poolNamePrefix="Pool-";
 	private static AtomicInteger poolNameIndex=new AtomicInteger(1);
@@ -151,10 +159,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool {
 			this.setDaemon(true);
 			this.start();
 			
-	    	idleSchExecutor.setKeepAliveTime(5,TimeUnit.SECONDS);
-	    	idleSchExecutor.allowCoreThreadTimeOut(true);
-	      	idleSchExecutor.setMaximumPoolSize(1);
-	      	idleCheckSchFuture=idleSchExecutor.scheduleAtFixedRate(new Runnable() {
+			idleSchExecutor.setMaximumPoolSize(1);
+	      	idleCheckSchFuture=idleSchExecutor.scheduleAtFixedRate(new Runnable(){
 				public void run() {//check idle connection
 					closeIdleTimeoutConnection();
 				}
