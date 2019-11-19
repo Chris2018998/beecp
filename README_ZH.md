@@ -99,7 +99,7 @@ public class DataSourceConfig {
 1：下面为各连接池在mysql5.6的下测试结果（单位：毫秒）
 
 
-Bee_C(5.3623) > Vibur(6.5437) > Bee_F(6.8492) > HikariCP(9.0176)
+Bee_C(5.3623) > Bee_F(6.8492) > HikariCP(9.0176)
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191105_JDBCPool_I54300.log">20191105_JDBCPool_I54300.log</a>
  
