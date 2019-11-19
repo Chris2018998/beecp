@@ -30,35 +30,11 @@ DB restart after every pool test
 
 [INFO]2019-11-05 18:42:37-HikariPool-1 - Shutdown initiated...
 [INFO]2019-11-05 18:42:37-HikariPool-1 - Shutdown completed.
-[INFO]2019-11-05 18:43:53-[JDBC INFO]
-[INFO]2019-11-05 18:43:53-[Driver:com.mysql.jdbc.Driver]
-[INFO]2019-11-05 18:43:53-[URL:jdbc:mysql://localhost/test]
-[INFO]2019-11-05 18:43:53-
-
-[INFO]2019-11-05 18:43:53-Pool[Vibur -- Multiple thread query] -- Begin{1000threads X 1000iterate}
-[INFO]2019-11-05 18:44:06-Pool[Vibur -- Multiple thread query] -- Execution count:1000000,total time:6543662ms,avg time:6.5437ms,min time:0ms,max time:5619ms
-[INFO]2019-11-05 18:44:06-success count       :1000000
-[INFO]2019-11-05 18:44:06-fail count          :0
-[INFO]2019-11-05 18:44:06-avr(ms)             :6.5437
-[INFO]2019-11-05 18:44:06-min(ms)             :0
-[INFO]2019-11-05 18:44:06-max(ms)             :5619
-[INFO]2019-11-05 18:44:06-time==0ms           :996511
-[INFO]2019-11-05 18:44:06-1ms=<time<=10ms     :886
-[INFO]2019-11-05 18:44:06-10ms<time<=50ms     :117
-[INFO]2019-11-05 18:44:06-50ms<time<=100ms    :43
-[INFO]2019-11-05 18:44:06-100ms<time<=200ms   :57
-[INFO]2019-11-05 18:44:06-200ms<time<=500ms   :163
-[INFO]2019-11-05 18:44:06-500ms<time<=1000ms  :227
-[INFO]2019-11-05 18:44:06-1000ms<time<=2000ms :527
-[INFO]2019-11-05 18:44:06-2000ms<time<=8000ms :1469
-[INFO]2019-11-05 18:44:06-time>8000ms         :0
-[INFO]2019-11-05 18:44:06-
 
 [INFO]2019-11-05 18:44:57-[JDBC INFO]
 [INFO]2019-11-05 18:44:57-[Driver:com.mysql.jdbc.Driver]
 [INFO]2019-11-05 18:44:57-[URL:jdbc:mysql://localhost/test]
 [INFO]2019-11-05 18:44:57-
-
 
 [INFO]2019-11-05 18:44:57-Pool[BeeCP_Fair -- Multiple thread query] -- Begin{1000threads X 1000iterate}
 [INFO]2019-11-05 18:45:09-Pool[BeeCP_Fair -- Multiple thread query] -- Execution count:1000000,total time:6849202ms,avg time:6.8492ms,min time:0ms,max time:1794ms
@@ -105,4 +81,4 @@ DB restart after every pool test
 [INFO]2019-11-05 18:46:16-
 
 
-Performance Result:Bee_C(5.3623) > Vibur(6.5437) > Bee_F(6.8492) > HikariCP(9.0176)
+Performance Result:Bee_C(5.3623) > Bee_F(6.8492) > HikariCP(9.0176)
