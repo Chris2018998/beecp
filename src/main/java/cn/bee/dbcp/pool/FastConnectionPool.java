@@ -89,10 +89,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool {
 	
 	private Semaphore poolSemaphore;
 	private TransferPolicy tansferPolicy;
-	private volatile boolean surpportQryTimeout=true;
 	private volatile PooledConnection[] connArray= new PooledConnection[0];
 	private AtomicInteger createConnThreadState=new AtomicInteger(THREAD_WORKING);
-	private ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
+	private ConcurrentLinkedQueue<Borrower> waitTransferQueue = new ConcurrentLinkedQueue<Borrower>();
 	private ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
 	private ScheduledFuture<?> idleCheckSchFuture=null;
 	private ScheduledThreadPoolExecutor idleSchExecutor = new ScheduledThreadPoolExecutor(1,new ThreadFactory() {
@@ -159,7 +158,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool {
 			this.setDaemon(true);
 			this.start();
 			
-			idleSchExecutor.setMaximumPoolSize(1);
 	      	idleCheckSchFuture=idleSchExecutor.scheduleAtFixedRate(new Runnable(){
 				public void run() {//check idle connection
 					closeIdleTimeoutConnection();
@@ -226,7 +224,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool {
 		snapshotMap.put("activeConnections",totalConnections-idleConnections);
 		snapshotMap.put("semaphoreAcquiredSize",poolConfig.getConcurrentSize()-poolSemaphore.availablePermits());
 		snapshotMap.put("semaphoreWatingSize",poolSemaphore.getQueueLength());
-		snapshotMap.put("transferWatingSize",waitQueue.size());
+		snapshotMap.put("transferWatingSize",waitTransferQueue.size());
 		return snapshotMap;
 	}
 	 
@@ -250,7 +248,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool {
 				try {
 					st=pConn.connection.createStatement();
 					pConn.updateAccessTime();
-					setQueryTimeout(st);
+					st.setQueryTimeout(validationQueryTimeout);
 					st.execute(validationQuery);
 				} catch (SQLException e) {
 					isActive = false;
@@ -268,15 +266,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool {
 			}
 		}
 	}
-	private void setQueryTimeout(Statement st) {
-		if(surpportQryTimeout){
-			try {
-				st.setQueryTimeout(validationQueryTimeout);
-			} catch (SQLException e) {
-				surpportQryTimeout=false;
-			}
-		}
-	}
+	
 	private boolean testOnBorrow(PooledConnection pConn) {
 		return TestOnBorrow&&(currentTimeMillis()-pConn.lastAccessTime-ValidationIntervalMills>=0)?isActiveConn(pConn):true;	
 	}
@@ -306,8 +296,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool {
 					this.addPooledConn(new PooledConnection(con,this,poolConfig));
 				}
 			}
-			
-			log.info("created initialization pooledConn size:"+connArray.length);
 		} catch (SQLException e) {
 			for(PooledConnection pConn:connArray) 
 				removePooledConnection(pConn);
@@ -403,7 +391,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool {
 		TansferStateUpdater.set(borrower,BORROWER_NORMAL);
 		
 		try {// wait one transfered connection
-			waitQueue.offer(borrower);
+			waitTransferQueue.offer(borrower);
 			tryToCreateNewConnByAsyn();
 			
 			for(;;){
@@ -451,7 +439,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool {
 				}
 			}// for
 		} finally {
-			waitQueue.remove(borrower);
+			waitTransferQueue.remove(borrower);
 		}
     }
     
@@ -478,7 +466,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool {
 		tansferPolicy.beforeTransfer(pConn);
 
 		Object state = null;
-		for(Borrower borrower:waitQueue) {
+		for(Borrower borrower:waitTransferQueue) {
 			if(ConnStateUpdater.get(pConn) != ConUnCatchStateCode)
 				return;
 
@@ -500,7 +488,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool {
 	 */
 	private void transferException(SQLException exception){
 		Object state=null;
-		for(Borrower borrower:waitQueue){
+		for(Borrower borrower:waitTransferQueue){
 			state=TansferStateUpdater.get(borrower);
 			while(state==BORROWER_NORMAL||state ==BORROWER_WAITING){
 				if(TansferStateUpdater.compareAndSet(borrower, state, exception)){
@@ -536,7 +524,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool {
 						log.debug("PooledConn:"+pConn + " hold idle timeout in not using");
 						if(isActiveConn(pConn)){//return to pool
 						  release(pConn,false);
-						}else if(!waitQueue.isEmpty())//bad connection;
+						}else if(!waitTransferQueue.isEmpty())//bad connection;
 						  tryToCreateNewConnByAsyn();//<--why?    
 					}
 				} else if (state==CONNECTION_CLOSED) {
@@ -546,7 +534,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool {
 				}
 			}
 			
-			if(!waitQueue.isEmpty() && connArray.length==0){
+			if(!waitTransferQueue.isEmpty() && connArray.length==0){
 				tryToCreateNewConnByAsyn();
 			}
 		}
@@ -652,7 +640,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool {
 		ConnectionFactory connFactory= poolConfig.getConnectionFactory();
 		
 		while(createConnThreadState.get()==THREAD_WORKING){
-			if(PoolMaxSize>connArray.length && !waitQueue.isEmpty()){
+			if(PoolMaxSize>connArray.length && !waitTransferQueue.isEmpty()){
 				try {
 					if((con=connFactory.create())!=null){
 						pConn=new PooledConnection(con,this,poolConfig,CONNECTION_USING);
