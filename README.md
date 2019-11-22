@@ -17,7 +17,7 @@ Release download
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>1.3.3</version>
+   <version>1.3.4</version>
 </dependency>
 
 ```
@@ -102,7 +102,5 @@ project for performance test code,please visit：https://github.com/Chris2018998
 2：Test with HikariCP benchmark
 
 <img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191108_I3_7100_HikariCP_Bech_Pict.png"></img>
-
-<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191108_I3_7100_HikariCP_Bech.png"></img>
 
 Download <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/BenchBase.java">BenchBase.java</a>
