@@ -43,7 +43,6 @@
 ---
 ```java
 application.properties
-
 spring.datasource.username=xx
 spring.datasource.password=xx
 spring.datasource.url=xx
@@ -120,9 +119,9 @@ Download <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performa
 2：发布性能跑分对比图，并不是要挑战光连接池，而是希望吸引大家来质疑它，帮忙找找问题；如果您光连接池的支持者，希望此图不会引起您的不适，
   如果有，只能说声对不起了。
 
-3：如果您想转发对比图，请顺便附带个人补充说明，谢谢。
+3：如果您想转发跑分对比图，请顺便附带个人补充说明，谢谢。
 
-4: 本着对潜在的使用者负责的态度，个人希望推出一个高质量的连接池，希望能与网友们共同开发和维护。
+4：本着对潜在的使用者负责的态度，希望能与网友们共同开发和维护，推出一个高质量的连接池。
 
 5：个人的邮箱：Chris2018998@hotmail.com
 
