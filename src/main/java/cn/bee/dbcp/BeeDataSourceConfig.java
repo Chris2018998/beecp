@@ -31,7 +31,7 @@ import cn.bee.dbcp.pool.JdbcConnectionFactory;
  * @author Chris.Liao
  * @version 1.0
  */
-public class BeeDataSourceConfig{
+public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 
 	/**
 	 * indicator to not allow to modify configuration after initialization
