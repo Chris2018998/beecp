@@ -17,7 +17,6 @@ package cn.bee.dbcp.pool;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Map;
 
 import cn.bee.dbcp.BeeDataSourceConfig;
 
@@ -62,15 +61,7 @@ public interface ConnectionPool {
 	 * @param needTest, true check active
 	 */
 	public void release(PooledConnection pConn,boolean needTest);
-	
-	/**
-	 * get pool snapshot
-	 * 
-	 * @return pool current info
-	 * @throws SQLException if is not initialized or closed, will throw SQLException
-	 */
-	public Map<String,Integer> getPoolSnapshot()throws SQLException;
-	
+		
 	/**
 	 * close pool
 	 */
