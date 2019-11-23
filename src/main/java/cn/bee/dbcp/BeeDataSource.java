@@ -19,7 +19,6 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
-import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
@@ -85,12 +84,6 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	 */
 	public BeeDataSource(String driver, String url, String user, String password) {
 		super(driver,url,user,password);
-	}
-	
-	//return pool internal information
-	public Map<String,Integer> getPoolSnapshot()throws SQLException{
-		if(pool==null)throw new SQLException("Datasource not be initialized");
-		return pool.getPoolSnapshot();
 	}
 	
 	/**

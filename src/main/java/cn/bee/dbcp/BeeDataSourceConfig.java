@@ -37,7 +37,7 @@ public class BeeDataSourceConfig{
 	 * indicator to not allow to modify configuration after initialization
 	 */
 	private boolean checked;
-	
+
 	/**
 	 *  User
 	 */
@@ -189,6 +189,11 @@ public class BeeDataSourceConfig{
 	 * BeeCP implementation class name
 	 */
 	private String poolImplementClassName = DefaultImplementClassName;
+	
+	/**
+	 * enableJMX
+	 */
+	private boolean enableJMX;
 	
 	/**
 	 * Default implementation class name
@@ -435,7 +440,14 @@ public class BeeDataSourceConfig{
 			connectProperties.put(key, value);
 		}
 	}
-	
+
+	public boolean isEnableJMX() {
+		return enableJMX;
+	}
+	public void setEnableJMX(boolean enableJMX) {
+	  if(!this.checked)
+		this.enableJMX = enableJMX;
+	}
 	void copyTo(BeeDataSourceConfig config){
 		if(!config.checked){
 			config.username=this.username;
