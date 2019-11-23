@@ -361,7 +361,7 @@ public class BenchBase
 		config.setMaxActive(maxPoolSize);
 		config.setInitialSize(MIN_POOL_SIZE);
 		config.setMaxWait(8000);
-		config.setValidationQuery("select 1");
+		config.setValidationQuery("select 1 from dual");
 		config.setTestOnBorrow(true);
 		DS = new BeeDataSource(config);
     }
@@ -375,7 +375,7 @@ public class BenchBase
 		config.setMaxActive(maxPoolSize);
 		config.setInitialSize(MIN_POOL_SIZE);
 		config.setMaxWait(8000);
-		config.setValidationQuery("select 1");
+		config.setValidationQuery("select 1 from dual");
 		config.setTestOnBorrow(true);
 		config.setFairMode(true);
 		DS = new BeeDataSource(config);
