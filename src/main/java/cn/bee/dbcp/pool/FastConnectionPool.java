@@ -65,6 +65,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.bee.dbcp.BeeDataSourceConfig;
+import cn.bee.dbcp.BeeDataSourceConfigJMXBean;
 import cn.bee.dbcp.ConnectionFactory;
 import cn.bee.dbcp.pool.util.ConnectionUtil;
 
@@ -74,7 +75,7 @@ import cn.bee.dbcp.pool.util.ConnectionUtil;
  * @author Chris.Liao
  * @version 1.0
  */
-public final class FastConnectionPool extends Thread implements ConnectionPool, ConnectionPoolMXBean {
+public final class FastConnectionPool extends Thread implements ConnectionPool, ConnectionPoolJMXBean {
 	private ConnectionPoolHook exitHook;
 	private BeeDataSourceConfig poolConfig;
 
@@ -679,7 +680,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	public void reset() {
 		reset(false);// wait borrower release connection,then close them
 	}
-
 	// close all connections
 	public void reset(boolean force) {
 		if (poolState.compareAndSet(POOL_NORMAL, POOL_RESTING)) {
@@ -720,12 +720,21 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		if (poolConfig.isEnableJMX()) {
 			try {
 				final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-				final ObjectName beanPoolName = new ObjectName("cn.bee.dbcp.FastConnectionPool:type=" + poolName);
-				if (!mBeanServer.isRegistered(beanPoolName)) {
-					mBeanServer.registerMBean((ConnectionPoolMXBean) this, beanPoolName);
+				final ObjectName poolRegName = new ObjectName("cn.bee.dbcp.pool.FastConnectionPool:type=BeeCP("+poolName+")");
+				final ObjectName configRegName = new ObjectName("cn.bee.dbcp.BeeDataSourceConfig:type=BeeCP("+poolName+")-config");
+				
+				if (!mBeanServer.isRegistered(poolRegName)) {
+					mBeanServer.registerMBean((ConnectionPoolJMXBean)this,poolRegName);
 					log.info("Registered BeeCP(" + poolName + ")as jmx-bean");
 				} else {
-					log.error("Jmx-name BeeCP(" + poolName + ")has been exist");
+					log.error("Jmx-name BeeCP(" + poolName + ")has been exist in Jmx server");
+				}
+				
+				if (!mBeanServer.isRegistered(configRegName)) {
+					mBeanServer.registerMBean((BeeDataSourceConfigJMXBean)poolConfig,configRegName);
+					log.info("Registered BeeCP(" + poolName + ")config as jmx-bean");
+				} else {
+					log.error("Pool BeeCP(" + poolName + ")config has been exist in Jmx server");
 				}
 			} catch (Exception e) {
 				log.warn("Failed to register pool jmx-bean", e);
@@ -738,16 +747,21 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		if (poolConfig.isEnableJMX()) {
 			try {
 				final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-				final ObjectName beanPoolName = new ObjectName("cn.bee.dbcp.FastConnectionPool:type=" + poolName);
-				if (!mBeanServer.isRegistered(beanPoolName)) {
-					mBeanServer.unregisterMBean(beanPoolName);
+				final ObjectName poolRegName = new ObjectName("cn.bee.dbcp.pool.FastConnectionPool:type=BeeCP("+poolName+")");
+				final ObjectName configRegName = new ObjectName("cn.bee.dbcp.BeeDataSourceConfig:type=BeeCP("+poolName+")-config");
+				
+				if(mBeanServer.isRegistered(poolRegName)) {
+					 mBeanServer.unregisterMBean(poolRegName);
+				}
+				
+				if(mBeanServer.isRegistered(configRegName)) {
+				  mBeanServer.unregisterMBean(configRegName);
 				}
 			} catch (Exception e) {
 				log.warn("Failed to unregister pool jmx-bean", e);
 			}
 		}
 	}
-
 	/******************************** JMX **************************************/
 
 	// Transfer Policy

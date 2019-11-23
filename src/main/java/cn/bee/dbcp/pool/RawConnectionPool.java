@@ -43,7 +43,7 @@ import cn.bee.dbcp.pool.util.ConnectionUtil;
  * @author Chris.Liao
  * @version 1.0
  */
-public final class RawConnectionPool implements ConnectionPool, ConnectionPoolMXBean {
+public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJMXBean {
 	private Semaphore poolSemaphore;
 	private long DefaultMaxWaitMills;
 	private BeeDataSourceConfig poolConfig;
@@ -163,12 +163,12 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolMX
 		if (poolConfig.isEnableJMX()) {
 			try {
 				final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-				final ObjectName beanPoolName = new ObjectName("cn.bee.dbcp.RawConnectionPool:type=" + poolName);
+				final ObjectName beanPoolName = new ObjectName("cn.bee.dbcp.pool.RawConnectionPool:type=" + poolName);
 				if (!mBeanServer.isRegistered(beanPoolName)) {
-					mBeanServer.registerMBean((ConnectionPoolMXBean) this, beanPoolName);
+					mBeanServer.registerMBean((ConnectionPoolJMXBean) this, beanPoolName);
 					log.info("Registered BeeCP(" + poolName + ")as jmx-bean");
 				} else {
-					log.error("Jmx-name BeeCP(" + poolName + ")has been exist");
+					log.error("Jmx-name BeeCP(" + poolName + ")has been exist in jmx server");
 				}
 			} catch (Exception e) {
 				log.warn("Failed to register pool jmx-bean", e);
@@ -181,7 +181,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolMX
 		if (poolConfig.isEnableJMX()) {
 			try {
 				final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-				final ObjectName beanPoolName = new ObjectName("cn.bee.dbcp.RawConnectionPool:type=" + poolName);
+				final ObjectName beanPoolName = new ObjectName("cn.bee.dbcp.pool.RawConnectionPool:type=" + poolName);
 				if (!mBeanServer.isRegistered(beanPoolName)) {
 					mBeanServer.unregisterMBean(beanPoolName);
 				}
