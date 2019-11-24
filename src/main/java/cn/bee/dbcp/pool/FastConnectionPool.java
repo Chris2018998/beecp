@@ -357,8 +357,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					if (con != null)
 						return con;
 
-					if (Thread.currentThread().isInterrupted())
-						throw RequestInterruptException;
+					if (borrower.thread.isInterrupted())
+					    throw RequestInterruptException;
 					throw RequestTimeoutException;
 				} finally {
 					poolSemaphore.release();
