@@ -123,5 +123,5 @@ Download <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performa
 
 4：希望能与网友们共同开发和维护，推出一个高质量连接池。
 
-5：个人的邮箱：Chris2018998@hotmail.com
+5：个人的邮箱：Chris2018998@tom.com
 
