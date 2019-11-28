@@ -15,12 +15,12 @@
  */
 package cn.bee.dbcp.pool;
 
+import static cn.bee.dbcp.pool.PoolExceptionList.ResultSetClosedException;
 import static cn.bee.dbcp.pool.util.ConnectionUtil.oclose;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import static cn.bee.dbcp.pool.PoolExceptionList.ResultSetClosedException;
 
 /**
  * ResultSet proxy base class
@@ -54,5 +54,18 @@ public abstract class ProxyResultSetBase implements ResultSet {
 			delegate = null;
 			proxyStatement=null;
 		}
+	}
+	public final boolean isWrapperFor(Class<?> iface) throws SQLException {
+		checkClose();
+		return iface.isInstance(delegate);
+	}
+	@SuppressWarnings("unchecked")
+	public final <T> T unwrap(Class<T> iface) throws SQLException{
+	  checkClose();
+	  if (iface.isInstance(delegate)) {
+         return (T)this;
+      }else {
+    	  throw new SQLException("Wrapped object is not an instance of " + iface);
+      } 
 	}
 }

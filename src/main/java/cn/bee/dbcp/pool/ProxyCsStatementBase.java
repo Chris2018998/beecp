@@ -16,8 +16,9 @@
 package cn.bee.dbcp.pool;
 
 import static cn.bee.dbcp.pool.util.ConnectionUtil.oclose;
-import java.sql.SQLException;
+
 import java.sql.CallableStatement;
+import java.sql.SQLException;
 
 /**
  * ProxyCStatementBase
@@ -42,5 +43,18 @@ public abstract class ProxyCsStatementBase extends ProxyStatementTop{
 			this.delegate = null;
 			this.proxyConnection =null;
 		}
+	}
+	public final boolean isWrapperFor(Class<?> iface) throws SQLException {
+		checkClose();
+		return iface.isInstance(delegate);
+	}
+	@SuppressWarnings("unchecked")
+	public final <T> T unwrap(Class<T> iface) throws SQLException{
+	  checkClose();
+	  if (iface.isInstance(delegate)) {
+         return (T)this;
+      }else {
+    	  throw new SQLException("Wrapped object is not an instance of " + iface);
+      } 
 	}
 }

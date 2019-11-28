@@ -160,6 +160,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			
 			createInitConns();
 			this.setDaemon(true);
+			this.setName("ConnectionAdd");
 			this.start();
 			
 			poolSemaphore = new Semaphore(poolConfig.getConcurrentSize(), poolConfig.isFairMode());
@@ -183,20 +184,22 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 	private synchronized PooledConnection createPooledConn(int connState)throws SQLException{
 		Connection con = null;
+		PooledConnection pConn=null;
 		try {
-			con = connFactory.create();
+			con=connFactory.create();
+			pConn=new PooledConnection(con, this, poolConfig, connState);// add	
 		} catch (SQLException e) {
 			oclose(con);
 			throw e;
 		}
 		
 		int oldLen = connArray.length;
-		PooledConnection[] arrayNew = new PooledConnection[oldLen + 1];
-		arrayNew[oldLen] = new PooledConnection(con, this, poolConfig, connState);// add																		// tail
+		PooledConnection[] arrayNew = new PooledConnection[oldLen + 1];														
 		System.arraycopy(connArray, 0, arrayNew, 0, oldLen);
+		arrayNew[oldLen]=pConn;//tail	
 		connArray = arrayNew;
-		log.debug("create pooledConn:"+arrayNew[oldLen]);
-		return arrayNew[oldLen];
+		log.debug("create pooledConn:"+pConn);
+		return pConn;
 	}
 	private synchronized void removePooledConn(PooledConnection pooledCon) {
 		pooledCon.closePhysicalConnection();
@@ -291,7 +294,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 * @throws SQLException
 	 *             error occurred in creating connections
 	 */
-	protected void createInitConns() throws SQLException {
+	private void createInitConns() throws SQLException {
 		int size = poolConfig.getInitialSize();
 		try {
 			for (int i = 0; i < size; i++) 
@@ -422,35 +425,33 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 				if (thread.isInterrupted()) {
 					if (TansferStateUpdater.compareAndSet(borrower, stateObject, BORROWER_INTERRUPTED))
-						return null;
+						break;
 					continue;
 				}
 
 				if (isTimeout) {
 					if (TansferStateUpdater.compareAndSet(borrower, stateObject, BORROWER_TIMEOUT))
-						return null;
+						break;
 					continue;
 				}
 
 				if ((waitTime = deadline - nanoTime()) <= 0) {
 					isTimeout = true;
 					if (TansferStateUpdater.compareAndSet(borrower, stateObject, BORROWER_TIMEOUT))
-						return null;
+						break;
 					continue;
 				}
 
-				if (spinSize-- > 0)
-					continue;// spin
+				if (spinSize-- > 0)continue;// spin
 				if (TansferStateUpdater.compareAndSet(borrower, stateObject, BORROWER_WAITING)) {
 					LockSupport.parkNanos(borrower, waitTime);
-					if (TansferStateUpdater.get(borrower) == BORROWER_WAITING) {
-						TansferStateUpdater.compareAndSet(borrower, BORROWER_WAITING, BORROWER_NORMAL);
-					}
+					TansferStateUpdater.compareAndSet(borrower, BORROWER_WAITING, BORROWER_NORMAL);
 				}
 			} // for
 		} finally {
 			waitTransferQueue.remove(borrower);
 		}
+		return null;
 	}
 
 	// create proxy to wrap connection as result

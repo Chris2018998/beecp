@@ -15,6 +15,7 @@
  */
 package cn.bee.dbcp.pool;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -37,5 +38,18 @@ public abstract class ProxyDatabaseMetaDataBase implements DatabaseMetaData {
 	}
 	protected void checkClose() throws SQLException {
 		proxyConnection.checkClose();
+	}
+	public final boolean isWrapperFor(Class<?> iface) throws SQLException {
+		checkClose();
+		return iface.isInstance(delegate);
+	}
+	@SuppressWarnings("unchecked")
+	public final <T> T unwrap(Class<T> iface) throws SQLException{
+	  checkClose();
+	  if (iface.isInstance(delegate)) {
+         return (T)this;
+      }else {
+    	  throw new SQLException("Wrapped object is not an instance of " + iface);
+      } 
 	}
 }
