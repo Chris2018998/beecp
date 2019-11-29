@@ -62,17 +62,17 @@ public interface BeeDataSourceConfigJMXBean {
 	
 	public long getHoldIdleTimeout();
 	
-	public String getValidationQuery();
+	public String getConnectionTestSQL();
 	
-	public int getValidationQueryTimeout();
+	public int getConnectionTestTimeout();
 	
-	public long getValidationInterval();
+	public long getConnectionTestInterval();
 
 	public boolean isForceCloseConnection();
 	
 	public long getWaitTimeToClearPool();
 	
-	public long getIdleCheckTimePeriod();
+	public long getIdleCheckTimeInterval();
 	
 	public long getIdleCheckTimeInitDelay();
 

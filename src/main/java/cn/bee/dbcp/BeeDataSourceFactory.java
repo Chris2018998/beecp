@@ -157,9 +157,9 @@ public final class BeeDataSourceFactory implements ObjectFactory {
 		if (!isNull(maxWait))
 			config.setMaxWait(Integer.parseInt(maxWait));
 		if (!isNull(validationQuerySQL))
-			config.setValidationQuery(validationQuerySQL);
+			config.setConnectionTestSQL(validationQuerySQL);
 		if (!isNull(validationQueryTimeout))
-			config.setValidationQueryTimeout(Integer.parseInt(validationQueryTimeout));
+			config.setConnectionTestTimeout(Integer.parseInt(validationQueryTimeout));
 		if (!isNull(connectionIdleTimeout))
 			config.setIdleTimeout(Integer.parseInt(connectionIdleTimeout));
 	

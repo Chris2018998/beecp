@@ -180,6 +180,7 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 			pool.init(config);
 			return pool;
 		} catch (SQLException e) {
+			e.printStackTrace();
 			throw new ExceptionInInitializerError(e);
 		} catch (ClassNotFoundException e) {
 			throw new ExceptionInInitializerError("Not found conneciton pool implementation class:" + poolImplementClassName);

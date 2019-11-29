@@ -16,6 +16,7 @@
 package cn.bee.dbcp;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.sql.Connection;
 import java.sql.Driver;
@@ -137,7 +138,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	/**
 	 * borrower request timeout(milliseconds)
 	 */
-	protected long maxWait=8000;
+	protected long maxWait=SECONDS.toMillis(8);
 
 	/**
 	 * max idle time for pooledConnection(milliseconds),default value: three minutes
@@ -153,17 +154,17 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	/**
 	 * a test SQL to check connection active state
 	 */
-	private String validationQuery = "select 1 from dual";
+	private String connectionTestSQL = "select 1 from dual";
 
 	/**
 	 * connection validate timeout:5 seconds
 	 */
-	private int validationQueryTimeout = 5;
+	private int connectionTestTimeout = 5;
 	 
 	/**
 	 * milliseconds,max inactive time to check active for borrower
 	 */
-	private long validationInterval = 500L;
+	private long connectionTestInterval = 500L;
 	
 	/**
 	 * close all connections in force when shutdown
@@ -178,12 +179,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	/**
 	 * milliseconds,idle Check Time Period 
 	 */
-	private long idleCheckTimePeriod=180000L;
+	private long idleCheckTimeInterval=MINUTES.toMillis(3);
 	
 	/**
 	 * milliseconds,idle Check Time initialize delay
 	 */
-	private long idleCheckTimeInitDelay=60000L;
+	private long idleCheckTimeInitDelay=SECONDS.toMillis(1);
 
 	/**
 	 * BeeCP implementation class name
@@ -369,26 +370,26 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		if(!this.checked && maxHoldTimeInUnused>0) 
 		this.holdIdleTimeout = maxHoldTimeInUnused;
 	}
-	public String getValidationQuery() {
-		return validationQuery;
+	public String getConnectionTestSQL() {
+		return connectionTestSQL;
 	}
-	public void setValidationQuery(String validationQuery) {
+	public void setConnectionTestSQL(String validationQuery) {
 	if (!this.checked && !isNull(validationQuery)) 
-		this.validationQuery = validationQuery;
+		this.connectionTestSQL = validationQuery;
 	}
-	public int getValidationQueryTimeout() {
-		return validationQueryTimeout;
+	public int getConnectionTestTimeout() {
+		return connectionTestTimeout;
 	}
-	public void setValidationQueryTimeout(int validationQueryTimeout) {
+	public void setConnectionTestTimeout(int validationQueryTimeout) {
 		if(!this.checked && validationQueryTimeout>0) 
-		this.validationQueryTimeout = validationQueryTimeout;
+		this.connectionTestTimeout = validationQueryTimeout;
 	}
-	public long getValidationInterval() {
-		return validationInterval;
+	public long getConnectionTestInterval() {
+		return connectionTestInterval;
 	}
-	public void setValidationInterval(long validationInterval) {
+	public void setConnectionTestInterval(long validationInterval) {
 		if(!this.checked && validationInterval>0) 
-		this.validationInterval = validationInterval;
+		this.connectionTestInterval = validationInterval;
 	}
 
 	public boolean isForceCloseConnection() {
@@ -403,22 +404,22 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		return waitTimeToClearPool;
 	}
 	public void setWaitTimeToClearPool(long waitTimeToClearPool) {
-	  if(!this.checked && waitTimeToClearPool>0)
+	  if(!this.checked && waitTimeToClearPool>=0)
 		this.waitTimeToClearPool = waitTimeToClearPool;
 	}
 
-	public long getIdleCheckTimePeriod() {
-		return idleCheckTimePeriod;
+	public long getIdleCheckTimeInterval() {
+		return idleCheckTimeInterval;
 	}
-	public void setIdleCheckTimePeriod(long idleCheckTimePeriod) {
-		if(!this.checked && idleCheckTimePeriod>1000L)
-		this.idleCheckTimePeriod = idleCheckTimePeriod;
+	public void setIdleCheckTimeInterval(long idleCheckTimeInterval) {
+		if(!this.checked && idleCheckTimeInterval>=1000L)
+		this.idleCheckTimeInterval = idleCheckTimeInterval;
 	}
 	public long getIdleCheckTimeInitDelay() {
 		return idleCheckTimeInitDelay;
 	}
 	public void setIdleCheckTimeInitDelay(long idleCheckTimeInitDelay) {
-		if(!this.checked && idleCheckTimeInitDelay>1000L)
+		if(!this.checked && idleCheckTimeInitDelay>=1000L)
 		this.idleCheckTimeInitDelay = idleCheckTimeInitDelay;
 	}
 	public String getPoolImplementClassName() {
@@ -471,12 +472,14 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 			config.defaultReadOnly=this.defaultReadOnly;
 			config.maxWait=this.maxWait;
 			config.idleTimeout=this.idleTimeout;
-			config.holdIdleTimeout=this.idleTimeout;
-			config.validationQuery=this.validationQuery;
-			config.validationQueryTimeout=this.validationQueryTimeout;
-			config.validationInterval=this.validationInterval;
+			config.holdIdleTimeout=this.holdIdleTimeout;
+			config.connectionTestSQL=this.connectionTestSQL;
+			config.connectionTestTimeout=this.connectionTestTimeout;
+			config.connectionTestInterval=this.connectionTestInterval;
 			config.forceCloseConnection=this.forceCloseConnection;
 			config.waitTimeToClearPool=this.waitTimeToClearPool;
+			config.idleCheckTimeInitDelay=this.idleCheckTimeInitDelay;
+			config.idleCheckTimeInterval=this.idleCheckTimeInterval;
 			config.poolImplementClassName=this.poolImplementClassName;
 		}
 	}
@@ -553,7 +556,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		
 		//fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 begin
 		//if (this.validationQuerySQL != null && validationQuerySQL.trim().length() == 0) {
-		if (!isNull(this.validationQuery) && !this.validationQuery.trim().toLowerCase().startsWith("select "))
+		if (!isNull(this.connectionTestSQL) && !this.connectionTestSQL.trim().toLowerCase().startsWith("select "))
 		//fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end	
 			throw new IllegalArgumentException("Connection validate SQL must start with 'select '");
 		//}
