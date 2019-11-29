@@ -93,6 +93,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private Semaphore poolSemaphore;
 	private TransferPolicy tansferPolicy;
 	private ConnectionFactory connFactory;
+	private Object connArraySyn=new Object();
 	private volatile PooledConnection[] connArray = new PooledConnection[0];
 	private AtomicInteger createConnThreadState = new AtomicInteger(THREAD_WORKING);
 	private ConcurrentLinkedQueue<Borrower> waitTransferQueue = new ConcurrentLinkedQueue<Borrower>();
@@ -189,43 +190,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		}
 	}
 
-	private synchronized PooledConnection createPooledConn(int connState)throws SQLException{
-		if(PoolMaxSize <= connArray.length)return null;
-		
-		Connection con = null;
-		PooledConnection pConn=null;
-		try {
-			con=connFactory.create();
-			pConn=new PooledConnection(con, this, poolConfig, connState);// add	
-		} catch (SQLException e) {
-			oclose(con);
-			throw e;
-		}
-		
-		int oldLen = connArray.length;
-		PooledConnection[] arrayNew = new PooledConnection[oldLen + 1];														
-		System.arraycopy(connArray, 0, arrayNew, 0, oldLen);
-		arrayNew[oldLen]=pConn;//tail	
-		connArray = arrayNew;
-		log.debug("create pooledConn:"+pConn);
-		return pConn;
-	}
-	private synchronized void removePooledConn(PooledConnection pooledCon,String removeType) {
-		pooledCon.closePhysicalConnection();
-		int oldLen = connArray.length;
-		PooledConnection[] arrayNew = new PooledConnection[oldLen - 1];
-		for (int i = 0; i < oldLen; i++) {
-			if (connArray[i] == pooledCon) {
-				System.arraycopy(connArray, i + 1, arrayNew, i, oldLen - i - 1);
-				break;
-			} else {
-				arrayNew[i] = connArray[i];
-			}
-		}
-		connArray = arrayNew;
-		log.debug("Removed "+removeType+" pooledConn:" + pooledCon);
-	}
-
 	/**
 	 * check some proxy classes whether exists
 	 */
@@ -243,6 +207,47 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		}
 	}
 
+	private PooledConnection createPooledConn(int connState)throws SQLException{
+		synchronized(connArraySyn){
+			if(connArray.length>=PoolMaxSize)return null;
+			
+			Connection con = null;
+			PooledConnection pConn=null;
+			try {
+				con=connFactory.create();
+				pConn=new PooledConnection(con, this, poolConfig, connState);//add	
+			} catch (SQLException e) {
+				oclose(con);
+				throw e;
+			}
+			
+			int oldLen = connArray.length;
+			PooledConnection[] arrayNew = new PooledConnection[oldLen + 1];														
+			System.arraycopy(connArray, 0, arrayNew, 0, oldLen);
+			arrayNew[oldLen]=pConn;//tail	
+			connArray = arrayNew;
+			log.debug("Created pooledConn:"+pConn);
+			return pConn;
+		} 
+	}
+	private void removePooledConn(PooledConnection pConn,String removeType) {
+		synchronized(connArraySyn){
+			pConn.closePhysicalConnection();
+			int oldLen = connArray.length;
+			PooledConnection[] arrayNew = new PooledConnection[oldLen - 1];
+			for (int i = 0; i < oldLen; i++) {
+				if (connArray[i] == pConn) {
+					System.arraycopy(connArray, i + 1, arrayNew, i, oldLen - i - 1);
+					break;
+				} else {
+					arrayNew[i] = connArray[i];
+				}
+			}
+			connArray = arrayNew;
+			log.debug("Removed "+removeType+" pooledConn:" + pConn);
+		}
+	}
+	
 	private boolean existBorrower() {
 		return poolConfig.getConcurrentSize() - poolSemaphore.availablePermits() + poolSemaphore.getQueueLength() > 0;
 	}
@@ -676,9 +681,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		if (poolState.compareAndSet(POOL_NORMAL, POOL_RESTING)) {
 			log.info("Pool begin to reset.");
 			removeAllConnections(force,DESC_REMOVE_RESET);
-			log.info("All pooledConns are cleared");
+			log.info("All pooledConns were cleared");
 			poolState.set(POOL_NORMAL);// restore state;
-			log.info("Pool finished reset");
+			log.info("Pool finished reseting");
 		}
 	}
 	public int getConnTotalSize(){
