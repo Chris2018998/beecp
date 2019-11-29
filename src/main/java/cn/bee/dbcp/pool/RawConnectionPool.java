@@ -140,13 +140,13 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 
 	public void reset(boolean force) {}
 
-	public int getTotalConnSize(){
+	public int getConnTotalSize(){
 		return 0;
 	}
-	public int getIdleConnSize(){
+	public int getConnIdleSize(){
 		return 0;
 	}
-	public int getActiveConnSize(){
+	public int getConnUsingSize(){
 		return 0;
 	}
 	public int getSemaphoreAcquiredSize(){

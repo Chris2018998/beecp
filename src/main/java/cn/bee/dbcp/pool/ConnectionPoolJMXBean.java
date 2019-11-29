@@ -35,13 +35,13 @@ public interface ConnectionPoolJMXBean {
 	public void reset(boolean force);
 	
 	//return connection total size in pool
-	public int getTotalConnSize();
+	public int getConnTotalSize();
 	 
 	//return connection idle size in pool
-	public int getIdleConnSize();
+	public int getConnIdleSize();
 	
 	//return connection active size in pool
-	public int getActiveConnSize();
+	public int getConnUsingSize();
 
 	public int getSemaphoreAcquiredSize();
 
