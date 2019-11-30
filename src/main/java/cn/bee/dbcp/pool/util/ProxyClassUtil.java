@@ -235,10 +235,12 @@ public final class ProxyClassUtil {
 			//............Result End...............
 			
 		  this.createProxyConnectionClass(classPool,ctConIntfProxyImplClass,ctConIntf,ctConSuperclass);
-		  CtClass ctStatementSuperClass= classPool.get(ProxyStatementBase.class.getName());
-		  this.createProxyStatementClass(classPool,ctStatementProxyImplClass,ctStatementIntf,ctStatementSuperClass);
-		  this.createProxyPsStatementClass(classPool,ctPsStatementProxyImplClass,ctPsStatementIntf,ctStatementSuperClass);
-		  this.createProxyCsStatementClass(classPool,ctCsStatementProxyImplClass,ctCsStatementIntf,ctStatementSuperClass);
+		  CtClass statementSuperClass= classPool.get(ProxyStatementBase.class.getName());
+		  CtClass psStatementSuperClass= classPool.get(ProxyPsStatementBase.class.getName());
+		  CtClass csStatementSuperClass= classPool.get(ProxyCsStatementBase.class.getName());
+		  this.createProxyStatementClass(classPool,ctStatementProxyImplClass,ctStatementIntf,statementSuperClass);
+		  this.createProxyPsStatementClass(classPool,ctPsStatementProxyImplClass,ctPsStatementIntf,psStatementSuperClass);
+		  this.createProxyCsStatementClass(classPool,ctCsStatementProxyImplClass,ctCsStatementIntf,csStatementSuperClass);
 		  this.createProxyDatabaseMetaDataClass(classPool,ctDatabaseMetaDataProxyImplClass,ctDatabaseMetaDataIntf,ctDatabaseMetaDataSuperClass);
 		  this.createProxyResultSetClass(classPool,ctResultSetIntfProxyImplClass,ctResultSetIntf,ctResultSetSuperclass);
 
@@ -282,7 +284,7 @@ public final class ProxyClassUtil {
 	 * @throws Exception some error occurred 
 	 */
 	private Class createProxyConnectionClass(ClassPool classPool,CtClass ctConIntfProxyClass,CtClass ctConIntf,CtClass ctConSuperClass)throws Exception{
-		CtMethod[] ctSuperClassMethods = ctConSuperClass.getDeclaredMethods();
+		CtMethod[] ctSuperClassMethods = ctConSuperClass.getMethods();
 		HashSet notNeedAddProxyMethods= new HashSet();
 		for(int i=0,l=ctSuperClassMethods.length;i<l;i++){
 			int modifiers=ctSuperClassMethods[i].getModifiers();
@@ -367,7 +369,7 @@ public final class ProxyClassUtil {
 	}
 	
 	private Class createProxyStatementClass(ClassPool classPool, CtClass ctStatementProxyClass,CtClass ctStatementIntf, CtClass ctStatementSuperClass) throws Exception {
-		CtMethod[] ctSuperClassMethods = ctStatementSuperClass.getDeclaredMethods();
+		CtMethod[] ctSuperClassMethods = ctStatementSuperClass.getMethods();
 		HashSet superClassSignatureSet = new HashSet();
 		for (int i = 0, l = ctSuperClassMethods.length; i < l; i++) {
 			int modifiers = ctSuperClassMethods[i].getModifiers();
@@ -412,7 +414,7 @@ public final class ProxyClassUtil {
 	
  
 	private Class createProxyPsStatementClass(ClassPool classPool,CtClass ctPsStatementProxyClass,CtClass ctPsStatementIntf,CtClass ctPsStatementSuperClass)throws Exception{
-		CtMethod[] ctSuperClassMethods = ctPsStatementSuperClass.getDeclaredMethods();
+		CtMethod[] ctSuperClassMethods = ctPsStatementSuperClass.getMethods();
 		HashSet superClassSignatureSet= new HashSet();
 		for(int i=0,l=ctSuperClassMethods.length;i<l;i++){
 			int modifiers=ctSuperClassMethods[i].getModifiers();
@@ -458,7 +460,7 @@ public final class ProxyClassUtil {
 	}
 	
 	private Class createProxyCsStatementClass(ClassPool classPool,CtClass ctCsStatementProxyClass,CtClass ctCsStatementIntf,CtClass ctCsStatementSuperClass)throws Exception{
-		CtMethod[] ctSuperClassMethods = ctCsStatementSuperClass.getDeclaredMethods();
+		CtMethod[] ctSuperClassMethods = ctCsStatementSuperClass.getMethods();
 		HashSet superClassSignatureSet= new HashSet();
 		for(int i=0,l=ctSuperClassMethods.length;i<l;i++){
 			int modifiers=ctSuperClassMethods[i].getModifiers();
@@ -504,7 +506,7 @@ public final class ProxyClassUtil {
 	
 	//ctDatabaseMetaDataProxyImplClass,ctDatabaseMetaDataIntf,ctDatabaseMetaDataSuperClass
 	private Class createProxyDatabaseMetaDataClass(ClassPool classPool,CtClass ctDatabaseMetaDataProxyImplClass,CtClass ctDatabaseMetaDataIntf,CtClass ctDatabaseMetaDataSuperClass)throws Exception{
-		CtMethod[] ctSuperClassMethods = ctDatabaseMetaDataSuperClass.getDeclaredMethods();
+		CtMethod[] ctSuperClassMethods = ctDatabaseMetaDataSuperClass.getMethods();
 		HashSet superClassSignatureSet= new HashSet();
 		for(int i=0,l=ctSuperClassMethods.length;i<l;i++){
 			int modifiers=ctSuperClassMethods[i].getModifiers();
@@ -544,7 +546,7 @@ public final class ProxyClassUtil {
 	}
 	
 	private Class createProxyResultSetClass(ClassPool classPool,CtClass ctResultSetIntfProxyClass,CtClass ctResultSetIntf,CtClass ctResultSetIntfSuperClass)throws Exception{
-		CtMethod[] ctSuperClassMethods = ctResultSetIntfSuperClass.getDeclaredMethods();
+		CtMethod[] ctSuperClassMethods = ctResultSetIntfSuperClass.getMethods();
 		HashSet superClassSignatureSet= new HashSet();
 		for(int i=0,l=ctSuperClassMethods.length;i<l;i++){
 			int modifiers=ctSuperClassMethods[i].getModifiers();
