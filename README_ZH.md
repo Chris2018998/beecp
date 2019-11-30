@@ -22,7 +22,7 @@
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>1.4</version>
+   <version>1.4.1</version>
 </dependency>
 
 ```
