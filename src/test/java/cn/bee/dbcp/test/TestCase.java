@@ -22,8 +22,7 @@ public class TestCase {
 		} finally {
 			try {
 				tearDown();
-			} catch (Throwable e) {
-			}
+			} catch (Throwable e) {}
 		}
 	}
 	
