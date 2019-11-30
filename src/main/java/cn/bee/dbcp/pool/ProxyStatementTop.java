@@ -34,6 +34,7 @@ public abstract class ProxyStatementTop {
 		this.proxyConnection = proxyConnection;
 	}
 	public Connection getConnection() throws SQLException{
+		checkClose();
 		return proxyConnection;
 	}
 	protected void checkClose() throws SQLException {

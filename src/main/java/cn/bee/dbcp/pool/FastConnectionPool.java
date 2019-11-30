@@ -170,7 +170,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			this.setDaemon(true);
 			this.setName("ConnectionAdd");
 			this.start();
-			
+
 			poolSemaphore = new Semaphore(poolConfig.getConcurrentSize(), poolConfig.isFairMode());
 			log.info("BeeCP(" + poolName + ")has been startup{init size:" + connArray.length + ",max size:"
 					+ config.getMaxActive() + ",concurrent size:" + poolConfig.getConcurrentSize() + ",mode:" + mode
@@ -203,35 +203,37 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			Class.forName("cn.bee.dbcp.pool.ProxyDatabaseMetaData", true, classLoader);
 			Class.forName("cn.bee.dbcp.pool.ProxyResultSet", true, classLoader);
 		} catch (ClassNotFoundException e) {
-			throw new SQLException("some pool jdbc proxy classes are missed");
+			throw new SQLException("Some pool jdbc proxy classes are missed");
 		}
 	}
 
-	private PooledConnection createPooledConn(int connState)throws SQLException{
-		synchronized(connArraySyn){
-			if(connArray.length>=PoolMaxSize)return null;
-			
-			Connection con = null;
-			PooledConnection pConn=null;
-			try {
-				con=connFactory.create();
-				pConn=new PooledConnection(con, this, poolConfig, connState);//add	
-			} catch (SQLException e) {
-				oclose(con);
-				throw e;
-			}
-			
+	private PooledConnection createPooledConn(int connState) throws SQLException {
+		synchronized(connArraySyn) {
 			int oldLen = connArray.length;
-			PooledConnection[] arrayNew = new PooledConnection[oldLen + 1];														
-			System.arraycopy(connArray, 0, arrayNew, 0, oldLen);
-			arrayNew[oldLen]=pConn;//tail	
-			connArray = arrayNew;
-			log.debug("Created pooledConn:"+pConn);
-			return pConn;
+			if (oldLen < PoolMaxSize) {
+				Connection con = null;
+				PooledConnection pConn = null;
+				try {
+					con = connFactory.create();
+					pConn = new PooledConnection(con, this, poolConfig, connState);// add
+				} catch (SQLException e) {
+					oclose(con);
+					throw e;
+				}
+
+				PooledConnection[] arrayNew = new PooledConnection[oldLen + 1];
+				System.arraycopy(connArray, 0, arrayNew, 0, oldLen);
+				arrayNew[oldLen] = pConn;// tail
+				connArray = arrayNew;
+				log.debug("Created pooledConn:" + pConn);
+				return pConn;
+			}else{
+				return null;
+			}
 		} 
 	}
 	private void removePooledConn(PooledConnection pConn,String removeType) {
-		synchronized(connArraySyn){
+		synchronized(connArraySyn) {
 			pConn.closePhysicalConnection();
 			int oldLen = connArray.length;
 			PooledConnection[] arrayNew = new PooledConnection[oldLen - 1];
@@ -243,9 +245,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					arrayNew[i] = connArray[i];
 				}
 			}
+			
 			connArray = arrayNew;
 			log.debug("Removed "+removeType+" pooledConn:" + pConn);
-		}
+		} 
 	}
 	
 	private boolean existBorrower() {
@@ -408,8 +411,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		}
 		
 		//create directly
-		PooledConnection pConn = null;
-		if(connArray.length<PoolMaxSize &&((pConn=this.createPooledConn(CONNECTION_USING))!=null)){
+ 		PooledConnection pConn = null;
+		if(connArray.length<PoolMaxSize && (pConn=this.createPooledConn(CONNECTION_USING))!=null){
 			return createProxyConnection(pConn,borrower);
 		}
 		
@@ -417,11 +420,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		boolean isTimeout = false;
 		Object stateObject = null;
 		int spinSize = maxTimedSpins;
-		Thread thread = borrower.thread;
 		TansferStateUpdater.set(borrower, BORROWER_NORMAL);
 		
 		try {// wait one transfered connection
 			waitTransferQueue.offer(borrower);
+			//this.tryToCreateNewConnByAsyn();
 			
 			for (;;) {
 				stateObject = TansferStateUpdater.get(borrower);
@@ -440,7 +443,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					throw (SQLException) stateObject;
 				}
 
-				if (thread.isInterrupted()) {
+				if (borrower.thread.isInterrupted()) {
 					if (TansferStateUpdater.compareAndSet(borrower, stateObject, BORROWER_INTERRUPTED))
 						break;
 					continue;
@@ -656,7 +659,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	public void run() {
 		PooledConnection pConn=null;
 		while (createConnThreadState.get()==THREAD_WORKING) {
-			if (connArray.length<PoolMaxSize && !waitTransferQueue.isEmpty()) {
+			if (!waitTransferQueue.isEmpty() && connArray.length<PoolMaxSize) {
 				try {
 				 if((pConn=this.createPooledConn(CONNECTION_USING))!=null)
 					release(pConn,false);
