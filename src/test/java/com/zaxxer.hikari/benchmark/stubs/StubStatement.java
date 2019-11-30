@@ -16,9 +16,6 @@
 
 package com.zaxxer.hikari.benchmark.stubs;
 
-import static java.lang.System.nanoTime;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,6 +33,11 @@ public class StubStatement implements Statement
    protected int count;
    private boolean closed;
    private static long executeDelay;
+   private Connection con;
+   
+   public StubStatement(Connection con){
+	   this.con=con;
+   }
 
    public static void setExecuteDelayMs(final long delay)
    {
@@ -69,7 +71,7 @@ public class StubStatement implements Statement
 //         } while (nanoTime() - start < MILLISECONDS.toNanos(executeDelayMs));
          UtilityElf.quietlySleep(executeDelay);
       }
-      return new StubResultSet();
+      return new StubResultSet(this);
    }
 
    /** {@inheritDoc} */
@@ -152,7 +154,7 @@ public class StubStatement implements Statement
    /** {@inheritDoc} */
    public ResultSet getResultSet() throws SQLException
    {
-      return new StubResultSet();
+      return new StubResultSet(this);
    }
 
    /** {@inheritDoc} */
@@ -220,7 +222,7 @@ public class StubStatement implements Statement
    /** {@inheritDoc} */
    public Connection getConnection() throws SQLException
    {
-      return null;
+      return con;
    }
 
    /** {@inheritDoc} */
@@ -232,7 +234,7 @@ public class StubStatement implements Statement
    /** {@inheritDoc} */
    public ResultSet getGeneratedKeys() throws SQLException
    {
-      return new StubResultSet();
+      return new StubResultSet(this);
    }
 
    /** {@inheritDoc} */

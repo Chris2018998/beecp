@@ -46,7 +46,12 @@ public class StubResultSet implements ResultSet
 {
     private int counter;
     private boolean closed;
+    private Statement statement;
 
+    public StubResultSet(Statement statement){
+    	this.statement=statement;
+    }
+    
     /** {@inheritDoc} */
     public <T> T unwrap(Class<T> iface) throws SQLException
     {
@@ -685,7 +690,7 @@ public class StubResultSet implements ResultSet
     /** {@inheritDoc} */
     public Statement getStatement() throws SQLException
     {
-        return null;
+        return statement;
     }
 
     /** {@inheritDoc} */

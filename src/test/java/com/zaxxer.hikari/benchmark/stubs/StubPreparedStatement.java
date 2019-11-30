@@ -46,10 +46,14 @@ import java.util.Calendar;
 public class StubPreparedStatement extends StubStatement implements PreparedStatement
 {
 
+	public StubPreparedStatement(Connection con){
+		super(con);
+	}
+	
     /** {@inheritDoc} */
     public ResultSet executeQuery(String sql) throws SQLException
     {
-        return new StubResultSet();
+        return new StubResultSet(this);
     }
 
     /** {@inheritDoc} */
@@ -126,7 +130,7 @@ public class StubPreparedStatement extends StubStatement implements PreparedStat
     /** {@inheritDoc} */
     public ResultSet getResultSet() throws SQLException
     {
-        return new StubResultSet();
+        return new StubResultSet(this);
     }
 
     /** {@inheritDoc} */
@@ -211,7 +215,7 @@ public class StubPreparedStatement extends StubStatement implements PreparedStat
     /** {@inheritDoc} */
     public ResultSet getGeneratedKeys() throws SQLException
     {
-        return new StubResultSet();
+        return new StubResultSet(this);
     }
 
     /** {@inheritDoc} */
@@ -281,7 +285,7 @@ public class StubPreparedStatement extends StubStatement implements PreparedStat
     /** {@inheritDoc} */
     public ResultSet executeQuery() throws SQLException
     {
-        return new StubResultSet();
+        return new StubResultSet(this);
     }
 
     /** {@inheritDoc} */
