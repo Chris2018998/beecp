@@ -252,7 +252,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 	
 	private boolean existBorrower() {
-		return poolConfig.getConcurrentSize() - poolSemaphore.availablePermits() + poolSemaphore.getQueueLength() > 0;
+		return poolConfig.getConcurrentSize()>poolSemaphore.availablePermits()||poolSemaphore.hasQueuedThreads();
 	}
 
 	/**
