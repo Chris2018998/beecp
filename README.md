@@ -4,8 +4,6 @@ Introduction <img height="50px" width="50px" src="https://github.com/Chris201899
 ---
 BeeCP is a lightweight (15 files, 2000lines of source code) high-performance Java connection pool
 
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/README_ZH.md">中文</a>
-
 Naming Reasons
 ---
 Bees are a kind of beneficial insects to human beings. In recent years, the number of bees reported in the news is declining, which will directly affect the production of human food. Hope to attract more friends'attention and attention: although bees are small, they play a great role, Protecting the environment and caring for nature.
