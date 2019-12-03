@@ -11,10 +11,6 @@ import java.lang.reflect.Method;
 public class TestCase {
 	public void setUp()throws Throwable{}
 	public void tearDown()throws Throwable{}
-
-	/**
-	 * Run 
-	 */
 	void run() throws Throwable {
 		try {
 			setUp();
@@ -47,6 +43,8 @@ public class TestCase {
 					}else{
 						e.printStackTrace();
 					}
+					
+					throw e;
 				}
 			}
 		}
