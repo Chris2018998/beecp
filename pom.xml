@@ -54,13 +54,6 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.29</version>
 		</dependency>
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.10</version>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
@@ -99,7 +92,7 @@
 				<version>1.1.1</version>
 				<executions>
 					<execution>
-						<phase>test</phase>
+						<phase>compile</phase>
 						<goals>
 							<goal>java</goal>
 						</goals>
@@ -112,7 +105,17 @@
 					</execution>
 				</executions>
 			</plugin>
+		
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.22.0</version>
+				<configuration>
+					<includes>TestRunner.java</includes>
+				</configuration>
+			</plugin>
+        
+		    <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
 				<version>1.5</version>
@@ -126,6 +129,7 @@
 					</execution>
 				</executions>
 			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
