@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
@@ -21,21 +19,21 @@ import cn.beecp.test.performance.type.BeeCP_C;
 import cn.beecp.test.performance.type.BeeCP_F;
 
 /**
- * Performance of multiple thread take connection
- *  
+ * Performance of single thread take connection
+ * 
  * @author Chris
  */
-public class MutilThreadBorrow extends TestCase {
-	static final int scale = 4;
-	static String testName = "Multiple thread borrow";
-	static Logger log = LoggerFactory.getLogger(MutilThreadBorrow.class);
+public class SingleThreadBorrow extends TestCase {
+	static final int scale = 6;
+	static String testName = "Single thread borrow";
+	static Logger log = LoggerFactory.getLogger(SingleThreadBorrow.class);
 
 	public void test() throws Exception {
-		int threadCount =100;
-		int executeCount = 100;
+		int threadCount = 1;
+		int executeCount = 100 * 100;
 		String poolName = "Bee_F,Bee_C";
 		String[] pools = poolName.split(",");
-		
+
 		List<TestAvg> arvgList = new ArrayList<TestAvg>();
 		List<List<Object>> allPoolResultList = new ArrayList<List<Object>>();
 		for (int i = 0; i < pools.length; i++) {
@@ -51,22 +49,21 @@ public class MutilThreadBorrow extends TestCase {
 				log.info("unkown pool type : " + testPoolName);
 			}
 
+			if(i==0)log.info("\n");
 			if (poolResultList != null) {
 				allPoolResultList.add(poolResultList);
 				arvgList.add(new TestAvg(testPoolName, (BigDecimal) poolResultList.get(2)));
 			}
-			
-			if(i==0)log.info("\n");
-			
-			if(pools.length>1)
-			 LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(5));
+
+			if (pools.length > 1)
+				LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(5));
 		}
-		
-		if(allPoolResultList.size()>1)
-		 TestResultPrint.printAnalysis(poolName,testName,arvgList,allPoolResultList);
+
+		if (allPoolResultList.size() > 1)
+			TestResultPrint.printAnalysis(poolName, testName, arvgList, allPoolResultList);
 	}
-	
-	public List<Object> beeCP_Compete(int threadCount, int executeCount) throws Exception {
+
+	private List<Object> beeCP_Compete(int threadCount, int executeCount) throws Exception {
 		BeeDataSource dataource = BeeCP_C.createDataSource();
 		try {
 			return runPool(threadCount, executeCount, dataource, "Compete");
@@ -75,7 +72,7 @@ public class MutilThreadBorrow extends TestCase {
 		}
 	}
 
-	public List<Object> beeCP_Fair(int threadCount, int executeCount) throws Exception {
+	private List<Object> beeCP_Fair(int threadCount, int executeCount) throws Exception {
 		BeeDataSource dataource = BeeCP_F.createDataSource();
 		try {
 			return runPool(threadCount, executeCount, dataource, "Fair");
@@ -83,8 +80,12 @@ public class MutilThreadBorrow extends TestCase {
 			dataource.close();
 		}
 	}
-	private List<Object> runPool(int threadCount, int loopCount, DataSource dataSource, String sourceName)throws Exception {
-		log.info("Pool["+sourceName+" -- "+testName+"] -- Begin{"+threadCount+"threads X "+loopCount+"iterate}");
+
+	private List<Object> runPool(int threadCount, int loopCount, DataSource dataSource, String sourceName)
+			throws Exception {
+
+		log.info("Pool[" + sourceName + " -- " + testName + "] -- Begin{" + threadCount + "threads X " + loopCount
+				+ "iterate}");
 		Calendar calendar = Calendar.getInstance();
 		calendar.add(Calendar.SECOND, 3);
 		long concurrentTime = calendar.getTimeInMillis();
@@ -95,17 +96,11 @@ public class MutilThreadBorrow extends TestCase {
 			threads[i] = new TestTakeThread(dataSource, loopCount, latch, concurrentTime);
 			threads[i].start();
 		}
-		latch.await();//wait all thread done
-		List<Object> summaryList= TestResultPrint.printSummary(sourceName, testName, threads, threadCount, loopCount, scale);
+
+		latch.await();
+		List<Object> summaryList = TestResultPrint.printSummary(sourceName, testName, threads, threadCount, loopCount,
+				scale);
 		return summaryList;
 	}
-	public  int appearNumber(String srcText, String findText) {
-	    int count = 0;
-	    Pattern p = Pattern.compile(findText);
-	    Matcher m = p.matcher(srcText);
-	    while (m.find()) {
-	        count++;
-	    }
-	    return count;
-	}
+
 }
