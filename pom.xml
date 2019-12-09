@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.chris2018998</groupId>
 	<artifactId>BeeCP</artifactId>
-	<version>1.4.1</version>
+	<version>1.5</version>
 	<name>BeeCP</name>
 	<url>https://github.com/Chris2018998/BeeCP</url>
 	<description>Bee Connection Pool</description>
@@ -72,6 +72,12 @@
 			<version>2.12.1</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.48</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -97,7 +103,7 @@
 							<goal>java</goal>
 						</goals>
 						<configuration>
-							<mainClass>cn.bee.dbcp.pool.util.ProxyClassUtil</mainClass>
+							<mainClass>cn.beecp.pool.ProxyClassGenerator</mainClass>
 							<arguments>
 								<argument>${project.basedir}/target/classes</argument>
 							</arguments>
@@ -105,7 +111,7 @@
 					</execution>
 				</executions>
 			</plugin>
-		
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -114,8 +120,8 @@
 					<includes>TestRunner.java</includes>
 				</configuration>
 			</plugin>
-        
-		    <plugin>
+
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
 				<version>1.5</version>
