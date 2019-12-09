@@ -6,7 +6,7 @@
        </Console>
      </Appenders>
      <Loggers>
-       <logger name="cn.bee.dbcp.pool" level="OFF"/>
+       <logger name="cn.beecp.pool" level="OFF"/>
        <Root level="info">
         <AppenderRef ref="Console"/>
       </Root>
