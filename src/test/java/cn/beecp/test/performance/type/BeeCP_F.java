@@ -5,12 +5,12 @@ import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.test.Config;
 
 /**
- *  compete mode for BeeCP
+ * fair mode for BeeCP
  * 
  */
-public class BeeCP_C {
-	
-	public static BeeDataSource  createDataSource() throws Exception{
+public class BeeCP_F {
+
+	public static BeeDataSource createDataSource() throws Exception{
 		BeeDataSourceConfig config =new  BeeDataSourceConfig();
 		config.setJdbcUrl(Config.JDBC_URL);
 		config.setDriverClassName(Config.JDBC_DRIVER);
@@ -19,12 +19,12 @@ public class BeeCP_C {
 		config.setMaxActive(Config.POOL_MAX_ACTIVE);
 		config.setInitialSize(Config.POOL_INIT_SIZE);
 		config.setMaxWait(Config.REQUEST_TIMEOUT);
-	
+
  		config.setConnectionTestSQL("select 1 from dual");
-		config.setFairMode(false);
+		config.setPreparedStatementCacheSize(10);
+		config.setFairMode(true);
 		config.setTestOnBorrow(true);
 		config.setTestOnReturn(false);
-		
-	    return new BeeDataSource(config);
+		return new BeeDataSource(config);
 	}  		 
 }
