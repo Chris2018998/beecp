@@ -18,35 +18,31 @@ package cn.beecp.test.base;
 import java.sql.Connection;
 
 import cn.beecp.BeeDataSource;
-import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 import cn.beecp.util.BeecpUtil;
 
-public class ConnectionGetTest extends TestCase {
-	private BeeDataSource ds;
-
-	public void setUp() throws Throwable {
-		BeeDataSourceConfig config = new BeeDataSourceConfig();
-		config.setJdbcUrl(Config.JDBC_URL);
-		config.setDriverClassName(Config.JDBC_DRIVER);
-		config.setUsername(Config.JDBC_USER);
-		config.setPassword(Config.JDBC_PASSWORD);
-		ds = new BeeDataSource(config);
-	}
-
-	public void tearDown() throws Throwable {
-		ds.close();
-	}
-
-	public void test() throws InterruptedException, Exception {
-		Connection con = null;
-		try {
-			con = ds.getConnection();
-			if (con == null)
-				TestUtil.assertError("Failed to get Connection");
-		} finally {
+public class PoolDelayInitializeFailedTest extends TestCase {
+	private int initSize=5;
+	public void setUp() throws Throwable {}
+	public void tearDown() throws Throwable {}
+	
+	public void testPoolInit() throws InterruptedException, Exception {
+		Connection con=null;
+		BeeDataSource ds=null;
+		try{
+			ds = new BeeDataSource();
+			ds.setJdbcUrl("jdbc:mysql://localhost/test2");//give valid URL
+			ds.setDriverClassName(Config.JDBC_DRIVER);
+			ds.setUsername(Config.JDBC_USER);
+			ds.setPassword(Config.JDBC_PASSWORD);
+			ds.setInitialSize(initSize);
+			con=ds.getConnection();
+			TestUtil.assertError("A pool fail to init e need be thrown,but not"); 
+		}catch(ExceptionInInitializerError e){
+			System.out.println(e.getCause());
+		}finally{
 			BeecpUtil.oclose(con);
 		}
 	}

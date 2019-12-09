@@ -16,6 +16,8 @@
 package cn.beecp.test.base;
 
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.concurrent.CountDownLatch;
 
 import cn.beecp.BeeDataSource;
 import cn.beecp.BeeDataSourceConfig;
@@ -24,15 +26,18 @@ import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 import cn.beecp.util.BeecpUtil;
 
-public class ConnectionGetTest extends TestCase {
+public class ConnectionGetTimeoutTest extends TestCase {
 	private BeeDataSource ds;
 
 	public void setUp() throws Throwable {
 		BeeDataSourceConfig config = new BeeDataSourceConfig();
-		config.setJdbcUrl(Config.JDBC_URL);
+		config.setJdbcUrl(Config.JDBC_URL);// give valid URL
 		config.setDriverClassName(Config.JDBC_DRIVER);
 		config.setUsername(Config.JDBC_USER);
 		config.setPassword(Config.JDBC_PASSWORD);
+		config.setMaxWait(3000);
+		config.setMaxActive(1);
+		config.setConcurrentSize(1);
 		ds = new BeeDataSource(config);
 	}
 
@@ -40,12 +45,40 @@ public class ConnectionGetTest extends TestCase {
 		ds.close();
 	}
 
+	class TestThread extends Thread {
+		SQLException e = null;
+		CountDownLatch lacth;
+
+		TestThread(CountDownLatch lacth) {
+			this.lacth = lacth;
+		}
+
+		public void run() {
+			Connection con2 = null;
+			try {
+				con2 = ds.getConnection();
+			} catch (SQLException e) {
+				this.e = e;
+			} finally {
+				BeecpUtil.oclose(con2);
+			}
+			lacth.countDown();
+		}
+	}
+
 	public void test() throws InterruptedException, Exception {
 		Connection con = null;
 		try {
 			con = ds.getConnection();
-			if (con == null)
-				TestUtil.assertError("Failed to get Connection");
+			CountDownLatch lacth = new CountDownLatch(1);
+			TestThread testTh = new TestThread(lacth);
+			testTh.start();
+			
+			lacth.await();
+			if (testTh.e == null)
+				TestUtil.assertError("Connect timeout test failed");
+			else
+				System.out.println(testTh.e);
 		} finally {
 			BeecpUtil.oclose(con);
 		}

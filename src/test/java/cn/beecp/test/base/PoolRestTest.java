@@ -15,17 +15,16 @@
  */
 package cn.beecp.test.base;
 
-import java.sql.Connection;
-
 import cn.beecp.BeeDataSource;
 import cn.beecp.BeeDataSourceConfig;
+import cn.beecp.pool.FastConnectionPool;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
-import cn.beecp.util.BeecpUtil;
 
-public class ConnectionGetTest extends TestCase {
+public class PoolRestTest extends TestCase {
 	private BeeDataSource ds;
+	private int initSize=5;
 
 	public void setUp() throws Throwable {
 		BeeDataSourceConfig config = new BeeDataSourceConfig();
@@ -33,6 +32,7 @@ public class ConnectionGetTest extends TestCase {
 		config.setDriverClassName(Config.JDBC_DRIVER);
 		config.setUsername(Config.JDBC_USER);
 		config.setPassword(Config.JDBC_PASSWORD);
+		config.setInitialSize(initSize);
 		ds = new BeeDataSource(config);
 	}
 
@@ -41,13 +41,13 @@ public class ConnectionGetTest extends TestCase {
 	}
 
 	public void test() throws InterruptedException, Exception {
-		Connection con = null;
-		try {
-			con = ds.getConnection();
-			if (con == null)
-				TestUtil.assertError("Failed to get Connection");
-		} finally {
-			BeecpUtil.oclose(con);
-		}
+		FastConnectionPool pool = (FastConnectionPool) TestUtil.getPool(ds);
+		if(pool.getConnTotalSize()!=initSize)TestUtil.assertError("Total connections expected:%s,current is:%s",initSize,pool.getConnTotalSize());
+		if(pool.getConnIdleSize()!=initSize)TestUtil.assertError("connections expected:%s,current is:%s",initSize,pool.getConnIdleSize());
+		
+		pool.reset();
+
+		if(pool.getConnTotalSize()!=0)TestUtil.assertError("Total connections not as expected 0,but current is:%s",pool.getConnTotalSize(),"");
+		if(pool.getConnIdleSize()!=0)TestUtil.assertError("Idle connections not as expected 0,but current is:%s",pool.getConnIdleSize(),"");
 	}
 }

@@ -16,15 +16,17 @@
 package cn.beecp.test.base;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import cn.beecp.BeeDataSource;
 import cn.beecp.BeeDataSourceConfig;
+import cn.beecp.pool.FastConnectionPool;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 import cn.beecp.util.BeecpUtil;
 
-public class ConnectionGetTest extends TestCase {
+public class ConnectionHoldTimeoutTest extends TestCase {
 	private BeeDataSource ds;
 
 	public void setUp() throws Throwable {
@@ -33,6 +35,13 @@ public class ConnectionGetTest extends TestCase {
 		config.setDriverClassName(Config.JDBC_DRIVER);
 		config.setUsername(Config.JDBC_USER);
 		config.setPassword(Config.JDBC_PASSWORD);
+		config.setInitialSize(0);
+		config.setConnectionTestSQL("SELECT 1 from dual");
+
+		config.setHoldIdleTimeout(1000);// hold and not using connection;
+		config.setIdleCheckTimeInterval(1000L);// two seconds interval
+		config.setIdleCheckTimeInitDelay(0);
+		config.setWaitTimeToClearPool(0);
 		ds = new BeeDataSource(config);
 	}
 
@@ -43,9 +52,26 @@ public class ConnectionGetTest extends TestCase {
 	public void test() throws InterruptedException, Exception {
 		Connection con = null;
 		try {
+			FastConnectionPool pool = (FastConnectionPool) TestUtil.getPool(ds);
 			con = ds.getConnection();
-			if (con == null)
-				TestUtil.assertError("Failed to get Connection");
+
+			if (pool.getConnTotalSize() != 1)
+				TestUtil.assertError("Total connections not as expected 1");
+			if (pool.getConnUsingSize() != 1)
+				TestUtil.assertError("Using connections not as expected 1");
+
+			Thread.sleep(4000);
+			if (pool.getConnUsingSize() != 0)
+				TestUtil.assertError("Using connections not as expected 0 after hold timeout");
+
+			try {
+				con.getCatalog();
+				TestUtil.assertError("must throw closed exception");
+			} catch (SQLException e) {
+				System.out.println(e);
+			}
+
+			Thread.sleep(4000);
 		} finally {
 			BeecpUtil.oclose(con);
 		}

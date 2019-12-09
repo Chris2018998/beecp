@@ -16,6 +16,8 @@
 package cn.beecp.test.base;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 import cn.beecp.BeeDataSource;
 import cn.beecp.BeeDataSourceConfig;
@@ -24,9 +26,8 @@ import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 import cn.beecp.util.BeecpUtil;
 
-public class ConnectionGetTest extends TestCase {
+public class TransactionNormalRollbackTest  extends TestCase {
 	private BeeDataSource ds;
-
 	public void setUp() throws Throwable {
 		BeeDataSourceConfig config = new BeeDataSourceConfig();
 		config.setJdbcUrl(Config.JDBC_URL);
@@ -41,13 +42,47 @@ public class ConnectionGetTest extends TestCase {
 	}
 
 	public void test() throws InterruptedException, Exception {
-		Connection con = null;
+		Connection con1 = null;
+		PreparedStatement ps1=null;
+		ResultSet re1=null;
+		PreparedStatement ps2=null;
+		
+		PreparedStatement ps3=null;
+		ResultSet re3=null;
 		try {
-			con = ds.getConnection();
-			if (con == null)
-				TestUtil.assertError("Failed to get Connection");
+			con1 = ds.getConnection();
+			con1.setAutoCommit(false);
+			ps1=con1.prepareStatement("select count(*) from "+Config.TEST_TABLE+" where TEST_ID='user1'");
+			re1=ps1.executeQuery();
+			if(re1.next()){
+				 int size=re1.getInt(1);
+				 if (size !=0)
+					 TestUtil.assertError("record size error");
+			}
+			
+			ps2=con1.prepareStatement("insert into "+Config.TEST_TABLE+"(TEST_ID,TEST_NAME)values(?,?)");
+			ps2.setString(1, "user1");
+			ps2.setString(2, "user1");
+			int rows=ps2.executeUpdate();
+			if (rows !=1)
+				TestUtil.assertError("Failed to insert");
+			
+			con1.rollback();
+			
+			ps3=con1.prepareStatement("select count(*) from "+Config.TEST_TABLE +" where TEST_ID='user1'");
+			re3=ps3.executeQuery();
+			if(re3.next()){
+				 int size=re3.getInt(1);
+				 if (size !=0)
+					 TestUtil.assertError("rollback failed");
+			}
 		} finally {
-			BeecpUtil.oclose(con);
+			BeecpUtil.oclose(re1);
+			BeecpUtil.oclose(ps1);
+			BeecpUtil.oclose(ps2);
+			BeecpUtil.oclose(re3);
+			BeecpUtil.oclose(ps3);
+			BeecpUtil.oclose(con1);
 		}
 	}
 }
