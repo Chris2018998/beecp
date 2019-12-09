@@ -16,21 +16,38 @@
 package cn.beecp.pool;
 
 /**
- * pooled connection Borrower
+ *  Pool JMX Bean interface
  *
  * @author Chris.Liao
  * @version 1.0
  */
-final class Borrower {
-	boolean hasHoldNewOne;
-	PooledConnection lastUsedConn;
-	volatile Object stateObject;
-	Thread thread=Thread.currentThread();
-	public boolean equals(Object o) {
-		return this == o;
-	}
-	public void setBorrowedConnection(PooledConnection conn) {
-		lastUsedConn = conn;
-		hasHoldNewOne = true;
-	}
+public interface ConnectionPoolJMXBean {
+	
+	/**
+	 * reset pool 
+	 */
+	void reset();
+	
+	/**
+	 * reset pool 
+	 * @param force true close connection immediately
+	 */
+	void reset(boolean force);
+	
+	//return connection total size in pool
+	int getConnTotalSize();
+	 
+	//return connection idle size in pool
+	int getConnIdleSize();
+	
+	//return connection active size in pool
+	int getConnUsingSize();
+
+	int getSemaphoreAcquiredSize();
+
+	int getSemaphoreWatingSize();
+
+	int getTransferWatingSize();
+
 }
+
