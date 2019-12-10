@@ -2,7 +2,7 @@
 
 一：介绍 <img height="50px" width="50px" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img>
 ---
-小蜜蜂连接池：一款简易型JDBC连接池
+小蜜蜂：一款高性能JDBC连接池
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/README.md">English</a>
 
@@ -22,7 +22,7 @@
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>1.4.1</version>
+   <version>1.5.0</version>
 </dependency>
 
 ```
@@ -96,7 +96,6 @@ public class DataSourceConfig {
 [datasource.getConnection(),connection.prepareStatement,statement.execute(),statement.close(),connection.close()]</i>
 
 1：下面为各连接池在mysql5.6的下测试结果（单位：毫秒）
-
 
 Bee_C(5.3623) > Bee_F(6.8492) > HikariCP(9.0176)
 
