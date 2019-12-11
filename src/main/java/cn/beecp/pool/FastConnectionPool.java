@@ -281,8 +281,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				}
 			} else {
 				Statement st = null;
+				boolean autoCommitChged=false;
 				try {
-					if(AutoCommit)con.setAutoCommit(false);
+					if(AutoCommit){
+					  con.setAutoCommit(false);
+					  autoCommitChged=true;
+					}
+					
 					st = con.createStatement();
 					pConn.updateAccessTime();
 					st.setQueryTimeout(validationQueryTimeout);
@@ -291,9 +296,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					isActive = false;
 				} finally {
 					try {
-					con.rollback();
-					 if(AutoCommit)con.setAutoCommit(true);
-					}catch(SQLException e){}
+						con.rollback();
+					} catch (SQLException e){}
+					try {
+					  if(AutoCommit&&autoCommitChged)
+						 con.setAutoCommit(true);
+					} catch (SQLException e){}
 					oclose(st);
 				}
 			}
@@ -731,18 +739,21 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	// register JMX
 	private void registerJMX() {
 		if (poolConfig.isEnableJMX()) {
+			final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
 			try {
-				final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
 				final ObjectName poolRegName = new ObjectName("cn.beecp.pool.FastConnectionPool:type=BeeCP("+poolName+")");
-				final ObjectName configRegName = new ObjectName("cn.beecp.BeeDataSourceConfig:type=BeeCP("+poolName+")-config");
-				
 				if (!mBeanServer.isRegistered(poolRegName)) {
 					mBeanServer.registerMBean((ConnectionPoolJMXBean)this,poolRegName);
 					log.info("Registered BeeCP({})as jmx-bean",poolName);
 				} else {
 					log.error("Jmx-name BeeCP({})has been exist in jmx server",poolName);
 				}
-				
+			} catch (Exception e) {
+				log.warn("Failed to register pool jmx-bean", e);
+			}
+			
+			try {
+				final ObjectName configRegName = new ObjectName("cn.beecp.BeeDataSourceConfig:type=BeeCP("+poolName+")-config");
 				if (!mBeanServer.isRegistered(configRegName)) {
 					mBeanServer.registerMBean((BeeDataSourceConfigJMXBean)poolConfig,configRegName);
 					log.info("Registered BeeCP({})config as jmx-bean",poolName);
@@ -754,19 +765,21 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			}
 		}
 	}
-
 	// unregister JMX
 	private void unregisterJMX() {
 		if (poolConfig.isEnableJMX()) {
+			final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
 			try {
-				final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
 				final ObjectName poolRegName = new ObjectName("cn.beecp.pool.FastConnectionPool:type=BeeCP("+poolName+")");
-				final ObjectName configRegName = new ObjectName("cn.beecp.BeeDataSourceConfig:type=BeeCP("+poolName+")-config");
-				
 				if(mBeanServer.isRegistered(poolRegName)) {
 					 mBeanServer.unregisterMBean(poolRegName);
 				}
-				
+			} catch (Exception e) {
+				log.warn("Failed to unregister pool jmx-bean", e);
+			}
+			
+			try {
+				final ObjectName configRegName = new ObjectName("cn.beecp.BeeDataSourceConfig:type=BeeCP("+poolName+")-config");
 				if(mBeanServer.isRegistered(configRegName)) {
 				  mBeanServer.unregisterMBean(configRegName);
 				}
@@ -775,7 +788,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			}
 		}
 	}
-	/******************************** JMX **************************************/
+	//******************************** JMX **************************************/
 
 	// Transfer Policy
 	interface TransferPolicy {

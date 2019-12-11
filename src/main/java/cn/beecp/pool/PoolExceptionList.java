@@ -23,22 +23,22 @@ import java.sql.SQLException;
  * @author Chris.Liao
  * @version 1.0
  */
-class PoolExceptionList {
+final class PoolExceptionList {
 	
-	public static final SQLException RequestTimeoutException = new SQLException("Connection timeout");
+	static final SQLException RequestTimeoutException = new SQLException("Connection timeout");
 	
-	public static final SQLException RequestInterruptException = new SQLException("Request interrupt");
+	static final SQLException RequestInterruptException = new SQLException("Request interrupt");
 	
-	public static final SQLException PoolCloseException = new SQLException("Pool has been closed or in resting");
+	static final SQLException PoolCloseException = new SQLException("Pool has been closed or in resting");
 	
-	public static final SQLException WaitTimeException = new SQLException("Wait time must be greater than zero");
+	static final SQLException WaitTimeException = new SQLException("Wait time must be greater than zero");
 
-	public static final SQLException ConnectionClosedException = new SQLException("Connection has been closed");
+    static final SQLException ConnectionClosedException = new SQLException("Connection has been closed");
 	
-	public static final SQLException StatementClosedException = new SQLException("Statement has been closed");
+	static final SQLException StatementClosedException = new SQLException("Statement has been closed");
 	
-	public static final SQLException ResultSetClosedException = new SQLException("ResultSet has been closed");
+	static final SQLException ResultSetClosedException = new SQLException("ResultSet has been closed");
 	
-	public static final SQLException ProxyConnectionCloneException = new SQLException("failed to clone proxy connection instance");
+	static final SQLException ProxyConnectionCloneException = new SQLException("failed to clone proxy connection instance");
 	
 }	

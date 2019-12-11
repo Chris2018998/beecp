@@ -34,14 +34,14 @@ import cn.beecp.BeeDataSourceConfig;
 public final class PooledConnection{
 	volatile int state;
 	Connection connection;
-	boolean stmCacheValid=false;
+	boolean stmCacheValid;
 	StatementCache stmCache=null;
 	BeeDataSourceConfig poolConfig;
 	ProxyConnectionBase proxyConnCurInstance;
 	long lastAccessTime;
 	
 	private ConnectionPool pool;
-	private boolean curAutoCommit=true;
+	private boolean curAutoCommit;
 
 	//changed indicator
 	private boolean[] changedInds=new boolean[4]; //0:autoCommit,1:transactionIsolation,2:readOnly,3:catalog

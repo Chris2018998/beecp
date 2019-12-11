@@ -6,7 +6,7 @@
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,9 +37,9 @@ import cn.beecp.BeeDataSourceConfig;
 
 /**
  * JDBC Connection Pool Implementation,which
- * 
+ *
  * return raw connections to borrowers directly.
- * 
+ *
  * @author Chris.Liao
  * @version 1.0
  */
@@ -49,12 +49,12 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 	private BeeDataSourceConfig poolConfig;
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 	private String poolName = "";
-	private static String poolNamePrefix = "RawPool-";
-	private static AtomicInteger poolNameIndex = new AtomicInteger(1);
-	
+	private final static String PoolNamePrefix = "RawPool-";
+	private final static AtomicInteger PoolNameIndex = new AtomicInteger(1);
+
 	/**
 	 * initialize pool with configuration
-	 * 
+	 *
 	 * @param config
 	 *            data source configuration
 	 * @throws SQLException
@@ -64,24 +64,28 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 		poolConfig = config;
 		DefaultMaxWaitMills = poolConfig.getMaxWait();
 		poolSemaphore = new Semaphore(poolConfig.getConcurrentSize(), poolConfig.isFairMode());
-		poolName = !isNullText(config.getPoolName()) ? config.getPoolName():poolNamePrefix + poolNameIndex.getAndIncrement();
-	
+		poolName = !isNullText(config.getPoolName()) ? config.getPoolName(): PoolNamePrefix + PoolNameIndex.getAndIncrement();
+
 		String mode = "";
 		if (poolConfig.isFairMode()) {
 			mode = "fair";
 		} else {
 			mode = "compete";
 		}
-		
-		log.info("BeeCP(" + poolName + ")has been startup{init size:" + 0 + ",max size:"
-				+ 0 + ",concurrent size:" + poolConfig.getConcurrentSize() + ",mode:" + mode
-				+ ",max wait:" + poolConfig.getMaxWait() + "ms}");
+
+		log.info("BeeCP({})has been startup{init size:{},max size:{},concurrent size:{},mode:{},max wait:{}ms}",
+				poolName,
+				0,
+				0,
+				poolConfig.getConcurrentSize(),
+				mode,
+				poolConfig.getMaxWait());
 		registerJMX();
 	}
 
 	/**
 	 * borrow a connection from pool
-	 * 
+	 *
 	 * @return If exists idle connection in pool,then return one;if not, waiting
 	 *         until other borrower release
 	 * @throws SQLException
@@ -93,10 +97,10 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 
 	/**
 	 * borrow one connection from pool
-	 * 
+	 *
 	 * @param wait
 	 *            must be greater than zero
-	 * 
+	 *
 	 * @return If exists idle connection in pool,then return one;if not, waiting
 	 *         until other borrower release
 	 * @throws SQLException
@@ -119,7 +123,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 
 	/**
 	 * return connection to pool
-	 * 
+	 *
 	 * @param pConn
 	 *            target connection need release
 	 * @param needTest,
@@ -134,12 +138,10 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 		unregisterJMX();
 	}
 
-	/******************************** JMX **************************************/
+	//******************************** JMX **************************************//
 	// close all connections
 	public void reset() {}
-
 	public void reset(boolean force) {}
-
 	public int getConnTotalSize(){
 		return 0;
 	}
@@ -158,37 +160,57 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 	public int getTransferWatingSize(){
 		return 0;
 	}
-	// registerJMX
+	// register JMX
 	private void registerJMX() {
 		if (poolConfig.isEnableJMX()) {
+			final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
 			try {
-				final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-				final ObjectName beanPoolName = new ObjectName("cn.bee.dbcp.pool.RawConnectionPool:type=" + poolName);
-				if (!mBeanServer.isRegistered(beanPoolName)) {
-					mBeanServer.registerMBean((ConnectionPoolJMXBean) this, beanPoolName);
-					log.info("Registered BeeCP(" + poolName + ")as jmx-bean");
+				final ObjectName poolRegName = new ObjectName("cn.beecp.pool.RawConnectionPool:type=BeeCP("+poolName+")");
+				if (!mBeanServer.isRegistered(poolRegName)) {
+					mBeanServer.registerMBean(this,poolRegName);
+					log.info("Registered BeeCP({})as jmx-bean",poolName);
 				} else {
-					log.error("Jmx-name BeeCP(" + poolName + ")has been exist in jmx server");
+					log.error("Jmx-name BeeCP({})has been exist in jmx server",poolName);
+				}
+			} catch (Exception e) {
+				log.warn("Failed to register pool jmx-bean", e);
+			}
+
+			try {
+				final ObjectName configRegName = new ObjectName("cn.beecp.BeeDataSourceConfig:type=BeeCP("+poolName+")-config");
+				if (!mBeanServer.isRegistered(configRegName)) {
+					mBeanServer.registerMBean(poolConfig,configRegName);
+					log.info("Registered BeeCP({})config as jmx-bean",poolName);
+				} else {
+					log.error("Pool BeeCP({})config has been exist in jmx server",poolName);
 				}
 			} catch (Exception e) {
 				log.warn("Failed to register pool jmx-bean", e);
 			}
 		}
 	}
-
-	// unregisterJMX
+	// unregister JMX
 	private void unregisterJMX() {
 		if (poolConfig.isEnableJMX()) {
+			final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
 			try {
-				final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-				final ObjectName beanPoolName = new ObjectName("cn.bee.dbcp.pool.RawConnectionPool:type=" + poolName);
-				if (!mBeanServer.isRegistered(beanPoolName)) {
-					mBeanServer.unregisterMBean(beanPoolName);
+				final ObjectName poolRegName = new ObjectName("cn.beecp.pool.RawConnectionPool:type=BeeCP("+poolName+")");
+				if(mBeanServer.isRegistered(poolRegName)) {
+					mBeanServer.unregisterMBean(poolRegName);
+				}
+			} catch (Exception e) {
+				log.warn("Failed to unregister pool jmx-bean", e);
+			}
+
+			try {
+				final ObjectName configRegName = new ObjectName("cn.beecp.BeeDataSourceConfig:type=BeeCP("+poolName+")-config");
+				if(mBeanServer.isRegistered(configRegName)) {
+					mBeanServer.unregisterMBean(configRegName);
 				}
 			} catch (Exception e) {
 				log.warn("Failed to unregister pool jmx-bean", e);
 			}
 		}
 	}
-	/******************************** JMX **************************************/
+	//******************************** JMX **************************************//
 }
