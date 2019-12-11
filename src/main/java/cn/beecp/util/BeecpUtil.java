@@ -6,7 +6,7 @@
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,39 +15,48 @@
  */
 package cn.beecp.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
 /**
  * Util class to close database connection,Statement,ResultSet.
- * 
+ *
  * @author Chris.Liao
  */
-
 public final class BeecpUtil {
-	
+	private static Logger log = LoggerFactory.getLogger(BeecpUtil.class);
+
 	public static void oclose(ResultSet resultSet) {
-		try {
-			if (resultSet != null)
+		if (resultSet != null) {
+			try {
 				resultSet.close();
-		} catch (Throwable e) {
+			} catch (Throwable e) {
+				log.debug("Error at closing resultSet:", e);
+			}
 		}
 	}
 
 	public static void oclose(Statement statement) {
-		try {
-			if (statement != null)
+		if (statement != null) {
+			try {
 				statement.close();
-		} catch (Throwable e) {
+			} catch (Throwable e) {
+				log.debug("Error at closing statement:", e);
+			}
 		}
 	}
 
 	public static void oclose(Connection connection) {
-		try {
-			if (connection != null)
+		if (connection != null) {
+			try {
 				connection.close();
-		} catch (Throwable e) {
+			} catch (Throwable e) {
+				log.debug("Error at closing connection:", e);
+			}
 		}
 	}
 
@@ -55,13 +64,7 @@ public final class BeecpUtil {
 		return (value == null || value.trim().length() == 0);
 	}
 
-	public static boolean equalsText(String v1, String v2) {
-		if (v1 != null) {
-			return v1.equals(v2);
-		} else if (v2 != null) {
-			return v2.equals(v1);
-		} else {
-			return true;
-		}
+	public static boolean equalsText(String a, String b) {
+		return (a==null &&b==null)||(a!= null && a.equals(b));
 	}
 }
