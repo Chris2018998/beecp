@@ -15,6 +15,8 @@
  */
 package cn.beecp;
 
+import static cn.beecp.util.BeecpUtil.isNullText;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -150,17 +152,17 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         ra = ref.get(PROP_MINEVICTABLEIDLETIMEMILLIS);
         if(ra != null) connectionIdleTimeout= ra.getContent().toString(); 
        
-		if (!isNull(maxSize))
+		if (!isNullText(maxSize))
 			config.setMaxActive(Integer.parseInt(maxSize));
-		if (!isNull(initSize))
+		if (!isNullText(initSize))
 			config.setInitialSize(Integer.parseInt(initSize));
-		if (!isNull(maxWait))
+		if (!isNullText(maxWait))
 			config.setMaxWait(Integer.parseInt(maxWait));
-		if (!isNull(validationQuerySQL))
+		if (!isNullText(validationQuerySQL))
 			config.setConnectionTestSQL(validationQuerySQL);
-		if (!isNull(validationQueryTimeout))
+		if (!isNullText(validationQueryTimeout))
 			config.setConnectionTestTimeout(Integer.parseInt(validationQueryTimeout));
-		if (!isNull(connectionIdleTimeout))
+		if (!isNullText(connectionIdleTimeout))
 			config.setIdleTimeout(Integer.parseInt(connectionIdleTimeout));
 	
         ra = ref.get(PROP_POOLPREPAREDSTATEMENTS);
@@ -169,16 +171,12 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         if(ra != null) statementCacheSize= ra.getContent().toString(); 
 	
 		if ("true".equals(needStatementCache) || "Y".equals(needStatementCache)) {
-			if (!isNull(statementCacheSize))
+			if (!isNullText(statementCacheSize))
 				config.setPreparedStatementCacheSize(Integer.parseInt(statementCacheSize));
 		} else {
 			config.setPreparedStatementCacheSize(0);
 		}
 		return new BeeDataSource(config);
-	}
-	
-	private boolean isNull(String value) {
-		return (value == null || value.trim().length()==0);
 	}
 	
 	class JndiDataSourceWrapper implements DataSource {

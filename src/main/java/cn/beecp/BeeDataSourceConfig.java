@@ -99,7 +99,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	/**
 	 * pool concurrent Size
 	 */
-	private int concurrentSize=4;
+	private int concurrentSize;
 	
 	/**
 	 * 'PreparedStatement' cache size
@@ -217,9 +217,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	boolean isChecked() {
 		return checked;
 	}
-	void setChecked(boolean checked) {
+	void setAsChecked() {
 		if(!this.checked)
-			this.checked = checked;
+			this.checked = true;
 	}
 	public String getUsername() {
 		return username;
@@ -381,16 +381,16 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	public int getConnectionTestTimeout() {
 		return connectionTestTimeout;
 	}
-	public void setConnectionTestTimeout(int validationQueryTimeout) {
-		if(!this.checked && validationQueryTimeout>0) 
-		this.connectionTestTimeout = validationQueryTimeout;
+	public void setConnectionTestTimeout(int connectionTestTimeout) {
+		if(!this.checked && connectionTestTimeout>0) 
+		this.connectionTestTimeout = connectionTestTimeout;
 	}
 	public long getConnectionTestInterval() {
 		return connectionTestInterval;
 	}
-	public void setConnectionTestInterval(long validationInterval) {
-		if(!this.checked && validationInterval>0) 
-		this.connectionTestInterval = validationInterval;
+	public void setConnectionTestInterval(long connectionTestInterval) {
+		if(!this.checked && connectionTestInterval>0) 
+		this.connectionTestInterval = connectionTestInterval;
 	}
 
 	public boolean isForceCloseConnection() {

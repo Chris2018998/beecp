@@ -27,6 +27,6 @@ import java.sql.SQLException;
 public interface ConnectionFactory {
 	
 	//create raw connection
-	public Connection create()throws SQLException;
+	Connection create()throws SQLException;
 	
 }
