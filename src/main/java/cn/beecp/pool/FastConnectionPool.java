@@ -46,7 +46,6 @@ import java.lang.ref.WeakReference;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -65,9 +64,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.beecp.BeeDataSourceConfig;
-import cn.beecp.BeeDataSourceConfigJMXBean;
 import cn.beecp.ConnectionFactory;
-
 /**
  * JDBC Connection Pool Implementation
  *
@@ -93,7 +90,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private Semaphore poolSemaphore;
 	private TransferPolicy tansferPolicy;
 	private ConnectionFactory connFactory;
-	private Object connArraySyn=new Object();
+	private final Object connArraySyn=new Object();
 	private volatile PooledConnection[] connArray = new PooledConnection[0];
 	private AtomicInteger createConnThreadState = new AtomicInteger(THREAD_WORKING);
 	private ConcurrentLinkedQueue<Borrower> waitTransferQueue = new ConcurrentLinkedQueue<Borrower>();
@@ -108,11 +105,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		}
 	});
 
-	private String poolName = "";
+	private String poolName;
 	private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
 	private Logger log = LoggerFactory.getLogger(this.getClass());
-	
-	private static String PoolNamePrefix = "FastPool-";
+
 	private static AtomicInteger PoolNameIndex = new AtomicInteger(1);
 	private static final int MaxTimedSpins = (Runtime.getRuntime().availableProcessors() < 2) ? 0 : 32;
 	private static final AtomicIntegerFieldUpdater<PooledConnection> ConnStateUpdater = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class, "state");
@@ -140,7 +136,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			if(config == null)throw new SQLException("Datasource configeruation can't be null");
 			poolConfig = config;
 
-			poolName = !isNullText(config.getPoolName()) ? config.getPoolName():PoolNamePrefix + PoolNameIndex.getAndIncrement();
+			poolName = !isNullText(config.getPoolName()) ? config.getPoolName():"FastPool-" + PoolNameIndex.getAndIncrement();
 			log.info("BeeCP({})starting....",poolName);
 
 			PoolMaxSize=poolConfig.getMaxActive();
@@ -155,7 +151,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			TestOnReturn = poolConfig.isTestOnReturn();
 			connFactory=poolConfig.getConnectionFactory();
 			
-			String mode = "";
+			String mode;
 			if (poolConfig.isFairMode()) {
 				mode = "fair";
 				tansferPolicy = new FairTransferPolicy();
@@ -218,8 +214,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		synchronized(connArraySyn) {
 			int oldLen = connArray.length;
 			if (oldLen < PoolMaxSize) {
-				Connection con = null;
-				PooledConnection pConn = null;
+				Connection con=null;
+				PooledConnection pConn;
 				try {
 					con = connFactory.create();
 					pConn = new PooledConnection(con, this, poolConfig, connState);// add
@@ -297,11 +293,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				} finally {
 					try {
 						con.rollback();
-					} catch (SQLException e){}
+					} catch (SQLException e){
+						log.error("Failed to execute 'rollback' after connection test");
+					}
 					try {
 					  if(AutoCommit&&autoCommitChged)
 						 con.setAutoCommit(true);
-					} catch (SQLException e){}
+					} catch (SQLException e){
+						log.error("Failed to execute 'setAutoCommit(true)' after connection test");
+					}
 					oclose(st);
 				}
 			}
@@ -317,13 +317,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 
 	private boolean testOnBorrow(PooledConnection pConn) {
-		return TestOnBorrow && (currentTimeMillis() - pConn.lastAccessTime - ValidationIntervalMills >= 0)
-				? isActiveConn(pConn) : true;
+		return !TestOnBorrow || (currentTimeMillis() - pConn.lastAccessTime - ValidationIntervalMills<0) || isActiveConn(pConn);
 	}
-
 	private boolean testOnReturn(PooledConnection pConn) {
-		return TestOnReturn && (currentTimeMillis() - pConn.lastAccessTime - ValidationIntervalMills >= 0)
-				? isActiveConn(pConn) : true;
+		return !TestOnReturn || (currentTimeMillis() - pConn.lastAccessTime - ValidationIntervalMills<0) || isActiveConn(pConn);
 	}
 
 	/**
@@ -424,7 +421,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 
 	// take one PooledConnection
-	private Connection takeOneConnection(long deadline, Borrower borrower) throws SQLException, InterruptedException {
+	private Connection takeOneConnection(long deadline, Borrower borrower) throws SQLException {
 		final PooledConnection[] connArray=this.connArray;
 		for (PooledConnection pConn : connArray) {
 			if (ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn)) {
@@ -433,14 +430,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		}
 		
 		//create directly
- 		PooledConnection pConn = null;
+ 		PooledConnection pConn;
 		if(connArray.length<PoolMaxSize && (pConn=this.createPooledConn(CONNECTION_USING))!=null){
 			return createProxyConnection(pConn,borrower);
 		}
 		
-		long waitTime = 0;
+		long waitTime;
+		Object stateObject;
 		boolean isTimeout = false;
-		Object stateObject = null;
 		int spinSize = MaxTimedSpins;
 		TansferStateUpdater.set(borrower, BORROWER_NORMAL);
 		
@@ -524,50 +521,36 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		if (needTest && !testOnReturn(pConn))return;
 		tansferPolicy.beforeTransfer(pConn);
 
-		Object state = null;
-		Borrower borrower=null;
-		Iterator<Borrower>itor=waitTransferQueue.iterator();
-		while(itor.hasNext()) {
-			if (ConnStateUpdater.get(pConn) != ConUnCatchStateCode)
-				return;
-			
-			borrower=itor.next();
-			state = TansferStateUpdater.get(borrower);
-			while (state == BORROWER_NORMAL || state == BORROWER_WAITING) {
-				if (TansferStateUpdater.compareAndSet(borrower, state, pConn)) {
-					if (state == BORROWER_WAITING)
-						LockSupport.unpark(borrower.thread);
-					return;
-				}
-				state = TansferStateUpdater.get(borrower);
-			}
+		for(Borrower borrower:waitTransferQueue){
+			if(ConnStateUpdater.get(pConn)!=ConUnCatchStateCode)return;
+			if(transferToWaiter(borrower,pConn))return;
 		}
-
 		tansferPolicy.onFailTransfer(pConn);
 	}
-
 	/**
 	 * @param exception:
 	 *            transfered Exception to waiter
 	 */
 	private void transferException(SQLException exception) {
-		Object state = null;
-		Borrower borrower=null;
-		Iterator<Borrower>itor=waitTransferQueue.iterator();
-		while(itor.hasNext()) {
-			borrower=itor.next();
-			state = TansferStateUpdater.get(borrower);
-			while (state == BORROWER_NORMAL || state == BORROWER_WAITING) {
-				if (TansferStateUpdater.compareAndSet(borrower, state, exception)) {
-					if (state == BORROWER_WAITING)
-						LockSupport.unpark(borrower.thread);
-					return;
-				}
-				state = TansferStateUpdater.get(borrower);
-			}
+		for(Borrower borrower:waitTransferQueue){
+			if(transferToWaiter(borrower,exception))return;
 		}
 	}
-
+	private boolean transferToWaiter(Borrower waiter,Object val) {
+		Object state;
+		for(;;){
+			state = TansferStateUpdater.get(waiter);
+			if(state == BORROWER_NORMAL || state == BORROWER_WAITING){
+				if(TansferStateUpdater.compareAndSet(waiter,state,val)) {
+					if (state == BORROWER_WAITING)
+						LockSupport.unpark(waiter.thread);
+					return true;
+				}
+			}else{
+				return false;
+			}
+		}//inner for
+	}
 	/**
 	 * inner timer will call the method to clear some idle timeout connections
 	 * or dead connections,or long time not active connections in using state
@@ -602,8 +585,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			if (poolState.compareAndSet(POOL_NORMAL,POOL_CLOSED)) {
 				log.info("BeeCP({})begin to shutdown",poolName);
 				removeAllConnections(poolConfig.isForceCloseConnection(),DESC_REMOVE_DESTROY);
-				while (!idleCheckSchFuture.cancel(true));
-					
+				while (true) {
+					if (idleCheckSchFuture.cancel(true)) break;
+				}
 				//idleSchExecutor.shutdown();
 				shutdownCreateConnThread();
 				unregisterJMX();
@@ -611,6 +595,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				try {
 					Runtime.getRuntime().removeShutdownHook(exitHook);
 				} catch (Throwable e) {
+					log.error("Failed to remove pool hook");
 				}
 
 				log.info("BeeCP({})has been shutdown",poolName);
@@ -642,7 +627,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 							removePooledConn(pConn,source);
 						}
 					} else {
-						final boolean isTimeout = ((currentTimeMillis()-pConn.lastAccessTime-poolConfig.getHoldIdleTimeout()>= 0));
+						boolean isTimeout = ((currentTimeMillis()-pConn.lastAccessTime-poolConfig.getHoldIdleTimeout()>= 0));
 						if (isTimeout && ConnStateUpdater.compareAndSet(pConn, CONNECTION_USING, CONNECTION_CLOSED)) {
 							removePooledConn(pConn,source);
 						}
@@ -679,7 +664,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 	// create connection to pool
 	public void run() {
-		PooledConnection pConn=null;
+		PooledConnection pConn;
 		while (createConnThreadState.get()==THREAD_WORKING) {
 			if (!waitTransferQueue.isEmpty() && connArray.length<PoolMaxSize) {
 				try {
@@ -687,8 +672,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					release(pConn,false);
 				} catch (SQLException e) {
 					transferException(e);
-				}finally{
-					pConn=null;
 				}
 			} else if (createConnThreadState.compareAndSet(THREAD_WORKING, THREAD_WAITING)) {
 				LockSupport.park(this);
@@ -740,54 +723,39 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private void registerJMX() {
 		if (poolConfig.isEnableJMX()) {
 			final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-			try {
-				final ObjectName poolRegName = new ObjectName("cn.beecp.pool.FastConnectionPool:type=BeeCP("+poolName+")");
-				if (!mBeanServer.isRegistered(poolRegName)) {
-					mBeanServer.registerMBean((ConnectionPoolJMXBean)this,poolRegName);
-					log.info("Registered BeeCP({})as jmx-bean",poolName);
-				} else {
-					log.error("Jmx-name BeeCP({})has been exist in jmx server",poolName);
-				}
-			} catch (Exception e) {
-				log.warn("Failed to register pool jmx-bean", e);
+			registerJMXBean(mBeanServer,String.format("cn.beecp.pool.FastConnectionPool:type=BeeCP(%s)",poolName),this);
+			registerJMXBean(mBeanServer,String.format("cn.beecp.BeeDataSourceConfig:type=BeeCP(%s)-config",poolName),poolConfig);
+		}
+	}
+	private void registerJMXBean(MBeanServer mBeanServer,String regName,Object bean) {
+		try {
+			final ObjectName jmxRegName = new ObjectName(regName);
+			if(!mBeanServer.isRegistered(jmxRegName)) {
+				mBeanServer.registerMBean(bean,jmxRegName);
 			}
-			
-			try {
-				final ObjectName configRegName = new ObjectName("cn.beecp.BeeDataSourceConfig:type=BeeCP("+poolName+")-config");
-				if (!mBeanServer.isRegistered(configRegName)) {
-					mBeanServer.registerMBean((BeeDataSourceConfigJMXBean)poolConfig,configRegName);
-					log.info("Registered BeeCP({})config as jmx-bean",poolName);
-				} else {
-					log.error("Pool BeeCP({})config has been exist in jmx server",poolName);
-				}
-			} catch (Exception e) {
-				log.warn("Failed to register pool jmx-bean", e);
-			}
+		} catch (Exception e) {
+			log.warn("Failed to register jmx-bean:{}",regName,e);
 		}
 	}
 	// unregister JMX
 	private void unregisterJMX() {
 		if (poolConfig.isEnableJMX()) {
 			final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-			try {
-				final ObjectName poolRegName = new ObjectName("cn.beecp.pool.FastConnectionPool:type=BeeCP("+poolName+")");
-				if(mBeanServer.isRegistered(poolRegName)) {
-					 mBeanServer.unregisterMBean(poolRegName);
-				}
-			} catch (Exception e) {
-				log.warn("Failed to unregister pool jmx-bean", e);
-			}
-			
-			try {
-				final ObjectName configRegName = new ObjectName("cn.beecp.BeeDataSourceConfig:type=BeeCP("+poolName+")-config");
-				if(mBeanServer.isRegistered(configRegName)) {
-				  mBeanServer.unregisterMBean(configRegName);
-				}
-			} catch (Exception e) {
-				log.warn("Failed to unregister pool jmx-bean", e);
-			}
+			unregisterJMXBean(mBeanServer,String.format("cn.beecp.pool.FastConnectionPool:type=BeeCP(%s)",poolName));
+			unregisterJMXBean(mBeanServer,String.format("cn.beecp.BeeDataSourceConfig:type=BeeCP(%s)-config",poolName));
 		}
 	}
+	private void unregisterJMXBean(MBeanServer mBeanServer,String regName) {
+		try {
+			final ObjectName jmxRegName = new ObjectName(regName);
+			if(mBeanServer.isRegistered(jmxRegName)) {
+				mBeanServer.unregisterMBean(jmxRegName);
+			}
+		} catch (Exception e) {
+			log.warn("Failed to unregister jmx-bean:{}",regName,e);
+		}
+	}
+
 	//******************************** JMX **************************************/
 
 	// Transfer Policy

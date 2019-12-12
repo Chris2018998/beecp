@@ -48,8 +48,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 	private long DefaultMaxWaitMills;
 	private BeeDataSourceConfig poolConfig;
 	private Logger log = LoggerFactory.getLogger(this.getClass());
-	private String poolName = "";
-	private final static String PoolNamePrefix = "RawPool-";
+	private String poolName;
 	private final static AtomicInteger PoolNameIndex = new AtomicInteger(1);
 
 	/**
@@ -57,16 +56,14 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 	 *
 	 * @param config
 	 *            data source configuration
-	 * @throws SQLException
-	 *             check configuration fail or to create initiated connection
 	 */
-	public void init(BeeDataSourceConfig config) throws SQLException {
+	public void init(BeeDataSourceConfig config){
 		poolConfig = config;
 		DefaultMaxWaitMills = poolConfig.getMaxWait();
 		poolSemaphore = new Semaphore(poolConfig.getConcurrentSize(), poolConfig.isFairMode());
-		poolName = !isNullText(config.getPoolName()) ? config.getPoolName(): PoolNamePrefix + PoolNameIndex.getAndIncrement();
+		poolName = !isNullText(config.getPoolName()) ? config.getPoolName(): "RawPool-" + PoolNameIndex.getAndIncrement();
 
-		String mode = "";
+		String mode;
 		if (poolConfig.isFairMode()) {
 			mode = "fair";
 		} else {

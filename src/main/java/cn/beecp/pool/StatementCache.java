@@ -30,8 +30,8 @@ import java.util.Map;
  */
 public final class StatementCache {
 	private int capacity;
-	public CacheNode head=null;//old
-	public CacheNode tail=null;//new
+	private CacheNode head=null;//old
+	private CacheNode tail=null;//new
 	private HashMap<Object,CacheNode>nodeMap;
 	public StatementCache(int capacity) {
 		this.capacity=capacity;
@@ -55,26 +55,27 @@ public final class StatementCache {
 			if(nodeMap.size()>capacity) {
 			  CacheNode oldHead=removeHead();
 			  nodeMap.remove(oldHead.k);
-			  onRemove(oldHead.k,oldHead.v);
+			  onRemove(oldHead.v);
 			}
 		} else {
 			n.v = v;
 			moveToTail(n);
 		}
 	}
-	public void clear() {
+
+	void clear() {
 		Iterator<Map.Entry<Object, CacheNode>> itor=nodeMap.entrySet().iterator();
 		while (itor.hasNext()) {
-			Map.Entry<Object,CacheNode> entry = (Map.Entry<Object, CacheNode>) itor.next();
+			Map.Entry<Object,CacheNode> entry=itor.next();
 			itor.remove();
 			 CacheNode node= entry.getValue();
-			 onRemove(node.k,node.v);
+			 onRemove(node.v);
 		}
 		
 		head=null;
 		tail=null;
 	}
-	private void onRemove(Object key, PreparedStatement obj) {
+	private void onRemove(PreparedStatement obj) {
 		oclose(obj);
 	}
 	//add new node
@@ -123,7 +124,7 @@ public final class StatementCache {
 		private PreparedStatement v;
 		private CacheNode pre = null;
 		private CacheNode next = null;
-		public CacheNode(Object k, PreparedStatement v) {
+		private CacheNode(Object k, PreparedStatement v) {
 			this.k = k;
 			this.v = v;
 		}
@@ -236,10 +237,10 @@ final class CsCacheKey{
 	private final static int TYPE3=99*prime;
 	
 	private int type=TYPE1;
-	private int hashCode=TYPE1;
+	private int hashCode;
 	public CsCacheKey(String sql) {
 		this.sql=sql;
-		
+		hashCode=TYPE1;
 		hashCode =+sql.hashCode();	
 	}
 	

@@ -48,6 +48,7 @@ public abstract class ProxyCsStatementBase extends ProxyStatementTop{
 		checkClose();
 		return iface.isInstance(delegate);
 	}
+
 	@SuppressWarnings("unchecked")
 	public final <T> T unwrap(Class<T> iface) throws SQLException{
 	  checkClose();

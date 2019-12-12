@@ -46,16 +46,16 @@ public final class PooledConnection{
 	//changed indicator
 	private boolean[] changedInds=new boolean[4]; //0:autoCommit,1:transactionIsolation,2:readOnly,3:catalog
 	private short changedFieldsts=Short.parseShort("0000",2); //pos:last ---> head;0:unchanged,1:changed
-	public static short Pos_AutoCommitInd=0;
-	public static short Pos_TransactionIsolationInd=1;
-	public static short Pos_ReadOnlyInd=2;
-	public static short Pos_CatalogInd=3;
+	static short Pos_AutoCommitInd=0;
+	static short Pos_TransactionIsolationInd=1;
+	static short Pos_ReadOnlyInd=2;
+	static short Pos_CatalogInd=3;
 	
-	public PooledConnection(Connection phConn,ConnectionPool connPool,BeeDataSourceConfig config) {
+	public PooledConnection(Connection phConn,ConnectionPool connPool,BeeDataSourceConfig config)throws SQLException{
 		 this(phConn,connPool,config,CONNECTION_IDLE);
 	}
 	
-	public PooledConnection(Connection phConn,ConnectionPool connPool,BeeDataSourceConfig config,int connState) {
+	public PooledConnection(Connection phConn,ConnectionPool connPool,BeeDataSourceConfig config,int connState)throws SQLException{
 		pool=connPool;
 		connection= phConn;
 
@@ -68,28 +68,12 @@ public final class PooledConnection{
 		updateAccessTime();
 	}
 	
-	private void setDefault(){
-		try {
-			connection.setAutoCommit(poolConfig.isDefaultAutoCommit());
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		try {
-			connection.setTransactionIsolation(poolConfig.getDefaultTransactionIsolation());
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		try {
-			connection.setReadOnly(poolConfig.isDefaultReadOnly());
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		try {
-			if(!isNullText(poolConfig.getDefaultCatalog()))
-		      connection.setCatalog(poolConfig.getDefaultCatalog());
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+	private void setDefault()throws SQLException{
+		connection.setAutoCommit(poolConfig.isDefaultAutoCommit());
+		connection.setTransactionIsolation(poolConfig.getDefaultTransactionIsolation());
+		connection.setReadOnly(poolConfig.isDefaultReadOnly());
+		if(!isNullText(poolConfig.getDefaultCatalog()))
+		  connection.setCatalog(poolConfig.getDefaultCatalog());
 	}
 	
 	public void updateAccessTime() {
@@ -175,7 +159,7 @@ public final class PooledConnection{
 			}
 		}
 	}
-    void returnToPoolBySelf() throws SQLException {
+    void returnToPoolBySelf(){
     	try{
 			resetConnectionBeforeRelease();
 			pool.release(this,true);
