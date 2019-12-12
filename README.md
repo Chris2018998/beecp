@@ -11,7 +11,7 @@ Release download
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>1.5.0</version>
+   <version>1.5.1</version>
 </dependency>
 
 ```
