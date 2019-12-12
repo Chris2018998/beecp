@@ -22,7 +22,7 @@
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>1.5.0</version>
+   <version>1.5.1</version>
 </dependency>
 
 ```
@@ -103,9 +103,8 @@ Bee_C(5.3623) > Bee_F(6.8492) > HikariCP(9.0176)
  
 性能测试代码请访问项目：https://github.com/Chris2018998/PoolPerformance
 
-
 3： 采用光连接池的性能基准测试结果
 
-<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191108_I3_7100_HikariCP_Bech_Pict.png"></img>
+<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191212_I3_7100_HikariCP_Bech_Pict.png"></img>
 
 下载 <a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
