@@ -78,7 +78,6 @@ public class DataSourceConfig {
 }
 ```
 
-
 Performance
 ---
 The performance of each connection pool is tested by multi-threaded query (1000 threads execute 1000 times each, totally 1 million times), and the time-consuming distribution and average time-consuming are printed. Finally, the connection pools are ranked according to the usual time-consuming. Single time statistics (machine status impact on the test results):
@@ -96,6 +95,8 @@ project for performance test code,please visit：https://github.com/Chris2018998
 2：Test with HikariCP benchmark
 
 <img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191108_I3_7100_HikariCP_Bech_Pict.png"></img>
+
+<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191212_I3_7100_HikariCP_Bech_Pict.png"></img>
 
 Download <a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
 
