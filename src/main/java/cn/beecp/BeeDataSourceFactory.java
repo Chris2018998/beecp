@@ -206,10 +206,10 @@ public final class BeeDataSourceFactory implements ObjectFactory {
 			return null;
 			//return delegete.getParentLogger();
 		}
-		public <T> T unwrap(java.lang.Class<T> iface) throws java.sql.SQLException {
+		public <T> T unwrap(Class<T> iface) throws SQLException {
 			return delegete.unwrap(iface);
 		}
-		public boolean isWrapperFor(java.lang.Class<?> iface) throws java.sql.SQLException {
+		public boolean isWrapperFor(Class<?> iface) throws SQLException {
 			return delegete.isWrapperFor(iface);
 		}
 	}

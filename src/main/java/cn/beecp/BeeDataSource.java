@@ -151,10 +151,10 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	public int getLoginTimeout() throws SQLException {
 		throw new SQLException("Not supported");
 	}
-	public <T> T unwrap(java.lang.Class<T> iface) throws SQLException {
+	public <T> T unwrap(Class<T> iface) throws SQLException {
 		throw new SQLException("Not supported");
 	}
-	public boolean isWrapperFor(java.lang.Class<?> iface) throws SQLException {
+	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		throw new SQLException("Not supported");
 	}
 	/**

@@ -135,6 +135,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	 * connection.setReadOnly
 	 */
 	private boolean defaultReadOnly=false;
+
+	/**
+	 * rollback On Return
+	 */
+	private boolean rollbackOnReturn=true;
 	
 	/**
 	 * borrower request timeout(milliseconds)
@@ -350,6 +355,14 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	   if(!this.checked)
 		this.defaultReadOnly = readOnly;
 	}
+	public boolean isRollbackOnReturn() {
+		return rollbackOnReturn;
+	}
+	public void setRollbackOnReturn(boolean rollbackOnReturn) {
+		if(!this.checked)
+			this.rollbackOnReturn = rollbackOnReturn;
+	}
+
 	public long getMaxWait() {
 		return maxWait;
 	}
@@ -471,6 +484,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 			config.defaultTransactionIsolation=this.defaultTransactionIsolation;
 			config.defaultCatalog=this.defaultCatalog;
 			config.defaultReadOnly=this.defaultReadOnly;
+			config.rollbackOnReturn = this.rollbackOnReturn;
 			config.maxWait=this.maxWait;
 			config.idleTimeout=this.idleTimeout;
 			config.holdIdleTimeout=this.holdIdleTimeout;
