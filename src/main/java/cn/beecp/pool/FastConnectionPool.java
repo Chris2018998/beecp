@@ -266,7 +266,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 */
 	private boolean isActiveConn(PooledConnection pConn) {
 		boolean isActive = true;
-		Connection con= pConn.connection;
+		Connection con= pConn.rawConnection;
 		try {
 			if (validateSQLIsNull) {
 				try {

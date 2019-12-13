@@ -247,7 +247,7 @@ public final class ProxyClassGenerator {
 		  body.delete(0, body.length());
 		  body.append("{");
 		  body.append(" $2.setBorrowedConnection($1);");
-		  body.append("	return $1.proxyConnCurInstance=new ProxyConnection($1);");
+		  body.append("	return $1.proxyConnection=new ProxyConnection($1);");
 		  body.append("}");
 		  createProxyConnectionMethod.setBody(body.toString());
 		  //............... FastConnectionPool end..................

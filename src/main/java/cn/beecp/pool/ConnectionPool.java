@@ -60,7 +60,7 @@ public interface ConnectionPool {
 	 * @param pConn target connection need release
 	 * @param needTest, true check active
 	 */
-	public void release(PooledConnection pConn,boolean needTest);
+	public void release(PooledConnection pConn, boolean needTest);
 		
 	/**
 	 * close pool

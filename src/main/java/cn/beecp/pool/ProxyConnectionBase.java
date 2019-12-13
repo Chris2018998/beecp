@@ -38,7 +38,7 @@ public abstract class ProxyConnectionBase implements Connection{
 	
 	public ProxyConnectionBase(PooledConnection pooledConn) {
 		this.pooledConn=pooledConn;
-		delegate=pooledConn.connection;
+		delegate=pooledConn.rawConnection;
 		poolConfig=pooledConn.poolConfig;
 		stmCacheValid=pooledConn.stmCacheValid;
 		stmCache=pooledConn.stmCache;
