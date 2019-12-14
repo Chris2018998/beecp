@@ -61,24 +61,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	private String driverClassName; 
 	
 	/**
-	 * Physical JDBC Connection factory class name
-	 */
-	private String connectionFactoryClassName;
-
-	/**
-	 * Physical JDBC Connection factory
-	 */
-	private ConnectionFactory connectionFactory;
-	
-	/**
-	 * connection extra properties
-	 */
-	private Properties connectProperties = new Properties();
-	
-	/**
 	 * pool name
 	 */
-	private String poolName="";
+	private String poolName;
 	
 	/**
 	 * if true,first arrival,first taking if false,competition for all borrower
@@ -114,13 +99,18 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	/**
 	 * check on borrow connection
 	 */
-	private boolean testOnReturn=false;
+	private boolean testOnReturn;
 
 	/**
 	 * connection.setAutoCommit(boolean);
 	 */
-	private final boolean defaultAutoCommit=true;
+	private boolean defaultAutoCommit=true;
 	
+	/**
+	 * clear SQLWarnings before return to pool
+	 */
+	private boolean clearSQLWarnings;
+
 	/**
 	 * default Transaction Isolation
 	 */
@@ -129,18 +119,13 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	/**
 	 *connection.setCatalog
 	 */
-	private String defaultCatalog=null;
+	private String defaultCatalog;
 	
 	/**
 	 * connection.setReadOnly
 	 */
-	private boolean defaultReadOnly=false;
-
-	/**
-	 * rollback On Return
-	 */
-	private boolean rollbackOnReturn=true;
-	
+	private boolean defaultReadOnly;
+ 
 	/**
 	 * borrower request timeout(milliseconds)
 	 */
@@ -175,7 +160,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	/**
 	 * close all connections in force when shutdown
 	 */
-	private boolean forceCloseConnection=false;
+	private boolean forceCloseConnection;
 	
 	/**
 	 * seconds,wait for retry to clear all connections
@@ -196,6 +181,21 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	 * BeeCP implementation class name
 	 */
 	private String poolImplementClassName = DefaultImplementClassName;
+	
+	/**
+	 * Physical JDBC Connection factory class name
+	 */
+	private String connectionFactoryClassName;
+
+	/**
+	 * Physical JDBC Connection factory
+	 */
+	private ConnectionFactory connectionFactory;
+	
+	/**
+	 * connection extra properties
+	 */
+	private Properties connectProperties = new Properties();
 	
 	/**
 	 * enableJMX
@@ -332,7 +332,16 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	public boolean isDefaultAutoCommit() {
 		return defaultAutoCommit;
 	}
-	
+	public void setDefaultAutoCommit(boolean defaultAutoCommit) {
+		if(!this.checked)this.defaultAutoCommit = defaultAutoCommit;
+	}
+	public boolean isClearSQLWarnings() {
+		return clearSQLWarnings;
+	}
+	public void setClearSQLWarnings(boolean clearSQLWarnings) {
+	 if(!this.checked)
+		this.clearSQLWarnings = clearSQLWarnings;
+	}
 	public int getDefaultTransactionIsolation() {
 		return defaultTransactionIsolation;
 	}
@@ -355,14 +364,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	   if(!this.checked)
 		this.defaultReadOnly = readOnly;
 	}
-	public boolean isRollbackOnReturn() {
-		return rollbackOnReturn;
-	}
-	public void setRollbackOnReturn(boolean rollbackOnReturn) {
-		if(!this.checked)
-			this.rollbackOnReturn = rollbackOnReturn;
-	}
-
 	public long getMaxWait() {
 		return maxWait;
 	}
@@ -480,11 +481,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 			config.preparedStatementCacheSize=this.preparedStatementCacheSize;
 			config.testOnBorrow=this.testOnBorrow;
 			config.testOnReturn=this.testOnReturn;
-			//config.defaultAutoCommit=this.defaultAutoCommit;
+			config.defaultAutoCommit=this.defaultAutoCommit;
 			config.defaultTransactionIsolation=this.defaultTransactionIsolation;
 			config.defaultCatalog=this.defaultCatalog;
 			config.defaultReadOnly=this.defaultReadOnly;
-			config.rollbackOnReturn = this.rollbackOnReturn;
 			config.maxWait=this.maxWait;
 			config.idleTimeout=this.idleTimeout;
 			config.holdIdleTimeout=this.holdIdleTimeout;
