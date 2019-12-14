@@ -16,60 +16,77 @@
 package cn.beecp.pool;
 
 import static cn.beecp.pool.PoolExceptionList.ConnectionClosedException;
+import static cn.beecp.pool.PoolExceptionList.AutoCommitChangeForbiddennException;
 import static cn.beecp.util.BeecpUtil.equalsText;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 
 import cn.beecp.BeeDataSourceConfig;
 /**
- * physical connection wrapper
+ * raw connection wrapper
  * 
  * @author Chris.Liao
  * @version 1.0
  */
-public abstract class ProxyConnectionBase implements Connection{
+abstract class ProxyConnectionBase implements Connection{
 	private boolean isClosed;
 	protected Connection delegate;
-	protected boolean stmCacheValid;
-	protected StatementCache stmCache;
-	protected PooledConnection pooledConn;
-	private BeeDataSourceConfig poolConfig;
+	protected PooledConnection pConn;//called by subClsss to update time
+	private BeeDataSourceConfig pConfig;
 	
-	public ProxyConnectionBase(PooledConnection pooledConn) {
-		this.pooledConn=pooledConn;
-		delegate=pooledConn.rawConnection;
-		poolConfig=pooledConn.poolConfig;
-		stmCacheValid=pooledConn.stmCacheValid;
-		stmCache=pooledConn.stmCache;
+	public ProxyConnectionBase(PooledConnection pConn) {
+		this.pConn=pConn;
+		delegate=pConn.rawConn;
+		pConfig=pConn.pConfig;
 	}
 	protected void checkClose() throws SQLException {
 		if(isClosed)throw ConnectionClosedException;
 	}
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
 		checkClose();
+		if(!pConn.curAutoCommit && pConn.commitDirtyInd)
+		  throw AutoCommitChangeForbiddennException;
+		
 		delegate.setAutoCommit(autoCommit);
-		pooledConn.updateAccessTime();
-		pooledConn.setCurAutoCommit(autoCommit);
-		pooledConn.setChangedInd(PooledConnection.Pos_AutoCommitInd,autoCommit!=poolConfig.isDefaultAutoCommit()); 
+		pConn.updateAccessTime();
+		pConn.setCurAutoCommit(autoCommit);
+		pConn.setChangedInd(PooledConnection.Pos_AutoCommitInd,autoCommit!=pConfig.isDefaultAutoCommit());
+		if(autoCommit)pConn.commitDirtyInd=false;
 	}
 	public void setTransactionIsolation(int level) throws SQLException {
 		checkClose();
 		delegate.setTransactionIsolation(level);
-		pooledConn.updateAccessTime();
-		pooledConn.setChangedInd(PooledConnection.Pos_TransactionIsolationInd,level!=poolConfig.getDefaultTransactionIsolation());
+		pConn.updateAccessTime();
+		pConn.setChangedInd(PooledConnection.Pos_TransactionIsolationInd,level!=pConfig.getDefaultTransactionIsolation());
 	}
 	public void setReadOnly(boolean readOnly) throws SQLException {
 		checkClose();
 		delegate.setReadOnly(readOnly);
-		pooledConn.updateAccessTime();
-		pooledConn.setChangedInd(PooledConnection.Pos_ReadOnlyInd,readOnly!=poolConfig.isDefaultReadOnly());
+		pConn.updateAccessTime();
+		pConn.setChangedInd(PooledConnection.Pos_ReadOnlyInd,readOnly!=pConfig.isDefaultReadOnly());
 	}
 	public void setCatalog(String catalog) throws SQLException {
 		checkClose();
 		delegate.setCatalog(catalog);
-		pooledConn.updateAccessTime();
-		pooledConn.setChangedInd(PooledConnection.Pos_CatalogInd,!equalsText(catalog, poolConfig.getDefaultCatalog()));
+		pConn.updateAccessTime();
+		pConn.setChangedInd(PooledConnection.Pos_CatalogInd,!equalsText(catalog, pConfig.getDefaultCatalog()));
+	}
+	public void commit() throws SQLException{
+		checkClose();
+		delegate.commit();
+		pConn.commitDirtyInd=false;
+	}
+	public void rollback() throws SQLException{
+		checkClose();
+		delegate.rollback();
+		pConn.commitDirtyInd=false;
+	}
+	public void rollback(Savepoint savepoint) throws SQLException{
+		checkClose();
+		delegate.rollback(savepoint);
+		pConn.commitDirtyInd=false;
 	}
 	public final boolean isWrapperFor(Class<?> iface) throws SQLException {
 		checkClose();
@@ -87,14 +104,13 @@ public abstract class ProxyConnectionBase implements Connection{
 	void setConnectionDataToNull() {
 		isClosed=true;
 		delegate=null;
-		pooledConn=null;
-		stmCache=null;
-		poolConfig=null;
+		pConn=null;
+		pConfig=null;
 	}
 	public void close() throws SQLException {
 		try{
 			isClosed = true;
-			pooledConn.returnToPoolBySelf();
+			pConn.returnToPoolBySelf();
 		}finally{
 			setConnectionDataToNull();
 		}

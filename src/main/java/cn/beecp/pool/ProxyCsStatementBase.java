@@ -26,22 +26,21 @@ import java.sql.SQLException;
  * @author Chris.Liao
  * @version 1.0
  */
-public abstract class ProxyCsStatementBase extends ProxyStatementTop{
-	private boolean cacheInd;
+abstract class ProxyCsStatementBase extends ProxyStatementTop{
 	protected CallableStatement delegate;
-	public ProxyCsStatementBase(CallableStatement delegate,ProxyConnectionBase proxyConnection,boolean cacheInd) {
-		super(proxyConnection);
+	public ProxyCsStatementBase(CallableStatement delegate,ProxyConnectionBase proxyConn,PooledConnection pConn) {
+		super(proxyConn,pConn);
 		this.delegate = delegate;
-		this.cacheInd = cacheInd;
 	}
 	public void close() throws SQLException {
 		try{
 			checkClose();
 		}finally{
 			this.isClosed = true;
-			if(!cacheInd)oclose(delegate);
+			if(!pConn.stmCacheIsValid)oclose(delegate);
 			this.delegate = null;
-			this.proxyConnection =null;
+			this.proxyConn =null;
+			this.pConn =null;
 		}
 	}
 	public final boolean isWrapperFor(Class<?> iface) throws SQLException {

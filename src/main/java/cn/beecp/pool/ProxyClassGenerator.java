@@ -123,8 +123,8 @@ public final class ProxyClassGenerator {
 			ctStatementProxyImplClass.setModifiers(Modifier.PUBLIC);
 			CtClass[] statementCreateParam = new CtClass[] {
 					classPool.get("java.sql.Statement"),
-					classPool.get("cn.beecp.pool.ProxyConnection")
-					};
+					classPool.get("cn.beecp.pool.ProxyConnection"),
+					classPool.get("cn.beecp.pool.PooledConnection"),};
 			subClassConstructor = new CtConstructor(statementCreateParam,ctStatementProxyImplClass);
 			subClassConstructor.setModifiers(Modifier.PUBLIC);
 			body.delete(0, body.length());
@@ -147,7 +147,7 @@ public final class ProxyClassGenerator {
 			CtClass[] statementPsCreateParam = new CtClass[] {
 					classPool.get("java.sql.PreparedStatement"),
 					classPool.get("cn.beecp.pool.ProxyConnection"),
-					classPool.get("boolean")};
+					classPool.get("cn.beecp.pool.PooledConnection")};
 			subClassConstructor = new CtConstructor(statementPsCreateParam,ctPsStatementProxyImplClass);
 			subClassConstructor.setModifiers(Modifier.PUBLIC);
 			body.delete(0, body.length());
@@ -170,7 +170,7 @@ public final class ProxyClassGenerator {
 			CtClass[] statementCsCreateParam = new CtClass[] {
 					classPool.get("java.sql.CallableStatement"),
 					classPool.get("cn.beecp.pool.ProxyConnection"),
-					classPool.get("boolean")};
+					classPool.get("cn.beecp.pool.PooledConnection")};
 			subClassConstructor = new CtConstructor(statementCsCreateParam,ctCsStatementProxyImplClass);
 			subClassConstructor.setModifiers(Modifier.PUBLIC);
 			
@@ -194,7 +194,7 @@ public final class ProxyClassGenerator {
 			CtClass[] databaseMetaData = new CtClass[] {
 					classPool.get("java.sql.DatabaseMetaData"),
 					classPool.get("cn.beecp.pool.ProxyConnection"),
-				};
+					classPool.get("cn.beecp.pool.PooledConnection")};
 			subClassConstructor = new CtConstructor(databaseMetaData,ctDatabaseMetaDataProxyImplClass);
 			subClassConstructor.setModifiers(Modifier.PUBLIC);
 			body.delete(0, body.length());
@@ -216,7 +216,8 @@ public final class ProxyClassGenerator {
 			
 			CtClass[] resultSetCreateParam = new CtClass[]{
 					classPool.get("java.sql.ResultSet"),
-					classPool.get("cn.beecp.pool.ProxyStatementTop")};
+					classPool.get("cn.beecp.pool.ProxyStatementTop"),
+					classPool.get("cn.beecp.pool.PooledConnection")};
 			subClassConstructor = new CtConstructor(resultSetCreateParam,ctResultSetIntfProxyImplClass);
 			subClassConstructor.setModifiers(Modifier.PUBLIC);
 			body.delete(0, body.length());
@@ -232,8 +233,8 @@ public final class ProxyClassGenerator {
 		  CtClass psStatementSuperClass= classPool.get(ProxyPsStatementBase.class.getName());
 		  CtClass csStatementSuperClass= classPool.get(ProxyCsStatementBase.class.getName());
 		  this.createProxyStatementClass(classPool,ctStatementProxyImplClass,ctStatementIntf,statementSuperClass);
-		  this.createProxyPsStatementClass(classPool,ctPsStatementProxyImplClass,ctPsStatementIntf,psStatementSuperClass);
-		  this.createProxyCsStatementClass(classPool,ctCsStatementProxyImplClass,ctCsStatementIntf,csStatementSuperClass);
+		  this.createProxyStatementClass(classPool,ctPsStatementProxyImplClass,ctPsStatementIntf,psStatementSuperClass);
+		  this.createProxyStatementClass(classPool,ctCsStatementProxyImplClass,ctCsStatementIntf,csStatementSuperClass);
 		  this.createProxyDatabaseMetaDataClass(classPool,ctDatabaseMetaDataProxyImplClass,ctDatabaseMetaDataIntf,ctDatabaseMetaDataSuperClass);
 		  this.createProxyResultSetClass(classPool,ctResultSetIntfProxyImplClass,ctResultSetIntf,ctResultSetSuperclass);
 
@@ -247,7 +248,7 @@ public final class ProxyClassGenerator {
 		  body.delete(0, body.length());
 		  body.append("{");
 		  body.append(" $2.setBorrowedConnection($1);");
-		  body.append("	return $1.proxyConnection=new ProxyConnection($1);");
+		  body.append("	return $1.proxyConn=new ProxyConnection($1);");
 		  body.append("}");
 		  createProxyConnectionMethod.setBody(body.toString());
 		  //............... FastConnectionPool end..................
@@ -290,7 +291,6 @@ public final class ProxyClassGenerator {
 		LinkedList<CtMethod> linkedList = new LinkedList<CtMethod>();
 		resolveInterfaceMethods(ctConIntf,linkedList,notNeedAddProxyMethods);
 		
-		
 		CtClass ctStatementIntf = classPool.get(Statement.class.getName());
 		CtClass ctPsStatementIntf = classPool.get(PreparedStatement.class.getName());
 		CtClass ctCsStatementIntf = classPool.get(CallableStatement.class.getName());
@@ -307,49 +307,51 @@ public final class ProxyClassGenerator {
 			methodBuffer.append("checkClose();");
 			if (newCtMethodm.getReturnType() == ctStatementIntf) {
 				methodBuffer.append("Statement stm=delegate.createStatement($$);");	
-				methodBuffer.append("pooledConn.updateAccessTime();");	
-				methodBuffer.append("return new ProxyStatement(stm,this);");	
+				methodBuffer.append("pConn.updateAccessTime();");	
+				methodBuffer.append("return new ProxyStatement(stm,this,pConn);");	
 			}else if(newCtMethodm.getReturnType() == ctPsStatementIntf){
-				methodBuffer.append("if(stmCacheValid){");
-				methodBuffer.append(  "Object key=new PsCacheKey($$);");
-				methodBuffer.append("  PreparedStatement stm=stmCache.get(key);");
+				methodBuffer.append("if(pConn.stmCacheIsValid){");
+				methodBuffer.append(" Object key=new PsCacheKey($$);");
+				methodBuffer.append(" StatementCache stmCache=pConn.stmCache;");
+				methodBuffer.append(" PreparedStatement stm=stmCache.get(key);");
 				methodBuffer.append("  if(stm==null){");
 				methodBuffer.append("    stm=delegate.prepareStatement($$);");
-				methodBuffer.append("    pooledConn.updateAccessTime();");	
+				methodBuffer.append("    pConn.updateAccessTime();");	
 				methodBuffer.append("    stmCache.put(key,stm);"); 
 				methodBuffer.append("  }");
-				methodBuffer.append("  return new ProxyPsStatement(stm,this,true);");	
+				methodBuffer.append("  return new ProxyPsStatement(stm,this,pConn);");	
 				methodBuffer.append("}else{");
 				methodBuffer.append(" PreparedStatement stm=delegate.prepareStatement($$);");
-				methodBuffer.append(" pooledConn.updateAccessTime();");	
-				methodBuffer.append(" return new ProxyPsStatement(stm,this,false);");	
+				methodBuffer.append(" pConn.updateAccessTime();");	
+				methodBuffer.append(" return new ProxyPsStatement(stm,this,pConn);");	
 				methodBuffer.append("}");
 			}else if(newCtMethodm.getReturnType() == ctCsStatementIntf){
-				methodBuffer.append("if(stmCacheValid){");
+				methodBuffer.append("if(pConn.stmCacheIsValid){");
 				methodBuffer.append(" Object key=new CsCacheKey($$);");
+				methodBuffer.append(" StatementCache stmCache=pConn.stmCache;");
 				methodBuffer.append(" CallableStatement stm=(CallableStatement)stmCache.get(key);");
 				methodBuffer.append(" if(stm==null){");
 				methodBuffer.append("   stm=delegate.prepareCall($$);");
-				methodBuffer.append("   pooledConn.updateAccessTime();");	
+				methodBuffer.append("   pConn.updateAccessTime();");	
 				methodBuffer.append("   stmCache.put(key,stm);"); 
 				methodBuffer.append(  "}");
-				methodBuffer.append("  return new ProxyCsStatement(stm,this,true);");	
+				methodBuffer.append("  return new ProxyCsStatement(stm,this,pConn);");	
 				methodBuffer.append("}else{");
 				methodBuffer.append(" CallableStatement stm=delegate.prepareCall($$);");
-				methodBuffer.append(" pooledConn.updateAccessTime();");	
-				methodBuffer.append(" return new ProxyCsStatement(stm,this,false);");	
+				methodBuffer.append(" pConn.updateAccessTime();");	
+				methodBuffer.append(" return new ProxyCsStatement(stm,this,pConn);");	
 				methodBuffer.append("}");
 				
 			}else if (newCtMethodm.getReturnType() == ctDatabaseMetaDataIntf) {
-				methodBuffer.append("return new ProxyDatabaseMetaData(delegate."+methodName+"($$),this);");
+				methodBuffer.append("return new ProxyDatabaseMetaData(delegate."+methodName+"($$),this,pConn);");
 			}else if(methodName.equals("close")){
 				methodBuffer.append("super."+methodName + "($$);");
 			}else if (newCtMethodm.getReturnType() == CtClass.voidType){
 				methodBuffer.append(" delegate." + methodName + "($$);");
-				methodBuffer.append(" pooledConn.updateAccessTime();");	
+				methodBuffer.append(" pConn.updateAccessTime();");	
 			}else{
 				methodBuffer.append(newCtMethodm.getReturnType().getName() +" re=delegate." + methodName + "($$);");
-				methodBuffer.append(" pooledConn.updateAccessTime();");	
+				methodBuffer.append(" pConn.updateAccessTime();");	
 				methodBuffer.append(" return re;");	
 			}
 		     
@@ -372,7 +374,7 @@ public final class ProxyClassGenerator {
 			}
 		}
 
-		LinkedList<CtMethod> linkedList = new LinkedList();
+		LinkedList<CtMethod> linkedList = new LinkedList<CtMethod>();
 		resolveInterfaceMethods(ctStatementIntf, linkedList, superClassSignatureSet);
 
 		CtClass ctResultSetIntf=classPool.get(ResultSet.class.getName());
@@ -386,17 +388,19 @@ public final class ProxyClassGenerator {
 			methodBuffer.append("{");
 			methodBuffer.append("checkClose();");
 			
-			if (newCtMethodm.getReturnType() == ctResultSetIntf) {
-				methodBuffer.append("return new ProxyResultSet(delegate."+methodName+"($$),this);");	
-			}else if (methodName.equals("close")){
-				methodBuffer.append("super."+methodName +"($$);");
-			}else{
-				if (newCtMethodm.getReturnType() == CtClass.voidType){
-					methodBuffer.append("delegate."+methodName + "($$);");
-				}else{
-					methodBuffer.append("return delegate."+methodName + "($$);");
+			if (newCtMethodm.getReturnType() == CtClass.voidType) {
+				methodBuffer.append("delegate." + methodName + "($$);");
+				if(methodName.startsWith("execute"))
+					methodBuffer.append("pooledConn.updateAccessTimeWithCommitDirty();");
+			} else {
+				methodBuffer.append(newCtMethodm.getReturnType().getName() + " re=delegate." + methodName + "($$);");
+				if(methodName.startsWith("execute"))methodBuffer.append("pConn.updateAccessTimeWithCommitDirty();");
+				if (newCtMethodm.getReturnType() == ctResultSetIntf) {
+					methodBuffer.append("re=new ProxyResultSet(re,this,pConn);");
 				}
+				methodBuffer.append(" return re;");
 			}
+
 			methodBuffer.append("}");
 			newCtMethodm.setBody(methodBuffer.toString());
 			ctStatementProxyClass.addMethod(newCtMethodm);
@@ -404,99 +408,7 @@ public final class ProxyClassGenerator {
 		}
 		return ctStatementProxyClass.toClass();
 	}
-	
- 
-	private Class createProxyPsStatementClass(ClassPool classPool,CtClass ctPsStatementProxyClass,CtClass ctPsStatementIntf,CtClass ctPsStatementSuperClass)throws Exception{
-		CtMethod[] ctSuperClassMethods = ctPsStatementSuperClass.getMethods();
-		HashSet superClassSignatureSet= new HashSet();
-		for(int i=0,l=ctSuperClassMethods.length;i<l;i++){
-			int modifiers=ctSuperClassMethods[i].getModifiers();
-			if((!Modifier.isAbstract(modifiers) && (Modifier.isPublic(modifiers)||Modifier.isProtected(modifiers)))
-					|| Modifier.isFinal(modifiers)|| Modifier.isStatic(modifiers)|| Modifier.isNative(modifiers)){
-				superClassSignatureSet.add(ctSuperClassMethods[i].getName() + ctSuperClassMethods[i].getSignature());
-			}
-		}
-	
-		LinkedList<CtMethod> linkedList = new LinkedList();
-		resolveInterfaceMethods(ctPsStatementIntf,linkedList,superClassSignatureSet);
-		CtClass ctResultSetIntf=classPool.get(ResultSet.class.getName());
-		
-		StringBuilder methodBuffer = new StringBuilder();
-		for(CtMethod ctMethod:linkedList){
-			String methodName = ctMethod.getName();
-			CtMethod newCtMethodm = CtNewMethod.copy(ctMethod, ctPsStatementProxyClass, null);
-			newCtMethodm.setModifiers(Modifier.PUBLIC);
-			
-			methodBuffer.delete(0, methodBuffer.length());
-			methodBuffer.append("{");
-			methodBuffer.append("checkClose();");
-			
-			if (newCtMethodm.getReturnType() == ctResultSetIntf) {
-				methodBuffer.append("return new ProxyResultSet(delegate."+methodName+"($$),this);"); 
-			}else if (methodName.equals("close")) {
-				methodBuffer.append("super."+methodName+"($$);");
-			}else{
-				if(newCtMethodm.getReturnType() == CtClass.voidType){
-					methodBuffer.append("delegate." + methodName + "($$);");
-				}else{
-					methodBuffer.append("return delegate."+methodName + "($$);");
-		
-				}
-			}
-			methodBuffer.append("}");
-			
-			newCtMethodm.setBody(methodBuffer.toString());
-			ctPsStatementProxyClass.addMethod(newCtMethodm);
-			 
-		}
-		return ctPsStatementProxyClass.toClass();
-	}
-	
-	private Class createProxyCsStatementClass(ClassPool classPool,CtClass ctCsStatementProxyClass,CtClass ctCsStatementIntf,CtClass ctCsStatementSuperClass)throws Exception{
-		CtMethod[] ctSuperClassMethods = ctCsStatementSuperClass.getMethods();
-		HashSet superClassSignatureSet= new HashSet();
-		for(int i=0,l=ctSuperClassMethods.length;i<l;i++){
-			int modifiers=ctSuperClassMethods[i].getModifiers();
-			if((!Modifier.isAbstract(modifiers) && (Modifier.isPublic(modifiers)||Modifier.isProtected(modifiers)))
-					|| Modifier.isFinal(modifiers)|| Modifier.isStatic(modifiers)|| Modifier.isNative(modifiers)){
-				superClassSignatureSet.add(ctSuperClassMethods[i].getName() + ctSuperClassMethods[i].getSignature());
-			}
-		}
-		
-		LinkedList<CtMethod> linkedList = new LinkedList();
-		resolveInterfaceMethods(ctCsStatementIntf,linkedList,superClassSignatureSet);
-		
-		CtClass ctResultSetIntf=classPool.get(ResultSet.class.getName());
-		StringBuilder methodBuffer = new StringBuilder();
-		for(CtMethod ctMethod:linkedList){
-			String methodName = ctMethod.getName();
-			CtMethod newCtMethodm = CtNewMethod.copy(ctMethod, ctCsStatementProxyClass, null);
-			newCtMethodm.setModifiers(Modifier.PUBLIC);
-			
-			methodBuffer.delete(0, methodBuffer.length());
-			methodBuffer.append("{");
-			methodBuffer.append("checkClose();");
- 
-			if (newCtMethodm.getReturnType() == ctResultSetIntf) {
-				methodBuffer.append("return new ProxyResultSet(delegate."+methodName+"($$),this);"); 
-			}else if (methodName.equals("close")) {
-				methodBuffer.append("super."+methodName+"($$);");
-			}else{
-				if(newCtMethodm.getReturnType() == CtClass.voidType){
-					methodBuffer.append("delegate." + methodName + "($$);");
-				}else{
-					methodBuffer.append("return delegate."+methodName + "($$);");	
-				}
-			}
-			methodBuffer.append("}");
-			newCtMethodm.setBody(methodBuffer.toString());
-			ctCsStatementProxyClass.addMethod(newCtMethodm);
-			 
-		}
-		return ctCsStatementProxyClass.toClass();
-	}
-	
-	
+
 	//ctDatabaseMetaDataProxyImplClass,ctDatabaseMetaDataIntf,ctDatabaseMetaDataSuperClass
 	private Class createProxyDatabaseMetaDataClass(ClassPool classPool,CtClass ctDatabaseMetaDataProxyImplClass,CtClass ctDatabaseMetaDataIntf,CtClass ctDatabaseMetaDataSuperClass)throws Exception{
 		CtMethod[] ctSuperClassMethods = ctDatabaseMetaDataSuperClass.getMethods();
@@ -524,7 +436,7 @@ public final class ProxyClassGenerator {
 			methodBuffer.append("checkClose();");
 			
 			if (newCtMethodm.getReturnType() == ctResultSetIntf) {
-				methodBuffer.append("return new ProxyResultSet(delegate."+methodName+"($$),null);");	 
+				methodBuffer.append("return new ProxyResultSet(delegate."+methodName+"($$),null,pConn);");	 
 			} else if (newCtMethodm.getReturnType() == CtClass.voidType) {
 				methodBuffer.append("delegate." + methodName+"($$);");
 			} else {
@@ -561,15 +473,22 @@ public final class ProxyClassGenerator {
 			methodBuffer.delete(0, methodBuffer.length());
 			methodBuffer.append("{");
 			methodBuffer.append("checkClose();");
+			
 			if (methodName.equals("close")) {
 				methodBuffer.append("super." + methodName + "($$);");
 			} else {
 				if(newCtMethodm.getReturnType() == CtClass.voidType){
 					methodBuffer.append("delegate." + methodName + "($$);");
+					if (methodName.startsWith("insertRow")||methodName.startsWith("updateRow")||methodName.startsWith("deleteRow"))
+						methodBuffer.append(" pConn.updateAccessTimeWithCommitDirty();");
 				}else{
-					methodBuffer.append("return delegate."+methodName+"($$);");
+					methodBuffer.append(newCtMethodm.getReturnType().getName() + " re=delegate." + methodName + "($$);");
+					if (methodName.startsWith("insertRow")||methodName.startsWith("updateRow")||methodName.startsWith("deleteRow"))
+						methodBuffer.append(" pConn.updateAccessTimeWithCommitDirty();");
+					methodBuffer.append(" return re;");
 				}
 			}
+			
 			methodBuffer.append("}");
 			newCtMethodm.setBody(methodBuffer.toString());
 			ctResultSetIntfProxyClass.addMethod(newCtMethodm);

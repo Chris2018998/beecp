@@ -28,12 +28,14 @@ import java.sql.Statement;
  * @author Chris.Liao
  * @version 1.0
  */
-public abstract class ProxyResultSetBase implements ResultSet {
+abstract class ProxyResultSetBase implements ResultSet {
 	private boolean isClosed;
 	protected ResultSet delegate;
-	private ProxyStatementTop proxyStatement;
+	protected PooledConnection pConn;//called by subClsss to update time
+	private ProxyStatementTop proxyStatement;//called by subClsss to check close state
 	
-	public ProxyResultSetBase(ResultSet delegate,ProxyStatementTop proxyStatement) {
+	public ProxyResultSetBase(ResultSet delegate,ProxyStatementTop proxyStatement,PooledConnection pConn) {
+		this.pConn=pConn;
 		this.delegate = delegate;
 		this.proxyStatement = proxyStatement;
 	}

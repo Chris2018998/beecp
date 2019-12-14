@@ -26,10 +26,10 @@ import java.sql.Statement;
  * @author Chris.Liao
  * @version 1.0
  */
-public abstract class ProxyStatementBase extends ProxyStatementTop{
+abstract class ProxyStatementBase extends ProxyStatementTop{
 	protected Statement delegate;
-	public ProxyStatementBase(Statement delegate,ProxyConnectionBase proxyConnection) {
-		super(proxyConnection);
+	public ProxyStatementBase(Statement delegate,ProxyConnectionBase proxyConn,PooledConnection pConn){
+		super(proxyConn,pConn);
 		this.delegate = delegate;
 	}
 	public void close() throws SQLException {
@@ -39,7 +39,8 @@ public abstract class ProxyStatementBase extends ProxyStatementTop{
 			this.isClosed=true;
 			oclose(delegate);
 			this.delegate = null;
-			this.proxyConnection =null;
+			this.proxyConn =null;
+			this.pConn=null;
 		}
 	}
 	public final boolean isWrapperFor(Class<?> iface) throws SQLException {

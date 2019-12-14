@@ -26,19 +26,21 @@ import java.sql.SQLException;
  * @author Chris.Liao
  * @version 1.0
  */
-public abstract class ProxyStatementTop {
+abstract class ProxyStatementTop {
 	protected boolean isClosed;
-	protected ProxyConnectionBase proxyConnection;
-
-	public ProxyStatementTop(ProxyConnectionBase proxyConnection) {
-		this.proxyConnection = proxyConnection;
+	protected PooledConnection pConn;//called by subClsss to update time
+	protected ProxyConnectionBase proxyConn;//called by subClsss to check close state
+	
+	public ProxyStatementTop(ProxyConnectionBase proxyConn,PooledConnection pConn) {
+		this.pConn=pConn;
+		this.proxyConn=proxyConn;
 	}
 	public Connection getConnection() throws SQLException{
 		checkClose();
-		return proxyConnection;
+		return proxyConn;
 	}
 	protected void checkClose() throws SQLException {
 		if(isClosed)throw StatementClosedException;
-		proxyConnection.checkClose();
+		proxyConn.checkClose();
 	}
 }

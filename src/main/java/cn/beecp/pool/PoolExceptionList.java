@@ -39,6 +39,5 @@ final class PoolExceptionList {
 	
 	static final SQLException ResultSetClosedException = new SQLException("ResultSet has been closed");
 	
-	static final SQLException ProxyConnectionCloneException = new SQLException("failed to clone proxy connection instance");
-	
+	static final SQLException AutoCommitChangeForbiddennException = new SQLException("Execute 'commit' or 'rollback' before this operation");
 }	

@@ -72,13 +72,6 @@ import cn.beecp.ConnectionFactory;
  * @version 1.0
  */
 public final class FastConnectionPool extends Thread implements ConnectionPool, ConnectionPoolJMXBean {
-	private ConnectionPoolHook exitHook;
-	private BeeDataSourceConfig poolConfig;
-
-	private String validationQuery;
-	private boolean validateSQLIsNull;
-	private int validationQueryTimeout;
-
 	private int PoolMaxSize;
 	private boolean AutoCommit;
 	private boolean TestOnBorrow;
@@ -86,6 +79,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private long DefaultMaxWaitMills;
 	private long ValidationIntervalMills;
 	private int ConUnCatchStateCode;
+	private String ConnectionTestSQL;
+	private int ConnectionTestTimeout;//seconds
+	private boolean validateSQLIsNull;
+
+	private ConnectionPoolHook exitHook;
+	private BeeDataSourceConfig poolConfig;
 
 	private Semaphore poolSemaphore;
 	private TransferPolicy tansferPolicy;
@@ -141,9 +140,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 			PoolMaxSize=poolConfig.getMaxActive();
 			AutoCommit=poolConfig.isDefaultAutoCommit();
-			validationQuery = poolConfig.getConnectionTestSQL();
-			validateSQLIsNull = isNullText(validationQuery);
-			validationQueryTimeout = poolConfig.getConnectionTestTimeout();
+			ConnectionTestSQL = poolConfig.getConnectionTestSQL();
+			validateSQLIsNull = isNullText(ConnectionTestSQL);
+			ConnectionTestTimeout = poolConfig.getConnectionTestTimeout();
 
 			DefaultMaxWaitMills = poolConfig.getMaxWait();
 			ValidationIntervalMills = poolConfig.getConnectionTestInterval();
@@ -266,11 +265,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 */
 	private boolean isActiveConn(PooledConnection pConn) {
 		boolean isActive = true;
-		Connection con= pConn.rawConnection;
+		Connection con= pConn.rawConn;
 		try {
 			if (validateSQLIsNull) {
 				try {
-					isActive = con.isValid(validationQueryTimeout);
+					isActive = con.isValid(ConnectionTestTimeout);
 					pConn.updateAccessTime();
 				} catch (SQLException e) {
 					isActive = false;
@@ -286,8 +285,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					
 					st = con.createStatement();
 					pConn.updateAccessTime();
-					st.setQueryTimeout(validationQueryTimeout);
-					st.execute(validationQuery);
+					st.setQueryTimeout(ConnectionTestTimeout);
+					st.execute(ConnectionTestSQL);
 				} catch (SQLException e) {
 					isActive = false;
 				} finally {

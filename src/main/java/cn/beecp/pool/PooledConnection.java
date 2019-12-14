@@ -36,16 +36,17 @@ import cn.beecp.BeeDataSourceConfig;
  */
 public final class PooledConnection{
 	volatile int state;
-	boolean stmCacheValid;
+	boolean stmCacheIsValid;
 	StatementCache stmCache=null;
-	BeeDataSourceConfig poolConfig;
-	Connection rawConnection;
-	ProxyConnectionBase proxyConnection;
+	BeeDataSourceConfig pConfig;
+	Connection rawConn;
+	ProxyConnectionBase proxyConn;
 	long lastAccessTime;
-	boolean rollbackOnReturn;
+	boolean commitDirtyInd;
+	boolean curAutoCommit;
+	boolean clearSQLWarnings;
 
 	private ConnectionPool pool;
-	private boolean curAutoCommit;
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	//changed indicator
@@ -62,33 +63,30 @@ public final class PooledConnection{
 	
 	public PooledConnection(Connection rawConn,ConnectionPool connPool,BeeDataSourceConfig config,int connState)throws SQLException{
 		pool=connPool;
-		this.rawConnection= rawConn;
+		this.rawConn=rawConn;
 
 		state=connState;
-		poolConfig=config;
-		curAutoCommit=poolConfig.isDefaultAutoCommit();
-		rollbackOnReturn=poolConfig.isRollbackOnReturn();
-		if(stmCacheValid=poolConfig.getPreparedStatementCacheSize()>0)
-		  stmCache = new StatementCache(poolConfig.getPreparedStatementCacheSize());
+		pConfig=config;
+		clearSQLWarnings=pConfig.isClearSQLWarnings();
+		curAutoCommit=pConfig.isDefaultAutoCommit();
+		if (stmCacheIsValid = pConfig.getPreparedStatementCacheSize() > 0) {
+			stmCache = new StatementCache(pConfig.getPreparedStatementCacheSize());
+		}  
+	
 		setDefault();
 		updateAccessTime();
 	}
 	
 	private void setDefault()throws SQLException{
-		rawConnection.setAutoCommit(poolConfig.isDefaultAutoCommit());
-		rawConnection.setTransactionIsolation(poolConfig.getDefaultTransactionIsolation());
-		rawConnection.setReadOnly(poolConfig.isDefaultReadOnly());
-		if(!isNullText(poolConfig.getDefaultCatalog()))
-			rawConnection.setCatalog(poolConfig.getDefaultCatalog());
-	}
-	
-	public void updateAccessTime() {
-	  lastAccessTime=currentTimeMillis();
+		rawConn.setAutoCommit(pConfig.isDefaultAutoCommit());
+		rawConn.setTransactionIsolation(pConfig.getDefaultTransactionIsolation());
+		rawConn.setReadOnly(pConfig.isDefaultReadOnly());
+		if(!isNullText(pConfig.getDefaultCatalog()))
+			rawConn.setCatalog(pConfig.getDefaultCatalog());
 	}
 	public boolean equals(Object obj) {
 		return this==obj;
 	}
-	
 	int getChangedInd(int pos){
 		return (changedBitVal >>pos)&1 ;
 	}
@@ -99,16 +97,26 @@ public final class PooledConnection{
 	void setCurAutoCommit(boolean curAutoCommit) {
 		this.curAutoCommit = curAutoCommit;
 	}
-
+	void updateAccessTime() {
+		lastAccessTime = currentTimeMillis();
+	}
+	/**
+	 * used in statement.execute** or resultset.deleteRow, resultset.updateRow,resultset.insertRow
+	 */
+	void updateAccessTimeWithCommitDirty() {
+		lastAccessTime=currentTimeMillis();
+		commitDirtyInd=!curAutoCommit;
+	}
+	
 	//reset connection on return to pool
 	private void resetConnectionBeforeRelease() {
-
-		//rollback
-		if(!curAutoCommit && rollbackOnReturn){
+		if (!curAutoCommit&&commitDirtyInd){//Roll back when commit dirty
 			try {
-				rawConnection.rollback();
+				rawConn.rollback();
 			} catch (SQLException e) {
-				log.error("Failed to rollback on return to pool",e);
+				log.error("Failed to rollback on return to pool", e);
+			}finally{
+				commitDirtyInd=false;
 			}
 		}
 		
@@ -116,41 +124,41 @@ public final class PooledConnection{
 		if (changedBitVal > 0) {// exists field changed
 			if (changedInds[0]) {
 				try {
-					rawConnection.setAutoCommit(poolConfig.isDefaultAutoCommit());
+					rawConn.setAutoCommit(pConfig.isDefaultAutoCommit());
 					changedInds[0]=false;
 					updateAccessTime();
 				} catch (SQLException e) {
-					log.error("Failed to reset autoCommit to:{}",poolConfig.isDefaultAutoCommit(),e);
+					log.error("Failed to reset autoCommit to:{}",pConfig.isDefaultAutoCommit(),e);
 				}
 			}
 
 			if (changedInds[1]) {
 				try {
-					rawConnection.setTransactionIsolation(poolConfig.getDefaultTransactionIsolation());
+					rawConn.setTransactionIsolation(pConfig.getDefaultTransactionIsolation());
 					changedInds[1] = false;
 					updateAccessTime();
 				} catch (SQLException e) {
-					log.error("Failed to reset transactionIsolation to:{}",poolConfig.getDefaultTransactionIsolation(),e);
+					log.error("Failed to reset transactionIsolation to:{}",pConfig.getDefaultTransactionIsolation(),e);
 				}
 			}
 
 			if (changedInds[2]) {
 				try {
-					rawConnection.setReadOnly(poolConfig.isDefaultReadOnly());
+					rawConn.setReadOnly(pConfig.isDefaultReadOnly());
 					changedInds[2] = false;
 					updateAccessTime();
 				} catch (SQLException e) {
-					log.error("Failed to reset readOnly to:{}",poolConfig.isDefaultReadOnly(),e);
+					log.error("Failed to reset readOnly to:{}",pConfig.isDefaultReadOnly(),e);
 				}
 			}
 
 			if (changedInds[3]) {
 				try {
-					rawConnection.setCatalog(poolConfig.getDefaultCatalog());
+					rawConn.setCatalog(pConfig.getDefaultCatalog());
 					changedInds[3] = false;
 					updateAccessTime();
 				} catch (SQLException e) {
-					log.error("Failed to reset catalog to:{}",poolConfig.getDefaultCatalog(),e);
+					log.error("Failed to reset catalog to:{}",pConfig.getDefaultCatalog(),e);
 				}
 			}
 			
@@ -159,7 +167,8 @@ public final class PooledConnection{
 		//reset end
 		
 		try {
-			rawConnection.clearWarnings();
+			if(clearSQLWarnings)
+			  rawConn.clearWarnings();
 		} catch (SQLException e) {
 			log.error("Failed to clear warnings",e);
 		}
@@ -174,12 +183,12 @@ public final class PooledConnection{
 			  stmCache=null;
 			}
 			
-			poolConfig=null;
-			oclose(rawConnection);
+			pConfig=null;
+			oclose(rawConn);
 		}finally{
-			if(proxyConnection!=null){
-				proxyConnection.setConnectionDataToNull();
-				proxyConnection = null;
+			if(proxyConn!=null){
+				proxyConn.setConnectionDataToNull();
+				proxyConn = null;
 			}
 		}
 	}
@@ -188,7 +197,7 @@ public final class PooledConnection{
 			resetConnectionBeforeRelease();
 			pool.release(this,true);
     	}finally{
-    		proxyConnection = null;
+    		proxyConn = null;
 		}
 	} 
 }

@@ -28,7 +28,7 @@ import java.util.Map;
  * @author Chris.liao
  * @version 1.0
  */
-public final class StatementCache {
+final class StatementCache {
 	private int capacity;
 	private CacheNode head=null;//old
 	private CacheNode tail=null;//new
