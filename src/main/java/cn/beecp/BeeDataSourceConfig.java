@@ -105,11 +105,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	 * connection.setAutoCommit(boolean);
 	 */
 	private boolean defaultAutoCommit=true;
-	
-	/**
-	 * clear SQLWarnings before return to pool
-	 */
-	private boolean clearSQLWarnings;
 
 	/**
 	 * default Transaction Isolation
@@ -218,10 +213,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		concurrentSize =Runtime.getRuntime().availableProcessors();
 		defaultTransactionIsolation=Connection.TRANSACTION_READ_COMMITTED;
 	}
-	
-	boolean isChecked() {
-		return checked;
-	}
+
 	void setAsChecked() {
 		if(!this.checked)
 			this.checked = true;
@@ -233,9 +225,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		if(!this.checked) 
 		 this.username = username;
 	}
-	public String getPassword() {
-		return password;
-	}
+
 	public void setPassword(String password) {
 		if (!this.checked)
 		this.password = password;
@@ -334,13 +324,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	}
 	public void setDefaultAutoCommit(boolean defaultAutoCommit) {
 		if(!this.checked)this.defaultAutoCommit = defaultAutoCommit;
-	}
-	public boolean isClearSQLWarnings() {
-		return clearSQLWarnings;
-	}
-	public void setClearSQLWarnings(boolean clearSQLWarnings) {
-	 if(!this.checked)
-		this.clearSQLWarnings = clearSQLWarnings;
 	}
 	public int getDefaultTransactionIsolation() {
 		return defaultTransactionIsolation;
@@ -450,13 +433,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 			connectProperties.remove(key);
 		}
 	}
-	
 	public void addConnectProperty(String key,String value){
 		if(!this.checked){
 			connectProperties.put(key, value);
 		}
 	}
-
 	public boolean isEnableJMX() {
 		return enableJMX;
 	}
@@ -516,7 +497,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		}
 	}
 	//check pool configuration
-	public void check()throws SQLException {
+	void check()throws SQLException {
 		if(connectionFactory==null && isNullText(this.connectionFactoryClassName)){
 			Driver connectDriver=null;
 			if(!isNullText(driverClassName)){
@@ -546,9 +527,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 			} catch (ClassNotFoundException e) {
 				throw new IllegalArgumentException("Class("+connectionFactoryClassName+")not found ");
 			} catch (InstantiationException e) {
-				throw new IllegalArgumentException("failed ot instantiated connection factory class:"+connectionFactoryClassName,e);
+				throw new IllegalArgumentException("Failed to instantiate connection factory class:"+connectionFactoryClassName,e);
 			} catch (IllegalAccessException e) {
-				throw new IllegalArgumentException("failed ot instantiated connection factory class:"+connectionFactoryClassName,e);
+				throw new IllegalArgumentException("Failed to instantiate connection factory class:"+connectionFactoryClassName,e);
 			}
 		}
 		

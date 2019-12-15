@@ -85,7 +85,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
 		InitialContext ctx = new InitialContext(initProperties);
 		ctx.bind(jndi, obj);
 	}
-	public DataSource create(BeeDataSourceConfig config) throws SQLException,NamingException {
+	public DataSource create(BeeDataSourceConfig config){
 		return new BeeDataSource((BeeDataSourceConfig) config);
 	}
 	
