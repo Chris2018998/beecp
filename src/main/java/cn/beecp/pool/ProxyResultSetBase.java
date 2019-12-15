@@ -32,9 +32,9 @@ abstract class ProxyResultSetBase implements ResultSet {
 	private boolean isClosed;
 	protected ResultSet delegate;
 	protected PooledConnection pConn;//called by subClsss to update time
-	private ProxyStatementTop proxyStatement;//called by subClsss to check close state
+	private ProxyStatementBase proxyStatement;//called by subClsss to check close state
 	
-	public ProxyResultSetBase(ResultSet delegate,ProxyStatementTop proxyStatement,PooledConnection pConn) {
+	public ProxyResultSetBase(ResultSet delegate,ProxyStatementBase proxyStatement,PooledConnection pConn) {
 		this.pConn=pConn;
 		this.delegate = delegate;
 		this.proxyStatement = proxyStatement;

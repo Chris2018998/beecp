@@ -16,9 +16,13 @@
 package cn.beecp.pool;
 
 import static cn.beecp.util.BeecpUtil.oclose;
+import static cn.beecp.pool.PoolExceptionList.StatementClosedException;
 
 import java.sql.SQLException;
+import java.sql.Connection;
 import java.sql.Statement;
+import java.sql.PreparedStatement;
+import java.sql.CallableStatement;
 
 /**
  * ProxyBaseStatement
@@ -26,34 +30,67 @@ import java.sql.Statement;
  * @author Chris.Liao
  * @version 1.0
  */
-abstract class ProxyStatementBase extends ProxyStatementTop{
+class ProxyStatementBase{
+	private boolean isClosed;
+	private boolean inCacheInd;
+	private int statementType;
 	protected Statement delegate;
-	public ProxyStatementBase(Statement delegate,ProxyConnectionBase proxyConn,PooledConnection pConn){
-		super(proxyConn,pConn);
+	protected PreparedStatement delegate1;
+	protected CallableStatement delegate2;
+
+	protected PooledConnection pConn;//called by subClsss to update time
+	private ProxyConnectionBase proxyConn;//called by subClsss to check close state
+
+	public ProxyStatementBase(Statement delegate,int type,boolean inCacheInd,ProxyConnectionBase proxyConn,PooledConnection pConn){
+		this.pConn=pConn;
+		this.proxyConn=proxyConn;
 		this.delegate = delegate;
+		this.inCacheInd=inCacheInd;
+		this.statementType=type;
+		if(type==1)delegate1=(PreparedStatement)delegate;
+		else if(type==2)delegate2=(CallableStatement)delegate;
+	}
+
+	public Connection getConnection() throws SQLException{
+		checkClose();
+		return proxyConn;
+	}
+	protected void checkClose() throws SQLException {
+		if(isClosed)throw StatementClosedException;
+		proxyConn.checkClose();
 	}
 	public void close() throws SQLException {
 		try{
 			checkClose();
 		}finally{
 			this.isClosed=true;
-			oclose(delegate);
+			if(!inCacheInd)
+			  oclose(delegate);
 			this.delegate = null;
+			this.delegate1=null;
+			this.delegate2=null;
 			this.proxyConn =null;
 			this.pConn=null;
 		}
 	}
 	public final boolean isWrapperFor(Class<?> iface) throws SQLException {
 		checkClose();
-		return iface.isInstance(delegate);
+		switch(statementType){
+			case 0: return iface.isInstance(delegate);
+			case 1: return iface.isInstance(delegate1);
+			case 2: return iface.isInstance(delegate2);
+			default:return false;
+		}
 	}
 	@SuppressWarnings("unchecked")
 	public final <T> T unwrap(Class<T> iface) throws SQLException{
 	  checkClose();
-	  if (iface.isInstance(delegate)) {
-         return (T)this;
-      }else {
-    	  throw new SQLException("Wrapped object is not an instance of " + iface);
-      } 
+	  String message="Wrapped object is not an instance of "+iface;
+	  switch(statementType){
+			case 0: if(iface.isInstance(delegate))return (T)this;  else throw new SQLException(message);
+			case 1: if(iface.isInstance(delegate1))return (T)this; else throw new SQLException(message);
+			case 2: if(iface.isInstance(delegate2))return (T)this; else throw new SQLException(message);
+		   default:throw new SQLException(message);
+		}
 	}
 }
