@@ -109,6 +109,7 @@ abstract class ProxyConnectionBase implements Connection{
 	}
 	public void close() throws SQLException {
 		try{
+			this.checkClose();
 			isClosed = true;
 			pConn.returnToPoolBySelf();
 		}finally{

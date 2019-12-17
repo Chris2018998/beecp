@@ -34,7 +34,7 @@ import cn.beecp.BeeDataSourceConfig;
  * @author Chris.Liao
  * @version 1.0
  */
-public final class PooledConnection{
+final class PooledConnection{
 	volatile int state;
 	boolean stmCacheIsValid;
 	StatementCache stmCache=null;
@@ -85,24 +85,22 @@ public final class PooledConnection{
 	void closeRawConn() {
 		try{
 			resetRawConnOnReturn();
-			if(stmCache!=null){
+			if(stmCacheIsValid)
 				stmCache.clear();
-				stmCache=null;
-			}
 
 			pConfig=null;
 			oclose(rawConn);
 		}finally{
 			if(proxyConn!=null){
 				proxyConn.setConnectionDataToNull();
-				proxyConn = null;
+				proxyConn=null;
 			}
 		}
 	}
 
 
 	//***************called fow raw conn proxy ********//
-	void returnToPoolBySelf(){
+	final void returnToPoolBySelf(){
 		try{
 			resetRawConnOnReturn();
 			pool.release(this,true);

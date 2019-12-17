@@ -6,7 +6,7 @@
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,31 +26,38 @@ import java.sql.CallableStatement;
 
 /**
  * ProxyBaseStatement
- * 
+ *
  * @author Chris.Liao
  * @version 1.0
  */
 class ProxyStatementBase{
 	private boolean isClosed;
-	private boolean inCacheInd;
-	private int statementType;
+	private int statementType=0;
+	private boolean inCacheInd=false;
 	protected Statement delegate;
 	protected PreparedStatement delegate1;
 	protected CallableStatement delegate2;
 
 	protected PooledConnection pConn;//called by subClsss to update time
-	private ProxyConnectionBase proxyConn;//called by subClsss to check close state
+	protected ProxyConnectionBase proxyConn;//called by subClsss to check close state
 
-	public ProxyStatementBase(Statement delegate,int type,boolean inCacheInd,ProxyConnectionBase proxyConn,PooledConnection pConn){
+	public ProxyStatementBase(Statement delegate,ProxyConnectionBase proxyConn,PooledConnection pConn){
 		this.pConn=pConn;
 		this.proxyConn=proxyConn;
 		this.delegate = delegate;
-		this.inCacheInd=inCacheInd;
-		this.statementType=type;
-		if(type==1)delegate1=(PreparedStatement)delegate;
-		else if(type==2)delegate2=(CallableStatement)delegate;
 	}
-
+	public ProxyStatementBase(PreparedStatement delegate,boolean inCacheInd,ProxyConnectionBase proxyConn,PooledConnection pConn){
+		this(delegate,proxyConn,pConn);
+		this.statementType=1;
+		this.delegate1=delegate;
+		this.inCacheInd=inCacheInd;
+	}
+	public ProxyStatementBase(CallableStatement delegate,boolean inCacheInd,ProxyConnectionBase proxyConn,PooledConnection pConn,boolean cs){
+		this(delegate,proxyConn,pConn);
+		this.statementType=2;
+		this.delegate2=delegate;
+		this.inCacheInd=inCacheInd;
+	}
 	public Connection getConnection() throws SQLException{
 		checkClose();
 		return proxyConn;
@@ -65,7 +72,7 @@ class ProxyStatementBase{
 		}finally{
 			this.isClosed=true;
 			if(!inCacheInd)
-			  oclose(delegate);
+				oclose(delegate);
 			this.delegate = null;
 			this.delegate1=null;
 			this.delegate2=null;
@@ -84,13 +91,13 @@ class ProxyStatementBase{
 	}
 	@SuppressWarnings("unchecked")
 	public final <T> T unwrap(Class<T> iface) throws SQLException{
-	  checkClose();
-	  String message="Wrapped object is not an instance of "+iface;
-	  switch(statementType){
+		checkClose();
+		String message="Wrapped object is not an instance of "+iface;
+		switch(statementType){
 			case 0: if(iface.isInstance(delegate))return (T)this;  else throw new SQLException(message);
 			case 1: if(iface.isInstance(delegate1))return (T)this; else throw new SQLException(message);
 			case 2: if(iface.isInstance(delegate2))return (T)this; else throw new SQLException(message);
-		   default:throw new SQLException(message);
+			default:throw new SQLException(message);
 		}
 	}
 }
