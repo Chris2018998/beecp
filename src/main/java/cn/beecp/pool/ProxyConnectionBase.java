@@ -15,15 +15,16 @@
  */
 package cn.beecp.pool;
 
-import static cn.beecp.pool.PoolExceptionList.ConnectionClosedException;
-import static cn.beecp.pool.PoolExceptionList.AutoCommitChangeForbiddennException;
-import static cn.beecp.util.BeecpUtil.equalsText;
+import cn.beecp.BeeDataSourceConfig;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
+import java.util.concurrent.Executor;
 
-import cn.beecp.BeeDataSourceConfig;
+import static cn.beecp.pool.PoolExceptionList.AutoCommitChangeForbiddennException;
+import static cn.beecp.pool.PoolExceptionList.ConnectionClosedException;
+import static cn.beecp.util.BeecpUtil.equalsText;
 /**
  * raw connection wrapper
  * 
@@ -73,6 +74,21 @@ abstract class ProxyConnectionBase implements Connection{
 		pConn.updateAccessTime();
 		pConn.setChangedInd(PooledConnection.Pos_CatalogInd,!equalsText(catalog, pConfig.getDefaultCatalog()));
 	}
+	//for JDK1.7 begin
+	public void setSchema(String schema) throws SQLException {
+		checkClose();
+		delegate.setSchema(schema);
+		pConn.updateAccessTime();
+		pConn.setChangedInd(PooledConnection.Pos_SchemaInd,!equalsText(schema,pConfig.getDefaultSchema()));
+	}
+	public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+		checkClose();
+		delegate.setNetworkTimeout(executor,milliseconds);
+		pConn.updateAccessTime();
+		pConn.setChangedInd(PooledConnection.Pos_NetworkTimeoutInd,true);
+	}
+	//for JDK1.7 end
+
 	public void commit() throws SQLException{
 		checkClose();
 		delegate.commit();

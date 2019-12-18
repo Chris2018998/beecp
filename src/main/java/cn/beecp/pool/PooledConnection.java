@@ -15,18 +15,18 @@
  */
 package cn.beecp.pool;
 
-import static cn.beecp.pool.PoolObjectsState.CONNECTION_IDLE;
-import static cn.beecp.util.BeecpUtil.oclose;
-import static cn.beecp.util.BeecpUtil.isNullText;
-import static java.lang.System.currentTimeMillis;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-
+import cn.beecp.BeeDataSourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.beecp.BeeDataSourceConfig;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+
+import static cn.beecp.pool.PoolObjectsState.CONNECTION_IDLE;
+import static cn.beecp.util.BeecpUtil.isNullText;
+import static cn.beecp.util.BeecpUtil.oclose;
+import static java.lang.System.currentTimeMillis;
 
 /**
  * Pooled Connection
@@ -40,25 +40,28 @@ final class PooledConnection{
 	StatementCache stmCache=null;
 	BeeDataSourceConfig pConfig;
 	Connection rawConn;
+
 	ProxyConnectionBase proxyConn;
 	long lastAccessTime;
 	boolean commitDirtyInd;
 	boolean curAutoCommit;
-	private ConnectionPool pool;
+	private FastConnectionPool pool;
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	//changed indicator
-	private boolean[] changedInds=new boolean[4]; //0:autoCommit,1:transactionIsolation,2:readOnly,3:catalog
-	private byte changedBitVal=Byte.parseByte("0000",2); //pos:last ---> head;0:unchanged,1:changed
+	private boolean[] changedInds=new boolean[6]; //0:autoCommit,1:transactionIsolation,2:readOnly,3:catalog,4:schema,5:networkTimeout
+	private short changedBitVal=Byte.parseByte("000000",2); //pos:last ---> head;0:unchanged,1:changed
 	static short Pos_AutoCommitInd=0;
 	static short Pos_TransactionIsolationInd=1;
 	static short Pos_ReadOnlyInd=2;
 	static short Pos_CatalogInd=3;
-	
-	public PooledConnection(Connection rawConn,ConnectionPool connPool,BeeDataSourceConfig config)throws SQLException{
+	static short Pos_SchemaInd=4;
+	static short Pos_NetworkTimeoutInd=5;
+
+	public PooledConnection(Connection rawConn,FastConnectionPool connPool,BeeDataSourceConfig config)throws SQLException{
 		 this(rawConn,connPool,config,CONNECTION_IDLE);
 	}
-	public PooledConnection(Connection rawConn,ConnectionPool connPool,BeeDataSourceConfig config,int connState)throws SQLException{
+	public PooledConnection(Connection rawConn,FastConnectionPool connPool,BeeDataSourceConfig config,int connState)throws SQLException{
 		pool=connPool;
 		this.rawConn=rawConn;
 
@@ -76,6 +79,26 @@ final class PooledConnection{
 		rawConn.setReadOnly(pConfig.isDefaultReadOnly());
 		if(!isNullText(pConfig.getDefaultCatalog()))
 			rawConn.setCatalog(pConfig.getDefaultCatalog());
+		//for JDK1.7
+		if(!isNullText(pConfig.getDefaultSchema()))
+			rawConn.setSchema(pConfig.getDefaultSchema());
+		try {
+			if(pool.isSupportNetworkTimeout()){
+				int networkTimeout=rawConn.getNetworkTimeout();
+				if(networkTimeout<=0) {
+					pool.setSupportNetworkTimeout(false);
+					log.error("Driver not support networkTimeout");
+				}else {
+					pool.setNetworkTimeout(networkTimeout);
+					rawConn.setNetworkTimeout(pool.getNetworkTimeoutExecutor(),networkTimeout);
+				}
+			}
+		}catch(SQLFeatureNotSupportedException e){
+			log.error("Driver not support networkTimeout");
+			pool.setSupportNetworkTimeout(false);
+		}
+		//rawConn.setNetworkTimeout();
+		//for JDK1.7
 		updateAccessTime();
 	}
 	public boolean equals(Object obj) {
@@ -97,7 +120,6 @@ final class PooledConnection{
 			}
 		}
 	}
-
 
 	//***************called fow raw conn proxy ********//
 	final void returnToPoolBySelf(){
@@ -137,11 +159,12 @@ final class PooledConnection{
 			}
 		}
 
-		//reset begin 
+		//reset begin
 		if (changedBitVal > 0) {//reset autoCommit
 			if (changedInds[0]) {
 				try {
 					rawConn.setAutoCommit(pConfig.isDefaultAutoCommit());
+					curAutoCommit=pConfig.isDefaultAutoCommit();
 					updateAccessTime();
 				} catch (SQLException e) {
 					log.error("Failed to reset autoCommit to:{}",pConfig.isDefaultAutoCommit(),e);
@@ -182,7 +205,32 @@ final class PooledConnection{
 					changedInds[3] = false;
 				}
 			}
-			
+			//for JDK1.7 begin
+			if (changedInds[4]) {//reset shema
+				try {
+					rawConn.setSchema(pConfig.getDefaultSchema());
+					updateAccessTime();
+				} catch (SQLException e) {
+					log.error("Failed to reset schema to:{}",pConfig.getDefaultSchema(),e);
+				}finally{
+					changedInds[4] = false;
+				}
+			}
+
+			if (changedInds[5]) {//reset networkTimeout
+				try {
+					if(pool.isSupportNetworkTimeout()) {
+						rawConn.setNetworkTimeout(pool.getNetworkTimeoutExecutor(),pool.getNetworkTimeout());
+						updateAccessTime();
+					}
+				} catch (SQLException e) {
+					log.error("Failed to reset networkTimeout to:{}",pool.getNetworkTimeout(),e);
+				}finally{
+					changedInds[5] = false;
+				}
+			}
+			//for JDK1.7 end
+
 			changedBitVal=0;
 		}
 		//reset end

@@ -15,56 +15,32 @@
  */
 package cn.beecp.pool;
 
-import static cn.beecp.pool.PoolExceptionList.PoolCloseException;
-import static cn.beecp.pool.PoolExceptionList.RequestInterruptException;
-import static cn.beecp.pool.PoolExceptionList.RequestTimeoutException;
-import static cn.beecp.pool.PoolExceptionList.WaitTimeException;
-import static cn.beecp.pool.PoolObjectsState.BORROWER_INTERRUPTED;
-import static cn.beecp.pool.PoolObjectsState.BORROWER_NORMAL;
-import static cn.beecp.pool.PoolObjectsState.BORROWER_TIMEOUT;
-import static cn.beecp.pool.PoolObjectsState.BORROWER_WAITING;
-import static cn.beecp.pool.PoolObjectsState.CONNECTION_CLOSED;
-import static cn.beecp.pool.PoolObjectsState.CONNECTION_IDLE;
-import static cn.beecp.pool.PoolObjectsState.CONNECTION_USING;
-import static cn.beecp.pool.PoolObjectsState.POOL_CLOSED;
-import static cn.beecp.pool.PoolObjectsState.POOL_NORMAL;
-import static cn.beecp.pool.PoolObjectsState.POOL_RESTING;
-import static cn.beecp.pool.PoolObjectsState.POOL_UNINIT;
-import static cn.beecp.pool.PoolObjectsState.THREAD_DEAD;
-import static cn.beecp.pool.PoolObjectsState.THREAD_WAITING;
-import static cn.beecp.pool.PoolObjectsState.THREAD_WORKING;
-import static cn.beecp.util.BeecpUtil.isNullText;
-import static cn.beecp.util.BeecpUtil.oclose;
-import static java.lang.System.currentTimeMillis;
-import static java.lang.System.nanoTime;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import cn.beecp.BeeDataSourceConfig;
+import cn.beecp.ConnectionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
 import java.lang.ref.WeakReference;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.locks.LockSupport;
 
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
+import static cn.beecp.pool.PoolExceptionList.*;
+import static cn.beecp.pool.PoolObjectsState.*;
+import static cn.beecp.util.BeecpUtil.isNullText;
+import static cn.beecp.util.BeecpUtil.oclose;
+import static java.lang.System.currentTimeMillis;
+import static java.lang.System.nanoTime;
+import static java.util.concurrent.TimeUnit.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import cn.beecp.BeeDataSourceConfig;
-import cn.beecp.ConnectionFactory;
 /**
  * JDBC Connection Pool Implementation
  *
@@ -100,6 +76,17 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			Thread idleScanThread = new Thread(r);
 			idleScanThread.setDaemon(true);
 			idleScanThread.setName("IdleScanThread");
+			return idleScanThread;
+		}
+	});
+
+	private int networkTimeout;
+	private boolean supportNetworkTimeout=true;
+	private ThreadPoolExecutor networkTimeoutExecutor = new ThreadPoolExecutor(0,10,15,SECONDS, new SynchronousQueue(),new ThreadFactory() {
+		public Thread newThread(Runnable r) {
+			Thread idleScanThread = new Thread(r);
+			idleScanThread.setDaemon(true);
+			idleScanThread.setName("NetworkTimeoutExecutor");
 			return idleScanThread;
 		}
 	});
@@ -252,7 +239,22 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			log.debug("Removed {}pooledConn:{}",removeType,pConn);
 		} 
 	}
-	
+
+	public int getNetworkTimeout() {
+		return networkTimeout;
+	}
+	public void setNetworkTimeout(int networkTimeout) {
+		this.networkTimeout = networkTimeout;
+	}
+	public boolean isSupportNetworkTimeout() {
+		return supportNetworkTimeout;
+	}
+	public void setSupportNetworkTimeout(boolean supportNetworkTimeout) {
+		this.supportNetworkTimeout = supportNetworkTimeout;
+	}
+	public ThreadPoolExecutor getNetworkTimeoutExecutor() {
+		return networkTimeoutExecutor;
+	}
 	private boolean existBorrower() {
 		return poolConfig.getConcurrentSize()>poolSemaphore.availablePermits()||poolSemaphore.hasQueuedThreads();
 	}
@@ -587,7 +589,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				while (true) {
 					if (idleCheckSchFuture.cancel(true)) break;
 				}
-				//idleSchExecutor.shutdown();
+
+				idleSchExecutor.shutdown();
+				networkTimeoutExecutor.shutdown();
 				shutdownCreateConnThread();
 				unregisterJMX();
 
