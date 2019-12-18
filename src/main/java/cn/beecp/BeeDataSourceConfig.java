@@ -15,9 +15,7 @@
  */
 package cn.beecp;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static cn.beecp.util.BeecpUtil.isNullText;
+import cn.beecp.pool.JdbcConnectionFactory;
 
 import java.sql.Connection;
 import java.sql.Driver;
@@ -25,7 +23,9 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import cn.beecp.pool.JdbcConnectionFactory;
+import static cn.beecp.util.BeecpUtil.isNullText;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * Connection pool configuration
@@ -115,7 +115,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	 *connection.setCatalog
 	 */
 	private String defaultCatalog;
-	
+
+	/**
+	 *connection.setSchema
+	 */
+	private String defaultSchema;
+
 	/**
 	 * connection.setReadOnly
 	 */
@@ -332,14 +337,17 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		if(!this.checked && defaultTransactionIsolation>=0)
 		this.defaultTransactionIsolation = defaultTransactionIsolation;
 	}
-	
-	public String getDefaultCatalog() {
-		return defaultCatalog;
-	}
+	public String getDefaultCatalog() {return defaultCatalog; }
 	public void setDefaultCatalog(String catalog) {
-	  if(!isNullText(catalog))
-		this.defaultCatalog = catalog;
+		if(!isNullText(catalog))
+			this.defaultCatalog = catalog;
 	}
+	public String getDefaultSchema(){return defaultSchema;}
+	public void setDefaultSchema(String schema) {
+		if(!isNullText(schema))
+			this.defaultSchema = schema;
+	}
+
 	public boolean isDefaultReadOnly() {
 		return defaultReadOnly;
 	}
@@ -465,6 +473,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 			config.defaultAutoCommit=this.defaultAutoCommit;
 			config.defaultTransactionIsolation=this.defaultTransactionIsolation;
 			config.defaultCatalog=this.defaultCatalog;
+			config.defaultSchema=this.defaultSchema;
 			config.defaultReadOnly=this.defaultReadOnly;
 			config.maxWait=this.maxWait;
 			config.idleTimeout=this.idleTimeout;
