@@ -11,7 +11,7 @@ Release download（java6）
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>1.5.2</version>
+   <version>2.0.0</version>
 </dependency>
 
 ```
