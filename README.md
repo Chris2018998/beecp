@@ -4,25 +4,29 @@ Introduction <img height="50px" width="50px" src="https://github.com/Chris201899
 ---
 BeeCP is a lightweight (15 files, 2000lines of source code) high-performance Java connection pool
 
-Release download（java7）
+Release download
+---
+
+Java7
 ---
 
 ```java
-Java7
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
    <version>2.0.0</version>
 </dependency>
+```
 
 Java6
+---
+
+```java
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
    <version>1.6.0</version>
 </dependency>
-
-
 ```
 
 Configuration
