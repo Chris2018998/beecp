@@ -87,14 +87,14 @@ final class PooledConnection{
 				int networkTimeout=rawConn.getNetworkTimeout();
 				if(networkTimeout<=0) {
 					pool.setSupportNetworkTimeout(false);
-					log.error("Driver not support networkTimeout");
+					log.warn("Driver not support networkTimeout");
 				}else {
 					pool.setNetworkTimeout(networkTimeout);
 					rawConn.setNetworkTimeout(pool.getNetworkTimeoutExecutor(),networkTimeout);
 				}
 			}
 		}catch(SQLFeatureNotSupportedException e){
-			log.error("Driver not support networkTimeout");
+			log.warn("Driver not support networkTimeout");
 			pool.setSupportNetworkTimeout(false);
 		}
 		//for JDK1.7 end
