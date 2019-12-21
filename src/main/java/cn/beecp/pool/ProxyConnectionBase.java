@@ -42,7 +42,10 @@ abstract class ProxyConnectionBase implements Connection{
 		delegate=pConn.rawConn;
 		pConfig=pConn.pConfig;
 	}
-	protected void checkClose() throws SQLException {
+	void setAsClosed(){
+		isClosed=true;
+	}
+	protected final void checkClose() throws SQLException {
 		if(isClosed)throw ConnectionClosedException;
 	}
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
@@ -81,6 +84,20 @@ abstract class ProxyConnectionBase implements Connection{
 		pConn.updateAccessTime();
 		pConn.setChangedInd(PooledConnection.Pos_SchemaInd,!equalsText(schema,pConfig.getDefaultSchema()));
 	}
+	public void abort(Executor executor) throws SQLException{
+		checkClose();
+		if(executor == null)
+			throw new SQLException("executor can't be null");
+		executor.execute(new Runnable() {
+			public void run() {
+				try {
+					ProxyConnectionBase.this.close();
+				} catch (SQLException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		});
+	}
 	public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
 		checkClose();
 		delegate.setNetworkTimeout(executor,milliseconds);
@@ -117,19 +134,9 @@ abstract class ProxyConnectionBase implements Connection{
     	  throw new SQLException("Wrapped object is not an instance of " + iface);
       } 
 	}
-	void setConnectionDataToNull() {
-		isClosed=true;
-		delegate=null;
-		pConn=null;
-		pConfig=null;
-	}
-	public void close() throws SQLException {
-		try{
-			this.checkClose();
-			isClosed = true;
-			pConn.returnToPoolBySelf();
-		}finally{
-			setConnectionDataToNull();
-		}
+	public final void close() throws SQLException {
+		this.checkClose();
+		isClosed = true;
+		pConn.returnToPoolBySelf();
 	}
 }

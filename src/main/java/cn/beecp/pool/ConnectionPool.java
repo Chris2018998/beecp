@@ -15,10 +15,10 @@
  */
 package cn.beecp.pool;
 
+import cn.beecp.BeeDataSourceConfig;
+
 import java.sql.Connection;
 import java.sql.SQLException;
-
-import cn.beecp.BeeDataSourceConfig;
 
 /**
  * Connection pool
@@ -34,14 +34,14 @@ public interface ConnectionPool {
 	 * @param config data source configuration
 	 * @throws SQLException check configuration fail or to create initiated connection 
 	 */
-	public void init(BeeDataSourceConfig config)throws SQLException;
+	void init(BeeDataSourceConfig config)throws SQLException;
 	
 	/**
 	 * borrow a connection from pool
 	 * @return If exists idle connection in pool,then return one;if not, waiting until other borrower release
 	 * @throws SQLException if pool is closed or waiting timeout,then throw exception
 	 */
-	public Connection getConnection() throws SQLException;
+	Connection getConnection() throws SQLException;
 
 	/**
 	 * borrow one connection from pool
@@ -53,19 +53,19 @@ public interface ConnectionPool {
 	 * @throws SQLException
 	 *             if pool is closed or waiting timeout,then throw exception
 	 */
-	public Connection getConnection(long wait) throws SQLException;
+	Connection getConnection(long wait) throws SQLException;
 	
 	/**
 	 * return connection to pool
 	 * @param pConn target connection need release
 	 * @param needTest, true check active
 	 */
-	public void release(PooledConnection pConn, boolean needTest);
+	 void release(PooledConnection pConn, boolean needTest);
 		
 	/**
 	 * close pool
 	 */
-	public void shutdown();
+	void shutdown();
 	
 }
 	

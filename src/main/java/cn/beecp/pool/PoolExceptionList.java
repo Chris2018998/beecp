@@ -16,6 +16,7 @@
 package cn.beecp.pool;
 
 import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
 
 /**
  * Define some pool exceptions
@@ -24,8 +25,8 @@ import java.sql.SQLException;
  * @version 1.0
  */
 final class PoolExceptionList {
-	
-	static final SQLException RequestTimeoutException = new SQLException("Connection timeout");
+
+	static final SQLTimeoutException RequestTimeoutException = new SQLTimeoutException("Connection timeout");
 	
 	static final SQLException RequestInterruptException = new SQLException("Request interrupt");
 	

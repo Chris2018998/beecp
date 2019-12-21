@@ -15,14 +15,10 @@
  */
 package cn.beecp.pool;
 
-import static cn.beecp.util.BeecpUtil.oclose;
-import static cn.beecp.pool.PoolExceptionList.StatementClosedException;
+import java.sql.*;
 
-import java.sql.SQLException;
-import java.sql.Connection;
-import java.sql.Statement;
-import java.sql.PreparedStatement;
-import java.sql.CallableStatement;
+import static cn.beecp.pool.PoolExceptionList.StatementClosedException;
+import static cn.beecp.util.BeecpUtil.oclose;
 
 /**
  * ProxyBaseStatement
@@ -62,23 +58,19 @@ class ProxyStatementBase{
 		checkClose();
 		return proxyConn;
 	}
-	protected void checkClose() throws SQLException {
+	protected final void checkClose() throws SQLException {
 		if(isClosed)throw StatementClosedException;
 		proxyConn.checkClose();
 	}
-	public void close() throws SQLException {
-		try{
-			checkClose();
-		}finally{
-			this.isClosed=true;
-			if(!inCacheInd)
-				oclose(delegate);
-			this.delegate = null;
-			this.delegate1=null;
-			this.delegate2=null;
-			this.proxyConn =null;
-			this.pConn=null;
-		}
+	public final void close() throws SQLException {
+		checkClose();
+		this.isClosed=true;
+		if(!inCacheInd)
+			oclose(delegate);
+		this.delegate=null;
+		this.delegate1=null;
+		this.delegate2=null;
+
 	}
 	public final boolean isWrapperFor(Class<?> iface) throws SQLException {
 		checkClose();
@@ -94,7 +86,7 @@ class ProxyStatementBase{
 		checkClose();
 		String message="Wrapped object is not an instance of "+iface;
 		switch(statementType){
-			case 0: if(iface.isInstance(delegate))return (T)this;  else throw new SQLException(message);
+			case 0: if(iface.isInstance(delegate))return (T)this; else throw new SQLException(message);
 			case 1: if(iface.isInstance(delegate1))return (T)this; else throw new SQLException(message);
 			case 2: if(iface.isInstance(delegate2))return (T)this; else throw new SQLException(message);
 			default:throw new SQLException(message);

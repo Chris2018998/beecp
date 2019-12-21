@@ -79,7 +79,7 @@ final class PooledConnection{
 		rawConn.setReadOnly(pConfig.isDefaultReadOnly());
 		if(!isNullText(pConfig.getDefaultCatalog()))
 			rawConn.setCatalog(pConfig.getDefaultCatalog());
-		//for JDK1.7
+		//for JDK1.7 begin
 		if(!isNullText(pConfig.getDefaultSchema()))
 			rawConn.setSchema(pConfig.getDefaultSchema());
 		try {
@@ -97,8 +97,7 @@ final class PooledConnection{
 			log.error("Driver not support networkTimeout");
 			pool.setSupportNetworkTimeout(false);
 		}
-		//rawConn.setNetworkTimeout();
-		//for JDK1.7
+		//for JDK1.7 end
 		updateAccessTime();
 	}
 	public boolean equals(Object obj) {
@@ -106,37 +105,31 @@ final class PooledConnection{
 	}
 	//called for pool
 	void closeRawConn() {
-		try{
-			resetRawConnOnReturn();
-			if(stmCacheIsValid)
-				stmCache.clear();
-
-			pConfig=null;
-			oclose(rawConn);
-		}finally{
-			if(proxyConn!=null){
-				proxyConn.setConnectionDataToNull();
-				proxyConn=null;
-			}
+		if(proxyConn!=null){
+			proxyConn.setAsClosed();
+			proxyConn=null;
 		}
+
+		resetRawConnOnReturn();
+		if(stmCacheIsValid)
+			stmCache.clear();
+		oclose(rawConn);
 	}
 
 	//***************called fow raw conn proxy ********//
 	final void returnToPoolBySelf(){
-		try{
-			resetRawConnOnReturn();
-			pool.release(this,true);
-		}finally{
-			proxyConn = null;
-		}
+		proxyConn.setAsClosed();
+		proxyConn=null;
+		resetRawConnOnReturn();
+		pool.release(this,true);
 	}
 	void setCurAutoCommit(boolean curAutoCommit) {
 		this.curAutoCommit = curAutoCommit;
 	}
-	void updateAccessTime() {
+	final void updateAccessTime() {
 		lastAccessTime = currentTimeMillis();
 	}
-	void updateAccessTimeWithCommitDirty() {
+	final void updateAccessTimeWithCommitDirty() {
 		lastAccessTime=currentTimeMillis();
 		commitDirtyInd=!curAutoCommit;
 	}

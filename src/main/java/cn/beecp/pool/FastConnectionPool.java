@@ -57,19 +57,19 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private int ConUnCatchStateCode;
 	private String ConnectionTestSQL;
 	private int ConnectionTestTimeout;//seconds
-	private boolean validateSQLIsNull;
 
 	private ConnectionPoolHook exitHook;
 	private BeeDataSourceConfig poolConfig;
 
 	private Semaphore poolSemaphore;
 	private TransferPolicy tansferPolicy;
+	private ConnectionTestPolicy testPolicy;
 	private ConnectionFactory connFactory;
 	private final Object connArraySyn=new Object();
 	private volatile PooledConnection[] connArray = new PooledConnection[0];
 	private AtomicInteger createConnThreadState = new AtomicInteger(THREAD_WORKING);
-	private ConcurrentLinkedQueue<Borrower> waitTransferQueue = new ConcurrentLinkedQueue<Borrower>();
-	private ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
+	private ConcurrentLinkedQueue<Borrower> waitTransferQueue = new ConcurrentLinkedQueue<>();
+	private ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<>();
 	private ScheduledFuture<?> idleCheckSchFuture = null;
 	private ScheduledThreadPoolExecutor idleSchExecutor = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
 		public Thread newThread(Runnable r) {
@@ -82,12 +82,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 	private int networkTimeout;
 	private boolean supportNetworkTimeout=true;
-	private ThreadPoolExecutor networkTimeoutExecutor = new ThreadPoolExecutor(0,10,15,SECONDS, new SynchronousQueue(),new ThreadFactory() {
+	private ThreadPoolExecutor networkTimeoutExecutor = new ThreadPoolExecutor(0,10,15,SECONDS, new SynchronousQueue<Runnable>(),new ThreadFactory() {
 		public Thread newThread(Runnable r) {
-			Thread idleScanThread = new Thread(r);
-			idleScanThread.setDaemon(true);
-			idleScanThread.setName("NetworkTimeoutExecutor");
-			return idleScanThread;
+			Thread timeoutThread = new Thread(r);
+			timeoutThread.setDaemon(true);
+			timeoutThread.setName("NetworkTimeoutExecutor");
+			return timeoutThread;
 		}
 	});
 
@@ -128,8 +128,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			PoolMaxSize=poolConfig.getMaxActive();
 			AutoCommit=poolConfig.isDefaultAutoCommit();
 			ConnectionTestSQL = poolConfig.getConnectionTestSQL();
-			validateSQLIsNull = isNullText(ConnectionTestSQL);
 			ConnectionTestTimeout = poolConfig.getConnectionTestTimeout();
+			if(isNullText(ConnectionTestSQL)){
+				testPolicy=new ConnValidTestPolicy();
+			}else{
+				testPolicy=new SQLQueryTestPolicy();
+			}
 
 			DefaultMaxWaitMills = poolConfig.getMaxWait();
 			ValidationIntervalMills = poolConfig.getConnectionTestInterval();
@@ -165,7 +169,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					poolConfig.getMaxWait());
 			
 			poolState.set(POOL_NORMAL);
-			
+
+			networkTimeoutExecutor.setMaximumPoolSize(config.getMaxActive());
 			idleCheckSchFuture = idleSchExecutor.scheduleAtFixedRate(new Runnable() {
 				public void run() {// check idle connection
 					closeIdleTimeoutConnection();
@@ -266,48 +271,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *         false if false then close it
 	 */
 	private boolean isActiveConn(PooledConnection pConn) {
-		boolean isActive = true;
-		Connection con= pConn.rawConn;
+		boolean isActive=false;
 		try {
-			if (validateSQLIsNull) {
-				try {
-					isActive = con.isValid(ConnectionTestTimeout);
-					pConn.updateAccessTime();
-				} catch (SQLException e) {
-					isActive = false;
-				}
-			} else {
-				Statement st = null;
-				boolean autoCommitChged=false;
-				try {
-					if(AutoCommit){
-					  con.setAutoCommit(false);
-					  autoCommitChged=true;
-					}
-					
-					st = con.createStatement();
-					pConn.updateAccessTime();
-					st.setQueryTimeout(ConnectionTestTimeout);
-					st.execute(ConnectionTestSQL);
-				} catch (SQLException e) {
-					isActive = false;
-				} finally {
-					try {
-						con.rollback();
-					} catch (SQLException e){
-						log.error("Failed to execute 'rollback' after connection test");
-					}
-					try {
-					  if(AutoCommit&&autoCommitChged)
-						 con.setAutoCommit(true);
-					} catch (SQLException e){
-						log.error("Failed to execute 'setAutoCommit(true)' after connection test");
-					}
-					oclose(st);
-				}
-			}
-
-			return isActive;
+			isActive=testPolicy.isActive(pConn);
+	 		return isActive;
 		} finally {
 			if (!isActive) {
 				ConnStateUpdater.set(pConn,CONNECTION_CLOSED);
@@ -377,7 +344,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		try {
 			if (borrower == null) {
 				borrower = new Borrower();
-				threadLocal.set(new WeakReference<Borrower>(borrower));
+				threadLocal.set(new WeakReference<>(borrower));
 			} else {
 				borrower.hasHoldNewOne = false;
 				PooledConnection pConn = borrower.lastUsedConn;
@@ -442,7 +409,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		int spinSize = MaxTimedSpins;
 		TansferStateUpdater.set(borrower, BORROWER_NORMAL);
 		
-		try {// wait one transfered connection
+		try {// wait one transferred connection
 			waitTransferQueue.offer(borrower);
 			//this.tryToCreateNewConnByAsyn();
 			
@@ -758,51 +725,115 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			log.warn("Failed to unregister jmx-bean:{}",regName,e);
 		}
 	}
-
 	//******************************** JMX **************************************/
+
+	// Connection check Policy
+	interface ConnectionTestPolicy {
+		boolean isActive(PooledConnection pConn);
+	}
+	// SQL check Policy
+	class SQLQueryTestPolicy implements ConnectionTestPolicy {
+		public boolean isActive(PooledConnection pConn){
+			boolean timeoutSetted=false;
+			boolean autoCommitChged=false;
+			Statement st = null;
+			Connection con = pConn.rawConn;
+			try {
+				if(supportNetworkTimeout) {
+					con.setNetworkTimeout(networkTimeoutExecutor,ConnectionTestTimeout);
+					timeoutSetted = true;
+				}
+
+				//may be a store procedure or a function in this test sql,so need rollback finally
+				//for example: select xxx() from dual
+				if(AutoCommit){
+					con.setAutoCommit(false);
+					autoCommitChged=true;
+				}
+
+				st = con.createStatement();
+				pConn.updateAccessTime();
+				st.setQueryTimeout(ConnectionTestTimeout);
+				st.execute(ConnectionTestSQL);
+				return true;
+			} catch (SQLException e) {
+				log.error("Failed to test connection",e);
+				return false;
+			} finally {
+				if(supportNetworkTimeout && timeoutSetted) {//reset
+					try {
+						con.setNetworkTimeout(networkTimeoutExecutor, networkTimeout);
+					} catch (SQLException e) {
+						log.error("Failed to reset networkTimeout after connection test",e);
+					}
+				}
+
+				try {
+					con.rollback();
+					if(AutoCommit&&autoCommitChged)
+						con.setAutoCommit(true);
+				} catch (SQLException e){
+					log.error("Failed to execute 'rollback or setAutoCommit(true)' after connection test",e);
+				}
+				oclose(st);
+			}
+		}
+	}
+	//check Policy(call connection.isValid)
+	class ConnValidTestPolicy implements ConnectionTestPolicy {
+		public boolean isActive(PooledConnection pConn) {
+			boolean timeoutSetted = false;
+			Connection con = pConn.rawConn;
+			try {
+				if (supportNetworkTimeout) {
+					con.setNetworkTimeout(networkTimeoutExecutor,ConnectionTestTimeout);
+					timeoutSetted = true;
+				}
+				boolean checkPass=con.isValid(ConnectionTestTimeout);
+				pConn.updateAccessTime();
+				return checkPass;
+			} catch (SQLException e) {
+				log.error("Failed to test connection",e);
+				return false;
+			} finally {
+				if(supportNetworkTimeout && timeoutSetted) {//reset
+					try {
+						con.setNetworkTimeout(networkTimeoutExecutor, networkTimeout);
+					} catch (SQLException e) {
+						log.error("Failed to reset networkTimeout after connection test",e);
+					}
+				}
+			}
+		}
+	}
 
 	// Transfer Policy
 	interface TransferPolicy {
 		int getCheckStateCode();
-
 		boolean tryCatch(PooledConnection pConn);
-
 		void onFailTransfer(PooledConnection pConn);
-
 		void beforeTransfer(PooledConnection pConn);
 	}
-
 	class CompeteTransferPolicy implements TransferPolicy {
 		public int getCheckStateCode() {
 			return CONNECTION_IDLE;
 		}
-
 		public boolean tryCatch(PooledConnection pConn) {
 			return ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING);
 		}
-
-		public void onFailTransfer(PooledConnection pConn) {
-		}
-
+		public void onFailTransfer(PooledConnection pConn) { }
 		public void beforeTransfer(PooledConnection pConn) {
 			ConnStateUpdater.set(pConn, CONNECTION_IDLE);
 		}
 	}
-
 	class FairTransferPolicy implements TransferPolicy {
-		public int getCheckStateCode() {
-			return CONNECTION_USING;
-		}
-
+		public int getCheckStateCode() {return CONNECTION_USING; }
 		public boolean tryCatch(PooledConnection pConn) {
 			return ConnStateUpdater.get(pConn) == CONNECTION_USING;
 		}
-
 		public void onFailTransfer(PooledConnection pConn) {
 			ConnStateUpdater.set(pConn, CONNECTION_IDLE);
 		}
-
-		public void beforeTransfer(PooledConnection pConn) {
-		}
+		public void beforeTransfer(PooledConnection pConn) { }
 	}
 }

@@ -15,12 +15,12 @@
  */
 package cn.beecp.pool;
 
-import static cn.beecp.pool.PoolExceptionList.ResultSetClosedException;
-import static cn.beecp.util.BeecpUtil.oclose;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import static cn.beecp.pool.PoolExceptionList.ResultSetClosedException;
+import static cn.beecp.util.BeecpUtil.oclose;
 
 /**
  * ResultSet proxy base class
@@ -39,7 +39,7 @@ abstract class ProxyResultSetBase implements ResultSet {
 		this.delegate = delegate;
 		this.proxyStatement = proxyStatement;
 	}
-	protected void checkClose() throws SQLException {
+	protected final void checkClose() throws SQLException {
 		if(isClosed)throw ResultSetClosedException;
 		if(proxyStatement!=null)proxyStatement.checkClose();
 	}
@@ -47,15 +47,12 @@ abstract class ProxyResultSetBase implements ResultSet {
 		checkClose();
 		return (Statement)proxyStatement;
 	}
-	public void close() throws SQLException {
-		try{
-			checkClose();
-		}finally{
-			isClosed = true;
-			oclose(delegate);
-			delegate = null;
-			proxyStatement=null;
-		}
+	public final void close() throws SQLException {
+		checkClose();
+		isClosed=true;
+		oclose(delegate);
+		delegate=null;
+		proxyStatement=null;
 	}
 	public final boolean isWrapperFor(Class<?> iface) throws SQLException {
 		checkClose();
