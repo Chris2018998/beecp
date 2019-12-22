@@ -146,7 +146,7 @@ public class DataSourceConfig {
 七：性能测试
 ---
 
-1：100万次(1000线程 x 1000次)访问真实数据库，测试连接池性能，并打印耗时分布以及平均耗时，最后依据平时耗时为各连接池进行名次排列，单次时间统计(机器状态对测试结果有较大影响)，单次计时间范围：
+**1：** 100万次(1000线程 x 1000次)访问真实数据库，测试连接池性能，并打印耗时分布以及平均耗时，最后依据平时耗时为各连接池进行名次排列，单次时间统计(机器状态对测试结果有较大影响)，单次计时间范围：
 
 [datasource.getConnection(),connection.prepareStatement,statement.execute(),statement.close(),connection.close()]</i>
 
@@ -159,12 +159,15 @@ Bee_C(5.3623) > Bee_F(6.8492) > HikariCP(9.0176)
  
 性能测试代码请访问项目：https://github.com/Chris2018998/PoolPerformance
 
-2： 采用光连接池的性能基准测试结果
+**2：** 采用光连接池的性能基准测试结果
 
-<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191212_I3_7100_HikariCP_Bech_Pict.png"></img>
+<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191221_I3_7100_HikariCP_Bech_Pict.png">20191221_I3_7100_HikariCP_Bech_Pict.png</img>
 
-下载 <a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
+Download <a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
 
 
 八：后记
+---
+该项目是从个人06年曾开发一个稍微大点的项目中分离出来的模块。该作品对个人而言，是一件学习型品，可能也会是一件纪念品，由于个人能力，精力有限，项目
 
+可能还会存在一些不足，希望有兴趣的朋友可以帮忙一起完善它，宣传它。
