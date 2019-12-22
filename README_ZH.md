@@ -47,7 +47,7 @@
 
 4：闲置超时和持有超时处理
 
-5：PreparedStatement缓存支持（也可关闭）
+5：PreparedStatement缓存支持（也可不用）
 
 6：支持连接回收前，事物回滚
 
