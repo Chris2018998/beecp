@@ -32,7 +32,8 @@
 </dependency>
 
 ```
-*友情提示：建议使用最新版本
+
+*友情提示：建议使用最新版本*
 
 
 四：功能支持
@@ -59,14 +60,37 @@
 
 五：配置项说明
 ---
-|  Name  |   Description |   Remark |
-| ------------ | ------------ | ------------ |
-| initialSize     |连接池初始大小  |   |
-| maxActive       |连接池最大个数  |    |
-| maxWait         |连接借用等待最大时间(毫秒)  |   |
-| idleTimeout     |连接闲置最大时间(毫秒)     |   |  
-| preparedStatementCacheSize |SQL宣言缓存大小 |   
-| validationQuery |连接是否存活测试查询语句   |    |   |
+|  配置项          |   描述                        |   备注                            |
+| ----------------| ---------------------------  | ------------------------          |
+| username        | JDBC用户名                    |                                   |
+| password        | JDBC密码                      |                                   |
+| jdbcUrl         | JDBC连接URL                   |                                   |
+| driverClassName | JDBC驱动类名                   |                                   |
+| poolName        | 连接池名                       |                                   |
+| fairMode        | 连接池是否公平模式               | 公平锁,等待者优先获取连接            |
+| initialSize     | 连接池初始大小                  |                                   |
+| maxActive       | 连接池最大个数                  |                                   | 
+| concurrentSize  | 请求并发数（借用者线程数）        | 不允许大于连接最大数                 |
+| preparedStatementCacheSize |SQL宣言缓存大小       | 0 表示不适用缓存                    |
+| testOnBorrow    |借用者获取连接后，测试连接池有效性  | 无效则关闭连接                      |
+| testOnReturn    |连接归还池时，测试连接池有效性     | 无效则关闭连接                       |
+| defaultAutoCommit|连接是否为自动提交              | 默认true                            |
+| defaultTransactionIsolation|事物等级             | 默认读提交，Connection.TRANSACTION_READ_COMMITTED |
+| defaultCatalog    |                             |                                     |
+| defaultSchema     |                             |                                     |
+| defaultReadOnly   |                             | 默认false                            |
+| maxWait           |连接借用等待最大时间(毫秒)       | 默认8秒，连接请求最大等待时间           |
+| idleTimeout       |连接闲置最大时间(毫秒)          | 默认3分钟，超时会被清理                 |  
+| holdIdleTimeout   |连接被持有不用的最大时间(毫秒)    | 默认5分钟，超时会被清理                 |  
+| connectionTestSQL |连接有效性测试SQL语句           | 一条 select 语句，不建议放入存储过程     |  
+| connectionTestTimeout |连接有效性测试超时时间(毫秒)  | 执行查询测试语句时间，在指定时间范围内等待反应|  
+| connectionTestInterval |连接测试的间隔时间(毫秒)     |默认500毫秒 连接上次活动时间点与当前时间时间差值小于它，则假定连接是有效的|  
+| forceCloseConnection   |是否需要暴力关闭连接         |默认false;true:直接关闭使用中连接，false:等待处于使用中归还后再关闭|
+| waitTimeToClearPool    |延迟清理的时候时间（秒）      |默认3秒，非暴力清理池下，还存在使用中的连接，延迟等待时间再清理|                   | idleCheckTimeInterval  |闲置扫描线程间隔时间(毫秒)             |                     |
+| idleCheckTimeInitDelay |闲置扫描线程延迟时间再执行第一次扫描(毫秒)|                    |
+| connectionFactoryClassName|自定义的JDBC连接工作类名            |                    |
+| enableJMX                 |JMX监控支持开关                    |                    | |
+
 
 
 五：参考Demo
