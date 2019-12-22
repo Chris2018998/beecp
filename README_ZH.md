@@ -2,32 +2,62 @@
 
 一：介绍 <img height="50px" width="50px" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img>
 ---
-小蜜蜂：一款高性能JDBC连接池
+小蜜蜂池：一款高性能JDBC连接池
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/README.md">English</a>
 
 二：特点
 ---
+1：性能好：性能高于光连接池
 
-1：性能较好：跑分略高于光连接池(期待着网友们开箱验货^-^）
-
-2：功能单一：只实现了池的借还和PreparedStatement缓存
-
-3：代码量少：大约2000行左右开发源码
+2：代码少：21个文件，2600行源码
 
 三：版本下载
 ---
-
+**Java7**
 ```java
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>1.5.1</version>
+   <version>2.0.0</version>
+</dependency>
+```
+
+**Java6**
+```java
+<dependency>
+   <groupId>com.github.chris2018998</groupId>
+   <artifactId>BeeCP</artifactId>
+   <version>1.6.0</version>
 </dependency>
 
 ```
+*友情提示：建议使用最新版本
 
-四：配置项说明
+
+四：功能支持
+---
+
+1：请求超时支持
+
+2：两种模式：公平与竞争
+
+3：断网连接池自动恢复
+
+4：闲置超时和持有超时处理
+
+5：PreparedStatement缓存支持（也可关闭）
+
+6：支持连接回收前，事物回滚
+
+7：支持连接回收前，属性重置（比如：autoCommit,transactionIsolation,readonly,catlog,schema,networkTimeout）
+
+8: 支持JMX
+
+9：支持连接工厂自定义
+
+
+五：配置项说明
 ---
 |  Name  |   Description |   Remark |
 | ------------ | ------------ | ------------ |
