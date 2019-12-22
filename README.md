@@ -85,7 +85,7 @@ Configuration
 | idleTimeout        |max idle time in pool(mills)      | default is 3 minutes                |  
 | holdIdleTimeout    |max hold idle time in pool(mills)  | default is 5 minutes              |  
 | connectionTestSQL  |Connection valid test sql          | a 'select' statment               |  
-| connectionTestTimeout |Connection valid test timeout(mills)  | default 500ms               |  
+| connectionTestTimeout |Connection valid test timeout(seconds)  | default 5 seconds         |  
 | connectionTestInterval |connection valid test interval time(mills)| default 500ms          |  
 | forceCloseConnection   |connection close force ind  |default is false,true:close using directly，false:close using when it is idle|
 | waitTimeToClearPool    |wait time to clean when exist using conneciton（seconds） | default is 3 seconds |                  
@@ -98,15 +98,18 @@ Configuration
 
 Refence demo With SpringBoot
 ---
-```java
-application.properties
 
+*application.properties*
+
+```java
 spring.datasource.username=xx
 spring.datasource.password=xx
 spring.datasource.url=xx
 spring.datasource.driverClassName=xxx
 spring.datasource.datasourceJndiName=xxx
 ```
+
+*DataSourceConfig.java*
 
 ```java
 @Configuration
