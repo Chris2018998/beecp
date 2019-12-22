@@ -96,7 +96,7 @@ Configuration
 	
 
 
-Refence demo With SpringBoot
+Refence demo(SpringBoot)
 ---
 
 *application.properties*
