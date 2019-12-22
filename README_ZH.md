@@ -145,20 +145,26 @@ public class DataSourceConfig {
 
 七：性能测试
 ---
-以多线程查询(1000个线程各自执行1000次，共100万次)的方式测试各连接池性能，并打印耗时分布以及平均耗时，最后依据平时耗时为各连接池进行名次排列，单次时间统计(机器状态对测试结果有较大影响)：
+
+1：100万次(1000线程 x 1000次)访问真实数据库，测试连接池性能，并打印耗时分布以及平均耗时，最后依据平时耗时为各连接池进行名次排列，单次时间统计(机器状态对测试结果有较大影响)，单次计时间范围：
 
 [datasource.getConnection(),connection.prepareStatement,statement.execute(),statement.close(),connection.close()]</i>
 
-1：下面为各连接池在mysql5.6的下测试结果（单位：毫秒）
+下面为各连接池在mysql5.6的下测试结果（单位：毫秒）
 
 Bee_C(5.3623) > Bee_F(6.8492) > HikariCP(9.0176)
 
+日志文件下载
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191105_JDBCPool_I54300.log">20191105_JDBCPool_I54300.log</a>
  
 性能测试代码请访问项目：https://github.com/Chris2018998/PoolPerformance
 
-3： 采用光连接池的性能基准测试结果
+2： 采用光连接池的性能基准测试结果
 
 <img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191212_I3_7100_HikariCP_Bech_Pict.png"></img>
 
 下载 <a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
+
+
+八：后记
+
