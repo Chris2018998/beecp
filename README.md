@@ -2,9 +2,15 @@
 
 Introduction <img height="50px" width="50px" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img>
 ---
-BeeCP is a lightweight (15 files, 2000lines of source code) high-performance Java connection pool
+BeeCP is A high performance JDBC connection pool
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/README_ZH.md">中文</a>
+
+Feature
+---
+1: Good performance: higher than HikariCP
+
+2: Less code: 21 files, 2600 lines of source code
 
 Release download
 ---
@@ -31,16 +37,63 @@ Java6
 </dependency>
 ```
 
+*Friendly tips: the latest version is recommended*
+
+Function List
+---
+1: Request timeout support
+
+2: Two modes: fairness and competition
+
+3: Automatic recovery of disconnected pool
+
+4: Idle timeout and holding timeout processing
+
+5: Preparedstatement cache support (optional)
+
+6: Before connection recovery, things can be rolled back
+
+7: Support property reset before connection recycling (for example: autocommit, transactionisolation, readonly, Catlog, schema, networktimeout)
+
+8: JMX support
+
+9: Support connection factory customization
+
+
 Configuration
 ---
-|  Name           |  Description |   Remark |
-| ----------------| ------------ | ------------ |
-| initialSize     |Connection pool initial size|   |
-| maxActive       |Maximum number of connection pools|    |
-| maxWait         |Maximum borrowing waiting time (milliseconds)|   |
-| idleTimeout     |connection maximum idleness time(milliseconds)|   |  
-| preparedStatementCacheSize |preparedStatement cache Size |   
-| validationQuery |Connection active Query Statement |    |   |
+| Configuration item |   Description                |   remark                          |
+| ----------------   | ---------------------------  | ------------------------          |
+| username           | JDBC username                 |                                   |
+| password           | JDBC password                 |                                   |
+| jdbcUrl            | JDBC url                      |                                   |
+| driverClassName    | Driver class name             |                                   |
+| poolName           | Pool name                     |                                   |
+| fairMode           | fair mode for pool            | default is true                   |
+| initialSize        | pool initial size             |                                   |
+| maxActive          | pool max size                 |                                   | 
+| concurrentSize     | borrower thread concurrent size  | not greater than  'maxActive'   |
+| preparedStatementCacheSize |statment cache size       | 0 cache is invalid            |
+| testOnBorrow       |test connection valid on borrowed | invalid,then close it         |
+| testOnReturn       |test connection valid on return   |  invalid,then close it        |
+| defaultAutoCommit  |default autoCommit                | default is true               |
+| defaultTransactionIsolation|trasaction level          | default:Connection.TRANSACTION_READ_COMMITTED |
+| defaultCatalog     |                                  |                                     |
+| defaultSchema      |                                  |                                     |
+| defaultReadOnly    |                                  | default is false                     |
+| maxWait            |max wait time to borrow a connection(mills)| default is 8 seconds       |
+| idleTimeout        |max idle time in pool(mills)      | default is 3 minutes                |  
+| holdIdleTimeout    |max hold idle time in pool(mills)  | default is 5 minutes              |  
+| connectionTestSQL  |Connection valid test sql          | a 'select' statment               |  
+| connectionTestTimeout |Connection valid test timeout(mills)  | default 500ms               |  
+| connectionTestInterval |connection valid test interval time(mills)| default 500ms          |  
+| forceCloseConnection   |connection close force ind  |default is false,true:close using directly，false:close using when it is idle|
+| waitTimeToClearPool    |wait time to clean when exist using conneciton（seconds） | default is 3 seconds |                  
+| idleCheckTimeInterval  |idle check time interval(mills)  |                     |
+| idleCheckTimeInitDelay |idle check thread delay time to check first|                    |
+| connectionFactoryClassName|Custom JDBC connection factory class name              | default is null          |
+| enableJMX                 |JMX Ind                                |                    | |
+	
 
 
 Refence demo With SpringBoot
