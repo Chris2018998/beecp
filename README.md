@@ -74,7 +74,7 @@ public class DataSourceConfig {
   @Primary
   @ConfigurationProperties(prefix="spring.datasource")
   public DataSource primaryDataSource() {
-    return DataSourceBuilder.create().type(cn.bee.dbcp.BeeDataSource.class).build();
+    return DataSourceBuilder.create().type(cn.beecp.BeeDataSource.class).build();
   }
   
   @Bean
