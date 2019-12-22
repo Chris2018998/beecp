@@ -72,8 +72,8 @@
 | maxActive       | 连接池最大个数                  |                                   | 
 | concurrentSize  | 请求并发数（借用者线程数）        | 不允许大于连接最大数                 |
 | preparedStatementCacheSize |SQL宣言缓存大小       | 0 表示不适用缓存                    |
-| testOnBorrow    |借用者获取连接后，测试连接池有效性  | 无效则关闭连接                      |
-| testOnReturn    |连接归还池时，测试连接池有效性     | 无效则关闭连接                       |
+| testOnBorrow    |借用者获取连接后，测试连接有效性  | 无效则关闭连接                      |
+| testOnReturn    |连接归还池时，测试连接有效性     | 无效则关闭连接                       |
 | defaultAutoCommit|连接是否为自动提交              | 默认true                            |
 | defaultTransactionIsolation|事物等级             | 默认读提交，Connection.TRANSACTION_READ_COMMITTED |
 | defaultCatalog    |                             |                                     |
@@ -88,7 +88,7 @@
 | forceCloseConnection   |是否需要暴力关闭连接         |默认false;true:直接关闭使用中连接，false:等待处于使用中归还后再关闭|
 | waitTimeToClearPool    |延迟清理的时候时间（秒）      |默认3秒，非暴力清理池下，还存在使用中的连接，延迟等待时间再清理|                   | idleCheckTimeInterval  |闲置扫描线程间隔时间(毫秒)             |                     |
 | idleCheckTimeInitDelay |闲置扫描线程延迟时间再执行第一次扫描(毫秒)|                    |
-| connectionFactoryClassName|自定义的JDBC连接工作类名            |                    |
+| connectionFactoryClassName|自定义的JDBC连接工作类名            | 默认为空             |
 | enableJMX                 |JMX监控支持开关                    |                    | |
 
 
