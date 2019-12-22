@@ -45,9 +45,9 @@ Function List
 
 2: Two modes: fairness and competition
 
-3: Automatic recovery of disconnected pool
+3: Pool recreate new connections when network restore
 
-4: Idle timeout and holding timeout processing
+4: Idle timeout and holding timeout 
 
 5: Preparedstatement cache support (optional)
 
