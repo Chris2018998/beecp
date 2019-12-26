@@ -42,7 +42,7 @@ final class PooledConnection{
 	Connection rawConn;
 
 	ProxyConnectionBase proxyConn;
-	long lastAccessTime;
+	volatile long lastAccessTime;
 	boolean commitDirtyInd;
 	boolean curAutoCommit;
 	private FastConnectionPool pool;
@@ -75,7 +75,7 @@ final class PooledConnection{
 	}
 	private void setDefaultOnRawConn()throws SQLException{
 		rawConn.setAutoCommit(pConfig.isDefaultAutoCommit());
-		rawConn.setTransactionIsolation(pConfig.getDefaultTransactionIsolation());
+		rawConn.setTransactionIsolation(pConfig.getDefaultTransactionIsolationCode());
 		rawConn.setReadOnly(pConfig.isDefaultReadOnly());
 		if(!isNullText(pConfig.getDefaultCatalog()))
 			rawConn.setCatalog(pConfig.getDefaultCatalog());
@@ -168,7 +168,7 @@ final class PooledConnection{
 
 			if (changedInds[1]) {
 				try {
-					rawConn.setTransactionIsolation(pConfig.getDefaultTransactionIsolation());
+					rawConn.setTransactionIsolation(pConfig.getDefaultTransactionIsolationCode());
 					updateAccessTime();
 				} catch (SQLException e) {
 					log.error("Failed to reset transactionIsolation to:{}",pConfig.getDefaultTransactionIsolation(),e);

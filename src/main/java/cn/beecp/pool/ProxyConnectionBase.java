@@ -63,7 +63,7 @@ abstract class ProxyConnectionBase implements Connection{
 		checkClose();
 		delegate.setTransactionIsolation(level);
 		pConn.updateAccessTime();
-		pConn.setChangedInd(PooledConnection.Pos_TransactionIsolationInd,level!=pConfig.getDefaultTransactionIsolation());
+		pConn.setChangedInd(PooledConnection.Pos_TransactionIsolationInd,level!=pConfig.getDefaultTransactionIsolationCode());
 	}
 	public void setReadOnly(boolean readOnly) throws SQLException {
 		checkClose();

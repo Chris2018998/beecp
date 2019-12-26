@@ -15,22 +15,11 @@
  */
 package cn.beecp.pool;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import javassist.*;
+
+import java.sql.*;
 import java.util.HashSet;
 import java.util.LinkedList;
-
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtConstructor;
-import javassist.CtMethod;
-import javassist.CtNewMethod;
-import javassist.LoaderClassPath;
-import javassist.Modifier;
 
 /**
  * An independent execution toolkit class to generate JDBC proxy classes with javassist,
@@ -307,9 +296,7 @@ public final class ProxyClassGenerator {
 			methodBuffer.append("{");
 			methodBuffer.append("checkClose();");
 			if (newCtMethodm.getReturnType() == ctStatementIntf) {
-				methodBuffer.append("Statement stm=delegate.createStatement($$);");
-				methodBuffer.append("pConn.updateAccessTime();");
-				methodBuffer.append("return new ProxyStatement(stm,this,pConn);");
+				methodBuffer.append("return new ProxyStatement(delegate.createStatement($$),this,pConn);");
 			}else if(newCtMethodm.getReturnType() == ctPsStatementIntf){
 				methodBuffer.append("if(pConn.stmCacheIsValid){");
 				methodBuffer.append(" Object key=new PsCacheKey($$);");
@@ -317,14 +304,11 @@ public final class ProxyClassGenerator {
 				methodBuffer.append(" PreparedStatement stm=stmCache.get(key);");
 				methodBuffer.append(" if(stm==null){");
 				methodBuffer.append("    stm=delegate.prepareStatement($$);");
-				methodBuffer.append("    pConn.updateAccessTime();");
 				methodBuffer.append("    stmCache.put(key,stm);");
 				methodBuffer.append("  }");
 				methodBuffer.append("  return new ProxyPsStatement(stm,true,this,pConn);");
 				methodBuffer.append("}else{");
-				methodBuffer.append(" PreparedStatement stm=delegate.prepareStatement($$);");
-				methodBuffer.append(" pConn.updateAccessTime();");
-				methodBuffer.append("  return new ProxyPsStatement(stm,false,this,pConn);");
+				methodBuffer.append("  return new ProxyPsStatement(delegate.prepareStatement($$),false,this,pConn);");
 				methodBuffer.append("}");
 			}else if(newCtMethodm.getReturnType() == ctCsStatementIntf){
 				methodBuffer.append("if(pConn.stmCacheIsValid){");
@@ -333,27 +317,20 @@ public final class ProxyClassGenerator {
 				methodBuffer.append(" CallableStatement stm=(CallableStatement)stmCache.get(key);");
 				methodBuffer.append(" if(stm==null){");
 				methodBuffer.append("   stm=delegate.prepareCall($$);");
-				methodBuffer.append("   pConn.updateAccessTime();");
 				methodBuffer.append("   stmCache.put(key,stm);");
 				methodBuffer.append(  "}");
 				methodBuffer.append("  return new ProxyCsStatement(stm,true,this,pConn,true);");
 				methodBuffer.append("}else{");
-				methodBuffer.append(" CallableStatement stm=delegate.prepareCall($$);");
-				methodBuffer.append(" pConn.updateAccessTime();");
-				methodBuffer.append(" return new ProxyCsStatement(stm,false,this,pConn,true);");
+				methodBuffer.append(" return new ProxyCsStatement(delegate.prepareCall($$),false,this,pConn,true);");
 				methodBuffer.append("}");
-
 			}else if (newCtMethodm.getReturnType() == ctDatabaseMetaDataIntf) {
 				methodBuffer.append("return new ProxyDatabaseMetaData(delegate."+methodName+"($$),this,pConn);");
 			}else if(methodName.equals("close")){
-				methodBuffer.append("super."+methodName + "($$);");
+				//methodBuffer.append("super."+methodName + "($$);");
 			}else if (newCtMethodm.getReturnType() == CtClass.voidType){
 				methodBuffer.append(" delegate." + methodName + "($$);");
-				methodBuffer.append(" pConn.updateAccessTime();");
 			}else{
-				methodBuffer.append(newCtMethodm.getReturnType().getName() +" re=delegate." + methodName + "($$);");
-				methodBuffer.append(" pConn.updateAccessTime();");
-				methodBuffer.append(" return re;");
+				methodBuffer.append("return delegate." + methodName + "($$);");
 			}
 
 			methodBuffer.append("}");
@@ -484,7 +461,7 @@ public final class ProxyClassGenerator {
 			methodBuffer.append("checkClose();");
 
 			if (methodName.equals("close")) {
-				methodBuffer.append("super." + methodName + "($$);");
+				//methodBuffer.append("super." + methodName + "($$);");
 			} else {
 				if(newCtMethodm.getReturnType() == CtClass.voidType){
 					methodBuffer.append("delegate." + methodName + "($$);");
