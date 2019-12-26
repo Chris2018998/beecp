@@ -2,6 +2,7 @@ package cn.beecp.test.base;
 
 import cn.beecp.BeeDataSource;
 import cn.beecp.BeeDataSourceConfig;
+import cn.beecp.TransactionIsolationLevel;
 import cn.beecp.pool.FastConnectionPool;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
@@ -21,7 +22,7 @@ public class ConnectionResetTest  extends TestCase {
         config.setUsername(Config.JDBC_USER);
         config.setPassword(Config.JDBC_PASSWORD);
         config.setDefaultAutoCommit(false);
-        config.setDefaultTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        config.setDefaultTransactionIsolation(TransactionIsolationLevel.LEVEL_READ_COMMITTED);
         config.setDefaultReadOnly(true);
         config.setDefaultCatalog(catlog);
         config.setDefaultSchema(schema);
