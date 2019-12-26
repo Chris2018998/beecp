@@ -17,7 +17,6 @@ package cn.beecp;
 
 import cn.beecp.pool.JdbcConnectionFactory;
 
-import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -109,8 +108,13 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	/**
 	 * default Transaction Isolation
 	 */
-	private int defaultTransactionIsolation;
-	
+	private String defaultTransactionIsolation;
+
+	/**
+	 * default Transaction Isolation code
+	 */
+	private int defaultTransactionIsolationCode;
+
 	/**
 	 *connection.setCatalog
 	 */
@@ -216,7 +220,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		this.password = password;
 		this.driverClassName = driver;
 		concurrentSize =Runtime.getRuntime().availableProcessors();
-		defaultTransactionIsolation=Connection.TRANSACTION_READ_COMMITTED;
+		defaultTransactionIsolation=TransactionIsolationLevel.LEVEL_READ_COMMITTED;
+		defaultTransactionIsolationCode=TransactionIsolationLevel.CODE_READ_COMMITTED;
 	}
 
 	void setAsChecked() {
@@ -330,13 +335,17 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	public void setDefaultAutoCommit(boolean defaultAutoCommit) {
 		if(!this.checked)this.defaultAutoCommit = defaultAutoCommit;
 	}
-	public int getDefaultTransactionIsolation() {
+	public String getDefaultTransactionIsolation() {
 		return defaultTransactionIsolation;
 	}
-	public void setDefaultTransactionIsolation(int defaultTransactionIsolation) {
-		if(!this.checked && defaultTransactionIsolation>=0)
+	public void setDefaultTransactionIsolation(String defaultTransactionIsolation) {
+		if(!this.checked && !isNullText(defaultTransactionIsolation))
 		this.defaultTransactionIsolation = defaultTransactionIsolation;
 	}
+	public int getDefaultTransactionIsolationCode(){
+		return defaultTransactionIsolationCode;
+	}
+
 	public String getDefaultCatalog() {return defaultCatalog; }
 	public void setDefaultCatalog(String catalog) {
 		if(!isNullText(catalog))
@@ -472,6 +481,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 			config.testOnReturn=this.testOnReturn;
 			config.defaultAutoCommit=this.defaultAutoCommit;
 			config.defaultTransactionIsolation=this.defaultTransactionIsolation;
+			config.defaultTransactionIsolationCode=this.defaultTransactionIsolationCode;
 			config.defaultCatalog=this.defaultCatalog;
 			config.defaultSchema=this.defaultSchema;
 			config.defaultReadOnly=this.defaultReadOnly;
@@ -558,7 +568,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 			throw new IllegalArgumentException("Borrower max wait time must be greater than zero");
 		if (this.preparedStatementCacheSize < 0)
 			throw new IllegalArgumentException("Statement cache size must be greater than zero");
-		
+
+		defaultTransactionIsolationCode=TransactionIsolationLevel.nameToCode(defaultTransactionIsolation);
+		if(defaultTransactionIsolationCode==-999){
+			throw new IllegalArgumentException("Valid transaction isolation level list:"+TransactionIsolationLevel.TRANS_LEVEL_LIST);
+		}
+
 		//fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 begin
 		//if (this.validationQuerySQL != null && validationQuerySQL.trim().length() == 0) {
 		if (!isNullText(this.connectionTestSQL) && !this.connectionTestSQL.trim().toLowerCase().startsWith("select "))

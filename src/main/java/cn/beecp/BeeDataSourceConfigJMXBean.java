@@ -50,7 +50,9 @@ public interface BeeDataSourceConfigJMXBean {
 
 	boolean isDefaultAutoCommit();
 
-	int getDefaultTransactionIsolation();
+	String getDefaultTransactionIsolation();
+
+	int getDefaultTransactionIsolationCode();
 
 	String getDefaultCatalog();
 
