@@ -54,7 +54,6 @@ abstract class ProxyConnectionBase implements Connection{
 		  throw AutoCommitChangeForbiddennException;
 		
 		delegate.setAutoCommit(autoCommit);
-		pConn.updateAccessTime();
 		pConn.setCurAutoCommit(autoCommit);
 		pConn.setChangedInd(PooledConnection.Pos_AutoCommitInd,autoCommit!=pConfig.isDefaultAutoCommit());
 		if(autoCommit)pConn.commitDirtyInd=false;
@@ -62,32 +61,27 @@ abstract class ProxyConnectionBase implements Connection{
 	public void setTransactionIsolation(int level) throws SQLException {
 		checkClose();
 		delegate.setTransactionIsolation(level);
-		pConn.updateAccessTime();
 		pConn.setChangedInd(PooledConnection.Pos_TransactionIsolationInd,level!=pConfig.getDefaultTransactionIsolationCode());
 	}
 	public void setReadOnly(boolean readOnly) throws SQLException {
 		checkClose();
 		delegate.setReadOnly(readOnly);
-		pConn.updateAccessTime();
 		pConn.setChangedInd(PooledConnection.Pos_ReadOnlyInd,readOnly!=pConfig.isDefaultReadOnly());
 	}
 	public void setCatalog(String catalog) throws SQLException {
 		checkClose();
 		delegate.setCatalog(catalog);
-		pConn.updateAccessTime();
 		pConn.setChangedInd(PooledConnection.Pos_CatalogInd,!equalsText(catalog, pConfig.getDefaultCatalog()));
 	}
 	//for JDK1.7 begin
 	public void setSchema(String schema) throws SQLException {
 		checkClose();
 		delegate.setSchema(schema);
-		pConn.updateAccessTime();
 		pConn.setChangedInd(PooledConnection.Pos_SchemaInd,!equalsText(schema,pConfig.getDefaultSchema()));
 	}
 	public void abort(Executor executor) throws SQLException{
 		checkClose();
-		if(executor == null)
-			throw new SQLException("executor can't be null");
+		if(executor == null) throw new SQLException("executor can't be null");
 		executor.execute(new Runnable() {
 			public void run() {
 				try {
@@ -101,7 +95,6 @@ abstract class ProxyConnectionBase implements Connection{
 	public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
 		checkClose();
 		delegate.setNetworkTimeout(executor,milliseconds);
-		pConn.updateAccessTime();
 		pConn.setChangedInd(PooledConnection.Pos_NetworkTimeoutInd,true);
 	}
 	//for JDK1.7 end
@@ -109,16 +102,19 @@ abstract class ProxyConnectionBase implements Connection{
 	public void commit() throws SQLException{
 		checkClose();
 		delegate.commit();
+		pConn.updateAccessTime();
 		pConn.commitDirtyInd=false;
 	}
 	public void rollback() throws SQLException{
 		checkClose();
 		delegate.rollback();
+		pConn.updateAccessTime();
 		pConn.commitDirtyInd=false;
 	}
 	public void rollback(Savepoint savepoint) throws SQLException{
 		checkClose();
 		delegate.rollback(savepoint);
+		pConn.updateAccessTime();
 		pConn.commitDirtyInd=false;
 	}
 	public final boolean isWrapperFor(Class<?> iface) throws SQLException {
