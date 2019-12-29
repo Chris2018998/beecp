@@ -15,16 +15,17 @@
  */
 package cn.beecp.test.base;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-
 import cn.beecp.BeeDataSource;
 import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 import cn.beecp.util.BeecpUtil;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.Random;
 
 public class TransAbandonAfterConnCloseTest extends TestCase {
 	private BeeDataSource ds;
@@ -46,10 +47,12 @@ public class TransAbandonAfterConnCloseTest extends TestCase {
 		PreparedStatement ps1=null;
 		ResultSet re1=null;
 		PreparedStatement ps2=null;
+		String userId= String.valueOf(new Random(Long.MAX_VALUE).nextLong());
+
 		try {
 			con1 = ds.getConnection();
 			con1.setAutoCommit(false);
-			ps1=con1.prepareStatement("select count(*) from "+ Config.TEST_TABLE+" where TEST_ID='user1'");
+			ps1=con1.prepareStatement("select count(*) from "+ Config.TEST_TABLE+" where TEST_ID='"+userId+"'");
 			re1=ps1.executeQuery();
 			if(re1.next()){
 				 int size=re1.getInt(1);
@@ -58,8 +61,8 @@ public class TransAbandonAfterConnCloseTest extends TestCase {
 			}
 			
 			ps2=con1.prepareStatement("insert into "+ Config.TEST_TABLE+"(TEST_ID,TEST_NAME)values(?,?)");
-			ps2.setString(1, "user1");
-			ps2.setString(2, "user1");
+			ps2.setString(1, userId);
+			ps2.setString(2, userId);
 			int rows=ps2.executeUpdate();
 			if (rows !=1)
 				TestUtil.assertError("Failed to insert");
@@ -76,7 +79,7 @@ public class TransAbandonAfterConnCloseTest extends TestCase {
 		
 		try {
 			con2 = ds.getConnection();
-			ps3=con2.prepareStatement("select count(*) from "+ Config.TEST_TABLE+" where TEST_ID='user1'");
+			ps3=con2.prepareStatement("select count(*) from "+ Config.TEST_TABLE+" where TEST_ID='"+userId+"'");
 			re3=ps3.executeQuery();
 			if(re3.next()){
 				 int size=re3.getInt(1);

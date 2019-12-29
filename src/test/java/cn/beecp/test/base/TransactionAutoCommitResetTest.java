@@ -15,11 +15,6 @@
  */
 package cn.beecp.test.base;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import cn.beecp.BeeDataSource;
 import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.test.Config;
@@ -27,7 +22,11 @@ import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 import cn.beecp.util.BeecpUtil;
 
-import cn.beecp.test.TestCase;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Random;
 
 public class TransactionAutoCommitResetTest extends TestCase {
     private BeeDataSource ds;
@@ -52,7 +51,8 @@ public class TransactionAutoCommitResetTest extends TestCase {
         ResultSet re1 = null;
         try {
             con1 = ds.getConnection();
-            ps1 = con1.prepareStatement("select count(*) from " + Config.TEST_TABLE + " where TEST_ID='user1'");
+            String userId= String.valueOf(new Random(Long.MAX_VALUE).nextLong());
+            ps1 = con1.prepareStatement("select count(*) from " + Config.TEST_TABLE + " where TEST_ID='"+userId+"'");
             re1 = ps1.executeQuery();
             try{
                 con1.setAutoCommit(true);
