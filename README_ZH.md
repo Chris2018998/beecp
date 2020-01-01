@@ -164,8 +164,3 @@ Bee_C(5.3623) > Bee_F(6.8492) > HikariCP(9.0176)
 <img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191221_I3_7100_HikariCP_Bech_Pict.png">20191221_I3_7100_HikariCP_Bech_Pict.png</img>
 
 Download <a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
-
-
-八：后记
----
-该作品对个人而言，是一件学习品，由于个人能力，精力有限，项目可能还会存在一些不足，希望有兴趣的朋友可以帮忙一起完善它，宣传它。
