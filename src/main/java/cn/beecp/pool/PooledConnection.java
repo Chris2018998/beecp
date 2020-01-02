@@ -21,10 +21,8 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 
 import static cn.beecp.pool.PoolObjectsState.CONNECTION_IDLE;
-import static cn.beecp.util.BeecpUtil.isNullText;
 import static cn.beecp.util.BeecpUtil.oclose;
 import static java.lang.System.currentTimeMillis;
 
@@ -71,35 +69,9 @@ final class PooledConnection{
 		if (stmCacheIsValid = pConfig.getPreparedStatementCacheSize() > 0) {
 			stmCache = new StatementCache(pConfig.getPreparedStatementCacheSize());
 		}
-		setDefaultOnRawConn();
-	}
-	private void setDefaultOnRawConn()throws SQLException{
-		rawConn.setAutoCommit(pConfig.isDefaultAutoCommit());
-		rawConn.setTransactionIsolation(pConfig.getDefaultTransactionIsolationCode());
-		rawConn.setReadOnly(pConfig.isDefaultReadOnly());
-		if(!isNullText(pConfig.getDefaultCatalog()))
-			rawConn.setCatalog(pConfig.getDefaultCatalog());
-		//for JDK1.7 begin
-		if(!isNullText(pConfig.getDefaultSchema()))
-			rawConn.setSchema(pConfig.getDefaultSchema());
-		try {
-			if(pool.isSupportNetworkTimeout()){
-				int networkTimeout=rawConn.getNetworkTimeout();
-				if(networkTimeout<=0) {
-					pool.setSupportNetworkTimeout(false);
-					log.warn("Driver not support networkTimeout");
-				}else {
-					pool.setNetworkTimeout(networkTimeout);
-					rawConn.setNetworkTimeout(pool.getNetworkTimeoutExecutor(),networkTimeout);
-				}
-			}
-		}catch(SQLFeatureNotSupportedException e){
-			log.warn("Driver not support networkTimeout");
-			pool.setSupportNetworkTimeout(false);
-		}
-		//for JDK1.7 end
 		updateAccessTime();
 	}
+
 	public boolean equals(Object obj) {
 		return this==obj;
 	}
@@ -141,6 +113,16 @@ final class PooledConnection{
     	changedBitVal^=(changedBitVal&(1<<pos))^((changed?1:0)<<pos);
 		updateAccessTime();
     }
+
+	public boolean isSupportSchema() {
+		return pool.isSupportSchema();
+	}
+	public boolean isSupportIsValid() {
+		return pool.isSupportIsValid();
+	}
+	public boolean isSupportNetworkTimeout() {
+		return  pool.isSupportNetworkTimeout();
+	}
 	//reset connection on return to pool
 	private void resetRawConnOnReturn() {
 		if (!curAutoCommit&&commitDirtyInd){//Roll back when commit dirty
@@ -203,8 +185,10 @@ final class PooledConnection{
 			//for JDK1.7 begin
 			if (changedInds[4]) {//reset shema
 				try {
-					rawConn.setSchema(pConfig.getDefaultSchema());
-					updateAccessTime();
+					if(isSupportSchema()) {
+						rawConn.setSchema(pConfig.getDefaultSchema());
+						updateAccessTime();
+					}
 				} catch (SQLException e) {
 					log.error("Failed to reset schema to:{}",pConfig.getDefaultSchema(),e);
 				}finally{
@@ -214,8 +198,8 @@ final class PooledConnection{
 
 			if (changedInds[5]) {//reset networkTimeout
 				try {
-					if(pool.isSupportNetworkTimeout()) {
-						rawConn.setNetworkTimeout(pool.getNetworkTimeoutExecutor(),pool.getNetworkTimeout());
+					if(isSupportNetworkTimeout()) {
+						rawConn.setNetworkTimeout(pool.getNetworkTimeoutExecutor(), pool.getNetworkTimeout());
 						updateAccessTime();
 					}
 				} catch (SQLException e) {

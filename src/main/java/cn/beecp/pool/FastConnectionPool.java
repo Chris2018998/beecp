@@ -81,7 +81,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	});
 
 	private int networkTimeout;
+	private boolean supportSchema=true;
+	private boolean supportIsValid=true;
 	private boolean supportNetworkTimeout=true;
+	private boolean supportSchemaTested=false;
+	private boolean supportIsValidTested=false;
+	private boolean supportNetworkTimeoutTested=false;
 	private ThreadPoolExecutor networkTimeoutExecutor = new ThreadPoolExecutor(0,10,15,SECONDS, new SynchronousQueue<Runnable>(),new ThreadFactory() {
 		public Thread newThread(Runnable r) {
 			Thread timeoutThread = new Thread(r);
@@ -129,11 +134,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			AutoCommit=poolConfig.isDefaultAutoCommit();
 			ConnectionTestSQL = poolConfig.getConnectionTestSQL();
 			ConnectionTestTimeout = poolConfig.getConnectionTestTimeout();
-			if(isNullText(ConnectionTestSQL)){
-				testPolicy=new ConnValidTestPolicy();
-			}else{
-				testPolicy=new SQLQueryTestPolicy();
-			}
+			this.testPolicy= new SQLQueryTestPolicy();
+			if(isNullText(ConnectionTestSQL))
+				ConnectionTestSQL="select * from dual";
 
 			DefaultMaxWaitMills = poolConfig.getMaxWait();
 			ValidationIntervalMills = poolConfig.getConnectionTestInterval();
@@ -200,6 +203,25 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		}
 	}
 
+	public boolean isSupportSchema() {
+		return supportSchema;
+	}
+	public boolean isSupportIsValid() {
+		return supportIsValid;
+	}
+	public boolean isSupportNetworkTimeout() {
+		return supportNetworkTimeout;
+	}
+	public int getNetworkTimeout() {
+		return networkTimeout;
+	}
+	public ThreadPoolExecutor getNetworkTimeoutExecutor() {
+		return networkTimeoutExecutor;
+	}
+	private boolean existBorrower() {
+		return poolConfig.getConcurrentSize()>poolSemaphore.availablePermits()||poolSemaphore.hasQueuedThreads();
+	}
+	//create Pooled Conn
 	private PooledConnection createPooledConn(int connState) throws SQLException {
 		synchronized(connArraySyn) {
 			int oldLen = connArray.length;
@@ -208,6 +230,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				PooledConnection pConn;
 				try {
 					con = connFactory.create();
+					setDefaultOnRawConn(con);
 					pConn = new PooledConnection(con, this, poolConfig, connState);// add
 				} catch (SQLException e) {
 					oclose(con);
@@ -225,6 +248,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			}
 		}
 	}
+	//remove Pooled Conn
 	private void removePooledConn(PooledConnection pConn,String removeType) {
 		synchronized(connArraySyn) {
 			pConn.closeRawConn();
@@ -243,24 +267,59 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			log.debug("Removed {}pooledConn:{}",removeType,pConn);
 		}
 	}
+	//set default attribute on raw connection
+	private void setDefaultOnRawConn(Connection rawConn )throws SQLException{
+		rawConn.setAutoCommit(poolConfig.isDefaultAutoCommit());
+		rawConn.setTransactionIsolation(poolConfig.getDefaultTransactionIsolationCode());
+		rawConn.setReadOnly(poolConfig.isDefaultReadOnly());
+		if(!isNullText(poolConfig.getDefaultCatalog()))
+			rawConn.setCatalog(poolConfig.getDefaultCatalog());
 
-	public int getNetworkTimeout() {
-		return networkTimeout;
-	}
-	public void setNetworkTimeout(int networkTimeout) {
-		this.networkTimeout = networkTimeout;
-	}
-	public boolean isSupportNetworkTimeout() {
-		return supportNetworkTimeout;
-	}
-	public void setSupportNetworkTimeout(boolean supportNetworkTimeout) {
-		this.supportNetworkTimeout = supportNetworkTimeout;
-	}
-	public ThreadPoolExecutor getNetworkTimeoutExecutor() {
-		return networkTimeoutExecutor;
-	}
-	private boolean existBorrower() {
-		return poolConfig.getConcurrentSize()>poolSemaphore.availablePermits()||poolSemaphore.hasQueuedThreads();
+		//for JDK1.7 begin
+		if(supportSchema){//test default schema
+			try{
+				if(!isNullText(poolConfig.getDefaultSchema()))
+				 	rawConn.setSchema(poolConfig.getDefaultSchema());
+				else if(!supportSchemaTested) {
+					rawConn.getSchema();
+				}
+			}catch(Throwable e) {
+				supportSchema=false;
+				log.warn("Driver not support 'schema'",e);
+			}finally{
+				supportSchemaTested =true;
+			}
+		}
+
+		if(supportNetworkTimeout){//need test
+			try {//set networkTimeout
+				this.networkTimeout=rawConn.getNetworkTimeout();
+				if(networkTimeout<=0) {
+					supportNetworkTimeout=false;
+					log.warn("Driver not support 'networkTimeout'");
+				}else{
+					rawConn.setNetworkTimeout(this.getNetworkTimeoutExecutor(),networkTimeout);
+				}
+			}catch(Throwable e) {
+				supportNetworkTimeout=false;
+				log.warn("Driver not support 'networkTimeout'",e);
+			}finally{
+				supportNetworkTimeoutTested=true;
+			}
+		}
+
+		if (!this.supportIsValidTested) {//need test
+			try {//test Connection.isValid
+				rawConn.isValid(1);
+				this.testPolicy = new ConnValidTestPolicy();
+			} catch (Throwable e) {
+				this.supportIsValid = false;
+				log.warn("Driver not support 'isValid'", e);
+			} finally {
+				supportIsValidTested = true;
+			}
+		}
+		//for JDK1.7 end
 	}
 
 	/**

@@ -73,11 +73,23 @@ abstract class ProxyConnectionBase implements Connection{
 		delegate.setCatalog(catalog);
 		pConn.setChangedInd(PooledConnection.Pos_CatalogInd,!equalsText(catalog, pConfig.getDefaultCatalog()));
 	}
+	public boolean isValid(int timeout) throws SQLException {
+		checkClose();
+		if (pConn.isSupportSchema()){
+			return delegate.isValid(timeout);
+		}else{
+			throw PoolExceptionList.FeatureNotSupportedException;
+		}
+	}
 	//for JDK1.7 begin
 	public void setSchema(String schema) throws SQLException {
 		checkClose();
-		delegate.setSchema(schema);
-		pConn.setChangedInd(PooledConnection.Pos_SchemaInd,!equalsText(schema,pConfig.getDefaultSchema()));
+		if (pConn.isSupportSchema()){
+			delegate.setSchema(schema);
+			pConn.setChangedInd(PooledConnection.Pos_SchemaInd, !equalsText(schema, pConfig.getDefaultSchema()));
+		}else{
+			throw PoolExceptionList.FeatureNotSupportedException;
+		}
 	}
 	public void abort(Executor executor) throws SQLException{
 		checkClose();
@@ -92,10 +104,22 @@ abstract class ProxyConnectionBase implements Connection{
 			}
 		});
 	}
+	public int getNetworkTimeout() throws SQLException{
+		checkClose();
+		if (pConn.isSupportNetworkTimeout()) {
+			return 	delegate.getNetworkTimeout();
+		}else{
+			throw PoolExceptionList.FeatureNotSupportedException;
+		}
+	}
 	public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
 		checkClose();
-		delegate.setNetworkTimeout(executor,milliseconds);
-		pConn.setChangedInd(PooledConnection.Pos_NetworkTimeoutInd,true);
+		if (pConn.isSupportNetworkTimeout()) {
+			delegate.setNetworkTimeout(executor, milliseconds);
+			pConn.setChangedInd(PooledConnection.Pos_NetworkTimeoutInd, true);
+		}else{
+			throw PoolExceptionList.FeatureNotSupportedException;
+		}
 	}
 	//for JDK1.7 end
 

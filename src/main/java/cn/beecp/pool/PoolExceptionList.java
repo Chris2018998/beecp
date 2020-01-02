@@ -39,7 +39,9 @@ final class PoolExceptionList {
 	static final SQLException StatementClosedException = new SQLException("Statement has been closed");
 	
 	static final SQLException ResultSetClosedException = new SQLException("ResultSet has been closed");
-	
+
+	static final SQLException FeatureNotSupportedException = new SQLException("Feature not supported");
+
 	static final SQLException AutoCommitChangeForbiddennException = new SQLException("Execute 'commit' or 'rollback' before this operation");
 
 }	
