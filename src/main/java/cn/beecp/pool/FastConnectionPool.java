@@ -84,6 +84,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private boolean supportSchema=true;
 	private boolean supportIsValid=true;
 	private boolean supportNetworkTimeout=true;
+	private boolean supportQueryTimeout=true;
 	private boolean supportSchemaTested=false;
 	private boolean supportIsValidTested=false;
 	private boolean supportNetworkTimeoutTested=false;
@@ -315,6 +316,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			} catch (Throwable e) {
 				this.supportIsValid = false;
 				log.warn("Driver not support 'isValid'", e);
+				Statement st=null;
+				try {
+					st=rawConn.createStatement();
+					st.setQueryTimeout(ConnectionTestTimeout);
+				}catch(Throwable ee){
+					supportQueryTimeout=false;
+					log.error("Driver not support 'queryTimeout'",e);
+				}finally{
+					oclose(st);
+				}
 			} finally {
 				supportIsValidTested = true;
 			}
@@ -794,16 +805,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	// SQL check Policy
 	class SQLQueryTestPolicy implements ConnectionTestPolicy {
 		public boolean isActive(PooledConnection pConn){
-			boolean timeoutSetted=false;
 			boolean autoCommitChged=false;
 			Statement st = null;
 			Connection con = pConn.rawConn;
 			try {
-				if(supportNetworkTimeout) {
-					con.setNetworkTimeout(networkTimeoutExecutor,ConnectionTestTimeout);
-					timeoutSetted = true;
-				}
-
 				//may be a store procedure or a function in this test sql,so need rollback finally
 				//for example: select xxx() from dual
 				if(AutoCommit){
@@ -813,21 +818,20 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 				st = con.createStatement();
 				pConn.updateAccessTime();
-				st.setQueryTimeout(ConnectionTestTimeout);
+				if(supportQueryTimeout){
+					try {
+						st.setQueryTimeout(ConnectionTestTimeout);
+					}catch(Throwable e){
+						log.error("Failed to setQueryTimeout",e);
+					}
+				}
+
 				st.execute(ConnectionTestSQL);
 				return true;
 			} catch (SQLException e) {
 				log.error("Failed to test connection",e);
 				return false;
 			} finally {
-				if(supportNetworkTimeout && timeoutSetted) {//reset
-					try {
-						con.setNetworkTimeout(networkTimeoutExecutor, networkTimeout);
-					} catch (SQLException e) {
-						log.error("Failed to reset networkTimeout after connection test",e);
-					}
-				}
-
 				try {
 					con.rollback();
 					if(AutoCommit&&autoCommitChged)
@@ -842,27 +846,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	//check Policy(call connection.isValid)
 	class ConnValidTestPolicy implements ConnectionTestPolicy {
 		public boolean isActive(PooledConnection pConn) {
-			boolean timeoutSetted = false;
 			Connection con = pConn.rawConn;
 			try {
-				if (supportNetworkTimeout) {
-					con.setNetworkTimeout(networkTimeoutExecutor,ConnectionTestTimeout);
-					timeoutSetted = true;
-				}
 				boolean checkPass=con.isValid(ConnectionTestTimeout);
 				pConn.updateAccessTime();
 				return checkPass;
 			} catch (SQLException e) {
 				log.error("Failed to test connection",e);
 				return false;
-			} finally {
-				if(supportNetworkTimeout && timeoutSetted) {//reset
-					try {
-						con.setNetworkTimeout(networkTimeoutExecutor, networkTimeout);
-					} catch (SQLException e) {
-						log.error("Failed to reset networkTimeout after connection test",e);
-					}
-				}
 			}
 		}
 	}
