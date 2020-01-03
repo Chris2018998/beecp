@@ -557,11 +557,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		if (this.initialSize < 0)
 			throw new IllegalArgumentException("Pool init size must be greater than zero");
 		if (this.initialSize > maxActive)
-			throw new IllegalArgumentException("Error configeruation,pool initiation size must be less than pool max size");
+			throw new IllegalArgumentException("Pool initiation size must be less than pool max size");
 		if (this.concurrentSize <=0)
-			throw new IllegalArgumentException("Error configeruation,pool concurrent size must be greater than zero");
+			throw new IllegalArgumentException("Pool concurrent size must be greater than zero");
 		if (this.concurrentSize > maxActive)
-			throw new IllegalArgumentException("Error configeruation,pool concurrent size must be less than pool max size");
+			throw new IllegalArgumentException("Pool concurrent size must be less than pool max size");
 		if (this.idleTimeout <= 0)
 			throw new IllegalArgumentException("Connection max idle time must be greater than zero");
 		if (this.maxWait <= 0)
