@@ -15,25 +15,23 @@
  */
 package cn.beecp.pool;
 
-import static cn.beecp.pool.PoolExceptionList.RequestInterruptException;
-import static cn.beecp.pool.PoolExceptionList.RequestTimeoutException;
-import static cn.beecp.util.BeecpUtil.isNullText;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import cn.beecp.BeeDataSourceConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import cn.beecp.BeeDataSourceConfig;
+import static cn.beecp.pool.PoolExceptionList.RequestInterruptException;
+import static cn.beecp.pool.PoolExceptionList.RequestTimeoutException;
+import static cn.beecp.util.BeecpUtil.isNullText;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 /**
  * JDBC Connection Pool Implementation,which
@@ -47,9 +45,9 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 	private Semaphore poolSemaphore;
 	private long DefaultMaxWaitMills;
 	private BeeDataSourceConfig poolConfig;
-	private Logger log = LoggerFactory.getLogger(this.getClass());
 	private String poolName;
-	private final static AtomicInteger PoolNameIndex = new AtomicInteger(1);
+	private static Logger log = LoggerFactory.getLogger(RawConnectionPool.class);
+	private static AtomicInteger PoolNameIndex = new AtomicInteger(1);
 
 	/**
 	 * initialize pool with configuration

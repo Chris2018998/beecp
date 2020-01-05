@@ -44,7 +44,7 @@ final class PooledConnection{
 	boolean commitDirtyInd;
 	boolean curAutoCommit;
 	private FastConnectionPool pool;
-	private Logger log = LoggerFactory.getLogger(this.getClass());
+	private static Logger log = LoggerFactory.getLogger(PooledConnection.class);
 	
 	//changed indicator
 	private boolean[] changedInds=new boolean[6]; //0:autoCommit,1:transactionIsolation,2:readOnly,3:catalog,4:schema,5:networkTimeout

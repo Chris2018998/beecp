@@ -99,8 +99,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 	private String poolName;
 	private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
-	private Logger log = LoggerFactory.getLogger(this.getClass());
 
+	private static Logger log = LoggerFactory.getLogger(FastConnectionPool.class);
 	private static AtomicInteger PoolNameIndex = new AtomicInteger(1);
 	private static final int MaxTimedSpins = (Runtime.getRuntime().availableProcessors() < 2) ? 0 : 32;
 	private static final AtomicIntegerFieldUpdater<PooledConnection> ConnStateUpdater = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class, "state");
