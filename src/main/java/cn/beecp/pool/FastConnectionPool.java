@@ -28,6 +28,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
@@ -65,7 +66,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private TransferPolicy tansferPolicy;
 	private ConnectionTestPolicy testPolicy;
 	private ConnectionFactory connFactory;
-	private final Object connArraySyn=new Object();
+	private ReentrantLock connLock=new ReentrantLock();
 	private volatile PooledConnection[] connArray = new PooledConnection[0];
 	private AtomicInteger createConnThreadState = new AtomicInteger(THREAD_WORKING);
 	private ConcurrentLinkedQueue<Borrower> waitTransferQueue = new ConcurrentLinkedQueue<>();
@@ -223,9 +224,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 	//create Pooled Conn
 	private PooledConnection createPooledConn(int connState) throws SQLException {
-		synchronized(connArraySyn) {
-			int oldLen = connArray.length;
-			if (oldLen < PoolMaxSize) {
+		 try {
+			 connLock.lock();
+			 int oldLen = connArray.length;
+			 if (oldLen < PoolMaxSize) {
 				Connection con=null;
 				PooledConnection pConn;
 				try {
@@ -246,11 +248,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			}else{
 				return null;
 			}
-		}
+		 }finally{
+			 connLock.unlock();
+		 }
 	}
 	//remove Pooled Conn
 	private void removePooledConn(PooledConnection pConn,String removeType) {
-		synchronized(connArraySyn) {
+		try {
+			connLock.lock();
 			pConn.closeRawConn();
 			int oldLen = connArray.length;
 			PooledConnection[] arrayNew = new PooledConnection[oldLen - 1];
@@ -265,6 +270,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 			connArray = arrayNew;
 			log.debug("BeeCP({})removed {}pooledConn:{}",poolName,removeType,pConn);
+		}finally{
+			connLock.unlock();
 		}
 	}
 	//set default attribute on raw connection
@@ -279,13 +286,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		if(supportSchema){//test schema
 			try{
 				if(!isNullText(poolConfig.getDefaultSchema()))
-				 	rawConn.setSchema(poolConfig.getDefaultSchema());
+					rawConn.setSchema(poolConfig.getDefaultSchema());
 				else if(!supportSchemaTested) {
 					rawConn.getSchema();
 				}
 			}catch(Throwable e) {
 				supportSchema=false;
-				log.warn("BeeCP({})driver not support 'schema'",poolName,e);
+				log.warn("BeeCP({})driver not support 'schema'",poolName);
 			}finally{
 				supportSchemaTested=true;
 			}
@@ -302,7 +309,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				}
 			}catch(Throwable e) {
 				supportNetworkTimeout=false;
-				log.warn("BeeCP({})driver not support 'networkTimeout'",poolName,e);
+				log.warn("BeeCP({})driver not support 'networkTimeout'",poolName);
 			}
 		}
 
@@ -312,14 +319,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				this.testPolicy = new ConnValidTestPolicy();
 			} catch (Throwable e) {
 				this.supportIsValid = false;
-				log.warn("BeeCP({})driver not support 'isValid'",poolName,e);
+				log.warn("BeeCP({})driver not support 'isValid'",poolName);
 				Statement st=null;
 				try {
 					st=rawConn.createStatement();
 					st.setQueryTimeout(ConnectionTestTimeout);
 				}catch(Throwable ee){
 					supportQueryTimeout=false;
-					log.error("BeeCP({})driver not support 'queryTimeout'",poolName,e);
+					log.error("BeeCP({})driver not support 'queryTimeout'",poolName);
 				}finally{
 					oclose(st);
 				}
