@@ -71,10 +71,8 @@ final class PooledConnection{
 		}
 		updateAccessTime();
 	}
-
-	public boolean equals(Object obj) {
-		return this==obj;
-	}
+	public String toString() { return rawConn.toString();}
+	public boolean equals(Object obj) { return this==obj;}
 	//called for pool
 	void closeRawConn() {
 		if(proxyConn!=null){

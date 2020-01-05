@@ -52,11 +52,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private boolean AutoCommit;
 	private boolean TestOnBorrow;
 	private boolean TestOnReturn;
-	private long DefaultMaxWaitMills;
-	private long ValidationIntervalMills;
+	private long DefaultMaxWaitMills;//milliseconds
 	private int ConUnCatchStateCode;
 	private String ConnectionTestSQL;//select
 	private int ConnectionTestTimeout;//seconds
+	private long ConnectionTestInterval;//milliseconds
 
 	private ConnectionPoolHook exitHook;
 	private BeeDataSourceConfig poolConfig;
@@ -139,7 +139,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				ConnectionTestSQL="select 1 from dual";
 
 			DefaultMaxWaitMills = poolConfig.getMaxWait();
-			ValidationIntervalMills = poolConfig.getConnectionTestInterval();
+			ConnectionTestInterval = poolConfig.getConnectionTestInterval();
 			TestOnBorrow = poolConfig.isTestOnBorrow();
 			TestOnReturn = poolConfig.isTestOnReturn();
 			connFactory=poolConfig.getConnectionFactory();
@@ -291,7 +291,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			}
 		}
 
-		if(supportNetworkTimeout){//need test
+		if(supportNetworkTimeout){//test networkTimeout
 			try {//set networkTimeout
 				this.networkTimeout=rawConn.getNetworkTimeout();
 				if(networkTimeout<=0) {
@@ -351,10 +351,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 
 	private boolean testOnBorrow(PooledConnection pConn) {
-		return !TestOnBorrow || (currentTimeMillis() - pConn.lastAccessTime - ValidationIntervalMills<0) || isActiveConn(pConn);
+		return !TestOnBorrow || (currentTimeMillis() - pConn.lastAccessTime - ConnectionTestInterval <0) || isActiveConn(pConn);
 	}
 	private boolean testOnReturn(PooledConnection pConn) {
-		return !TestOnReturn || (currentTimeMillis() - pConn.lastAccessTime - ValidationIntervalMills<0) || isActiveConn(pConn);
+		return !TestOnReturn || (currentTimeMillis() - pConn.lastAccessTime - ConnectionTestInterval <0) || isActiveConn(pConn);
 	}
 
 	/**
