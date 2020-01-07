@@ -28,7 +28,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.*;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
@@ -66,7 +65,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private TransferPolicy tansferPolicy;
 	private ConnectionTestPolicy testPolicy;
 	private ConnectionFactory connFactory;
-	private ReentrantLock connLock=new ReentrantLock();
+	private Object connArrayLock =new Object();
 	private volatile PooledConnection[] connArray = new PooledConnection[0];
 	private AtomicInteger createConnThreadState = new AtomicInteger(THREAD_WORKING);
 	private ConcurrentLinkedQueue<Borrower> waitTransferQueue = new ConcurrentLinkedQueue<>();
@@ -86,7 +85,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private boolean supportIsValid=true;
 	private boolean supportNetworkTimeout=true;
 	private boolean supportQueryTimeout=true;
-	private boolean supportSchemaTested=false;
 	private boolean supportIsValidTested=false;
 	private ThreadPoolExecutor networkTimeoutExecutor = new ThreadPoolExecutor(0,10,15,SECONDS, new SynchronousQueue<Runnable>(),new ThreadFactory() {
 		public Thread newThread(Runnable r) {
@@ -224,8 +222,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 	//create Pooled Conn
 	private PooledConnection createPooledConn(int connState) throws SQLException {
-		 try {
-			 connLock.lock();
+		synchronized (connArrayLock) {
 			 int oldLen = connArray.length;
 			 if (oldLen < PoolMaxSize) {
 				Connection con=null;
@@ -248,14 +245,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			}else{
 				return null;
 			}
-		 }finally{
-			 connLock.unlock();
 		 }
 	}
 	//remove Pooled Conn
 	private void removePooledConn(PooledConnection pConn,String removeType) {
-		try {
-			connLock.lock();
+		synchronized (connArrayLock) {
 			pConn.closeRawConn();
 			int oldLen = connArray.length;
 			PooledConnection[] arrayNew = new PooledConnection[oldLen - 1];
@@ -270,8 +264,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 			connArray = arrayNew;
 			log.debug("BeeCP({})removed {}pooledConn:{}",poolName,removeType,pConn);
-		}finally{
-			connLock.unlock();
 		}
 	}
 	//set default attribute on raw connection
@@ -283,18 +275,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			rawConn.setCatalog(poolConfig.getDefaultCatalog());
 
 		//for JDK1.7 begin
-		if(supportSchema){//test schema
+		if(supportSchema&&!isNullText(poolConfig.getDefaultSchema())){//test schema
 			try{
-				if(!isNullText(poolConfig.getDefaultSchema()))
-					rawConn.setSchema(poolConfig.getDefaultSchema());
-				else if(!supportSchemaTested) {
-					rawConn.getSchema();
-				}
+				rawConn.setSchema(poolConfig.getDefaultSchema());
 			}catch(Throwable e) {
 				supportSchema=false;
 				log.warn("BeeCP({})driver not support 'schema'",poolName);
-			}finally{
-				supportSchemaTested=true;
 			}
 		}
 
