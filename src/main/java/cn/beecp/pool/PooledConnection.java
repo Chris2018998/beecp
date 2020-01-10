@@ -87,7 +87,7 @@ final class PooledConnection{
 	}
 
 	//***************called fow raw conn proxy ********//
-	final void returnToPoolBySelf(){
+	void returnToPoolBySelf(){
 		proxyConn.setAsClosed();
 		proxyConn=null;
 		resetRawConnOnReturn();
@@ -96,10 +96,10 @@ final class PooledConnection{
 	void setCurAutoCommit(boolean curAutoCommit) {
 		this.curAutoCommit = curAutoCommit;
 	}
-	final void updateAccessTime() {
+	void updateAccessTime() {
 		lastAccessTime = currentTimeMillis();
 	}
-	final void updateAccessTimeWithCommitDirty() {
+	void updateAccessTimeWithCommitDirty() {
 		commitDirtyInd=!curAutoCommit;
 		lastAccessTime=currentTimeMillis();
 	}

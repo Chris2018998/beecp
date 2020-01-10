@@ -406,14 +406,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				threadLocal.set(new WeakReference<>(borrower));
 			} else {
 				borrower.hasHoldNewOne = false;
-				if(tansferPolicy.allowBeforeSemaphore()){
-					PooledConnection pConn = borrower.lastUsedConn;
-					if (pConn != null && ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
-						if (testOnBorrow(pConn))
-							return createProxyConnection(pConn, borrower);
-						else
-							borrower.lastUsedConn = null;
-					}
+				PooledConnection pConn = borrower.lastUsedConn;
+				if (pConn != null && ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
+					if (testOnBorrow(pConn))
+						return createProxyConnection(pConn, borrower);
+					else
+						borrower.lastUsedConn = null;
 				}
 			}
 
@@ -449,8 +447,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 	// take one PooledConnection
 	private Connection takeOneConnection(long deadline, Borrower borrower) throws SQLException {
-		final PooledConnection[] connArray=this.connArray;
-		for (PooledConnection pConn : connArray) {
+		for (PooledConnection pConn : this.connArray) {
 			if (ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn)) {
 				return createProxyConnection(pConn, borrower);
 			}
@@ -583,14 +580,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private void closeIdleTimeoutConnection() {
 		if (poolState.get() == POOL_NORMAL) {
 			for (PooledConnection pConn : connArray) {
-				final int state = ConnStateUpdater.get(pConn);
+				int state = ConnStateUpdater.get(pConn);
 				if (state == CONNECTION_IDLE && !existBorrower()) {
-					final boolean isTimeoutInIdle =((currentTimeMillis()-pConn.lastAccessTime-poolConfig.getIdleTimeout()>=0));
+					boolean isTimeoutInIdle =((currentTimeMillis()-pConn.lastAccessTime-poolConfig.getIdleTimeout()>=0));
 					if(isTimeoutInIdle && ConnStateUpdater.compareAndSet(pConn,state,CONNECTION_CLOSED)) {//need close idle
 						removePooledConn(pConn,DESC_REMOVE_IDLE);
 					}
 				} else if (state == CONNECTION_USING) {
-					final boolean isHolTimeoutInNotUsing=((currentTimeMillis()-pConn.lastAccessTime-poolConfig.getHoldIdleTimeout()>=0));
+					boolean isHolTimeoutInNotUsing=((currentTimeMillis()-pConn.lastAccessTime-poolConfig.getHoldIdleTimeout()>=0));
 					if(isHolTimeoutInNotUsing && ConnStateUpdater.compareAndSet(pConn,state,CONNECTION_CLOSED)) {
 						removePooledConn(pConn,DESC_REMOVE_HOLDTIMEOUT);
 					}
@@ -726,8 +723,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 	public int getConnIdleSize(){
 		int idleConnections=0;
-		final PooledConnection[] connArray = this.connArray;
-		for (PooledConnection pConn:connArray) {
+		for (PooledConnection pConn:this.connArray) {
 			if(ConnStateUpdater.get(pConn) == CONNECTION_IDLE)
 				idleConnections++;
 		}
@@ -749,14 +745,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	// register JMX
 	private void registerJMX() {
 		if (poolConfig.isEnableJMX()) {
-			final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+			MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
 			registerJMXBean(mBeanServer,String.format("cn.beecp.pool.FastConnectionPool:type=BeeCP(%s)",poolName),this);
 			registerJMXBean(mBeanServer,String.format("cn.beecp.BeeDataSourceConfig:type=BeeCP(%s)-config",poolName),poolConfig);
 		}
 	}
 	private void registerJMXBean(MBeanServer mBeanServer,String regName,Object bean) {
 		try {
-			final ObjectName jmxRegName = new ObjectName(regName);
+			ObjectName jmxRegName = new ObjectName(regName);
 			if(!mBeanServer.isRegistered(jmxRegName)) {
 				mBeanServer.registerMBean(bean,jmxRegName);
 			}
@@ -767,14 +763,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	// unregister JMX
 	private void unregisterJMX() {
 		if (poolConfig.isEnableJMX()) {
-			final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+			MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
 			unregisterJMXBean(mBeanServer,String.format("cn.beecp.pool.FastConnectionPool:type=BeeCP(%s)",poolName));
 			unregisterJMXBean(mBeanServer,String.format("cn.beecp.BeeDataSourceConfig:type=BeeCP(%s)-config",poolName));
 		}
 	}
 	private void unregisterJMXBean(MBeanServer mBeanServer,String regName) {
 		try {
-			final ObjectName jmxRegName = new ObjectName(regName);
+			ObjectName jmxRegName = new ObjectName(regName);
 			if(mBeanServer.isRegistered(jmxRegName)) {
 				mBeanServer.unregisterMBean(jmxRegName);
 			}
@@ -847,33 +843,30 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	// Transfer Policy
 	interface TransferPolicy {
 		int getCheckStateCode();
-		boolean allowBeforeSemaphore();
 		boolean tryCatch(PooledConnection pConn);
 		void onFailTransfer(PooledConnection pConn);
 		void beforeTransfer(PooledConnection pConn);
 	}
 	final class CompeteTransferPolicy implements TransferPolicy {
-		public final int getCheckStateCode() {
+		public int getCheckStateCode() {
 			return CONNECTION_IDLE;
 		}
-		public final boolean allowBeforeSemaphore(){return true; }
-		public final boolean tryCatch(PooledConnection pConn) {
+		public boolean tryCatch(PooledConnection pConn) {
 			return ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING);
 		}
-		public final void onFailTransfer(PooledConnection pConn) { }
-		public final void beforeTransfer(PooledConnection pConn) {
+		public void onFailTransfer(PooledConnection pConn) { }
+		public void beforeTransfer(PooledConnection pConn) {
 			ConnStateUpdater.set(pConn, CONNECTION_IDLE);
 		}
 	}
 	final class FairTransferPolicy implements TransferPolicy {
-		public final int getCheckStateCode() {return CONNECTION_USING; }
-		public final boolean allowBeforeSemaphore(){ return poolSemaphore.availablePermits()>0;}
-		public final boolean tryCatch(PooledConnection pConn) {
+		public int getCheckStateCode() {return CONNECTION_USING; }
+		public boolean tryCatch(PooledConnection pConn) {
 			return ConnStateUpdater.get(pConn) == CONNECTION_USING;
 		}
-		public final void onFailTransfer(PooledConnection pConn) {
+		public void onFailTransfer(PooledConnection pConn) {
 			ConnStateUpdater.set(pConn, CONNECTION_IDLE);
 		}
-		public final void beforeTransfer(PooledConnection pConn) { }
+		public void beforeTransfer(PooledConnection pConn) { }
 	}
 }

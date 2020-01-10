@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 package cn.beecp.pool;
-import static cn.beecp.util.BeecpUtil.oclose;
-
 import java.sql.PreparedStatement;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import static cn.beecp.util.BeecpUtil.oclose;
 
 /**
  * Statement cache
@@ -139,7 +139,6 @@ final class PsCacheKey{
 	private int resultSetType=0; 
 	private int resultSetConcurrency=0;
 	private int resultSetHoldability=0;
-	
 
 	private final static int prime=31;
 	private final static int TYPE1=11*prime;

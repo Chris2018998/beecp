@@ -42,12 +42,12 @@ abstract class ProxyDatabaseMetaDataBase implements DatabaseMetaData {
 	protected void checkClose() throws SQLException {
 		proxyConn.checkClose();
 	}
-	public final boolean isWrapperFor(Class<?> iface) throws SQLException {
+	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		checkClose();
 		return iface.isInstance(delegate);
 	}
 	@SuppressWarnings("unchecked")
-	public final <T> T unwrap(Class<T> iface) throws SQLException{
+	public <T> T unwrap(Class<T> iface) throws SQLException{
 	  checkClose();
 	  if (iface.isInstance(delegate)) {
          return (T)this;

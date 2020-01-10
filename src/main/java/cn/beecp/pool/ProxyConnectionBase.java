@@ -45,7 +45,7 @@ abstract class ProxyConnectionBase implements Connection{
 	void setAsClosed(){
 		isClosed=true;
 	}
-	protected final void checkClose() throws SQLException {
+	protected void checkClose() throws SQLException {
 		if(isClosed)throw ConnectionClosedException;
 	}
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
@@ -141,12 +141,12 @@ abstract class ProxyConnectionBase implements Connection{
 		pConn.updateAccessTime();
 		pConn.commitDirtyInd=false;
 	}
-	public final boolean isWrapperFor(Class<?> iface) throws SQLException {
+	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		checkClose();
 		return iface.isInstance(delegate);
 	}
 	@SuppressWarnings("unchecked")
-	public final <T> T unwrap(Class<T> iface) throws SQLException{
+	public <T> T unwrap(Class<T> iface) throws SQLException{
 	  checkClose();
 	  if (iface.isInstance(delegate)) {
          return (T)this;
@@ -154,7 +154,7 @@ abstract class ProxyConnectionBase implements Connection{
     	  throw new SQLException("Wrapped object is not an instance of " + iface);
       } 
 	}
-	public final void close() throws SQLException {
+	public void close() throws SQLException {
 		this.checkClose();
 		isClosed = true;
 		pConn.returnToPoolBySelf();

@@ -58,11 +58,11 @@ class ProxyStatementBase{
 		checkClose();
 		return proxyConn;
 	}
-	protected final void checkClose() throws SQLException {
+	protected void checkClose() throws SQLException {
 		if(isClosed)throw StatementClosedException;
 		proxyConn.checkClose();
 	}
-	public final void close() throws SQLException {
+	public void close() throws SQLException {
 		checkClose();
 		this.isClosed=true;
 		if(!inCacheInd)
@@ -72,7 +72,7 @@ class ProxyStatementBase{
 		this.delegate2=null;
 
 	}
-	public final boolean isWrapperFor(Class<?> iface) throws SQLException {
+	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		checkClose();
 		switch(statementType){
 			case 0: return iface.isInstance(delegate);
@@ -82,7 +82,7 @@ class ProxyStatementBase{
 		}
 	}
 	@SuppressWarnings("unchecked")
-	public final <T> T unwrap(Class<T> iface) throws SQLException{
+	public <T> T unwrap(Class<T> iface) throws SQLException{
 		checkClose();
 		String message="Wrapped object is not an instance of "+iface;
 		switch(statementType){
