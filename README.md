@@ -22,7 +22,7 @@ Java7
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>2.1.3</version>
+   <version>2.1.4</version>
 </dependency>
 ```
 
@@ -165,7 +165,7 @@ project for performance test code,please visit：https://github.com/Chris2018998
  
 2：Test with HikariCP benchmark
 
-<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191221_I3_7100_HikariCP_Bech_Pict.png">20191221_I3_7100_HikariCP_Bech_Pict.png</img>
+<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200110_I3_7100_HikariCP_Bech_Pict.png">20191221_I3_7100_HikariCP_Bech_Pict.png</img>
 
 Download <a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
 
