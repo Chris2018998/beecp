@@ -87,7 +87,7 @@ final class PooledConnection{
 	}
 
 	//***************called fow raw conn proxy ********//
-	void returnToPoolBySelf(){
+	final void returnToPoolBySelf(){
 		proxyConn.setAsClosed();
 		proxyConn=null;
 		resetRawConnOnReturn();
@@ -122,7 +122,7 @@ final class PooledConnection{
 		return  pool.isSupportNetworkTimeout();
 	}
 	//reset connection on return to pool
-	private void resetRawConnOnReturn() {
+	private final void resetRawConnOnReturn() {
 		if (!curAutoCommit&&commitDirtyInd){//Roll back when commit dirty
 			try {
 				rawConn.rollback();

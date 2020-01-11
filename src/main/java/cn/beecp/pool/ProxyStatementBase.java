@@ -58,11 +58,11 @@ class ProxyStatementBase{
 		checkClose();
 		return proxyConn;
 	}
-	protected void checkClose() throws SQLException {
+	protected final void checkClose() throws SQLException {
 		if(isClosed)throw StatementClosedException;
 		proxyConn.checkClose();
 	}
-	public void close() throws SQLException {
+	public final void close() throws SQLException {
 		checkClose();
 		this.isClosed=true;
 		if(!inCacheInd)

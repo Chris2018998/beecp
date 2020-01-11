@@ -516,7 +516,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 
 	// create proxy to wrap connection as result
-	private static ProxyConnectionBase createProxyConnection(PooledConnection pConn, Borrower borrower)
+	private final static ProxyConnectionBase createProxyConnection(PooledConnection pConn, Borrower borrower)
 			throws SQLException {
 		// borrower.setBorrowedConnection(pConn);
 		// return pConn.proxyConnCurInstance=new ProxyConnection(pConn);
@@ -524,7 +524,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 
 	// notify to create connections to pool
-	private void tryToCreateNewConnByAsyn() {
+	private final void tryToCreateNewConnByAsyn() {
 		if (createConnThreadState.get() == THREAD_WAITING && connArray.length < PoolMaxSize
 				&& createConnThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING)) {
 			LockSupport.unpark(this);
@@ -539,7 +539,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 * @param needTest,
 	 *            true check active
 	 */
-	public void release(PooledConnection pConn, boolean needTest) {
+	public final void release(PooledConnection pConn, boolean needTest) {
 		if (needTest && !testOnReturn(pConn))return;
 		tansferPolicy.beforeTransfer(pConn);
 
@@ -553,12 +553,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 * @param exception:
 	 *            transfer Exception to waiter
 	 */
-	private void transferException(SQLException exception) {
+	private final void transferException(SQLException exception) {
 		for(Borrower borrower:waitTransferQueue){
 			if(transferToWaiter(borrower,exception))return;
 		}
 	}
-	private boolean transferToWaiter(Borrower waiter,Object val) {
+	private final boolean transferToWaiter(Borrower waiter,Object val) {
 		Object state;
 		for(;;){
 			state = TansferStateUpdater.get(waiter);

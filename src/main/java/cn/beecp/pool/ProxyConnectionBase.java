@@ -42,10 +42,10 @@ abstract class ProxyConnectionBase implements Connection{
 		delegate=pConn.rawConn;
 		pConfig=pConn.pConfig;
 	}
-	void setAsClosed(){
+	final void setAsClosed(){
 		isClosed=true;
 	}
-	protected void checkClose() throws SQLException {
+	protected final void checkClose() throws SQLException {
 		if(isClosed)throw ConnectionClosedException;
 	}
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
@@ -154,7 +154,7 @@ abstract class ProxyConnectionBase implements Connection{
     	  throw new SQLException("Wrapped object is not an instance of " + iface);
       } 
 	}
-	public void close() throws SQLException {
+	public final void close() throws SQLException {
 		this.checkClose();
 		isClosed = true;
 		pConn.returnToPoolBySelf();

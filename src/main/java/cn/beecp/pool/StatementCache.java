@@ -37,7 +37,7 @@ final class StatementCache {
 		this.capacity=capacity;
 		this.nodeMap = new HashMap<Object,CacheNode>((int)Math.ceil(capacity/0.75f),0.75f);
 	}
-	public PreparedStatement get(Object k) {
+	public final  PreparedStatement get(Object k) {
 		CacheNode n = nodeMap.get(k);
 		if (n != null) {
 			moveToTail(n);
@@ -45,7 +45,7 @@ final class StatementCache {
 		}
 		return null;
 	}
-	public void put(Object k,PreparedStatement v) {
+	public final void put(Object k,PreparedStatement v) {
 		CacheNode n = nodeMap.get(k);
 		if (n==null) {
 			n = new CacheNode(k,v);
