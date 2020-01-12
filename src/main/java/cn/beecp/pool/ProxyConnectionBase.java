@@ -17,9 +17,7 @@ package cn.beecp.pool;
 
 import cn.beecp.BeeDataSourceConfig;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Savepoint;
+import java.sql.*;
 import java.util.concurrent.Executor;
 
 import static cn.beecp.pool.PoolExceptionList.AutoCommitChangeForbiddennException;

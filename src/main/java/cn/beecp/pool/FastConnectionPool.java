@@ -406,7 +406,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				PooledConnection pConn = borrower.lastUsedConn;
 				if (pConn != null && ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
 					if (testOnBorrow(pConn))
-						return createProxyConnection(pConn, borrower);
+						return ProxyObjectFactory.createProxyConnection(pConn, borrower);
 					else
 						borrower.lastUsedConn = null;
 				}
@@ -449,13 +449,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private Connection takeOneConnection(long deadline, Borrower borrower) throws SQLException {
 		for (PooledConnection pConn : this.connArray) {
 			if (ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn)) {
-				return createProxyConnection(pConn, borrower);
+				return ProxyObjectFactory.createProxyConnection(pConn, borrower);
 			}
 		}
 		//create directly
 		PooledConnection pConn;
 		if(connArray.length<PoolMaxSize && (pConn=this.createPooledConn(CONNECTION_USING))!=null){
-			return createProxyConnection(pConn,borrower);
+			return ProxyObjectFactory.createProxyConnection(pConn,borrower);
 		}
 
 		long waitTime;
@@ -475,7 +475,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					// if(tansferPolicy.tryCatch(pConn){
 					if (tansferPolicy.tryCatch(pConn) && testOnBorrow(pConn)) {
 						// fix issue:#3 Chris-2019-08-01 end
-						return createProxyConnection(pConn, borrower);
+						return ProxyObjectFactory.createProxyConnection(pConn, borrower);
 					} else {
 						TansferStateUpdater.set(borrower, BORROWER_NORMAL);
 						continue;
@@ -515,13 +515,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		return null;
 	}
 
-	// create proxy to wrap connection as result
-	private static ProxyConnectionBase createProxyConnection(PooledConnection pConn, Borrower borrower)
-			throws SQLException {
-		// borrower.setBorrowedConnection(pConn);
-		// return pConn.proxyConnCurInstance=new ProxyConnection(pConn);
-		throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassUtil' after project compile");
-	}
+//	// create proxy to wrap connection as result
+//	private static ProxyConnectionBase createProxyConnection(PooledConnection pConn, Borrower borrower)
+//			throws SQLException {
+//		// borrower.setBorrowedConnection(pConn);
+//		// return pConn.proxyConnCurInstance=new ProxyConnection(pConn);
+//		throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassUtil' after project compile");
+//	}
 
 	// notify to create connections to pool
 	private void tryToCreateNewConnByAsyn() {
