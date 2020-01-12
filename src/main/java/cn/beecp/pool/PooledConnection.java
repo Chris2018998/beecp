@@ -32,7 +32,7 @@ import static java.lang.System.currentTimeMillis;
  * @author Chris.Liao
  * @version 1.0
  */
-final class PooledConnection{
+class PooledConnection{
 	volatile int state;
 	boolean stmCacheIsValid;
 	StatementCache stmCache=null;
@@ -87,7 +87,7 @@ final class PooledConnection{
 	}
 
 	//***************called fow raw conn proxy ********//
-	final void returnToPoolBySelf(){
+	void returnToPoolBySelf(){
 		proxyConn.setAsClosed();
 		proxyConn=null;
 		resetRawConnOnReturn();
@@ -111,18 +111,17 @@ final class PooledConnection{
     	changedBitVal^=(changedBitVal&(1<<pos))^((changed?1:0)<<pos);
 		updateAccessTime();
     }
-
-	public boolean isSupportSchema() {
+    boolean isSupportSchema() {
 		return pool.isSupportSchema();
 	}
-	public boolean isSupportIsValid() {
+	boolean isSupportIsValid() {
 		return pool.isSupportIsValid();
 	}
-	public boolean isSupportNetworkTimeout() {
+	boolean isSupportNetworkTimeout() {
 		return  pool.isSupportNetworkTimeout();
 	}
 	//reset connection on return to pool
-	private final void resetRawConnOnReturn() {
+	private void resetRawConnOnReturn() {
 		if (!curAutoCommit&&commitDirtyInd){//Roll back when commit dirty
 			try {
 				rawConn.rollback();

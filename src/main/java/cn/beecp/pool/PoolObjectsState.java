@@ -22,7 +22,7 @@ package cn.beecp.pool;
  * @version 1.0
  */
 
-final class PoolObjectsState {
+class PoolObjectsState {
 	//POOL STATE
 	static final int POOL_UNINIT         = 1;
 	static final int POOL_NORMAL         = 2;

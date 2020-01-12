@@ -21,7 +21,7 @@ package cn.beecp.pool;
  * @author Chris.Liao
  * @version 1.0
  */
-final class Borrower {
+class Borrower {
 	boolean hasHoldNewOne;
 	PooledConnection lastUsedConn;
 	volatile Object stateObject;

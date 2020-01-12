@@ -24,10 +24,10 @@ import java.sql.SQLTimeoutException;
  * @author Chris.Liao
  * @version 1.0
  */
-final class PoolExceptionList {
+class PoolExceptionList {
 
 	static final SQLTimeoutException RequestTimeoutException = new SQLTimeoutException("Connection timeout");
-	
+
 	static final SQLException RequestInterruptException = new SQLException("Request interrupt");
 	
 	static final SQLException PoolCloseException = new SQLException("Pool has been closed or in resting");

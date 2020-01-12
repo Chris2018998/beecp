@@ -58,11 +58,11 @@ class ProxyStatementBase{
 		checkClose();
 		return proxyConn;
 	}
-	protected final void checkClose() throws SQLException {
+	protected void checkClose() throws SQLException {
 		if(isClosed)throw StatementClosedException;
 		proxyConn.checkClose();
 	}
-	public final void close() throws SQLException {
+	public void close() throws SQLException {
 		checkClose();
 		this.isClosed=true;
 		if(!inCacheInd)
@@ -70,7 +70,6 @@ class ProxyStatementBase{
 		this.delegate=null;
 		this.delegate1=null;
 		this.delegate2=null;
-
 	}
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		checkClose();

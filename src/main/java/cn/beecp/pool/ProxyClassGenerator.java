@@ -290,12 +290,10 @@ public final class ProxyClassGenerator {
 			methodBuffer.append("{");
 			methodBuffer.append("checkClose();");
 			if (newCtMethodm.getReturnType() == ctStatementIntf) {
-				newCtMethodm.setModifiers(Modifier.PUBLIC|Modifier.FINAL);
 				methodBuffer.append("return new ProxyStatement(delegate."+methodName+"($$),this,pConn);");
 			}else if(newCtMethodm.getReturnType() == ctPsStatementIntf){
-				newCtMethodm.setModifiers(Modifier.PUBLIC|Modifier.FINAL);
 				methodBuffer.append("if(pConn.stmCacheIsValid){");
-				methodBuffer.append(" Object key=new PsCacheKey($$);");
+				methodBuffer.append(" Object key=new StatementCachePsKey($$);");
 				methodBuffer.append(" StatementCache stmCache=pConn.stmCache;");
 				methodBuffer.append(" PreparedStatement stm=stmCache.get(key);");
 				methodBuffer.append(" if(stm==null){");
@@ -307,9 +305,8 @@ public final class ProxyClassGenerator {
 				methodBuffer.append("  return new ProxyPsStatement(delegate."+methodName+"($$),false,this,pConn);");
 				methodBuffer.append("}");
 			}else if(newCtMethodm.getReturnType() == ctCsStatementIntf){
-				newCtMethodm.setModifiers(Modifier.PUBLIC|Modifier.FINAL);
 				methodBuffer.append("if(pConn.stmCacheIsValid){");
-				methodBuffer.append(" Object key=new CsCacheKey($$);");
+				methodBuffer.append(" Object key=new StatementCacheCsKey($$);");
 				methodBuffer.append(" StatementCache stmCache=pConn.stmCache;");
 				methodBuffer.append(" CallableStatement stm=(CallableStatement)stmCache.get(key);");
 				methodBuffer.append(" if(stm==null){");
@@ -374,13 +371,11 @@ public final class ProxyClassGenerator {
 			if (newCtMethodm.getReturnType() == CtClass.voidType) {
 				methodBuffer.append(delegateName+methodName + "($$);");
 				if(methodName.startsWith("execute")) {
-					newCtMethodm.setModifiers(Modifier.PUBLIC|Modifier.FINAL);
 					methodBuffer.append("pooledConn.updateAccessTimeWithCommitDirty();");
 				}
 			} else {
 				methodBuffer.append(newCtMethodm.getReturnType().getName() + " re="+delegateName+methodName + "($$);");
 				if(methodName.startsWith("execute")){
-					newCtMethodm.setModifiers(Modifier.PUBLIC|Modifier.FINAL);
 					methodBuffer.append("pConn.updateAccessTimeWithCommitDirty();");
 				}
 				if (newCtMethodm.getReturnType() == ctResultSetIntf) {
@@ -468,13 +463,11 @@ public final class ProxyClassGenerator {
 				if(newCtMethodm.getReturnType() == CtClass.voidType){
 					methodBuffer.append("delegate." + methodName + "($$);");
 					if (methodName.startsWith("insertRow")||methodName.startsWith("updateRow")||methodName.startsWith("deleteRow")) {
-						newCtMethodm.setModifiers(Modifier.PUBLIC|Modifier.FINAL);
 						methodBuffer.append(" pConn.updateAccessTimeWithCommitDirty();");
 					}
 				}else{
 					methodBuffer.append(newCtMethodm.getReturnType().getName() + " re=delegate." + methodName + "($$);");
 					if (methodName.startsWith("insertRow")||methodName.startsWith("updateRow")||methodName.startsWith("deleteRow")) {
-						newCtMethodm.setModifiers(Modifier.PUBLIC|Modifier.FINAL);
 						methodBuffer.append(" pConn.updateAccessTimeWithCommitDirty();");
 					}
 					methodBuffer.append(" return re;");

@@ -39,15 +39,15 @@ abstract class ProxyResultSetBase implements ResultSet {
 		this.delegate = delegate;
 		this.proxyStatement = proxyStatement;
 	}
-	protected final void checkClose() throws SQLException {
-		if(isClosed)throw ResultSetClosedException;
-		if(proxyStatement!=null)proxyStatement.checkClose();
-	}
 	public Statement getStatement() throws SQLException{
 		checkClose();
 		return (Statement)proxyStatement;
 	}
-	public final void close() throws SQLException {
+	protected void checkClose() throws SQLException {
+		if(isClosed)throw ResultSetClosedException;
+		if(proxyStatement!=null)proxyStatement.checkClose();
+	}
+	public void close() throws SQLException {
 		checkClose();
 		isClosed=true;
 		oclose(delegate);
