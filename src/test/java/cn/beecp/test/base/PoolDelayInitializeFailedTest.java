@@ -15,13 +15,14 @@
  */
 package cn.beecp.test.base;
 
-import java.sql.Connection;
-
 import cn.beecp.BeeDataSource;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 import cn.beecp.util.BeecpUtil;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class PoolDelayInitializeFailedTest extends TestCase {
 	private int initSize=5;
@@ -40,7 +41,7 @@ public class PoolDelayInitializeFailedTest extends TestCase {
 			ds.setInitialSize(initSize);
 			con=ds.getConnection();
 			TestUtil.assertError("A pool fail to init e need be thrown,but not"); 
-		}catch(ExceptionInInitializerError e){
+		}catch(SQLException e){
 			System.out.println(e.getCause());
 		}finally{
 			BeecpUtil.oclose(con);
