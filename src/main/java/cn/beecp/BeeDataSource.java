@@ -6,7 +6,7 @@
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,9 @@
  */
 package cn.beecp;
 
+import cn.beecp.pool.ConnectionPool;
+
+import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -22,19 +25,15 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
-import javax.sql.DataSource;
-
-import cn.beecp.pool.ConnectionPool;
-
 /**
  * Bee DataSource,there are three pool implementation for it.
- * 
+ *
  * 1) cn.beecp.pool.FastConnectionPool:base implementation with semaphore
  * 2) cn.beecp.pool.RawConnectionPool:return raw connections to borrowers directly(maybe used for BeeNode)
- * 
+ *
  * Email:  Chris2018998@tom.com
  * Project: https://github.com/Chris2018998/BeeCP
- * 
+ *
  * @author Chris.Liao
  * @version 1.0
  */
@@ -44,51 +43,60 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	 * connection pool
 	 */
 	private volatile ConnectionPool pool=null;
-	
+
+	/**
+	 * failed to create
+	 */
+	private volatile SQLException failedCause=null;
+
 	/**
 	 * read Write Locker
 	 */
 	private ReentrantReadWriteLock lock=new ReentrantReadWriteLock();
-	
+
 	/**
 	 * read Locker
 	 */
 	private ReentrantReadWriteLock.ReadLock readLock=lock.readLock();
-	
+
 	/**
 	 *  write Locker
 	 */
 	private ReentrantReadWriteLock.WriteLock writeLock=lock.writeLock();
-	
+
 	/**
 	 * constructor
 	 */
 	public BeeDataSource() {}
-	
+
 	/**
 	 * constructor
 	 * @param config data source configuration
 	 */
 	public BeeDataSource(final BeeDataSourceConfig config){
-		config.copyTo(this);
-		pool=createPool(this);
+		try {
+			config.copyTo(this);
+			pool = createPool(this);
+		}catch(SQLException e){
+			throw new ExceptionInInitializerError(e);
+		}
 	}
-	
+
 	/**
 	 * constructor
 	 * @param driver driver class name
 	 * @param url JDBC url
 	 * @param user JDBC user name
 	 * @param password JDBC password
-	 * 
+	 *
 	 */
 	public BeeDataSource(String driver, String url, String user, String password) {
 		super(driver,url,user,password);
 	}
-	
+
 	/**
 	 * borrow a connection from pool
-	 * 
+	 *
 	 * @return If exists idle connection in pool,then return one;if not, waiting
 	 *         until other borrower release
 	 * @throws SQLException
@@ -97,27 +105,30 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	public Connection getConnection() throws SQLException {
 		if(pool== null) {
 			if(writeLock.tryLock()) {
+				failedCause = null;
 				try {
-					if(pool==null)pool=createPool(this);
+					pool=createPool(this);
+	 			} catch (SQLException e) {
+					failedCause = e;
+					throw e;
 				} finally {
 					writeLock.unlock();
 				}
 			}else{
 				try{
 					readLock.lock();
-					//do nothing
+					if (failedCause != null) throw failedCause;
 				} finally {
 					readLock.unlock();
 				}
 			}
 		}
-		
 		return pool.getConnection(maxWait);
 	}
-	
+
 	/**
 	 * <p>Attempts to establish a connection with the data source that
-     * this {@code DataSource} object represents.
+	 * this {@code DataSource} object represents.
 	 *
 	 * @param username the database user on whose behalf the connection is
 	 *  being made
@@ -134,7 +145,7 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	}
 	public void close(){
 		if(pool!=null)
-		 pool.shutdown();
+			pool.shutdown();
 	}
 	public PrintWriter getLogWriter() throws SQLException {
 		throw new SQLException("Not supported");
@@ -164,34 +175,26 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	 * @param config  pool configuration
 	 * @return a initialized pool for data source
 	 */
-	private ConnectionPool createPool(BeeDataSourceConfig config){
+	private ConnectionPool createPool(BeeDataSourceConfig config)throws SQLException{
 		String poolImplementClassName=config.getPoolImplementClassName();
-		
+
 		try {
 			if(poolImplementClassName==null || poolImplementClassName.trim().length()==0)
 				poolImplementClassName=BeeDataSourceConfig.DefaultImplementClassName;
-			
+
 			Class<?> poolClass = Class.forName(poolImplementClassName,true,BeeDataSource.class.getClassLoader());
 			if(!ConnectionPool.class.isAssignableFrom(poolClass))
-			 throw new IllegalArgumentException("Connection pool class must be implemented 'ConnectionPool' interface");
-			 
+				throw new IllegalArgumentException("Connection pool class must be implemented 'ConnectionPool' interface");
+
 			config.check();
 			config.setAsChecked();
 			ConnectionPool pool=(ConnectionPool)poolClass.newInstance();
 			pool.init(config);
 			return pool;
-		} catch (SQLException e) {
-			throw new ExceptionInInitializerError(e);
 		} catch (ClassNotFoundException e) {
-			throw new ExceptionInInitializerError("Not found conneciton pool implementation class:" + poolImplementClassName);
-		} catch (SecurityException e) {
-			throw new ExceptionInInitializerError(e);
-		} catch (InstantiationException e) {
-			throw new ExceptionInInitializerError(e);
-		} catch (IllegalAccessException e) {
-			throw new ExceptionInInitializerError(e);
-		} catch (IllegalArgumentException e) {
-			throw new ExceptionInInitializerError(e);
+			throw new SQLException("Not found conneciton pool implementation class:" + poolImplementClassName);
+		} catch (Throwable e) {
+			throw new SQLException(e);
 		}
 	}
 }
