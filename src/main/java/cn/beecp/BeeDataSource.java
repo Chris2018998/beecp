@@ -105,14 +105,16 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	public Connection getConnection() throws SQLException {
 		if(pool== null) {
 			if(writeLock.tryLock()) {
-				failedCause = null;
-				try {
-					pool=createPool(this);
-	 			} catch (SQLException e) {
-					failedCause = e;
-					throw e;
-				} finally {
-					writeLock.unlock();
+				if(pool==null){
+					failedCause = null;
+					try {
+						pool = createPool(this);
+					} catch (SQLException e) {
+						failedCause = e;
+						throw e;
+					} finally {
+						writeLock.unlock();
+					}
 				}
 			}else{
 				try{

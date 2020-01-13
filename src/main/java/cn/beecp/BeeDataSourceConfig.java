@@ -567,7 +567,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		if (this.maxWait <= 0)
 			throw new IllegalArgumentException("Borrower max wait time must be greater than zero");
 		if (this.preparedStatementCacheSize < 0)
-			throw new IllegalArgumentException("Statement cache size must be greater than zero");
+			throw new IllegalArgumentException("Statement cache size can't be lesser than zero");
 
 		defaultTransactionIsolationCode=TransactionIsolationLevel.nameToCode(defaultTransactionIsolation);
 		if(defaultTransactionIsolationCode==-999){
