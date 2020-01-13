@@ -37,7 +37,7 @@ class StatementCache {
 		this.capacity=capacity;
 		this.nodeMap = new HashMap<Object,CacheNode>((int)Math.ceil(capacity/0.75f),0.75f);
 	}
-	public PreparedStatement get(Object k) {
+	public PreparedStatement getStatement(Object k) {
 		CacheNode n = nodeMap.get(k);
 		if(n != null) {
 			moveToTail(n);
@@ -45,7 +45,7 @@ class StatementCache {
 		}
 		return null;
 	}
-	public void put(Object k,PreparedStatement v) {
+	public void putStatement(Object k,PreparedStatement v) {
 		CacheNode n = nodeMap.get(k);
 		if (n==null) {
 			n = new CacheNode(k,v);
@@ -62,8 +62,7 @@ class StatementCache {
 			moveToTail(n);
 		}
 	}
-
-	void clear() {
+	void clearStatement() {
 		Iterator<Map.Entry<Object, CacheNode>> itor=nodeMap.entrySet().iterator();
 		while (itor.hasNext()) {
 			Map.Entry<Object,CacheNode> entry=itor.next();
