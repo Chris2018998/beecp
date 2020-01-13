@@ -1,0 +1,377 @@
+DB:Mysql5.6.47-64
+Pool:init size:16:max size:16
+1000Threads x 1000times(take or query)
+
+TimeUnit:MS
+|Pool Name |Take AvgTime |Max Take Time|Qry AvgTime|Max Qry Time|
+| C3P0     |   17.6860   |    1240     |  39.2695  |  2310      |
+| TOMCAT   |   10.2206   |    379      |  26.8488  |  542       |
+| Druid    |   9.1678    |    2254     |  27.6957  |  22033     |
+| HikariCP |   0.3100    |    387      |  15.0692  |  8410      |
+| BeeCP-F  |   0.0963    |    105      |  10.5150  |  9346      |
+| BeeCP-C  |   0.1842    |    302      |  9.9775   |  13475     |
+
+
+
+[C3P0]
+[INFO]2020-01-13 20:29:11-[JDBC INFO]
+[INFO]2020-01-13 20:29:11-[Driver:com.mysql.jdbc.Driver]
+[INFO]2020-01-13 20:29:11-[URL:jdbc:mysql://localhost/test]
+[INFO]2020-01-13 20:29:11-
+
+[INFO]2020-01-13 20:29:11-MLog clients using slf4j logging.
+[INFO]2020-01-13 20:29:11-Initializing c3p0-0.9.5.2 [built 08-December-2015 22:06:04 -0800; debug? true; trace: 10]
+[INFO]2020-01-13 20:29:11-Pool[C3P0 -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:29:14-Initializing c3p0 pool... com.mchange.v2.c3p0.ComboPooledDataSource [ acquireIncrement -> 3, acquireRetryAttempts -> 30, acquireRetryDelay -> 1000, autoCommitOnClose -> false, automaticTestTable -> null, breakAfterAcquireFailure -> false, checkoutTimeout -> 80000, connectionCustomizerClassName -> null, connectionTesterClassName -> com.mchange.v2.c3p0.impl.DefaultConnectionTester, contextClassLoaderSource -> caller, dataSourceName -> 1hgec9ia718302cb1lqiu0d|67e2d983, debugUnreturnedConnectionStackTraces -> false, description -> null, driverClass -> com.mysql.jdbc.Driver, extensions -> {}, factoryClassLocation -> null, forceIgnoreUnresolvedTransactions -> false, forceSynchronousCheckins -> false, forceUseNamedDriverClass -> false, identityToken -> 1hgec9ia718302cb1lqiu0d|67e2d983, idleConnectionTestPeriod -> 0, initialPoolSize -> 16, jdbcUrl -> jdbc:mysql://localhost/test, maxAdministrativeTaskTime -> 0, maxConnectionAge -> 0, maxIdleTime -> 0, maxIdleTimeExcessConnections -> 0, maxPoolSize -> 16, maxStatements -> 0, maxStatementsPerConnection -> 20, minPoolSize -> 16, numHelperThreads -> 3, preferredTestQuery -> select 1 from dual, privilegeSpawnedThreads -> false, properties -> {user=******, password=******}, propertyCycle -> 0, statementCacheNumDeferredCloseThreads -> 0, testConnectionOnCheckin -> false, testConnectionOnCheckout -> true, unreturnedConnectionTimeout -> 0, userOverrides -> {}, usesTraditionalReflectiveProxies -> false ]
+[INFO]2020-01-13 20:29:32-Pool[C3P0 -- Multiple thread borrow] -- Execution count:1000000,total time:17686025ms,avg time:17.6860ms,min time:0ms,max time:1240ms
+[INFO]2020-01-13 20:29:32-success count       :1000000
+[INFO]2020-01-13 20:29:32-fail count          :0
+[INFO]2020-01-13 20:29:32-avr(ms)             :17.6860
+[INFO]2020-01-13 20:29:32-min(ms)             :0
+[INFO]2020-01-13 20:29:32-max(ms)             :1240
+[INFO]2020-01-13 20:29:32-time==0ms           :493819
+[INFO]2020-01-13 20:29:32-1ms=<time<=10ms     :138308
+[INFO]2020-01-13 20:29:32-10ms<time<=50ms     :266864
+[INFO]2020-01-13 20:29:32-50ms<time<=100ms    :66952
+[INFO]2020-01-13 20:29:32-100ms<time<=200ms   :28819
+[INFO]2020-01-13 20:29:32-200ms<time<=500ms   :4646
+[INFO]2020-01-13 20:29:32-500ms<time<=1000ms  :549
+[INFO]2020-01-13 20:29:32-1000ms<time<=2000ms :43
+[INFO]2020-01-13 20:29:32-2000ms<time<=8000ms :0
+[INFO]2020-01-13 20:29:32-time>8000ms         :0
+[INFO]2020-01-13 20:29:32-
+
+[INFO]2020-01-13 20:29:37-[JDBC INFO]
+[INFO]2020-01-13 20:29:37-[Driver:com.mysql.jdbc.Driver]
+[INFO]2020-01-13 20:29:37-[URL:jdbc:mysql://localhost/test]
+[INFO]2020-01-13 20:29:37-
+
+[INFO]2020-01-13 20:29:37-MLog clients using slf4j logging.
+[INFO]2020-01-13 20:29:37-Initializing c3p0-0.9.5.2 [built 08-December-2015 22:06:04 -0800; debug? true; trace: 10]
+[INFO]2020-01-13 20:29:37-Pool[C3P0 -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:29:42-Initializing c3p0 pool... com.mchange.v2.c3p0.ComboPooledDataSource [ acquireIncrement -> 3, acquireRetryAttempts -> 30, acquireRetryDelay -> 1000, autoCommitOnClose -> false, automaticTestTable -> null, breakAfterAcquireFailure -> false, checkoutTimeout -> 80000, connectionCustomizerClassName -> null, connectionTesterClassName -> com.mchange.v2.c3p0.impl.DefaultConnectionTester, contextClassLoaderSource -> caller, dataSourceName -> 1hgec9ia71830mo14abdr0|67e2d983, debugUnreturnedConnectionStackTraces -> false, description -> null, driverClass -> com.mysql.jdbc.Driver, extensions -> {}, factoryClassLocation -> null, forceIgnoreUnresolvedTransactions -> false, forceSynchronousCheckins -> false, forceUseNamedDriverClass -> false, identityToken -> 1hgec9ia71830mo14abdr0|67e2d983, idleConnectionTestPeriod -> 0, initialPoolSize -> 16, jdbcUrl -> jdbc:mysql://localhost/test, maxAdministrativeTaskTime -> 0, maxConnectionAge -> 0, maxIdleTime -> 0, maxIdleTimeExcessConnections -> 0, maxPoolSize -> 16, maxStatements -> 0, maxStatementsPerConnection -> 20, minPoolSize -> 16, numHelperThreads -> 3, preferredTestQuery -> select 1 from dual, privilegeSpawnedThreads -> false, properties -> {user=******, password=******}, propertyCycle -> 0, statementCacheNumDeferredCloseThreads -> 0, testConnectionOnCheckin -> false, testConnectionOnCheckout -> true, unreturnedConnectionTimeout -> 0, userOverrides -> {}, usesTraditionalReflectiveProxies -> false ]
+[INFO]2020-01-13 20:30:27-Pool[C3P0 -- Multiple thread query] -- Execution count:1000000,total time:39269531ms,avg time:39.2695ms,min time:0ms,max time:2310ms
+[INFO]2020-01-13 20:30:27-success count       :1000000
+[INFO]2020-01-13 20:30:27-fail count          :0
+[INFO]2020-01-13 20:30:27-avr(ms)             :39.2695
+[INFO]2020-01-13 20:30:27-min(ms)             :0
+[INFO]2020-01-13 20:30:27-max(ms)             :2310
+[INFO]2020-01-13 20:30:27-time==0ms           :477148
+[INFO]2020-01-13 20:30:27-1ms=<time<=10ms     :88811
+[INFO]2020-01-13 20:30:27-10ms<time<=50ms     :243901
+[INFO]2020-01-13 20:30:27-50ms<time<=100ms    :83414
+[INFO]2020-01-13 20:30:27-100ms<time<=200ms   :56483
+[INFO]2020-01-13 20:30:27-200ms<time<=500ms   :42544
+[INFO]2020-01-13 20:30:27-500ms<time<=1000ms  :7037
+[INFO]2020-01-13 20:30:27-1000ms<time<=2000ms :660
+[INFO]2020-01-13 20:30:27-2000ms<time<=8000ms :2
+[INFO]2020-01-13 20:30:27-time>8000ms         :0
+[INFO]2020-01-13 20:30:27-
+
+
+[TOMCAT]
+[INFO]2020-01-13 20:31:23-[JDBC INFO]
+[INFO]2020-01-13 20:31:23-[Driver:com.mysql.jdbc.Driver]
+[INFO]2020-01-13 20:31:23-[URL:jdbc:mysql://localhost/test]
+[INFO]2020-01-13 20:31:23-
+
+[INFO]2020-01-13 20:31:23-Pool[Tomcat -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:31:37-Pool[Tomcat -- Multiple thread borrow] -- Execution count:1000000,total time:10220597ms,avg time:10.2206ms,min time:0ms,max time:379ms
+[INFO]2020-01-13 20:31:37-success count       :1000000
+[INFO]2020-01-13 20:31:37-fail count          :0
+[INFO]2020-01-13 20:31:37-avr(ms)             :10.2206
+[INFO]2020-01-13 20:31:37-min(ms)             :0
+[INFO]2020-01-13 20:31:37-max(ms)             :379
+[INFO]2020-01-13 20:31:37-time==0ms           :11
+[INFO]2020-01-13 20:31:37-1ms=<time<=10ms     :948893
+[INFO]2020-01-13 20:31:37-10ms<time<=50ms     :50090
+[INFO]2020-01-13 20:31:37-50ms<time<=100ms    :5
+[INFO]2020-01-13 20:31:37-100ms<time<=200ms   :1
+[INFO]2020-01-13 20:31:37-200ms<time<=500ms   :1000
+[INFO]2020-01-13 20:31:37-500ms<time<=1000ms  :0
+[INFO]2020-01-13 20:31:37-1000ms<time<=2000ms :0
+[INFO]2020-01-13 20:31:37-2000ms<time<=8000ms :0
+[INFO]2020-01-13 20:31:37-time>8000ms         :0
+[INFO]2020-01-13 20:31:37-
+
+[INFO]2020-01-13 20:31:43-[JDBC INFO]
+[INFO]2020-01-13 20:31:43-[Driver:com.mysql.jdbc.Driver]
+[INFO]2020-01-13 20:31:43-[URL:jdbc:mysql://localhost/test]
+[INFO]2020-01-13 20:31:43-
+
+[INFO]2020-01-13 20:31:43-Pool[Tomcat -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:32:15-Pool[Tomcat -- Multiple thread query] -- Execution count:1000000,total time:26848755ms,avg time:26.8488ms,min time:0ms,max time:542ms
+[INFO]2020-01-13 20:32:15-success count       :1000000
+[INFO]2020-01-13 20:32:15-fail count          :0
+[INFO]2020-01-13 20:32:15-avr(ms)             :26.8488
+[INFO]2020-01-13 20:32:15-min(ms)             :0
+[INFO]2020-01-13 20:32:15-max(ms)             :542
+[INFO]2020-01-13 20:32:15-time==0ms           :15
+[INFO]2020-01-13 20:32:15-1ms=<time<=10ms     :5544
+[INFO]2020-01-13 20:32:15-10ms<time<=50ms     :986522
+[INFO]2020-01-13 20:32:15-50ms<time<=100ms    :6347
+[INFO]2020-01-13 20:32:15-100ms<time<=200ms   :572
+[INFO]2020-01-13 20:32:15-200ms<time<=500ms   :970
+[INFO]2020-01-13 20:32:15-500ms<time<=1000ms  :30
+[INFO]2020-01-13 20:32:15-1000ms<time<=2000ms :0
+[INFO]2020-01-13 20:32:15-2000ms<time<=8000ms :0
+[INFO]2020-01-13 20:32:15-time>8000ms         :0
+[INFO]2020-01-13 20:32:15-
+
+
+
+
+
+
+[Druid]
+[INFO]2020-01-13 20:33:57-[JDBC INFO]
+[INFO]2020-01-13 20:33:57-[Driver:com.mysql.jdbc.Driver]
+[INFO]2020-01-13 20:33:57-[URL:jdbc:mysql://localhost/test]
+[INFO]2020-01-13 20:33:57-
+
+[INFO]2020-01-13 20:33:57-Pool[Druid -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:34:01-{dataSource-1} inited
+[INFO]2020-01-13 20:34:12-Pool[Druid -- Multiple thread borrow] -- Execution count:1000000,total time:9167786ms,avg time:9.1678ms,min time:0ms,max time:2254ms
+[INFO]2020-01-13 20:34:12-success count       :1000000
+[INFO]2020-01-13 20:34:12-fail count          :0
+[INFO]2020-01-13 20:34:12-avr(ms)             :9.1678
+[INFO]2020-01-13 20:34:12-min(ms)             :0
+[INFO]2020-01-13 20:34:12-max(ms)             :2254
+[INFO]2020-01-13 20:34:12-time==0ms           :898863
+[INFO]2020-01-13 20:34:12-1ms=<time<=10ms     :51712
+[INFO]2020-01-13 20:34:12-10ms<time<=50ms     :14114
+[INFO]2020-01-13 20:34:12-50ms<time<=100ms    :9675
+[INFO]2020-01-13 20:34:12-100ms<time<=200ms   :10460
+[INFO]2020-01-13 20:34:12-200ms<time<=500ms   :11309
+[INFO]2020-01-13 20:34:12-500ms<time<=1000ms  :3505
+[INFO]2020-01-13 20:34:12-1000ms<time<=2000ms :359
+[INFO]2020-01-13 20:34:12-2000ms<time<=8000ms :3
+[INFO]2020-01-13 20:34:12-time>8000ms         :0
+[INFO]2020-01-13 20:34:12-
+
+[INFO]2020-01-13 20:34:12-{dataSource-1} closing ...
+[INFO]2020-01-13 20:34:12-{dataSource-1} closed
+[INFO]2020-01-13 20:34:14-[JDBC INFO]
+[INFO]2020-01-13 20:34:14-[Driver:com.mysql.jdbc.Driver]
+[INFO]2020-01-13 20:34:14-[URL:jdbc:mysql://localhost/test]
+[INFO]2020-01-13 20:34:14-
+
+[INFO]2020-01-13 20:34:14-Pool[Druid -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:34:19-{dataSource-1} inited
+[INFO]2020-01-13 20:34:55-Pool[Druid -- Multiple thread query] -- Execution count:1000000,total time:27695734ms,avg time:27.6957ms,min time:0ms,max time:22033ms
+[INFO]2020-01-13 20:34:55-success count       :1000000
+[INFO]2020-01-13 20:34:55-fail count          :0
+[INFO]2020-01-13 20:34:55-avr(ms)             :27.6957
+[INFO]2020-01-13 20:34:55-min(ms)             :0
+[INFO]2020-01-13 20:34:55-max(ms)             :22033
+[INFO]2020-01-13 20:34:55-time==0ms           :962647
+[INFO]2020-01-13 20:34:55-1ms=<time<=10ms     :12726
+[INFO]2020-01-13 20:34:55-10ms<time<=50ms     :8962
+[INFO]2020-01-13 20:34:55-50ms<time<=100ms    :1472
+[INFO]2020-01-13 20:34:55-100ms<time<=200ms   :1076
+[INFO]2020-01-13 20:34:55-200ms<time<=500ms   :2312
+[INFO]2020-01-13 20:34:55-500ms<time<=1000ms  :2665
+[INFO]2020-01-13 20:34:55-1000ms<time<=2000ms :3483
+[INFO]2020-01-13 20:34:55-2000ms<time<=8000ms :4335
+[INFO]2020-01-13 20:34:55-time>8000ms         :322
+[INFO]2020-01-13 20:34:55-
+
+[INFO]2020-01-13 20:34:55-{dataSource-1} closing ...
+[INFO]2020-01-13 20:34:55-{dataSource-1} closed
+
+
+
+
+
+
+[HikariPool]
+[INFO]2020-01-13 20:35:59-[JDBC INFO]
+[INFO]2020-01-13 20:35:59-[Driver:com.mysql.jdbc.Driver]
+[INFO]2020-01-13 20:35:59-[URL:jdbc:mysql://localhost/test]
+[INFO]2020-01-13 20:35:59-
+
+[INFO]2020-01-13 20:35:59-HikariPool-1 - Starting...
+[INFO]2020-01-13 20:35:59-HikariPool-1 - Start completed.
+[INFO]2020-01-13 20:35:59-Pool[HikariCP -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:36:03-Pool[HikariCP -- Multiple thread borrow] -- Execution count:1000000,total time:309963ms,avg time:0.3100ms,min time:0ms,max time:387ms
+[INFO]2020-01-13 20:36:03-success count       :1000000
+[INFO]2020-01-13 20:36:03-fail count          :0
+[INFO]2020-01-13 20:36:03-avr(ms)             :0.3100
+[INFO]2020-01-13 20:36:03-min(ms)             :0
+[INFO]2020-01-13 20:36:03-max(ms)             :387
+[INFO]2020-01-13 20:36:03-time==0ms           :996193
+[INFO]2020-01-13 20:36:03-1ms=<time<=10ms     :1072
+[INFO]2020-01-13 20:36:03-10ms<time<=50ms     :810
+[INFO]2020-01-13 20:36:03-50ms<time<=100ms    :497
+[INFO]2020-01-13 20:36:03-100ms<time<=200ms   :854
+[INFO]2020-01-13 20:36:03-200ms<time<=500ms   :574
+[INFO]2020-01-13 20:36:03-500ms<time<=1000ms  :0
+[INFO]2020-01-13 20:36:03-1000ms<time<=2000ms :0
+[INFO]2020-01-13 20:36:03-2000ms<time<=8000ms :0
+[INFO]2020-01-13 20:36:03-time>8000ms         :0
+[INFO]2020-01-13 20:36:03-
+
+[INFO]2020-01-13 20:36:03-HikariPool-1 - Shutdown initiated...
+[INFO]2020-01-13 20:36:03-HikariPool-1 - Shutdown completed.
+[INFO]2020-01-13 20:36:07-[JDBC INFO]
+[INFO]2020-01-13 20:36:07-[Driver:com.mysql.jdbc.Driver]
+[INFO]2020-01-13 20:36:07-[URL:jdbc:mysql://localhost/test]
+[INFO]2020-01-13 20:36:07-
+
+[INFO]2020-01-13 20:36:07-HikariPool-1 - Starting...
+[INFO]2020-01-13 20:36:07-HikariPool-1 - Start completed.
+[INFO]2020-01-13 20:36:07-Pool[HikariCP -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:36:32-Pool[HikariCP -- Multiple thread query] -- Execution count:1000000,total time:15069152ms,avg time:15.0692ms,min time:0ms,max time:8410ms
+[INFO]2020-01-13 20:36:32-success count       :1000000
+[INFO]2020-01-13 20:36:32-fail count          :0
+[INFO]2020-01-13 20:36:32-avr(ms)             :15.0692
+[INFO]2020-01-13 20:36:32-min(ms)             :0
+[INFO]2020-01-13 20:36:32-max(ms)             :8410
+[INFO]2020-01-13 20:36:32-time==0ms           :950204
+[INFO]2020-01-13 20:36:32-1ms=<time<=10ms     :22134
+[INFO]2020-01-13 20:36:32-10ms<time<=50ms     :7484
+[INFO]2020-01-13 20:36:32-50ms<time<=100ms    :2689
+[INFO]2020-01-13 20:36:32-100ms<time<=200ms   :2714
+[INFO]2020-01-13 20:36:32-200ms<time<=500ms   :5407
+[INFO]2020-01-13 20:36:32-500ms<time<=1000ms  :4093
+[INFO]2020-01-13 20:36:32-1000ms<time<=2000ms :3823
+[INFO]2020-01-13 20:36:32-2000ms<time<=8000ms :1448
+[INFO]2020-01-13 20:36:32-time>8000ms         :4
+[INFO]2020-01-13 20:36:32-
+
+[INFO]2020-01-13 20:36:32-HikariPool-1 - Shutdown initiated...
+[INFO]2020-01-13 20:36:32-HikariPool-1 - Shutdown completed.
+
+
+
+
+
+
+[BeeCP-Fair]
+[INFO]2020-01-13 20:39:03-[JDBC INFO]
+[INFO]2020-01-13 20:39:03-[Driver:com.mysql.jdbc.Driver]
+[INFO]2020-01-13 20:39:03-[URL:jdbc:mysql://localhost/test]
+[INFO]2020-01-13 20:39:03-
+
+[INFO]2020-01-13 20:39:03-BeeCP(FastPool-1)starting....
+[WARN]2020-01-13 20:39:03-BeeCP(FastPool-1)driver not support 'networkTimeout'
+[INFO]2020-01-13 20:39:03-BeeCP(FastPool-1)has startup{init size:16,max size:16,concurrent size:8,mode:fair,max wait:80000ms,driver:com.mysql.jdbc.Driver}
+[INFO]2020-01-13 20:39:03-Pool[BeeCP_Fair -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:39:06-Pool[BeeCP_Fair -- Multiple thread borrow] -- Execution count:1000000,total time:96280ms,avg time:0.0963ms,min time:0ms,max time:105ms
+[INFO]2020-01-13 20:39:06-success count       :1000000
+[INFO]2020-01-13 20:39:06-fail count          :0
+[INFO]2020-01-13 20:39:06-avr(ms)             :0.0963
+[INFO]2020-01-13 20:39:06-min(ms)             :0
+[INFO]2020-01-13 20:39:06-max(ms)             :105
+[INFO]2020-01-13 20:39:06-time==0ms           :996467
+[INFO]2020-01-13 20:39:06-1ms=<time<=10ms     :2030
+[INFO]2020-01-13 20:39:06-10ms<time<=50ms     :726
+[INFO]2020-01-13 20:39:06-50ms<time<=100ms    :651
+[INFO]2020-01-13 20:39:06-100ms<time<=200ms   :126
+[INFO]2020-01-13 20:39:06-200ms<time<=500ms   :0
+[INFO]2020-01-13 20:39:06-500ms<time<=1000ms  :0
+[INFO]2020-01-13 20:39:06-1000ms<time<=2000ms :0
+[INFO]2020-01-13 20:39:06-2000ms<time<=8000ms :0
+[INFO]2020-01-13 20:39:06-time>8000ms         :0
+[INFO]2020-01-13 20:39:06-
+
+[INFO]2020-01-13 20:39:06-BeeCP(FastPool-1)begin to shutdown
+[INFO]2020-01-13 20:39:06-BeeCP(FastPool-1)has shutdown
+[INFO]2020-01-13 20:39:21-[JDBC INFO]
+[INFO]2020-01-13 20:39:21-[Driver:com.mysql.jdbc.Driver]
+[INFO]2020-01-13 20:39:21-[URL:jdbc:mysql://localhost/test]
+[INFO]2020-01-13 20:39:21-
+
+[INFO]2020-01-13 20:39:21-BeeCP(FastPool-1)starting....
+[WARN]2020-01-13 20:39:21-BeeCP(FastPool-1)driver not support 'networkTimeout'
+[INFO]2020-01-13 20:39:21-BeeCP(FastPool-1)has startup{init size:16,max size:16,concurrent size:8,mode:fair,max wait:80000ms,driver:com.mysql.jdbc.Driver}
+[INFO]2020-01-13 20:39:21-Pool[BeeCP_Fair -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:39:43-Pool[BeeCP_Fair -- Multiple thread query] -- Execution count:1000000,total time:10514994ms,avg time:10.5150ms,min time:0ms,max time:9346ms
+[INFO]2020-01-13 20:39:43-success count       :1000000
+[INFO]2020-01-13 20:39:43-fail count          :0
+[INFO]2020-01-13 20:39:43-avr(ms)             :10.5150
+[INFO]2020-01-13 20:39:43-min(ms)             :0
+[INFO]2020-01-13 20:39:43-max(ms)             :9346
+[INFO]2020-01-13 20:39:43-time==0ms           :990547
+[INFO]2020-01-13 20:39:43-1ms=<time<=10ms     :6398
+[INFO]2020-01-13 20:39:43-10ms<time<=50ms     :196
+[INFO]2020-01-13 20:39:43-50ms<time<=100ms    :55
+[INFO]2020-01-13 20:39:43-100ms<time<=200ms   :190
+[INFO]2020-01-13 20:39:43-200ms<time<=500ms   :242
+[INFO]2020-01-13 20:39:43-500ms<time<=1000ms  :306
+[INFO]2020-01-13 20:39:43-1000ms<time<=2000ms :305
+[INFO]2020-01-13 20:39:43-2000ms<time<=8000ms :1404
+[INFO]2020-01-13 20:39:43-time>8000ms         :357
+[INFO]2020-01-13 20:39:43-
+
+[INFO]2020-01-13 20:39:43-BeeCP(FastPool-1)begin to shutdown
+[INFO]2020-01-13 20:39:43-BeeCP(FastPool-1)has shutdown
+
+
+
+
+
+
+
+
+[INFO]2020-01-13 20:42:16-[JDBC INFO]
+[INFO]2020-01-13 20:42:16-[Driver:com.mysql.jdbc.Driver]
+[INFO]2020-01-13 20:42:16-[URL:jdbc:mysql://localhost/test]
+[INFO]2020-01-13 20:42:16-
+
+[INFO]2020-01-13 20:42:16-BeeCP(FastPool-1)starting....
+[WARN]2020-01-13 20:42:16-BeeCP(FastPool-1)driver not support 'networkTimeout'
+[INFO]2020-01-13 20:42:16-BeeCP(FastPool-1)has startup{init size:16,max size:16,concurrent size:8,mode:compete,max wait:80000ms,driver:com.mysql.jdbc.Driver}
+[INFO]2020-01-13 20:42:16-Pool[BeeCP_Compete -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:42:20-Pool[BeeCP_Compete -- Multiple thread borrow] -- Execution count:1000000,total time:184215ms,avg time:0.1842ms,min time:0ms,max time:302ms
+[INFO]2020-01-13 20:42:20-success count       :1000000
+[INFO]2020-01-13 20:42:20-fail count          :0
+[INFO]2020-01-13 20:42:20-avr(ms)             :0.1842
+[INFO]2020-01-13 20:42:20-min(ms)             :0
+[INFO]2020-01-13 20:42:20-max(ms)             :302
+[INFO]2020-01-13 20:42:20-time==0ms           :999148
+[INFO]2020-01-13 20:42:20-1ms=<time<=10ms     :19
+[INFO]2020-01-13 20:42:20-10ms<time<=50ms     :29
+[INFO]2020-01-13 20:42:20-50ms<time<=100ms    :49
+[INFO]2020-01-13 20:42:20-100ms<time<=200ms   :138
+[INFO]2020-01-13 20:42:20-200ms<time<=500ms   :617
+[INFO]2020-01-13 20:42:20-500ms<time<=1000ms  :0
+[INFO]2020-01-13 20:42:20-1000ms<time<=2000ms :0
+[INFO]2020-01-13 20:42:20-2000ms<time<=8000ms :0
+[INFO]2020-01-13 20:42:20-time>8000ms         :0
+[INFO]2020-01-13 20:42:20-
+
+[INFO]2020-01-13 20:42:20-BeeCP(FastPool-1)begin to shutdown
+[INFO]2020-01-13 20:42:20-BeeCP(FastPool-1)has shutdown
+[INFO]2020-01-13 20:42:36-[JDBC INFO]
+[INFO]2020-01-13 20:42:36-[Driver:com.mysql.jdbc.Driver]
+[INFO]2020-01-13 20:42:36-[URL:jdbc:mysql://localhost/test]
+[INFO]2020-01-13 20:42:36-
+
+[INFO]2020-01-13 20:42:36-BeeCP(FastPool-1)starting....
+[WARN]2020-01-13 20:42:36-BeeCP(FastPool-1)driver not support 'networkTimeout'
+[INFO]2020-01-13 20:42:36-BeeCP(FastPool-1)has startup{init size:16,max size:16,concurrent size:8,mode:compete,max wait:80000ms,driver:com.mysql.jdbc.Driver}
+[INFO]2020-01-13 20:42:36-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:42:58-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:1000000,total time:9977471ms,avg time:9.9775ms,min time:0ms,max time:13475ms
+[INFO]2020-01-13 20:42:58-success count       :1000000
+[INFO]2020-01-13 20:42:58-fail count          :0
+[INFO]2020-01-13 20:42:58-avr(ms)             :9.9775
+[INFO]2020-01-13 20:42:58-min(ms)             :0
+[INFO]2020-01-13 20:42:58-max(ms)             :13475
+[INFO]2020-01-13 20:42:58-time==0ms           :991239
+[INFO]2020-01-13 20:42:58-1ms=<time<=10ms     :6404
+[INFO]2020-01-13 20:42:58-10ms<time<=50ms     :580
+[INFO]2020-01-13 20:42:58-50ms<time<=100ms    :52
+[INFO]2020-01-13 20:42:58-100ms<time<=200ms   :229
+[INFO]2020-01-13 20:42:58-200ms<time<=500ms   :85
+[INFO]2020-01-13 20:42:58-500ms<time<=1000ms  :42
+[INFO]2020-01-13 20:42:58-1000ms<time<=2000ms :149
+[INFO]2020-01-13 20:42:58-2000ms<time<=8000ms :600
+[INFO]2020-01-13 20:42:58-time>8000ms         :620
+[INFO]2020-01-13 20:42:58-
+
+[INFO]2020-01-13 20:42:58-BeeCP(FastPool-1)begin to shutdown
+[INFO]2020-01-13 20:42:58-BeeCP(FastPool-1)has shutdown
+[INFO]2020-01-13 20:43:48-[JDBC INFO]
+[INFO]2020-01-13 20:43:48-[Driver:com.mysql.jdbc.Driver]
+[INFO]2020-01-13 20:43:48-[URL:jdbc:mysql://localhost/test]

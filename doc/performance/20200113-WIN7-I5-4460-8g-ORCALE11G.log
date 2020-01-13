@@ -1,0 +1,379 @@
+DB:ORACLE11G-64
+Pool:init size:16:max size:16
+1000Threads x 1000times(take or query)
+
+TimeUnit:MS
+|Pool Name |Take AvgTime |Max Take Time|Qry AvgTime|Max Qry Time|
+| C3P0     |   18.6497   |    3286     |  32.2370  |  3556      |
+| TOMCAT   |   6.2871    |    9116     |  30.5138  |  846       |
+| Druid    |   14.2288   |    8290     |  27.7189  |  38845     |
+| HikariCP |    0.3295   |    263      |  13.6017  |  20946     |
+| BeeCP-F  |    0.0968   |    104      |  7.9230   |  11976     |
+| BeeCP-C  |    0.1307   |    525      |  7.8826   |  14472     |
+
+
+
+[c3p0]
+[INFO]2020-01-13 20:12:39-[JDBC INFO]
+[INFO]2020-01-13 20:12:39-[Driver:oracle.jdbc.OracleDriver]
+[INFO]2020-01-13 20:12:39-[URL:jdbc:oracle:thin:@localhost:1521:orcl]
+[INFO]2020-01-13 20:12:39-
+
+[INFO]2020-01-13 20:12:39-MLog clients using slf4j logging.
+[INFO]2020-01-13 20:12:39-Initializing c3p0-0.9.5.2 [built 08-December-2015 22:06:04 -0800; debug? true; trace: 10]
+[INFO]2020-01-13 20:12:39-Pool[C3P0 -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:12:42-Initializing c3p0 pool... com.mchange.v2.c3p0.ComboPooledDataSource [ acquireIncrement -> 3, acquireRetryAttempts -> 30, acquireRetryDelay -> 1000, autoCommitOnClose -> false, automaticTestTable -> null, breakAfterAcquireFailure -> false, checkoutTimeout -> 80000, connectionCustomizerClassName -> null, connectionTesterClassName -> com.mchange.v2.c3p0.impl.DefaultConnectionTester, contextClassLoaderSource -> caller, dataSourceName -> 1hgec9ia7182et3315ny9tg|67e2d983, debugUnreturnedConnectionStackTraces -> false, description -> null, driverClass -> oracle.jdbc.OracleDriver, extensions -> {}, factoryClassLocation -> null, forceIgnoreUnresolvedTransactions -> false, forceSynchronousCheckins -> false, forceUseNamedDriverClass -> false, identityToken -> 1hgec9ia7182et3315ny9tg|67e2d983, idleConnectionTestPeriod -> 0, initialPoolSize -> 16, jdbcUrl -> jdbc:oracle:thin:@localhost:1521:orcl, maxAdministrativeTaskTime -> 0, maxConnectionAge -> 0, maxIdleTime -> 0, maxIdleTimeExcessConnections -> 0, maxPoolSize -> 16, maxStatements -> 0, maxStatementsPerConnection -> 20, minPoolSize -> 16, numHelperThreads -> 3, preferredTestQuery -> select 1 from dual, privilegeSpawnedThreads -> false, properties -> {user=******, password=******}, propertyCycle -> 0, statementCacheNumDeferredCloseThreads -> 0, testConnectionOnCheckin -> false, testConnectionOnCheckout -> true, unreturnedConnectionTimeout -> 0, userOverrides -> {}, usesTraditionalReflectiveProxies -> false ]
+[INFO]2020-01-13 20:13:05-Pool[C3P0 -- Multiple thread borrow] -- Execution count:1000000,total time:18649709ms,avg time:18.6497ms,min time:0ms,max time:3286ms
+[INFO]2020-01-13 20:13:05-success count       :1000000
+[INFO]2020-01-13 20:13:05-fail count          :0
+[INFO]2020-01-13 20:13:05-avr(ms)             :18.6497
+[INFO]2020-01-13 20:13:05-min(ms)             :0
+[INFO]2020-01-13 20:13:05-max(ms)             :3286
+[INFO]2020-01-13 20:13:05-time==0ms           :645958
+[INFO]2020-01-13 20:13:05-1ms=<time<=10ms     :100147
+[INFO]2020-01-13 20:13:05-10ms<time<=50ms     :167434
+[INFO]2020-01-13 20:13:05-50ms<time<=100ms    :43541
+[INFO]2020-01-13 20:13:05-100ms<time<=200ms   :25355
+[INFO]2020-01-13 20:13:05-200ms<time<=500ms   :14147
+[INFO]2020-01-13 20:13:05-500ms<time<=1000ms  :2573
+[INFO]2020-01-13 20:13:05-1000ms<time<=2000ms :702
+[INFO]2020-01-13 20:13:05-2000ms<time<=8000ms :143
+[INFO]2020-01-13 20:13:05-time>8000ms         :0
+[INFO]2020-01-13 20:13:05-
+
+[INFO]2020-01-13 20:13:15-[JDBC INFO]
+[INFO]2020-01-13 20:13:15-[Driver:oracle.jdbc.OracleDriver]
+[INFO]2020-01-13 20:13:15-[URL:jdbc:oracle:thin:@localhost:1521:orcl]
+[INFO]2020-01-13 20:13:15-
+
+[INFO]2020-01-13 20:13:15-MLog clients using slf4j logging.
+[INFO]2020-01-13 20:13:15-Initializing c3p0-0.9.5.2 [built 08-December-2015 22:06:04 -0800; debug? true; trace: 10]
+[INFO]2020-01-13 20:13:15-Pool[C3P0 -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:13:20-Initializing c3p0 pool... com.mchange.v2.c3p0.ComboPooledDataSource [ acquireIncrement -> 3, acquireRetryAttempts -> 30, acquireRetryDelay -> 1000, autoCommitOnClose -> false, automaticTestTable -> null, breakAfterAcquireFailure -> false, checkoutTimeout -> 80000, connectionCustomizerClassName -> null, connectionTesterClassName -> com.mchange.v2.c3p0.impl.DefaultConnectionTester, contextClassLoaderSource -> caller, dataSourceName -> 1hgec9ia7182fkn3hae5fk|67e2d983, debugUnreturnedConnectionStackTraces -> false, description -> null, driverClass -> oracle.jdbc.OracleDriver, extensions -> {}, factoryClassLocation -> null, forceIgnoreUnresolvedTransactions -> false, forceSynchronousCheckins -> false, forceUseNamedDriverClass -> false, identityToken -> 1hgec9ia7182fkn3hae5fk|67e2d983, idleConnectionTestPeriod -> 0, initialPoolSize -> 16, jdbcUrl -> jdbc:oracle:thin:@localhost:1521:orcl, maxAdministrativeTaskTime -> 0, maxConnectionAge -> 0, maxIdleTime -> 0, maxIdleTimeExcessConnections -> 0, maxPoolSize -> 16, maxStatements -> 0, maxStatementsPerConnection -> 20, minPoolSize -> 16, numHelperThreads -> 3, preferredTestQuery -> select 1 from dual, privilegeSpawnedThreads -> false, properties -> {user=******, password=******}, propertyCycle -> 0, statementCacheNumDeferredCloseThreads -> 0, testConnectionOnCheckin -> false, testConnectionOnCheckout -> true, unreturnedConnectionTimeout -> 0, userOverrides -> {}, usesTraditionalReflectiveProxies -> false ]
+[INFO]2020-01-13 20:14:01-Pool[C3P0 -- Multiple thread query] -- Execution count:1000000,total time:32236952ms,avg time:32.2370ms,min time:0ms,max time:3556ms
+[INFO]2020-01-13 20:14:01-success count       :1000000
+[INFO]2020-01-13 20:14:01-fail count          :0
+[INFO]2020-01-13 20:14:01-avr(ms)             :32.2370
+[INFO]2020-01-13 20:14:01-min(ms)             :0
+[INFO]2020-01-13 20:14:01-max(ms)             :3556
+[INFO]2020-01-13 20:14:01-time==0ms           :599190
+[INFO]2020-01-13 20:14:01-1ms=<time<=10ms     :87922
+[INFO]2020-01-13 20:14:01-10ms<time<=50ms     :168297
+[INFO]2020-01-13 20:14:01-50ms<time<=100ms    :60922
+[INFO]2020-01-13 20:14:01-100ms<time<=200ms   :44190
+[INFO]2020-01-13 20:14:01-200ms<time<=500ms   :30422
+[INFO]2020-01-13 20:14:01-500ms<time<=1000ms  :7606
+[INFO]2020-01-13 20:14:01-1000ms<time<=2000ms :1238
+[INFO]2020-01-13 20:14:01-2000ms<time<=8000ms :213
+[INFO]2020-01-13 20:14:01-time>8000ms         :0
+[INFO]2020-01-13 20:14:01-
+
+
+
+
+
+
+
+
+[Tomcat-JDBC]
+[INFO]2020-01-13 20:14:52-[JDBC INFO]
+[INFO]2020-01-13 20:14:52-[Driver:oracle.jdbc.OracleDriver]
+[INFO]2020-01-13 20:14:52-[URL:jdbc:oracle:thin:@localhost:1521:orcl]
+[INFO]2020-01-13 20:14:52-
+
+[INFO]2020-01-13 20:14:52-Pool[Tomcat -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:15:05-Pool[Tomcat -- Multiple thread borrow] -- Execution count:1000000,total time:6287091ms,avg time:6.2871ms,min time:0ms,max time:9116ms
+[INFO]2020-01-13 20:15:05-success count       :1000000
+[INFO]2020-01-13 20:15:05-fail count          :0
+[INFO]2020-01-13 20:15:05-avr(ms)             :6.2871
+[INFO]2020-01-13 20:15:05-min(ms)             :0
+[INFO]2020-01-13 20:15:05-max(ms)             :9116
+[INFO]2020-01-13 20:15:05-time==0ms           :342867
+[INFO]2020-01-13 20:15:05-1ms=<time<=10ms     :655328
+[INFO]2020-01-13 20:15:05-10ms<time<=50ms     :685
+[INFO]2020-01-13 20:15:05-50ms<time<=100ms    :35
+[INFO]2020-01-13 20:15:05-100ms<time<=200ms   :48
+[INFO]2020-01-13 20:15:05-200ms<time<=500ms   :193
+[INFO]2020-01-13 20:15:05-500ms<time<=1000ms  :95
+[INFO]2020-01-13 20:15:05-1000ms<time<=2000ms :275
+[INFO]2020-01-13 20:15:05-2000ms<time<=8000ms :323
+[INFO]2020-01-13 20:15:05-time>8000ms         :151
+[INFO]2020-01-13 20:15:05-
+
+[INFO]2020-01-13 20:15:09-[JDBC INFO]
+[INFO]2020-01-13 20:15:09-[Driver:oracle.jdbc.OracleDriver]
+[INFO]2020-01-13 20:15:09-[URL:jdbc:oracle:thin:@localhost:1521:orcl]
+[INFO]2020-01-13 20:15:09-
+
+[INFO]2020-01-13 20:15:09-Pool[Tomcat -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:15:45-Pool[Tomcat -- Multiple thread query] -- Execution count:1000000,total time:30513807ms,avg time:30.5138ms,min time:0ms,max time:846ms
+[INFO]2020-01-13 20:15:45-success count       :1000000
+[INFO]2020-01-13 20:15:45-fail count          :0
+[INFO]2020-01-13 20:15:45-avr(ms)             :30.5138
+[INFO]2020-01-13 20:15:45-min(ms)             :0
+[INFO]2020-01-13 20:15:45-max(ms)             :846
+[INFO]2020-01-13 20:15:45-time==0ms           :329
+[INFO]2020-01-13 20:15:45-1ms=<time<=10ms     :8869
+[INFO]2020-01-13 20:15:45-10ms<time<=50ms     :978717
+[INFO]2020-01-13 20:15:45-50ms<time<=100ms    :10375
+[INFO]2020-01-13 20:15:45-100ms<time<=200ms   :706
+[INFO]2020-01-13 20:15:45-200ms<time<=500ms   :4
+[INFO]2020-01-13 20:15:45-500ms<time<=1000ms  :1000
+[INFO]2020-01-13 20:15:45-1000ms<time<=2000ms :0
+[INFO]2020-01-13 20:15:45-2000ms<time<=8000ms :0
+[INFO]2020-01-13 20:15:45-time>8000ms         :0
+[INFO]2020-01-13 20:15:45-
+
+
+
+
+
+
+
+
+
+[Druid]
+[INFO]2020-01-13 20:16:16-[JDBC INFO]
+[INFO]2020-01-13 20:16:16-[Driver:oracle.jdbc.OracleDriver]
+[INFO]2020-01-13 20:16:16-[URL:jdbc:oracle:thin:@localhost:1521:orcl]
+[INFO]2020-01-13 20:16:16-
+
+[INFO]2020-01-13 20:16:16-Pool[Druid -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:16:20-{dataSource-1} inited
+[INFO]2020-01-13 20:16:37-Pool[Druid -- Multiple thread borrow] -- Execution count:1000000,total time:14228805ms,avg time:14.2288ms,min time:0ms,max time:8290ms
+[INFO]2020-01-13 20:16:37-success count       :1000000
+[INFO]2020-01-13 20:16:37-fail count          :0
+[INFO]2020-01-13 20:16:37-avr(ms)             :14.2288
+[INFO]2020-01-13 20:16:37-min(ms)             :0
+[INFO]2020-01-13 20:16:37-max(ms)             :8290
+[INFO]2020-01-13 20:16:37-time==0ms           :962075
+[INFO]2020-01-13 20:16:37-1ms=<time<=10ms     :10671
+[INFO]2020-01-13 20:16:37-10ms<time<=50ms     :6805
+[INFO]2020-01-13 20:16:37-50ms<time<=100ms    :2166
+[INFO]2020-01-13 20:16:37-100ms<time<=200ms   :3461
+[INFO]2020-01-13 20:16:37-200ms<time<=500ms   :6185
+[INFO]2020-01-13 20:16:37-500ms<time<=1000ms  :4351
+[INFO]2020-01-13 20:16:37-1000ms<time<=2000ms :2761
+[INFO]2020-01-13 20:16:37-2000ms<time<=8000ms :1524
+[INFO]2020-01-13 20:16:37-time>8000ms         :1
+[INFO]2020-01-13 20:16:37-
+
+[INFO]2020-01-13 20:16:37-{dataSource-1} closing ...
+[INFO]2020-01-13 20:16:38-{dataSource-1} closed
+[INFO]2020-01-13 20:16:56-[JDBC INFO]
+[INFO]2020-01-13 20:16:56-[Driver:oracle.jdbc.OracleDriver]
+[INFO]2020-01-13 20:16:56-[URL:jdbc:oracle:thin:@localhost:1521:orcl]
+[INFO]2020-01-13 20:16:56-
+
+[INFO]2020-01-13 20:16:56-Pool[Druid -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:17:01-{dataSource-1} inited
+[INFO]2020-01-13 20:17:42-Pool[Druid -- Multiple thread query] -- Execution count:1000000,total time:27718855ms,avg time:27.7189ms,min time:0ms,max time:38845ms
+[INFO]2020-01-13 20:17:42-success count       :1000000
+[INFO]2020-01-13 20:17:42-fail count          :0
+[INFO]2020-01-13 20:17:42-avr(ms)             :27.7189
+[INFO]2020-01-13 20:17:42-min(ms)             :0
+[INFO]2020-01-13 20:17:42-max(ms)             :38845
+[INFO]2020-01-13 20:17:42-time==0ms           :989498
+[INFO]2020-01-13 20:17:42-1ms=<time<=10ms     :2059
+[INFO]2020-01-13 20:17:42-10ms<time<=50ms     :1862
+[INFO]2020-01-13 20:17:42-50ms<time<=100ms    :524
+[INFO]2020-01-13 20:17:42-100ms<time<=200ms   :540
+[INFO]2020-01-13 20:17:42-200ms<time<=500ms   :890
+[INFO]2020-01-13 20:17:42-500ms<time<=1000ms  :673
+[INFO]2020-01-13 20:17:42-1000ms<time<=2000ms :820
+[INFO]2020-01-13 20:17:42-2000ms<time<=8000ms :2036
+[INFO]2020-01-13 20:17:42-time>8000ms         :1098
+[INFO]2020-01-13 20:17:42-
+
+[INFO]2020-01-13 20:17:42-{dataSource-1} closing ...
+[INFO]2020-01-13 20:17:42-{dataSource-1} closed
+
+
+
+
+
+
+
+[HikariCP]
+[INFO]2020-01-13 20:17:58-[JDBC INFO]
+[INFO]2020-01-13 20:17:58-[Driver:oracle.jdbc.OracleDriver]
+[INFO]2020-01-13 20:17:58-[URL:jdbc:oracle:thin:@localhost:1521:orcl]
+[INFO]2020-01-13 20:17:58-
+
+[INFO]2020-01-13 20:17:58-HikariPool-1 - Starting...
+[INFO]2020-01-13 20:17:58-HikariPool-1 - Start completed.
+[INFO]2020-01-13 20:17:58-Pool[HikariCP -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:18:02-Pool[HikariCP -- Multiple thread borrow] -- Execution count:1000000,total time:329501ms,avg time:0.3295ms,min time:0ms,max time:263ms
+[INFO]2020-01-13 20:18:02-success count       :1000000
+[INFO]2020-01-13 20:18:02-fail count          :0
+[INFO]2020-01-13 20:18:02-avr(ms)             :0.3295
+[INFO]2020-01-13 20:18:02-min(ms)             :0
+[INFO]2020-01-13 20:18:02-max(ms)             :263
+[INFO]2020-01-13 20:18:02-time==0ms           :995158
+[INFO]2020-01-13 20:18:02-1ms=<time<=10ms     :968
+[INFO]2020-01-13 20:18:02-10ms<time<=50ms     :1416
+[INFO]2020-01-13 20:18:02-50ms<time<=100ms    :1235
+[INFO]2020-01-13 20:18:02-100ms<time<=200ms   :1105
+[INFO]2020-01-13 20:18:02-200ms<time<=500ms   :118
+[INFO]2020-01-13 20:18:02-500ms<time<=1000ms  :0
+[INFO]2020-01-13 20:18:02-1000ms<time<=2000ms :0
+[INFO]2020-01-13 20:18:02-2000ms<time<=8000ms :0
+[INFO]2020-01-13 20:18:02-time>8000ms         :0
+[INFO]2020-01-13 20:18:02-
+
+[INFO]2020-01-13 20:18:02-HikariPool-1 - Shutdown initiated...
+[INFO]2020-01-13 20:18:02-HikariPool-1 - Shutdown completed.
+[INFO]2020-01-13 20:18:04-[JDBC INFO]
+[INFO]2020-01-13 20:18:04-[Driver:oracle.jdbc.OracleDriver]
+[INFO]2020-01-13 20:18:04-[URL:jdbc:oracle:thin:@localhost:1521:orcl]
+[INFO]2020-01-13 20:18:04-
+
+[INFO]2020-01-13 20:18:05-HikariPool-1 - Starting...
+[INFO]2020-01-13 20:18:05-HikariPool-1 - Start completed.
+[INFO]2020-01-13 20:18:05-Pool[HikariCP -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:18:32-Pool[HikariCP -- Multiple thread query] -- Execution count:1000000,total time:13601721ms,avg time:13.6017ms,min time:0ms,max time:20946ms
+[INFO]2020-01-13 20:18:32-success count       :1000000
+[INFO]2020-01-13 20:18:32-fail count          :0
+[INFO]2020-01-13 20:18:32-avr(ms)             :13.6017
+[INFO]2020-01-13 20:18:32-min(ms)             :0
+[INFO]2020-01-13 20:18:32-max(ms)             :20946
+[INFO]2020-01-13 20:18:32-time==0ms           :993559
+[INFO]2020-01-13 20:18:32-1ms=<time<=10ms     :1230
+[INFO]2020-01-13 20:18:32-10ms<time<=50ms     :963
+[INFO]2020-01-13 20:18:32-50ms<time<=100ms    :512
+[INFO]2020-01-13 20:18:32-100ms<time<=200ms   :391
+[INFO]2020-01-13 20:18:32-200ms<time<=500ms   :461
+[INFO]2020-01-13 20:18:32-500ms<time<=1000ms  :526
+[INFO]2020-01-13 20:18:32-1000ms<time<=2000ms :620
+[INFO]2020-01-13 20:18:32-2000ms<time<=8000ms :1200
+[INFO]2020-01-13 20:18:32-time>8000ms         :538
+[INFO]2020-01-13 20:18:32-
+
+[INFO]2020-01-13 20:18:32-HikariPool-1 - Shutdown initiated...
+[INFO]2020-01-13 20:18:32-HikariPool-1 - Shutdown completed.
+
+
+
+
+
+[BeeCP-Fair]
+[INFO]2020-01-13 20:21:00-[JDBC INFO]
+[INFO]2020-01-13 20:21:00-[Driver:oracle.jdbc.OracleDriver]
+[INFO]2020-01-13 20:21:00-[URL:jdbc:oracle:thin:@localhost:1521:orcl]
+[INFO]2020-01-13 20:21:00-
+
+[INFO]2020-01-13 20:21:00-BeeCP(FastPool-1)starting....
+[WARN]2020-01-13 20:21:00-BeeCP(FastPool-1)driver not support 'networkTimeout'
+[INFO]2020-01-13 20:21:00-BeeCP(FastPool-1)has startup{init size:16,max size:16,concurrent size:8,mode:fair,max wait:80000ms,driver:oracle.jdbc.OracleDriver}
+[INFO]2020-01-13 20:21:00-Pool[BeeCP_Fair -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:21:04-Pool[BeeCP_Fair -- Multiple thread borrow] -- Execution count:1000000,total time:96810ms,avg time:0.0968ms,min time:0ms,max time:104ms
+[INFO]2020-01-13 20:21:04-success count       :1000000
+[INFO]2020-01-13 20:21:04-fail count          :0
+[INFO]2020-01-13 20:21:04-avr(ms)             :0.0968
+[INFO]2020-01-13 20:21:04-min(ms)             :0
+[INFO]2020-01-13 20:21:04-max(ms)             :104
+[INFO]2020-01-13 20:21:04-time==0ms           :996485
+[INFO]2020-01-13 20:21:04-1ms=<time<=10ms     :2238
+[INFO]2020-01-13 20:21:04-10ms<time<=50ms     :260
+[INFO]2020-01-13 20:21:04-50ms<time<=100ms    :1016
+[INFO]2020-01-13 20:21:04-100ms<time<=200ms   :1
+[INFO]2020-01-13 20:21:04-200ms<time<=500ms   :0
+[INFO]2020-01-13 20:21:04-500ms<time<=1000ms  :0
+[INFO]2020-01-13 20:21:04-1000ms<time<=2000ms :0
+[INFO]2020-01-13 20:21:04-2000ms<time<=8000ms :0
+[INFO]2020-01-13 20:21:04-time>8000ms         :0
+[INFO]2020-01-13 20:21:04-
+
+[INFO]2020-01-13 20:21:04-BeeCP(FastPool-1)begin to shutdown
+[INFO]2020-01-13 20:21:04-BeeCP(FastPool-1)has shutdown
+[INFO]2020-01-13 20:21:08-[JDBC INFO]
+[INFO]2020-01-13 20:21:08-[Driver:oracle.jdbc.OracleDriver]
+[INFO]2020-01-13 20:21:08-[URL:jdbc:oracle:thin:@localhost:1521:orcl]
+[INFO]2020-01-13 20:21:08-
+
+[INFO]2020-01-13 20:21:08-BeeCP(FastPool-1)starting....
+[WARN]2020-01-13 20:21:08-BeeCP(FastPool-1)driver not support 'networkTimeout'
+[INFO]2020-01-13 20:21:08-BeeCP(FastPool-1)has startup{init size:16,max size:16,concurrent size:8,mode:fair,max wait:80000ms,driver:oracle.jdbc.OracleDriver}
+[INFO]2020-01-13 20:21:08-Pool[BeeCP_Fair -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:21:29-Pool[BeeCP_Fair -- Multiple thread query] -- Execution count:1000000,total time:7922995ms,avg time:7.9230ms,min time:0ms,max time:11976ms
+[INFO]2020-01-13 20:21:29-success count       :1000000
+[INFO]2020-01-13 20:21:29-fail count          :0
+[INFO]2020-01-13 20:21:29-avr(ms)             :7.9230
+[INFO]2020-01-13 20:21:29-min(ms)             :0
+[INFO]2020-01-13 20:21:29-max(ms)             :11976
+[INFO]2020-01-13 20:21:29-time==0ms           :994660
+[INFO]2020-01-13 20:21:29-1ms=<time<=10ms     :2600
+[INFO]2020-01-13 20:21:29-10ms<time<=50ms     :367
+[INFO]2020-01-13 20:21:29-50ms<time<=100ms    :376
+[INFO]2020-01-13 20:21:29-100ms<time<=200ms   :242
+[INFO]2020-01-13 20:21:29-200ms<time<=500ms   :359
+[INFO]2020-01-13 20:21:29-500ms<time<=1000ms  :220
+[INFO]2020-01-13 20:21:29-1000ms<time<=2000ms :275
+[INFO]2020-01-13 20:21:29-2000ms<time<=8000ms :412
+[INFO]2020-01-13 20:21:29-time>8000ms         :489
+[INFO]2020-01-13 20:21:29-
+
+[INFO]2020-01-13 20:21:29-BeeCP(FastPool-1)begin to shutdown
+[INFO]2020-01-13 20:21:29-BeeCP(FastPool-1)has shutdown
+
+
+
+[BeeCP-Compete]
+[INFO]2020-01-13 20:24:03-[JDBC INFO]
+[INFO]2020-01-13 20:24:03-[Driver:oracle.jdbc.OracleDriver]
+[INFO]2020-01-13 20:24:03-[URL:jdbc:oracle:thin:@localhost:1521:orcl]
+[INFO]2020-01-13 20:24:03-
+
+[INFO]2020-01-13 20:24:03-BeeCP(FastPool-1)starting....
+[WARN]2020-01-13 20:24:04-BeeCP(FastPool-1)driver not support 'networkTimeout'
+[INFO]2020-01-13 20:24:04-BeeCP(FastPool-1)has startup{init size:16,max size:16,concurrent size:8,mode:compete,max wait:80000ms,driver:oracle.jdbc.OracleDriver}
+[INFO]2020-01-13 20:24:04-Pool[BeeCP_Compete -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:24:07-Pool[BeeCP_Compete -- Multiple thread borrow] -- Execution count:1000000,total time:130718ms,avg time:0.1307ms,min time:0ms,max time:525ms
+[INFO]2020-01-13 20:24:07-success count       :1000000
+[INFO]2020-01-13 20:24:07-fail count          :0
+[INFO]2020-01-13 20:24:07-avr(ms)             :0.1307
+[INFO]2020-01-13 20:24:07-min(ms)             :0
+[INFO]2020-01-13 20:24:07-max(ms)             :525
+[INFO]2020-01-13 20:24:07-time==0ms           :999607
+[INFO]2020-01-13 20:24:07-1ms=<time<=10ms     :24
+[INFO]2020-01-13 20:24:07-10ms<time<=50ms     :112
+[INFO]2020-01-13 20:24:07-50ms<time<=100ms    :6
+[INFO]2020-01-13 20:24:07-100ms<time<=200ms   :5
+[INFO]2020-01-13 20:24:07-200ms<time<=500ms   :61
+[INFO]2020-01-13 20:24:07-500ms<time<=1000ms  :185
+[INFO]2020-01-13 20:24:07-1000ms<time<=2000ms :0
+[INFO]2020-01-13 20:24:07-2000ms<time<=8000ms :0
+[INFO]2020-01-13 20:24:07-time>8000ms         :0
+[INFO]2020-01-13 20:24:07-
+
+[INFO]2020-01-13 20:24:07-BeeCP(FastPool-1)begin to shutdown
+[INFO]2020-01-13 20:24:08-BeeCP(FastPool-1)has shutdown
+[INFO]2020-01-13 20:24:11-[JDBC INFO]
+[INFO]2020-01-13 20:24:11-[Driver:oracle.jdbc.OracleDriver]
+[INFO]2020-01-13 20:24:11-[URL:jdbc:oracle:thin:@localhost:1521:orcl]
+[INFO]2020-01-13 20:24:11-
+
+[INFO]2020-01-13 20:24:11-BeeCP(FastPool-1)starting....
+[WARN]2020-01-13 20:24:11-BeeCP(FastPool-1)driver not support 'networkTimeout'
+[INFO]2020-01-13 20:24:11-BeeCP(FastPool-1)has startup{init size:16,max size:16,concurrent size:8,mode:compete,max wait:80000ms,driver:oracle.jdbc.OracleDriver}
+[INFO]2020-01-13 20:24:11-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2020-01-13 20:24:31-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:1000000,total time:7882639ms,avg time:7.8826ms,min time:0ms,max time:14472ms
+[INFO]2020-01-13 20:24:31-success count       :1000000
+[INFO]2020-01-13 20:24:31-fail count          :0
+[INFO]2020-01-13 20:24:31-avr(ms)             :7.8826
+[INFO]2020-01-13 20:24:31-min(ms)             :0
+[INFO]2020-01-13 20:24:31-max(ms)             :14472
+[INFO]2020-01-13 20:24:31-time==0ms           :997902
+[INFO]2020-01-13 20:24:31-1ms=<time<=10ms     :409
+[INFO]2020-01-13 20:24:31-10ms<time<=50ms     :373
+[INFO]2020-01-13 20:24:31-50ms<time<=100ms    :171
+[INFO]2020-01-13 20:24:31-100ms<time<=200ms   :95
+[INFO]2020-01-13 20:24:31-200ms<time<=500ms   :47
+[INFO]2020-01-13 20:24:31-500ms<time<=1000ms  :37
+[INFO]2020-01-13 20:24:31-1000ms<time<=2000ms :51
+[INFO]2020-01-13 20:24:31-2000ms<time<=8000ms :421
+[INFO]2020-01-13 20:24:31-time>8000ms         :494
+[INFO]2020-01-13 20:24:31-
+
+[INFO]2020-01-13 20:24:31-BeeCP(FastPool-1)begin to shutdown
+[INFO]2020-01-13 20:24:31-BeeCP(FastPool-1)has shutdown

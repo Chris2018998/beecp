@@ -1,0 +1,25 @@
+DB:ORACLE11G-64
+Pool:init size:16:max size:16
+1000Threads x 1000times(take or query)
+TimeUnit:MS
+|Pool Name |Take AvgTime |Max Take Time|Qry AvgTime|Max Qry Time|
+| C3P0     |   18.6497   |    3286     |  32.2370  |  3556      |
+| TOMCAT   |   6.2871    |    9116     |  30.5138  |  846       |
+| Druid    |   14.2288   |    8290     |  27.7189  |  38845     |
+| HikariCP |    0.3295   |    263      |  13.6017  |  20946     |
+| BeeCP-F  |    0.0968   |    104      |  7.9230   |  11976     |
+| BeeCP-C  |    0.1307   |    525      |  7.8826   |  14472     |
+
+
+DB:Mysql5.6.47-64
+Pool:init size:16:max size:16
+1000Threads x 1000times(take or query)
+TimeUnit:MS
+|Pool Name |Take AvgTime |Max Take Time|Qry AvgTime|Max Qry Time|
+| C3P0     |   17.6860   |    1240     |  39.2695  |  2310      |
+| TOMCAT   |   10.2206   |    379      |  26.8488  |  542       |
+| Druid    |   9.1678    |    2254     |  27.6957  |  22033     |
+| HikariCP |   0.3100    |    387      |  15.0692  |  8410      |
+| BeeCP-F  |   0.0963    |    105      |  10.5150  |  9346      |
+| BeeCP-C  |   0.1842    |    302      |  9.9775   |  13475     |
+
