@@ -67,6 +67,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private ConnectionFactory connFactory;
 	private final Object connArrayLock =new Object();
 	private volatile PooledConnection[] connArray = new PooledConnection[0];
+	private AtomicInteger createNotifySize = new AtomicInteger(0);
 	private AtomicInteger createConnThreadState = new AtomicInteger(THREAD_WORKING);
 	private ConcurrentLinkedQueue<Borrower> waitTransferQueue = new ConcurrentLinkedQueue<>();
 	private ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<>();
@@ -338,7 +339,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			if (!isActive) {
 				ConnStateUpdater.set(pConn,CONNECTION_CLOSED);
 				removePooledConn(pConn,DESC_REMOVE_BAD);
-				tryToCreateNewConnByAsyn();
+				tryToCreateNewConnByAsyn(1);
 			}
 		}
 	}
@@ -465,7 +466,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		TansferStateUpdater.set(borrower, BORROWER_NORMAL);
 		try {// wait one transferred connection
 			waitTransferQueue.offer(borrower);
-			//this.tryToCreateNewConnByAsyn();
+			//this.tryToCreateNewConnByAsyn(1);
 
 			for (;;) {
 				stateObject = TansferStateUpdater.get(borrower);
@@ -524,9 +525,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 
 	// notify to create connections to pool
-	private void tryToCreateNewConnByAsyn() {
-		if (createConnThreadState.get() == THREAD_WAITING && connArray.length < PoolMaxSize
-				&& createConnThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING)) {
+	private void tryToCreateNewConnByAsyn(int size) {
+		if(connArray.length +size+createNotifySize.get()<=PoolMaxSize){
+			createNotifySize.addAndGet(size);
+			if (createConnThreadState.get() == THREAD_WAITING
+				&& createConnThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
 			LockSupport.unpark(this);
 		}
 	}
@@ -578,6 +581,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 * or dead connections,or long time not active connections in using state
 	 */
 	private void closeIdleTimeoutConnection() {
+		int removedSize=0;
 		if (poolState.get() == POOL_NORMAL) {
 			for (PooledConnection pConn : connArray) {
 				int state = ConnStateUpdater.get(pConn);
@@ -585,18 +589,20 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					boolean isTimeoutInIdle =((currentTimeMillis()-pConn.lastAccessTime-poolConfig.getIdleTimeout()>=0));
 					if(isTimeoutInIdle && ConnStateUpdater.compareAndSet(pConn,state,CONNECTION_CLOSED)) {//need close idle
 						removePooledConn(pConn,DESC_REMOVE_IDLE);
+						removedSize++;
 					}
 				} else if (state == CONNECTION_USING) {
 					boolean isHolTimeoutInNotUsing=((currentTimeMillis()-pConn.lastAccessTime-poolConfig.getHoldIdleTimeout()>=0));
 					if(isHolTimeoutInNotUsing && ConnStateUpdater.compareAndSet(pConn,state,CONNECTION_CLOSED)) {
 						removePooledConn(pConn,DESC_REMOVE_HOLDTIMEOUT);
+						removedSize++;
 					}
 				} else if (state == CONNECTION_CLOSED) {
 					removePooledConn(pConn,DESC_REMOVE_CLOSED);
+					removedSize++;
 				}
 			}
-
-			tryToCreateNewConnByAsyn();
+			if(removedSize>0) tryToCreateNewConnByAsyn(removedSize);
 		}
 	}
 
@@ -689,20 +695,22 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	// create connection to pool
 	public void run() {
 		PooledConnection pConn;
-		while (createConnThreadState.get()==THREAD_WORKING) {
-			if (!waitTransferQueue.isEmpty() && connArray.length<PoolMaxSize) {
-				try {
-					if((pConn=this.createPooledConn(CONNECTION_USING))!=null)
-						release(pConn,false);
-				} catch (SQLException e) {
-					transferException(e);
+		while (createConnThreadState.get()== THREAD_WORKING) {
+			while (createNotifySize.decrementAndGet()>=0) {
+				if (!waitTransferQueue.isEmpty() && connArray.length < PoolMaxSize) {
+					try {
+						if ((pConn = this.createPooledConn(CONNECTION_USING)) != null)
+							release(pConn, false);
+					} catch (SQLException e) {
+						transferException(e);
+					}
 				}
-			} else if (createConnThreadState.compareAndSet(THREAD_WORKING, THREAD_WAITING)) {
+			}
+			if (createConnThreadState.compareAndSet(THREAD_WORKING, THREAD_WAITING)) {
 				LockSupport.park(this);
 			}
 		}
 	}
-
 	/******************************** JMX **************************************/
 	// close all connections
 	public void reset() {
