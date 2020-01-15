@@ -696,7 +696,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	public void run() {
 		PooledConnection pConn;
 		while (createConnThreadState.get()== THREAD_WORKING) {
-			while (createNotifySize.decrementAndGet()>=0) {
+			while (createNotifySize.get()>0 && createNotifySize.decrementAndGet()>=0) {
 				if (!waitTransferQueue.isEmpty() && connArray.length < PoolMaxSize) {
 					try {
 						if ((pConn = this.createPooledConn(CONNECTION_USING)) != null)

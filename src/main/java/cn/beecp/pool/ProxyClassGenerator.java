@@ -293,7 +293,7 @@ public final class ProxyClassGenerator {
 				methodBuffer.append("return new ProxyStatement(delegate."+methodName+"($$),this,pConn);");
 			}else if(newCtMethodm.getReturnType() == ctPsStatementIntf){
 				methodBuffer.append("if(pConn.stmCacheIsValid){");
-				methodBuffer.append(" Object key=new StatementCachePsKey($$);");
+				methodBuffer.append(" StatementCachePsKey key=new StatementCachePsKey($$);");
 				methodBuffer.append(" PreparedStatement stm=pConn.getStatement(key);");
 				methodBuffer.append(" if(stm==null){");
 				methodBuffer.append("    stm=delegate."+methodName+"($$);");
@@ -305,7 +305,7 @@ public final class ProxyClassGenerator {
 				methodBuffer.append("}");
 			}else if(newCtMethodm.getReturnType() == ctCsStatementIntf){
 				methodBuffer.append("if(pConn.stmCacheIsValid){");
-				methodBuffer.append(" Object key=new StatementCacheCsKey($$);");
+				methodBuffer.append(" StatementCacheCsKey key=new StatementCacheCsKey($$);");
 				methodBuffer.append(" CallableStatement stm=(CallableStatement)pConn.getStatement(key);");
 				methodBuffer.append(" if(stm==null){");
 				methodBuffer.append("   stm=delegate."+methodName+"($$);");
