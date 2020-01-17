@@ -68,14 +68,14 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 			mode = "compete";
 		}
 
-		log.info("BeeCP({})has been startup{init size:{},max size:{},concurrent size:{},mode:{},max wait:{}ms}",
+		registerJMX();
+		log.info("BeeCP({})has been startup{init size:{},max size:{},concurrent size:{},mode:{},max wait:{}ms},driver:{}}",
 				poolName,
 				0,
 				0,
 				poolConfig.getConcurrentSize(),
 				mode,
-				poolConfig.getMaxWait());
-		registerJMX();
+				poolConfig.getDriverClassName());
 	}
 
 	/**
