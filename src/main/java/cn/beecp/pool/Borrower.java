@@ -29,6 +29,10 @@ class Borrower {
 	public boolean equals(Object o) {
 		return this == o;
 	}
+	public PooledConnection initBeforeBorrow() {
+		hasHoldNewOne = false;
+		return lastUsedConn;
+	}
 	public void setBorrowedConnection(PooledConnection conn) {
 		lastUsedConn = conn;
 		hasHoldNewOne = true;

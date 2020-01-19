@@ -403,8 +403,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 		try {
 			if (borrower != null) {
-				borrower.hasHoldNewOne = false;
-				PooledConnection pConn = borrower.lastUsedConn;
+				PooledConnection pConn = borrower.initBeforeBorrow();
 				if (pConn != null && ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
 					if (testOnBorrow(pConn))
 						return createProxyConnection(pConn, borrower);
@@ -510,10 +509,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					TansferStateUpdater.compareAndSet(borrower, BORROWER_WAITING, BORROWER_NORMAL);
 				}
 			} // for
+			return null;
 		} finally {
 			waitTransferQueue.remove(borrower);
 		}
-		return null;
 	}
 
 	// create proxy to wrap connection as result
