@@ -149,10 +149,10 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 	public int getSemaphoreAcquiredSize(){
 		return poolConfig.getConcurrentSize()-poolSemaphore.availablePermits();
 	}
-	public int getSemaphoreWatingSize(){
+	public int getSemaphoreWaitingSize(){
 		return poolSemaphore.getQueueLength();
 	}
-	public int getTransferWatingSize(){
+	public int getTransferWaitingSize(){
 		return 0;
 	}
 	// register JMX

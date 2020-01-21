@@ -45,9 +45,9 @@ public interface ConnectionPoolJMXBean {
 
 	int getSemaphoreAcquiredSize();
 
-	int getSemaphoreWatingSize();
+	int getSemaphoreWaitingSize();
 
-	int getTransferWatingSize();
+	int getTransferWaitingSize();
 
 }
 

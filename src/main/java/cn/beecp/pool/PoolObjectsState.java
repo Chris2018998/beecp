@@ -37,7 +37,7 @@ class PoolObjectsState {
 	//WORK THREAD STATE
 	static final int THREAD_WORKING        = 1;
 	static final int THREAD_WAITING        = 2;
-	static final int THREAD_DEAD           = 3;  
+	static final int THREAD_DEAD           = 3;
 
 	//BORROWER STATE
 	static final Object BORROWER_NORMAL      = new Object();
