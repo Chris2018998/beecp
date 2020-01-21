@@ -71,8 +71,8 @@ class PooledConnection extends StatementCache{
 	}
 	public String toString() { return rawConn.toString();}
 	public boolean equals(Object obj) { return this==obj;}
-	//called for pool
-	void closeRawConn() {
+
+	void closeRawConn() {//called by pool
 		if(proxyConn!=null){
 			proxyConn.setAsClosed();
 			proxyConn=null;
@@ -84,9 +84,8 @@ class PooledConnection extends StatementCache{
 		oclose(rawConn);
 	}
 
-	//***************called fow raw conn proxy ********//
+	//***************called by connection proxy ********//
 	void returnToPoolBySelf(){
-		proxyConn.setAsClosed();
 		proxyConn=null;
 		resetRawConnOnReturn();
 		pool.release(this,true);
