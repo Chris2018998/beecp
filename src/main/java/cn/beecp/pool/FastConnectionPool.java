@@ -95,8 +95,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	});
 
 	private String poolName;
-    private volatile int poolState=POOL_UNINIT;
-    private volatile int createConnThreadState=THREAD_WORKING;
+        private volatile int poolState=POOL_UNINIT;
+        private volatile int createConnThreadState=THREAD_WORKING;
 	private AtomicInteger createNotifyCount = new AtomicInteger(0);
 	private static Logger log = LoggerFactory.getLogger(FastConnectionPool.class);
 	private static AtomicInteger PoolNameIndex = new AtomicInteger(1);
