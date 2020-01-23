@@ -23,8 +23,8 @@ package cn.beecp.pool;
  */
 class Borrower {
 	boolean hasHoldNewOne;
-	PooledConnection lastUsedConn;
 	volatile Object stateObject;
+	PooledConnection lastUsedConn;
 	Thread thread=Thread.currentThread();
 	public boolean equals(Object o) {
 		return this == o;
