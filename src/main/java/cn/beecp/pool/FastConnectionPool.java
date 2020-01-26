@@ -359,9 +359,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *             error occurred in creating connections
 	 */
 	private void createInitConnections() throws SQLException {
-		int size = poolConfig.getInitialSize();
 		try {
-			for (int i = 0; i < size; i++)
+			for (int i=0,size=poolConfig.getInitialSize();i < size; i++)
 				this.createPooledConn(CONNECTION_IDLE);
 		} catch (SQLException e) {
 			for (PooledConnection pConn : connArray)
@@ -414,11 +413,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				borrower = new Borrower();
 				threadLocal.set(new WeakReference<>(borrower));
 			}
-
+			
+			Connection con =null;
 			wait = MILLISECONDS.toNanos(wait);
 			long deadline = nanoTime() + wait;
 			if (semaphore.tryAcquire(wait,NANOSECONDS)) {
-				Connection con =null;
 				try {
 					 con = takeOneConnection(deadline, borrower);
 				} finally {
@@ -526,14 +525,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 	// notify to create connections to pool
 	private void tryToCreateNewConnByAsyn(int size) {
-		if(connArray.length + createNotifyCount.get() + size<=PoolMaxSize){
-			if(createNotifyCount.addAndGet(size)<=PoolMaxSize){
-				if(createConnThreadState==THREAD_WAITING
-					&& CreateConnThreadStateUpdater.compareAndSet(this,THREAD_WAITING, THREAD_WORKING))
-				LockSupport.unpark(this);
-			}else{
-				createNotifyCount.addAndGet(-size);
-			}
+		if(connArray.length+createNotifyCount.get() + size<=PoolMaxSize){
+			if(createConnThreadState==THREAD_WAITING
+				&& CreateConnThreadStateUpdater.compareAndSet(this,THREAD_WAITING, THREAD_WORKING))
+			LockSupport.unpark(this);
 		}
 	}
 
