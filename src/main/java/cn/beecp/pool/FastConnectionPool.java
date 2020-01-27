@@ -419,7 +419,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			long deadline = nanoTime() + wait;
 			if (semaphore.tryAcquire(wait,NANOSECONDS)) {
 				try {
-					 con = takeOneConnection(deadline, borrower);
+					con = takeOneConnection(deadline, borrower);
 				} finally {
 					semaphore.release();
 				}
@@ -462,6 +462,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		Object stateObject;
 		boolean isTimeout = false;
 		int spinSize = MaxTimedSpins;
+		Thread borrowThread=borrower.thread;
 		borrower.stateObject=BORROWER_NORMAL;
 		try {// wait one transferred connection
 			waitQueue.offer(borrower);
@@ -484,7 +485,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					throw (SQLException) stateObject;
 				}
 
-				if (borrower.thread.isInterrupted()) {
+				if (borrowThread.isInterrupted()) {
 					if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_INTERRUPTED))
 						break;
 					continue;
