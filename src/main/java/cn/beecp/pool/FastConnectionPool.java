@@ -106,6 +106,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private static final AtomicIntegerFieldUpdater<FastConnectionPool> PoolStateUpdater = AtomicIntegerFieldUpdater.newUpdater(FastConnectionPool.class, "poolState");
 	private static final AtomicIntegerFieldUpdater<FastConnectionPool> CreateConnThreadStateUpdater = AtomicIntegerFieldUpdater.newUpdater(FastConnectionPool.class, "createConnThreadState");
 
+	private static final long MillsToNanoTimes=1000_000L;
 	private static final String DESC_REMOVE_INIT="init";
 	private static final String DESC_REMOVE_BAD="bad";
 	private static final String DESC_REMOVE_IDLE="idle";
@@ -125,7 +126,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	public void init(BeeDataSourceConfig config) throws SQLException {
 		if (poolState== POOL_UNINIT) {
 			checkProxyClasses();
-			if(config == null)throw new SQLException("Datasource configeruation can't be null");
+			if(config == null)throw new SQLException("Datasource configuration can't be null");
 			poolConfig = config;
 
 			poolName = !isNullText(config.getPoolName()) ? config.getPoolName():"FastPool-" + PoolNameIndex.getAndIncrement();
@@ -415,8 +416,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			}
 			
 			Connection con =null;
-			wait = MILLISECONDS.toNanos(wait);
-			long deadline = nanoTime() + wait;
+			wait*=MillsToNanoTimes;
+			long deadline = nanoTime()+wait;
 			if (semaphore.tryAcquire(wait,NANOSECONDS)) {
 				try {
 					con = takeOneConnection(deadline, borrower);
