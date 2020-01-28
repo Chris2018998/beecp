@@ -528,7 +528,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 			if (isNullText(jdbcUrl))
 				throw new IllegalArgumentException("Connect url can't be null");
 			if (connectDriver==null)
-				throw new IllegalArgumentException("Failed to find mathed jdbc Driver");
+				throw new IllegalArgumentException("Failed to load jdbc Driver");
 			
 			if (!isNullText(this.username))
 				this.connectProperties.put("user", this.username);
