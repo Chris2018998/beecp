@@ -15,59 +15,32 @@
  */
 package cn.beecp.pool;
 
-import static cn.beecp.pool.PoolExceptionList.PoolCloseException;
-import static cn.beecp.pool.PoolExceptionList.RequestInterruptException;
-import static cn.beecp.pool.PoolExceptionList.RequestTimeoutException;
-import static cn.beecp.pool.PoolExceptionList.WaitTimeException;
-import static cn.beecp.pool.PoolObjectsState.BORROWER_INTERRUPTED;
-import static cn.beecp.pool.PoolObjectsState.BORROWER_NORMAL;
-import static cn.beecp.pool.PoolObjectsState.BORROWER_TIMEOUT;
-import static cn.beecp.pool.PoolObjectsState.BORROWER_WAITING;
-import static cn.beecp.pool.PoolObjectsState.CONNECTION_CLOSED;
-import static cn.beecp.pool.PoolObjectsState.CONNECTION_IDLE;
-import static cn.beecp.pool.PoolObjectsState.CONNECTION_USING;
-import static cn.beecp.pool.PoolObjectsState.POOL_CLOSED;
-import static cn.beecp.pool.PoolObjectsState.POOL_NORMAL;
-import static cn.beecp.pool.PoolObjectsState.POOL_RESTING;
-import static cn.beecp.pool.PoolObjectsState.POOL_UNINIT;
-import static cn.beecp.pool.PoolObjectsState.THREAD_DEAD;
-import static cn.beecp.pool.PoolObjectsState.THREAD_WAITING;
-import static cn.beecp.pool.PoolObjectsState.THREAD_WORKING;
+import cn.beecp.BeeDataSourceConfig;
+import cn.beecp.ConnectionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import java.lang.management.ManagementFactory;
+import java.lang.ref.WeakReference;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+
+import static cn.beecp.pool.PoolExceptionList.*;
+import static cn.beecp.pool.PoolObjectsState.*;
 import static cn.beecp.util.BeecpUtil.isNullText;
 import static cn.beecp.util.BeecpUtil.oclose;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.System.nanoTime;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static java.util.concurrent.locks.LockSupport.park;
-import static java.util.concurrent.locks.LockSupport.parkNanos;
-import static java.util.concurrent.locks.LockSupport.unpark;
-
-import java.lang.management.ManagementFactory;
-import java.lang.ref.WeakReference;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import cn.beecp.BeeDataSourceConfig;
-import cn.beecp.ConnectionFactory;
+import static java.util.concurrent.locks.LockSupport.*;
 
 /**
  * JDBC Connection Pool Implementation
@@ -123,8 +96,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	});
 
 	private String poolName;
-    private volatile int poolState=POOL_UNINIT;
-    private volatile int createConnThreadState=THREAD_WORKING;
+	private volatile int poolState=POOL_UNINIT;
+	private volatile int createConnThreadState=THREAD_WORKING;
 	private AtomicInteger createNotifyCount = new AtomicInteger(0);
 	private static Logger log = LoggerFactory.getLogger(FastConnectionPool.class);
 	private static AtomicInteger PoolNameIndex = new AtomicInteger(1);
@@ -134,7 +107,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private static final AtomicIntegerFieldUpdater<FastConnectionPool> PoolStateUpdater = AtomicIntegerFieldUpdater.newUpdater(FastConnectionPool.class, "poolState");
 	private static final AtomicIntegerFieldUpdater<FastConnectionPool> CreateConnThreadStateUpdater = AtomicIntegerFieldUpdater.newUpdater(FastConnectionPool.class, "createConnThreadState");
 
-	private static final long MillsToNanoTimes=1000_000L;
+	private static final long MillsToNanoTimes=1_000_000L;
 	private static final String DESC_REMOVE_INIT="init";
 	private static final String DESC_REMOVE_BAD="bad";
 	private static final String DESC_REMOVE_IDLE="idle";
@@ -254,10 +227,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	//create Pooled connection
 	private PooledConnection createPooledConn(int connState) throws SQLException {
 		synchronized (connArrayLock) {
-			 int oldLen = connArray.length;
-			 if (oldLen < PoolMaxSize) {
+			int oldLen = connArray.length;
+			if (oldLen < PoolMaxSize) {
 				Connection con=connCreateFactory.create();
-				 setDefaultOnRawConn(con);
+				setDefaultOnRawConn(con);
 				PooledConnection pConn = new PooledConnection(con,this,poolConfig,connState);// add
 				PooledConnection[] arrayNew = new PooledConnection[oldLen + 1];
 				System.arraycopy(connArray, 0, arrayNew, 0, oldLen);
@@ -296,19 +269,19 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		}catch( SQLException e) {
 			log.warn("BeeCP({})failed to set default on executing 'setAutoCommit'",poolName,e);
 		}
-		
+
 		try{
 			rawConn.setTransactionIsolation(poolConfig.getDefaultTransactionIsolationCode());
 		}catch( SQLException e) {
 			log.warn("BeeCP({}))failed to set default on executing to 'setTransactionIsolation'",poolName,e);
 		}
-		
+
 		try{
 			rawConn.setReadOnly(poolConfig.isDefaultReadOnly());
 		}catch( SQLException e){
 			log.warn("BeeCP({}))failed to set default on executing to 'setReadOnly'",poolName,e);
 		}
-		
+
 		if(!isNullText(poolConfig.getDefaultCatalog())){
 			try{
 				rawConn.setCatalog(poolConfig.getDefaultCatalog());
@@ -316,7 +289,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				log.warn("BeeCP({}))failed to set default on executing to 'setCatalog'",poolName,e);
 			}
 		}
-			
+
 		//for JDK1.7 begin
 		if(supportSchema&&!isNullText(poolConfig.getDefaultSchema())){//test schema
 			try{
@@ -379,7 +352,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			return isActive;
 		} finally {
 			if (!isActive) {
-                pConn.state=CONNECTION_CLOSED;
+				pConn.state=CONNECTION_CLOSED;
 				removePooledConn(pConn,DESC_REMOVE_BAD);
 				tryToCreateNewConnByAsyn();
 			}
@@ -453,7 +426,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			borrower = new Borrower();
 			threadLocal.set(new WeakReference<>(borrower));
 		}
-		
+
 		try {
 			wait*=MillsToNanoTimes;
 			long deadline = nanoTime()+wait;
@@ -482,7 +455,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private Connection takeOneConnection(long deadline, Borrower borrower) throws SQLException {
 		for (PooledConnection pConn : connArray) {
 			if (ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn)) {
-					return createProxyConnection(pConn, borrower);
+				return createProxyConnection(pConn, borrower);
 			}
 		}
 
@@ -553,9 +526,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	// notify to create connections to pool
 	private void tryToCreateNewConnByAsyn() {
 		if(connArray.length+createNotifyCount.get()<PoolMaxSize)  {
-		  if(connArray.length+createNotifyCount.incrementAndGet()<=PoolMaxSize && CreateConnThreadStateUpdater.compareAndSet(this, THREAD_WAITING, THREAD_WORKING))
-		  	 unpark(this);
-		  }
+			if(connArray.length+createNotifyCount.incrementAndGet()<=PoolMaxSize && CreateConnThreadStateUpdater.compareAndSet(this, THREAD_WAITING, THREAD_WORKING))
+				unpark(this);
+		}
 	}
 
 	/**
@@ -686,7 +659,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			} // for
 
 			if (connArray.length > 0)
-			   parkNanos(parkNanos);
+				parkNanos(parkNanos);
 		} // while
 	}
 
