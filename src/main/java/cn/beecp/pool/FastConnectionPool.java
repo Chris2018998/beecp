@@ -177,12 +177,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 			registerJMX();
 			createInitConnections();
-			log.info("BeeCP({})has startup{init size:{},max size:{},concurrent size:{},mode:{},max wait:{}ms,driver:{}}",
+			log.info("BeeCP({})has startup{mode:{},init size:{},max size:{},concurrent size:{},max wait:{}ms,driver:{}}",
 					poolName,
+					mode,
 					connArray.length,
 					config.getMaxActive(),
 					poolConfig.getConcurrentSize(),
-					mode,
 					poolConfig.getMaxWait(),
 					poolConfig.getDriverClassName());
 		} else {
@@ -348,8 +348,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private boolean isActiveConn(PooledConnection pConn) {
 		boolean isActive=false;
 		try {
-			isActive=testPolicy.isActive(pConn);
-			return isActive;
+			return(isActive=testPolicy.isActive(pConn));
 		} finally {
 			if (!isActive) {
 				pConn.state=CONNECTION_CLOSED;
@@ -413,15 +412,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 		WeakReference<Borrower> bRef = threadLocal.get();
 		Borrower borrower = (bRef != null) ? bRef.get() : null;
-
 		if (borrower != null) {
 			PooledConnection pConn = borrower.initBeforeBorrow();
-			if (pConn != null && ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
-				if (testOnBorrow(pConn))
-					return createProxyConnection(pConn, borrower);
-				else
-					borrower.lastUsedConn = null;
-			}
+				if (pConn != null && ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
+					if (testOnBorrow(pConn))
+						return createProxyConnection(pConn, borrower);
+					else
+						borrower.lastUsedConn = null;
+				}
 		} else {
 			borrower = new Borrower();
 			threadLocal.set(new WeakReference<>(borrower));
@@ -458,6 +456,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				return createProxyConnection(pConn, borrower);
 			}
 		}
+		//create directly
+		PooledConnection pConn;
+		if(connArray.length<PoolMaxSize && (pConn=createPooledConn(CONNECTION_USING))!=null){
+			return createProxyConnection(pConn,borrower);
+		}
 
 		long waitTime;
 		Object stateObject;
@@ -469,8 +472,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 		try {// wait one transferred connection
 			waitQueue.offer(borrower);
-			tryToCreateNewConnByAsyn();
-			PooledConnection pConn;
 
 			for (;;) {
 				stateObject = borrower.stateObject;
@@ -520,13 +521,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			throws SQLException {
 		// borrower.setBorrowedConnection(pConn);
 		// return pConn.proxyConnCurInstance=new ProxyConnection(pConn);
-		throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after project compile");
+		throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
 	}
 
 	// notify to create connections to pool
 	private void tryToCreateNewConnByAsyn() {
 		if(connArray.length+createNotifyCount.get()<PoolMaxSize)  {
-			if(connArray.length+createNotifyCount.incrementAndGet()<=PoolMaxSize && CreateConnThreadStateUpdater.compareAndSet(this, THREAD_WAITING, THREAD_WORKING))
+			createNotifyCount.incrementAndGet();
+			if(CreateConnThreadStateUpdater.compareAndSet(this, THREAD_WAITING, THREAD_WORKING))
 				unpark(this);
 		}
 	}
@@ -682,20 +684,22 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			}
 		}
 	}
-
 	// create connection to pool
 	public void run() {
+		int createdCount =0;
 		PooledConnection pConn;
 		while (createConnThreadState==THREAD_WORKING) {
-			while (createNotifyCount.get()>0 && createNotifyCount.decrementAndGet()>=0) {
+			while(++createdCount <=createNotifyCount.get()) {
 				try {
-					if ((pConn = createPooledConn(CONNECTION_USING)) != null) {
-						new TransferThread(pConn,null,1).start();
-					}else{
-						yield();
+					if((pConn = createPooledConn(CONNECTION_USING)) != null) {
+						new TransferThread(pConn).start();
+					}else{//pool full
+						createdCount =0;
+						createNotifyCount.set(0);
+					 	break;
 					}
 				} catch (SQLException e) {
-					new TransferThread(null,e,2).start();
+					new TransferThread(e).start();
 				}
 			}
 			if (CreateConnThreadStateUpdater.compareAndSet(this,THREAD_WORKING, THREAD_WAITING)) {
@@ -705,16 +709,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 	//new connection TransferThread
 	class TransferThread extends Thread {
-		private int type;
+		private boolean isConn=true;
 		private SQLException e;
 		private PooledConnection pConn;
-		TransferThread(PooledConnection pConn,SQLException e,int type){
-			this.type=type;
-			this.e=e;
-			this.pConn=pConn;
-		}
+		TransferThread(SQLException e){this.e=e;isConn=false;}
+		TransferThread(PooledConnection pConn){this.pConn=pConn;}
 		public void run(){
-			if(type==1) {
+			if(isConn) {
 				release(pConn, false);
 			}else {
 				transferException(e);
