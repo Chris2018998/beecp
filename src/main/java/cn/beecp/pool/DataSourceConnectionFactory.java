@@ -25,7 +25,7 @@ import java.sql.SQLException;
  * Datasource ConnectionFactory
  *
  * @author Chris.liao
- * @version 1.0r
+ * @version 1.0
  */
 public class DataSourceConnectionFactory implements ConnectionFactory {
 
