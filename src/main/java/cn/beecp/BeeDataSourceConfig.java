@@ -15,11 +15,16 @@
  */
 package cn.beecp;
 
-import cn.beecp.pool.JdbcConnectionFactory;
+import cn.beecp.pool.DataSourceConnectionFactory;
+import cn.beecp.pool.DriverConnectionFactory;
 
+import javax.sql.DataSource;
+import java.lang.reflect.Method;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 import static cn.beecp.util.BeecpUtil.isNullText;
@@ -535,14 +540,33 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 			if (!isNullText(this.password))
 				this.connectProperties.put("password", this.password);
 			
-			connectionFactory= new JdbcConnectionFactory(jdbcUrl,connectDriver,connectProperties);
+			connectionFactory= new DriverConnectionFactory(jdbcUrl,connectDriver,connectProperties);
 		}else if(connectionFactory==null && !isNullText(this.connectionFactoryClassName)){
 			try {
  				Class<?> conFactClass=Class.forName(connectionFactoryClassName,true,BeeDataSourceConfig.class.getClassLoader());
-				if(!ConnectionFactory.class.isAssignableFrom(conFactClass))
+				if(ConnectionFactory.class.isAssignableFrom(conFactClass)){
+					connectionFactory=(ConnectionFactory)conFactClass.newInstance();
+				}else if(DataSource.class.isAssignableFrom(conFactClass)){
+					DataSource driverDataSource=(DataSource)conFactClass.newInstance();
+					Iterator itor=connectProperties.entrySet().iterator();
+					while(itor.hasNext()) {
+						Map.Entry entry = (Map.Entry) itor.next();
+						if (entry.getKey() instanceof String) {
+							try {
+								setDataSourceProperty((String)entry.getKey(),entry.getValue(),driverDataSource);
+							}catch(Exception e){
+								throw new IllegalArgumentException("Failed to set datasource property["+entry.getKey()+"]",e);
+							}
+						}
+					}
+
+					if(isNullText(username))
+						connectionFactory=new DataSourceConnectionFactory(driverDataSource);
+					else
+						connectionFactory=new DataSourceConnectionFactory(driverDataSource,username,password);
+				}else{
 					throw new IllegalArgumentException("Custom connection factory class must be implemented 'ConnectionFactory' interface");
-				
- 				connectionFactory=(ConnectionFactory)conFactClass.newInstance();
+				}
 			} catch (ClassNotFoundException e) {
 				throw new IllegalArgumentException("Class("+connectionFactoryClassName+")not found ");
 			} catch (InstantiationException e) {
@@ -580,5 +604,34 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		//fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end	
 			throw new IllegalArgumentException("Connection validate SQL must start with 'select '");
 		//}
+	}
+	private void setDataSourceProperty(String propName,Object propValue,Object bean)throws Exception{
+		String methodName="set"+propName.substring(0,1).toUpperCase()+propName.substring(1);
+		Method[] methods =bean.getClass().getMethods();
+		Method targetMethod=null;
+		for(Method method:methods){
+			if(method.getName().equals(methodName) && method.getParameterTypes().length==1){
+				targetMethod = method;
+				break;
+			}
+		}
+
+		if(targetMethod!=null){
+			Class paramType=targetMethod.getParameterTypes()[0];
+			if(paramType.isInstance(propValue)){
+				targetMethod.invoke(bean,new Object[]{propValue});
+			}else if(propValue instanceof String){
+				String value=(String)propValue;
+				if(paramType==String.class ){
+					targetMethod.invoke(bean,new Object[]{propValue});
+				}else if(paramType==boolean.class||paramType==Boolean.class){
+					targetMethod.invoke(bean,new Object[]{Boolean.valueOf(value)});
+				}else if(paramType==int.class||paramType==Integer.class){
+					targetMethod.invoke(bean,new Object[]{Integer.valueOf(value)});
+				}else if(paramType==long.class||paramType==Long.class){
+					targetMethod.invoke(bean,new Object[]{Long.valueOf(value)});
+				}
+			}
+		}
 	}
 }
