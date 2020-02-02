@@ -559,11 +559,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 							}
 						}
 					}
-
-					if(isNullText(username))
-						connectionFactory=new DataSourceConnectionFactory(driverDataSource);
-					else
-						connectionFactory=new DataSourceConnectionFactory(driverDataSource,username,password);
+					connectionFactory=new DataSourceConnectionFactory(driverDataSource,username,password);
 				}else{
 					throw new IllegalArgumentException("Custom connection factory class must be implemented 'ConnectionFactory' interface");
 				}
