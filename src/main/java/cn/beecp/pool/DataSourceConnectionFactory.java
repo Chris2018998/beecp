@@ -40,9 +40,9 @@ public class DataSourceConnectionFactory implements ConnectionFactory {
     private String password;
 
     /**
-     * usernameIsNull
+     * usernameIsNotNull
      */
-    private boolean usernameIsNull=true;
+    private boolean usernameIsNotNull;
 
     /**
      * driverDataSource
@@ -50,22 +50,19 @@ public class DataSourceConnectionFactory implements ConnectionFactory {
     private DataSource driverDataSource;
 
     //Constructor
-    public DataSourceConnectionFactory(DataSource driverDataSource) {
-        this.driverDataSource = driverDataSource;
-    }
-    //Constructor
     public DataSourceConnectionFactory(DataSource driverDataSource, String username, String password) {
         this.driverDataSource = driverDataSource;
         this.username = username;
         this.password = password;
-        this.usernameIsNull=false;
+        if(username!=null && username.trim().length()>0)
+            usernameIsNotNull=true;
     }
     //create one connection
     public Connection create() throws SQLException {
-        if (usernameIsNull) {
-            return driverDataSource.getConnection();
-        }else {
+        if (usernameIsNotNull) {
             return driverDataSource.getConnection(username, password);
+        }else {
+            return driverDataSource.getConnection();
         }
     }
 }
