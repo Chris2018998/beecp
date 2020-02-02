@@ -17,9 +17,13 @@ package cn.beecp;
 
 import cn.beecp.pool.DataSourceConnectionFactory;
 import cn.beecp.pool.DriverConnectionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -215,6 +219,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	 * Default implementation class name
 	 */
 	static final String DefaultImplementClassName = "cn.beecp.pool.FastConnectionPool";
+
+	private Logger log = LoggerFactory.getLogger(BeeDataSourceConfig.class);
 	
 	public BeeDataSourceConfig() {
       this(null,null,null,null);
@@ -469,38 +475,23 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	}
 	void copyTo(BeeDataSourceConfig config){
 		if(!config.checked){
-			config.username=this.username;
-			config.password=this.password;
-			config.jdbcUrl=this.jdbcUrl;
-			config.driverClassName=this.driverClassName; 
-			config.connectionFactoryClassName=this.connectionFactoryClassName;
-			config.connectionFactory=this.connectionFactory;
-			config.connectProperties=new Properties(this.connectProperties);
-			config.poolName=this.poolName;
-			config.fairMode=this.fairMode;
-			config.initialSize=this.initialSize;
-			config.maxActive=this.maxActive;
-			config.concurrentSize=this.concurrentSize;
-			config.preparedStatementCacheSize=this.preparedStatementCacheSize;
-			config.testOnBorrow=this.testOnBorrow;
-			config.testOnReturn=this.testOnReturn;
-			config.defaultAutoCommit=this.defaultAutoCommit;
-			config.defaultTransactionIsolation=this.defaultTransactionIsolation;
-			config.defaultTransactionIsolationCode=this.defaultTransactionIsolationCode;
-			config.defaultCatalog=this.defaultCatalog;
-			config.defaultSchema=this.defaultSchema;
-			config.defaultReadOnly=this.defaultReadOnly;
-			config.maxWait=this.maxWait;
-			config.idleTimeout=this.idleTimeout;
-			config.holdIdleTimeout=this.holdIdleTimeout;
-			config.connectionTestSQL=this.connectionTestSQL;
-			config.connectionTestTimeout=this.connectionTestTimeout;
-			config.connectionTestInterval=this.connectionTestInterval;
-			config.forceCloseConnection=this.forceCloseConnection;
-			config.waitTimeToClearPool=this.waitTimeToClearPool;
-			config.idleCheckTimeInitDelay=this.idleCheckTimeInitDelay;
-			config.idleCheckTimeInterval=this.idleCheckTimeInterval;
-			config.poolImplementClassName=this.poolImplementClassName;
+			int modifiers;
+			Field[] fields=this.getClass().getDeclaredFields();
+			for(Field field:fields){
+				modifiers=field.getModifiers();
+				if(Modifier.isStatic(modifiers)||Modifier.isFinal(modifiers))
+					continue;
+
+				boolean accessible=field.isAccessible();
+				try {
+					if(!accessible)field.setAccessible(true);
+					field.set(config, field.get(this));
+				}catch(Exception e){
+					log.warn("Failed to copy field["+field.getName()+"]",e);
+				}finally{
+					if(!accessible)field.setAccessible(accessible);
+				}
+			}
 		}
 	}
 	
