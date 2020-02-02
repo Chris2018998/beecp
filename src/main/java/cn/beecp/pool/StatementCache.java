@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+
 import static cn.beecp.util.BeecpUtil.oclose;
 
 /**
@@ -35,7 +36,7 @@ class StatementCache {
 	private HashMap<Object,CacheNode>nodeMap;
 	public StatementCache(int capacity) {
 		this.capacity=capacity;
-		this.nodeMap = new HashMap<Object,CacheNode>(capacity,0.75f);
+		this.nodeMap = new HashMap<Object,CacheNode>(capacity);
 	}
 	public PreparedStatement getStatement(Object k) {
 		CacheNode n = nodeMap.get(k);
@@ -46,20 +47,26 @@ class StatementCache {
 		return null;
 	}
 	public void putStatement(Object k,PreparedStatement v) {
-		CacheNode n = nodeMap.get(k);
-		if (n==null) {
-			n = new CacheNode(k,v);
-			nodeMap.put(k,n);
-			addNewNode(n);
-
-			if(nodeMap.size()>capacity) {
-			  CacheNode oldHead=removeHead();
-			  nodeMap.remove(oldHead.k);
-			  onRemove(oldHead.v);
-			}
+		CacheNode n = new CacheNode(k, v);
+		nodeMap.put(k, n);
+		if (head == null) {
+			tail = head = n;
 		} else {
-			n.v = v;
-			moveToTail(n);
+			tail.next = n;
+			n.pre = tail;
+			tail = n;
+
+			if (nodeMap.size() > capacity) {
+				nodeMap.remove(head.k);
+				oclose(head.v);
+				if (head == tail) {
+					head = null;
+					tail = null;
+				} else {
+					head = head.next;
+					head.pre = null;
+				}
+			}
 		}
 	}
 	void clearStatement() {
@@ -67,27 +74,14 @@ class StatementCache {
 		while (itor.hasNext()) {
 			Map.Entry<Object,CacheNode> entry=itor.next();
 			itor.remove();
-			 CacheNode node= entry.getValue();
-			 onRemove(node.v);
+			CacheNode node= entry.getValue();
+			oclose(node.v);
 		}
 		
 		head=null;
 		tail=null;
 	}
-	private void onRemove(PreparedStatement obj) {
-		oclose(obj);
-	}
-	//add new node
-	private void addNewNode(CacheNode n) {
-		if (head == null) {
-			head = n;
-			tail = n;
-		} else {
-			tail.next = n;
-			n.pre = tail;
-			tail = n;
-		}
-	}
+	
 	//below are node chain operation method
 	private void moveToTail(CacheNode n) {
 		if(n==tail)return;
@@ -106,18 +100,7 @@ class StatementCache {
 		n.next = null;
 		tail = tail.next;//new tail
 	}
-	//remove head when size more than capacity
-	private CacheNode removeHead() {
-		CacheNode n = head;
-		if (head == tail) {
-			head = null;
-			tail = null;
-		} else {
-			head = head.next;
-			head.pre = null;
-		}
-		return n;
-	}
+ 
 	static class CacheNode {// double linked chain node
 		Object k;
 		PreparedStatement v;
