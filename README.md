@@ -69,7 +69,7 @@ Configuration
 | jdbcUrl            | JDBC url                      |                                   |
 | driverClassName    | Driver class name             |                                   |
 | poolName           | Pool name                     |                                   |
-| fairMode           | fair mode for pool            | default is true                   |
+| fairMode           | fair mode for pool            | default is false                   |
 | initialSize        | pool initial size             |                                   |
 | maxActive          | pool max size                 |                                   | 
 | concurrentSize     | borrower thread concurrent size  | not greater than  'maxActive'   |
