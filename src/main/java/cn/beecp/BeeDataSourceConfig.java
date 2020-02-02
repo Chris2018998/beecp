@@ -21,6 +21,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -593,6 +597,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		//}
 	}
 	private void setDataSourceProperty(String propName,Object propValue,Object bean)throws Exception{
+		if(propName.endsWith("."))return;
+		int index=propName.lastIndexOf(".");
+		if(index>=0)propName=propName.substring(index+1);
+
+		propName=propName.trim();
 		String methodName="set"+propName.substring(0,1).toUpperCase()+propName.substring(1);
 		Method[] methods =bean.getClass().getMethods();
 		Method targetMethod=null;
@@ -621,4 +630,25 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 			}
 		}
 	}
+	public void loadPropertiesFile(String filename)throws IOException{
+		File file = new File(filename);
+		if(!file.exists())throw new FileNotFoundException(filename);
+		loadPropertiesFile(file);
+	}
+	public void loadPropertiesFile(File file)throws IOException{
+		if(!file.isFile())throw new IOException("Invalid properties file");
+		if(!file.getAbsolutePath().toLowerCase().endsWith(".properties"))throw new IOException("Invalid properties file");
+
+		if(!checked){
+			FileInputStream stream=null;
+			try {
+				stream=new FileInputStream(file);
+				connectProperties.clear();
+				connectProperties.load(stream);
+			}finally{
+				if(stream!=null)stream.close();
+			}
+		}
+	}
 }
+
