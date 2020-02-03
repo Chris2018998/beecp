@@ -469,6 +469,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		int spinSize = MaxTimedSpins;
 		Thread borrowThread=borrower.thread;
 		borrower.stateObject=BORROWER_NORMAL;
+		boolean test;
 
 		try {// wait one transferred connection
 			waitQueue.offer(borrower);
@@ -477,15 +478,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				stateObject = borrower.stateObject;
 				if (stateObject instanceof PooledConnection) {
 					pConn = (PooledConnection) stateObject;
-					// fix issue:#3 Chris-2019-08-01 begin
-					// if(transferPolicy.tryCatch(pConn){
-					if (transferPolicy.tryCatch(pConn) && testOnBorrow(pConn)) {
-						// fix issue:#3 Chris-2019-08-01 end
+					if(transferPolicy.tryCatch(pConn) && testOnBorrow(pConn))
 						return createProxyConnection(pConn, borrower);
-					} else {
-						borrower.stateObject=BORROWER_NORMAL;//reset to normal
-						continue;
-					}
+
+					borrower.stateObject=BORROWER_NORMAL;//reset to normal
+					continue;
 				} else if (stateObject instanceof SQLException) {
 					throw (SQLException) stateObject;
 				}
@@ -502,7 +499,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					continue;
 				}
 
-				if (spinSize-- > 0)continue;// spin
+				if (spinSize--> 0)continue;//spin
 				if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_WAITING)) {
 					parkNanos(borrower, waitTime);
 					BorrowerStateUpdater.compareAndSet(borrower, BORROWER_WAITING, BORROWER_NORMAL);
