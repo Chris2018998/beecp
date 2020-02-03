@@ -63,8 +63,7 @@ public final class BeecpUtil {
 	public static boolean isNullText(String value) {
 		return (value == null || value.trim().length() == 0);
 	}
-
 	public static boolean equalsText(String a, String b) {
-		return (a==null &&b==null)||(a!= null && a.equals(b));
+		return (a != null && a.equals(b) || (a == null && b == null));
 	}
 }
