@@ -469,8 +469,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		int spinSize = MaxTimedSpins;
 		Thread borrowThread=borrower.thread;
 		borrower.stateObject=BORROWER_NORMAL;
-		boolean test;
-
+	 
 		try {// wait one transferred connection
 			waitQueue.offer(borrower);
 
