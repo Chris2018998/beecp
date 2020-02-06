@@ -26,7 +26,7 @@ import java.sql.SQLTimeoutException;
  */
 class PoolExceptionList {
 
-	static final SQLTimeoutException RequestTimeoutException = new SQLTimeoutException("Connection timeout");
+	static final SQLTimeoutException RequestTimeoutException = new SQLTimeoutException("Request timeout");
 
 	static final SQLException RequestInterruptException = new SQLException("Request interrupt");
 	
