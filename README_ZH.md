@@ -8,7 +8,7 @@
 
 二：特点
 ---
-1：性能好：高于光连接池
+1：性能好：比<a href="https://github.com/brettwooldridge/HikariCP">光连接池</a>更快 
 
 2：代码少：21个文件，2600行源码
 
