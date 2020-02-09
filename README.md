@@ -7,8 +7,9 @@ BeeCP is a high performance JDBC connection pool
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/README_ZH.md">中文</a>
 
 Feature
----
-1: Good performance: faster than HikariCP
+--- 
+
+1: Good performance: faster than <a href="https://github.com/brettwooldridge/HikariCP">HikariCP</a> 
 
 2: Less code: 21 files, 2600 lines of source code
 
