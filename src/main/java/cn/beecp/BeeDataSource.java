@@ -103,28 +103,29 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	 *             if pool is closed or waiting timeout,then throw exception
 	 */
 	public Connection getConnection() throws SQLException {
-		if(pool== null) {
-			if(writeLock.tryLock()) {
-				if(pool==null){
+		if(pool!=null)return pool.getConnection(maxWait);
+
+		if(writeLock.tryLock()) {
+			if(pool==null){
+				try {
 					failedCause = null;
-					try {
-						pool = createPool(this);
-					} catch (SQLException e) {
-						failedCause = e;
-						throw e;
-					} finally {
-						writeLock.unlock();
-					}
-				}
-			}else{
-				try{
-					readLock.lock();
-					if (failedCause != null) throw failedCause;
+					pool = createPool(this);
+				} catch (SQLException e) {
+					failedCause = e;
+					throw e;
 				} finally {
-					readLock.unlock();
+					writeLock.unlock();
 				}
 			}
+		}else{
+			try{
+				readLock.lock();
+				if (failedCause != null) throw failedCause;
+			} finally {
+				readLock.unlock();
+			}
 		}
+
 		return pool.getConnection(maxWait);
 	}
 
