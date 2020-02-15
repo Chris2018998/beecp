@@ -29,7 +29,7 @@ import static cn.beecp.util.BeecpUtil.oclose;
 class ProxyStatementBase{
 	private boolean isClosed;
 	private int statementType=0;
-	private boolean inCacheInd=false;
+	private boolean stmCacheValid=false;
 	protected Statement delegate;
 	protected PreparedStatement delegate1;
 	protected CallableStatement delegate2;
@@ -42,17 +42,17 @@ class ProxyStatementBase{
 		this.proxyConn=proxyConn;
 		this.delegate = delegate;
 	}
-	public ProxyStatementBase(PreparedStatement delegate,boolean inCacheInd,ProxyConnectionBase proxyConn,PooledConnection pConn){
+	public ProxyStatementBase(PreparedStatement delegate,ProxyConnectionBase proxyConn,PooledConnection pConn,boolean stmCacheValid){
 		this(delegate,proxyConn,pConn);
 		this.statementType=1;
 		this.delegate1=delegate;
-		this.inCacheInd=inCacheInd;
+		this.stmCacheValid=stmCacheValid;
 	}
-	public ProxyStatementBase(CallableStatement delegate,boolean inCacheInd,ProxyConnectionBase proxyConn,PooledConnection pConn,boolean cs){
+	public ProxyStatementBase(CallableStatement delegate,ProxyConnectionBase proxyConn,PooledConnection pConn,boolean stmCacheValid){
 		this(delegate,proxyConn,pConn);
 		this.statementType=2;
 		this.delegate2=delegate;
-		this.inCacheInd=inCacheInd;
+		this.stmCacheValid=stmCacheValid;
 	}
 	public Connection getConnection() throws SQLException{
 		checkClose();
@@ -65,7 +65,7 @@ class ProxyStatementBase{
 	public void close() throws SQLException {
 		checkClose();
 		this.isClosed=true;
-		if(!inCacheInd)
+		if(!stmCacheValid)
 			oclose(delegate);
 		this.delegate=null;
 		this.delegate1=null;

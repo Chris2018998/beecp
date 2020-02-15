@@ -34,7 +34,7 @@ import static java.lang.System.currentTimeMillis;
  */
 class PooledConnection extends StatementCache{
 	volatile int state;
-	boolean stmCacheIsValid;
+	boolean stmCacheValid;
 	BeeDataSourceConfig pConfig;
 	Connection rawConn;
 
@@ -66,7 +66,7 @@ class PooledConnection extends StatementCache{
 		state=connState;
 		pConfig=config;
 		curAutoCommit=pConfig.isDefaultAutoCommit();
-		stmCacheIsValid = pConfig.getPreparedStatementCacheSize()>0;
+		stmCacheValid = pConfig.getPreparedStatementCacheSize()>0;
 		updateAccessTime();
 	}
 	public String toString() { return rawConn.toString();}
@@ -79,7 +79,7 @@ class PooledConnection extends StatementCache{
 		}
 
 		resetRawConnOnReturn();
-		if(stmCacheIsValid)
+		if(stmCacheValid)
 			this.clearStatement();
 		oclose(rawConn);
 	}
@@ -132,8 +132,8 @@ class PooledConnection extends StatementCache{
 		}
 
 		//reset begin
-		if (changedBitVal > 0) {//reset autoCommit
-			if (changedInds[0]) {
+		if (changedBitVal > 0) {
+			if (changedInds[0]) {//reset autoCommit
 				try {
 					rawConn.setAutoCommit(pConfig.isDefaultAutoCommit());
 					curAutoCommit=pConfig.isDefaultAutoCommit();

@@ -154,7 +154,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				ConUnCatchStateCode = transferPolicy.getCheckStateCode();
 			} else {
 				mode = "compete";
-				transferPolicy = new CompeteTransferPolicy();
+				transferPolicy =new CompeteTransferPolicy();
 				ConUnCatchStateCode = transferPolicy.getCheckStateCode();
 			}
 
@@ -328,7 +328,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					st.setQueryTimeout(ConnectionTestTimeout);
 				}catch(Throwable ee){
 					supportQueryTimeout=false;
-					log.error("BeeCP({})driver not support 'queryTimeout'",poolName,e);
+					log.warn("BeeCP({})driver not support 'queryTimeout'",poolName,e);
 				}finally{
 					oclose(st);
 				}
@@ -411,15 +411,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			throw PoolCloseException;
 
 		WeakReference<Borrower> bRef = threadLocal.get();
-		Borrower borrower = (bRef != null) ? bRef.get() : null;
+		Borrower borrower=(bRef !=null)?bRef.get():null;
 		if (borrower != null) {
 			PooledConnection pConn = borrower.initBeforeBorrow();
-				if (pConn != null && ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
-					if (testOnBorrow(pConn))
-						return createProxyConnection(pConn, borrower);
-					else
-						borrower.lastUsedConn = null;
-				}
+			if (pConn != null && ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
+				if(testOnBorrow(pConn))
+				 return createProxyConnection(pConn, borrower);
+				
+				borrower.lastUsedConn = null;
+			}
 		} else {
 			borrower = new Borrower();
 			threadLocal.set(new WeakReference<>(borrower));
@@ -863,17 +863,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		void onFailTransfer(PooledConnection pConn);
 		void beforeTransfer(PooledConnection pConn);
 	}
-	final class CompeteTransferPolicy implements TransferPolicy {
-		public int getCheckStateCode() {
-			return CONNECTION_IDLE;
-		}
-		public boolean tryCatch(PooledConnection pConn) {return ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING); }
+	class CompeteTransferPolicy implements TransferPolicy {
+		public int getCheckStateCode() {return CONNECTION_IDLE;}
+		public boolean tryCatch(PooledConnection pConn) {
+			return ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING); }
 		public void onFailTransfer(PooledConnection pConn) { }
 		public void beforeTransfer(PooledConnection pConn) {
 			pConn.state=CONNECTION_IDLE;
 		}
 	}
-	final class FairTransferPolicy implements TransferPolicy {
+	class FairTransferPolicy implements TransferPolicy {
 		public int getCheckStateCode() {return CONNECTION_USING; }
 		public boolean tryCatch(PooledConnection pConn) {
 			return pConn.state == CONNECTION_USING;

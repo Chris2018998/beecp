@@ -15,16 +15,14 @@
  */
 package cn.beecp.pool;
 
-import cn.beecp.BeeDataSourceConfig;
+import static cn.beecp.pool.PoolExceptionList.AutoCommitChangeForbiddennException;
+import static cn.beecp.pool.PoolExceptionList.ConnectionClosedException;
+import static cn.beecp.util.BeecpUtil.equalsText;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.util.concurrent.Executor;
-
-import static cn.beecp.pool.PoolExceptionList.AutoCommitChangeForbiddennException;
-import static cn.beecp.pool.PoolExceptionList.ConnectionClosedException;
-import static cn.beecp.util.BeecpUtil.equalsText;
 /**
  * raw connection wrapper
  * 
@@ -35,12 +33,10 @@ abstract class ProxyConnectionBase implements Connection{
 	private boolean isClosed;
 	protected Connection delegate;
 	protected PooledConnection pConn;//called by subClsss to update time
-	private BeeDataSourceConfig pConfig;
-	
+
 	public ProxyConnectionBase(PooledConnection pConn) {
 		this.pConn=pConn;
 		delegate=pConn.rawConn;
-		pConfig=pConn.pConfig;
 	}
 	void setAsClosed(){
 		isClosed=true;
@@ -61,23 +57,23 @@ abstract class ProxyConnectionBase implements Connection{
 		
 		delegate.setAutoCommit(autoCommit);
 		pConn.setCurAutoCommit(autoCommit);
-		pConn.setChangedInd(PooledConnection.Pos_AutoCommitInd,autoCommit!=pConfig.isDefaultAutoCommit());
+		pConn.setChangedInd(PooledConnection.Pos_AutoCommitInd,autoCommit!=pConn.pConfig.isDefaultAutoCommit());
 		if(autoCommit)pConn.commitDirtyInd=false;
 	}
 	public void setTransactionIsolation(int level) throws SQLException {
 		checkClose();
 		delegate.setTransactionIsolation(level);
-		pConn.setChangedInd(PooledConnection.Pos_TransactionIsolationInd,level!=pConfig.getDefaultTransactionIsolationCode());
+		pConn.setChangedInd(PooledConnection.Pos_TransactionIsolationInd,level!=pConn.pConfig.getDefaultTransactionIsolationCode());
 	}
 	public void setReadOnly(boolean readOnly) throws SQLException {
 		checkClose();
 		delegate.setReadOnly(readOnly);
-		pConn.setChangedInd(PooledConnection.Pos_ReadOnlyInd,readOnly!=pConfig.isDefaultReadOnly());
+		pConn.setChangedInd(PooledConnection.Pos_ReadOnlyInd,readOnly!=pConn.pConfig.isDefaultReadOnly());
 	}
 	public void setCatalog(String catalog) throws SQLException {
 		checkClose();
 		delegate.setCatalog(catalog);
-		pConn.setChangedInd(PooledConnection.Pos_CatalogInd,!equalsText(catalog, pConfig.getDefaultCatalog()));
+		pConn.setChangedInd(PooledConnection.Pos_CatalogInd,!equalsText(catalog, pConn.pConfig.getDefaultCatalog()));
 	}
 	public boolean isValid(int timeout) throws SQLException {
 		checkClose();
@@ -92,7 +88,7 @@ abstract class ProxyConnectionBase implements Connection{
 		checkClose();
 		if (pConn.isSupportSchema()){
 			delegate.setSchema(schema);
-			pConn.setChangedInd(PooledConnection.Pos_SchemaInd, !equalsText(schema, pConfig.getDefaultSchema()));
+			pConn.setChangedInd(PooledConnection.Pos_SchemaInd, !equalsText(schema, pConn.pConfig.getDefaultSchema()));
 		}else{
 			throw PoolExceptionList.FeatureNotSupportedException;
 		}
