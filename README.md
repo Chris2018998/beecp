@@ -23,7 +23,7 @@ Java7
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>2.1.8</version>
+   <version>2.1.9</version>
 </dependency>
 ```
 
@@ -34,7 +34,7 @@ Java6
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>1.6.4</version>
+   <version>1.6.5</version>
 </dependency>
 ```
 
