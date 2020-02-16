@@ -478,23 +478,22 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		this.enableJMX = enableJMX;
 	}
 	void copyTo(BeeDataSourceConfig config){
-		if(!config.checked){
-			int modifiers;
-			Field[] fields=this.getClass().getDeclaredFields();
-			for(Field field:fields){
-				modifiers=field.getModifiers();
-				if(Modifier.isStatic(modifiers)||Modifier.isFinal(modifiers))
-					continue;
+		int modifiers;
+		Field[] fields=BeeDataSourceConfig.class.getDeclaredFields();
+		for(Field field:fields){
+			if("checked".equals(field.getName()))continue;
+			modifiers=field.getModifiers();
+			if(Modifier.isStatic(modifiers)||Modifier.isFinal(modifiers))
+				continue;
 
-				boolean accessible=field.isAccessible();
-				try {
-					if(!accessible)field.setAccessible(true);
-					field.set(config, field.get(this));
-				}catch(Exception e){
-					log.warn("Failed to copy field["+field.getName()+"]",e);
-				}finally{
-					if(!accessible)field.setAccessible(accessible);
-				}
+			boolean accessible=field.isAccessible();
+			try {
+				if(!accessible)field.setAccessible(true);
+				field.set(config, field.get(this));
+			}catch(Exception e){
+				log.warn("Failed to copy field["+field.getName()+"]",e);
+			}finally{
+				if(!accessible)field.setAccessible(accessible);
 			}
 		}
 	}
