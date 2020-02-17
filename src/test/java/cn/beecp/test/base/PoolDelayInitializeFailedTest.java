@@ -44,7 +44,8 @@ public class PoolDelayInitializeFailedTest extends TestCase {
 		}catch(SQLException e){
 			System.out.println(e.getCause());
 		}finally{
-			BeecpUtil.oclose(con);
+			if(con!=null)
+			  BeecpUtil.oclose(con);
 		}
 	}
 }

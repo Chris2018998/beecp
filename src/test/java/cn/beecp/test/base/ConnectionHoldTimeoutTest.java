@@ -73,7 +73,8 @@ public class ConnectionHoldTimeoutTest extends TestCase {
 
 			Thread.sleep(4000);
 		} finally {
-			BeecpUtil.oclose(con);
+			if(con!=null)
+			  BeecpUtil.oclose(con);
 		}
 	}
 }

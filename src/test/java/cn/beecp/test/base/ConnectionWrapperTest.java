@@ -88,9 +88,13 @@ public class ConnectionWrapperTest extends TestCase {
 			if (re3.getStatement()!=cs)
 				TestUtil.assertError("Raw Result exposed(cs)");
 		}finally{
+			if(st!=null)
 			BeecpUtil.oclose(st);
+			if(cs!=null)
 			BeecpUtil.oclose(cs);
+			if(ps!=null)
 			BeecpUtil.oclose(ps);
+			if(con!=null)
 			BeecpUtil.oclose(con);
 		}
 	}

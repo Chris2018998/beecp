@@ -60,7 +60,8 @@ public class ConnectionGetTimeoutTest extends TestCase {
 			} catch (SQLException e) {
 				this.e = e;
 			} finally {
-				BeecpUtil.oclose(con2);
+				if(con2!=null)
+				  BeecpUtil.oclose(con2);
 			}
 			lacth.countDown();
 		}
@@ -80,7 +81,8 @@ public class ConnectionGetTimeoutTest extends TestCase {
 			else
 				System.out.println(testTh.e);
 		} finally {
-			BeecpUtil.oclose(con);
+			if(con!=null)
+			  BeecpUtil.oclose(con);
 		}
 	}
 }

@@ -42,6 +42,7 @@ public class ConnectionResetTest  extends TestCase {
             con.setReadOnly(false);
             con.setCatalog("test");
         } finally {
+        	if(con!=null)
             BeecpUtil.oclose(con);
         }
         try {
@@ -54,7 +55,8 @@ public class ConnectionResetTest  extends TestCase {
             if(con.isReadOnly()!=true)TestUtil.assertError("readony reset fail");
             if(!catlog.equals(con.getCatalog()))TestUtil.assertError("catalog reset fail,excpect:s%,cuurent is s%",catlog,  con.getCatalog());
         } finally {
-            BeecpUtil.oclose(con);
+        	if(con!=null)
+             BeecpUtil.oclose(con);
         }
     }
 }

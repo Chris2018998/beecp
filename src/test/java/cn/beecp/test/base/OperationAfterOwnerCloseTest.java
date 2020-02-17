@@ -48,96 +48,99 @@ public class OperationAfterOwnerCloseTest extends TestCase {
 
 	public void testConnectionClose() throws InterruptedException, Exception {
 		Connection con = ds.getConnection();
-		
-		Statement st=null;
-		CallableStatement cs=null;	
-		PreparedStatement ps=null;
-		try{
-			st=con.createStatement();
-			cs=con.prepareCall("?={call "+Config.TEST_PROCEDURE+ "}");
-			ps=con.prepareStatement("select 1 from dual");
-			DatabaseMetaData dbs=con.getMetaData();
-	
+
+		Statement st = null;
+		CallableStatement cs = null;
+		PreparedStatement ps = null;
+		try {
+			st = con.createStatement();
+			cs = con.prepareCall("?={call " + Config.TEST_PROCEDURE + "}");
+			ps = con.prepareStatement("select 1 from dual");
+			DatabaseMetaData dbs = con.getMetaData();
+
 			con.close();
-			try{
+			try {
 				st.getConnection();
-				TestUtil.assertError("statement operation after connection close(dbs)");	
-			}catch(SQLException e){
-			} 
-			
-			try{
+				TestUtil.assertError("statement operation after connection close(dbs)");
+			} catch (SQLException e) {
+			}
+
+			try {
 				ps.getConnection();
-				TestUtil.assertError("preparedStatement operation after connection close(ps)");	
-			}catch(SQLException e){
-			} 
-			
-			try{
+				TestUtil.assertError("preparedStatement operation after connection close(ps)");
+			} catch (SQLException e) {
+			}
+
+			try {
 				cs.getConnection();
-				TestUtil.assertError("callableStatement operation after connection close(cs)");	
-			}catch(SQLException e){
-			} 
-			
-			try{
+				TestUtil.assertError("callableStatement operation after connection close(cs)");
+			} catch (SQLException e) {
+			}
+
+			try {
 				dbs.getConnection();
-				TestUtil.assertError("DatabaseMetaData operation after connection close(dbs)");	
-			}catch(SQLException e){
-			} 
-		}finally{
-			BeecpUtil.oclose(st);
-			BeecpUtil.oclose(cs);
-			BeecpUtil.oclose(ps);
+				TestUtil.assertError("DatabaseMetaData operation after connection close(dbs)");
+			} catch (SQLException e) {
+			}
+		} finally {
+			if (st != null)
+				BeecpUtil.oclose(st);
+			if (cs != null)
+				BeecpUtil.oclose(cs);
+			if (ps != null)
+				BeecpUtil.oclose(ps);
 		}
 	}
 
 	public void testStatementClose() throws InterruptedException, Exception {
 		Connection con = ds.getConnection();
-		
-		Statement st=null;
-		CallableStatement cs=null;	
-		PreparedStatement ps=null;
-		try{
-			st=con.createStatement();
-			cs=con.prepareCall("?={call "+Config.TEST_PROCEDURE+ "}");
-			ps=con.prepareStatement("select 1 from dual");
-			ResultSet rs1=null;
-			
-			try{
-				rs1=st.getResultSet();
+
+		Statement st = null;
+		CallableStatement cs = null;
+		PreparedStatement ps = null;
+		try {
+			st = con.createStatement();
+			cs = con.prepareCall("?={call " + Config.TEST_PROCEDURE + "}");
+			ps = con.prepareStatement("select 1 from dual");
+			ResultSet rs1 = null;
+
+			try {
+				rs1 = st.getResultSet();
 				st.close();
 				rs1.getStatement();
-				TestUtil.assertError("result operation after statememnt close(st)");	
-			}catch(SQLException e){
-			}finally{
-				BeecpUtil.oclose(rs1);
+				TestUtil.assertError("result operation after statememnt close(st)");
+			} catch (SQLException e) {
+			} finally {
+				if (rs1 != null)
+					BeecpUtil.oclose(rs1);
 			}
-			
-			ResultSet rs2=null;
-			try{
-				rs2=ps.getResultSet();
+
+			ResultSet rs2 = null;
+			try {
+				rs2 = ps.getResultSet();
 				ps.close();
 				rs2.getStatement();
-				TestUtil.assertError("result operation after preparedStatement close(ps)");	
-			}catch(SQLException e){
-			}finally{
-				BeecpUtil.oclose(rs2);
+				TestUtil.assertError("result operation after preparedStatement close(ps)");
+			} catch (SQLException e) {
+			} finally {
+				if (rs2 != null)
+					BeecpUtil.oclose(rs2);
 			}
-			
-			ResultSet rs3=null;
-			try{
-				rs3=cs.getResultSet();
+
+			ResultSet rs3 = null;
+			try {
+				rs3 = cs.getResultSet();
 				cs.close();
 				rs3.getStatement();
-				TestUtil.assertError("result operation after callableStatement close(cs)");	
-			}catch(SQLException e){
-			}finally{
-				BeecpUtil.oclose(rs3);
+				TestUtil.assertError("result operation after callableStatement close(cs)");
+			} catch (SQLException e) {
+			} finally {
+				if (rs3 != null)
+					BeecpUtil.oclose(rs3);
 			}
-			
-		}finally{
-			BeecpUtil.oclose(st);
-			BeecpUtil.oclose(cs);
-			BeecpUtil.oclose(ps);
-			BeecpUtil.oclose(con);
+		} finally {
+			if (con != null)
+				BeecpUtil.oclose(con);
 		}
 	}
 }

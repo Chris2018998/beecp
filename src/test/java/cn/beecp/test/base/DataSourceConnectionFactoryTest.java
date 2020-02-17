@@ -49,7 +49,8 @@ public class DataSourceConnectionFactoryTest extends TestCase {
             if(con==null)TestUtil.assertError("DataSourceConnectionFactoryTest failed");
             System.out.println(con);
         }finally{
-            BeecpUtil.oclose(con);
+        	if(con!=null)
+              BeecpUtil.oclose(con);
         }
     }
 }

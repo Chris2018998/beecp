@@ -29,40 +29,44 @@ import java.sql.SQLException;
 import java.util.Random;
 
 public class TransactionAutoCommitResetTest extends TestCase {
-    private BeeDataSource ds;
+	private BeeDataSource ds;
 
-    public void setUp() throws Throwable {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setJdbcUrl(Config.JDBC_URL);
-        config.setDriverClassName(Config.JDBC_DRIVER);
-        config.setUsername(Config.JDBC_USER);
-        config.setPassword(Config.JDBC_PASSWORD);
-        config.setDefaultAutoCommit(false);
-        ds = new BeeDataSource(config);
-    }
+	public void setUp() throws Throwable {
+		BeeDataSourceConfig config = new BeeDataSourceConfig();
+		config.setJdbcUrl(Config.JDBC_URL);
+		config.setDriverClassName(Config.JDBC_DRIVER);
+		config.setUsername(Config.JDBC_USER);
+		config.setPassword(Config.JDBC_PASSWORD);
+		config.setDefaultAutoCommit(false);
+		ds = new BeeDataSource(config);
+	}
 
-    public void tearDown() throws Throwable {
-        ds.close();
-    }
+	public void tearDown() throws Throwable {
+		ds.close();
+	}
 
-    public void test() throws InterruptedException, Exception {
-        Connection con1 = null;
-        PreparedStatement ps1 = null;
-        ResultSet re1 = null;
-        try {
-            con1 = ds.getConnection();
-            String userId= String.valueOf(new Random(Long.MAX_VALUE).nextLong());
-            ps1 = con1.prepareStatement("select count(*) from " + Config.TEST_TABLE + " where TEST_ID='"+userId+"'");
-            re1 = ps1.executeQuery();
-            try{
-                con1.setAutoCommit(true);
-                TestUtil.assertError("AutoCommit reset false before rollback or commit");
-            }catch(SQLException e){
-            }
-        } finally {
-            BeecpUtil.oclose(re1);
-            BeecpUtil.oclose(ps1);
-            BeecpUtil.oclose(con1);
-        }
-    }
+	public void test() throws InterruptedException, Exception {
+		Connection con1 = null;
+		PreparedStatement ps1 = null;
+		ResultSet re1 = null;
+		try {
+			con1 = ds.getConnection();
+			String userId = String.valueOf(new Random(Long.MAX_VALUE).nextLong());
+			ps1 = con1
+					.prepareStatement("select count(*) from " + Config.TEST_TABLE + " where TEST_ID='" + userId + "'");
+			re1 = ps1.executeQuery();
+			try {
+				con1.setAutoCommit(true);
+				TestUtil.assertError("AutoCommit reset false before rollback or commit");
+			} catch (SQLException e) {
+			}
+		} finally {
+			if (re1 != null)
+				BeecpUtil.oclose(re1);
+			if (ps1 != null)
+				BeecpUtil.oclose(ps1);
+			if (con1 != null)
+				BeecpUtil.oclose(con1);
+		}
+	}
 }

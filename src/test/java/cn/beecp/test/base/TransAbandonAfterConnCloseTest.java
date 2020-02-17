@@ -67,9 +67,13 @@ public class TransAbandonAfterConnCloseTest extends TestCase {
 			if (rows !=1)
 				TestUtil.assertError("Failed to insert");
 		} finally {
+			if(re1!=null)
 			BeecpUtil.oclose(re1);
+			if(ps1!=null)
 			BeecpUtil.oclose(ps1);
+			if(ps2!=null)
 			BeecpUtil.oclose(ps2);
+			if(con1!=null)
 			BeecpUtil.oclose(con1);
 		}
 		
@@ -87,8 +91,11 @@ public class TransAbandonAfterConnCloseTest extends TestCase {
 					 TestUtil.assertError("rollback failed");
 			}
 		} finally {
+			if(re3!=null)
 			BeecpUtil.oclose(re3);
+			if(ps3!=null)
 			BeecpUtil.oclose(ps3);
+			if(con2!=null)
 			BeecpUtil.oclose(con2);
 		}
 	}

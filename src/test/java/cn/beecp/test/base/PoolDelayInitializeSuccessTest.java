@@ -45,6 +45,7 @@ public class PoolDelayInitializeSuccessTest extends TestCase {
 		}catch(ExceptionInInitializerError e){
 			e.getCause().printStackTrace();
 		}finally{
+			if(con!=null)
 			BeecpUtil.oclose(con);
 			if(ds!=null)ds.close();
 		}
