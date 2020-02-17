@@ -30,33 +30,27 @@ import java.sql.Statement;
 public final class BeecpUtil {
 	private static Logger log = LoggerFactory.getLogger(BeecpUtil.class);
 
-	public static void oclose(ResultSet resultSet) {
-		if (resultSet != null) {
-			try {
-				resultSet.close();
-			} catch (Throwable e) {
-				log.debug("Error at closing resultSet:", e);
-			}
+	public static void oclose(ResultSet resultSet) { 
+		try {
+			resultSet.close();
+		} catch (Throwable e) {
+			log.debug("Error at closing resultSet:", e);
 		}
 	}
 
 	public static void oclose(Statement statement) {
-		if (statement != null) {
-			try {
-				statement.close();
-			} catch (Throwable e) {
-				log.debug("Error at closing statement:", e);
-			}
+		try {
+			statement.close();
+		} catch (Throwable e) {
+			log.debug("Error at closing statement:", e);
 		}
 	}
 
 	public static void oclose(Connection connection) {
-		if (connection != null) {
-			try {
-				connection.close();
-			} catch (Throwable e) {
-				log.debug("Error at closing connection:", e);
-			}
+		try {
+			connection.close();
+		} catch (Throwable e) {
+			log.debug("Error at closing connection:", e);
 		}
 	}
 
