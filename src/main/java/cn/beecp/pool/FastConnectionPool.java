@@ -846,13 +846,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		public boolean isActive(PooledConnection pConn) {
 			Connection con = pConn.rawConn;
 			try {
-				boolean checkPass=con.isValid(ConnectionTestTimeout);
-				pConn.updateAccessTime();
-				return checkPass;
+			      if(con.isValid(ConnectionTestTimeout)){
+				  pConn.updateAccessTime();
+				  return true;
+			       }
 			} catch (SQLException e) {
 				log.error("BeeCP({})failed to test connection",poolName,e);
-				return false;
 			}
+			return false;
 		}
 	}
 
