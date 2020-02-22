@@ -166,8 +166,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			this.start();
 
 			semaphore = new Semaphore(poolConfig.getConcurrentSize(), poolConfig.isFairMode());
-			poolState=POOL_NORMAL;
-
+			
 			networkTimeoutExecutor.setMaximumPoolSize(config.getMaxActive());
 			idleCheckSchFuture = idleSchExecutor.scheduleAtFixedRate(new Runnable() {
 				public void run() {// check idle connection
@@ -177,6 +176,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 			registerJMX();
 			createInitConnections();
+			poolState=POOL_NORMAL;
 			log.info("BeeCP({})has startup{mode:{},init size:{},max size:{},concurrent size:{},max wait:{}ms,driver:{}}",
 					poolName,
 					mode,
