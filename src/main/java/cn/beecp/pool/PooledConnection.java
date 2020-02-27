@@ -87,8 +87,11 @@ class PooledConnection extends StatementCache{
 	//***************called by connection proxy ********//
 	void returnToPoolBySelf(){
 		proxyConn=null;
-		resetRawConnOnReturn();
-		pool.release(this,true);
+
+		if(resetRawConnOnReturn())
+			pool.release(this,true);
+        else
+		   pool.abandonOnReturn(this);
 	}
 	void setCurAutoCommit(boolean curAutoCommit) {
 		this.curAutoCommit = curAutoCommit;
@@ -119,13 +122,14 @@ class PooledConnection extends StatementCache{
 		return  pool.isSupportNetworkTimeout();
 	}
 	//reset connection on return to pool
-	private void resetRawConnOnReturn() {
+	private boolean resetRawConnOnReturn() {
 		if (!curAutoCommit&&commitDirtyInd){//Roll back when commit dirty
 			try {
 				rawConn.rollback();
 				updateAccessTime();
 			} catch (SQLException e) {
 				log.error("Failed to rollback on return to pool", e);
+				return false;
 			}finally{
 				commitDirtyInd=false;
 			}
@@ -140,6 +144,7 @@ class PooledConnection extends StatementCache{
 					updateAccessTime();
 				} catch (SQLException e) {
 					log.error("Failed to reset autoCommit to:{}",pConfig.isDefaultAutoCommit(),e);
+					return false;
 				}finally{
 					changedInds[0]=false;
 				}
@@ -151,6 +156,7 @@ class PooledConnection extends StatementCache{
 					updateAccessTime();
 				} catch (SQLException e) {
 					log.error("Failed to reset transactionIsolation to:{}",pConfig.getDefaultTransactionIsolation(),e);
+					return false;
 				}finally {
 					changedInds[1] = false;
 				}
@@ -162,6 +168,7 @@ class PooledConnection extends StatementCache{
 					updateAccessTime();
 				} catch (SQLException e) {
 					log.error("Failed to reset readOnly to:{}",pConfig.isDefaultReadOnly(),e);
+					return false;
 				}finally{
 					changedInds[2] = false;
 				}
@@ -173,6 +180,7 @@ class PooledConnection extends StatementCache{
 					updateAccessTime();
 				} catch (SQLException e) {
 					log.error("Failed to reset catalog to:{}",pConfig.getDefaultCatalog(),e);
+					return false;
 				}finally{
 					changedInds[3] = false;
 				}
@@ -186,6 +194,7 @@ class PooledConnection extends StatementCache{
 					}
 				} catch (SQLException e) {
 					log.error("Failed to reset schema to:{}",pConfig.getDefaultSchema(),e);
+					return false;
 				}finally{
 					changedInds[4] = false;
 				}
@@ -199,6 +208,7 @@ class PooledConnection extends StatementCache{
 					}
 				} catch (SQLException e) {
 					log.error("Failed to reset networkTimeout to:{}",pool.getNetworkTimeout(),e);
+					return false;
 				}finally{
 					changedInds[5] = false;
 				}
@@ -211,6 +221,8 @@ class PooledConnection extends StatementCache{
 			rawConn.clearWarnings();
 		} catch (SQLException e) {
 			log.error("Failed to clear warnings",e);
+			return false;
 		}
+		return true;
 	}
 }

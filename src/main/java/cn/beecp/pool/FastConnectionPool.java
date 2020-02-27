@@ -196,12 +196,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private void checkProxyClasses() throws SQLException {
 		try {
 			ClassLoader classLoader = getClass().getClassLoader();
-			Class.forName("cn.beecp.pool.ProxyConnection", true, classLoader);
-			Class.forName("cn.beecp.pool.ProxyStatement", true, classLoader);
-			Class.forName("cn.beecp.pool.ProxyPsStatement", true, classLoader);
-			Class.forName("cn.beecp.pool.ProxyCsStatement", true, classLoader);
-			Class.forName("cn.beecp.pool.ProxyDatabaseMetaData", true, classLoader);
-			Class.forName("cn.beecp.pool.ProxyResultSet", true, classLoader);
+			Class.forName("cn.beecp.pool.ProxyConnection",false, classLoader);
+			Class.forName("cn.beecp.pool.ProxyStatement", false, classLoader);
+			Class.forName("cn.beecp.pool.ProxyPsStatement", false, classLoader);
+			Class.forName("cn.beecp.pool.ProxyCsStatement", false, classLoader);
+			Class.forName("cn.beecp.pool.ProxyDatabaseMetaData", false, classLoader);
+			Class.forName("cn.beecp.pool.ProxyResultSet", false, classLoader);
 		} catch (ClassNotFoundException e) {
 			throw new SQLException("Jdbc proxy class missed",e);
 		}
@@ -267,26 +267,26 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		try{
 			rawConn.setAutoCommit(poolConfig.isDefaultAutoCommit());
 		}catch( SQLException e) {
-			log.warn("BeeCP({})failed to set default on executing 'setAutoCommit'",poolName,e);
+			log.warn("BeeCP({})failed to set default on executing 'setAutoCommit'",poolName);
 		}
 
 		try{
 			rawConn.setTransactionIsolation(poolConfig.getDefaultTransactionIsolationCode());
 		}catch( SQLException e) {
-			log.warn("BeeCP({}))failed to set default on executing to 'setTransactionIsolation'",poolName,e);
+			log.warn("BeeCP({}))failed to set default on executing to 'setTransactionIsolation'",poolName);
 		}
 
 		try{
 			rawConn.setReadOnly(poolConfig.isDefaultReadOnly());
 		}catch( SQLException e){
-			log.warn("BeeCP({}))failed to set default on executing to 'setReadOnly'",poolName,e);
+			log.warn("BeeCP({}))failed to set default on executing to 'setReadOnly'",poolName);
 		}
 
 		if(!isNullText(poolConfig.getDefaultCatalog())){
 			try{
 				rawConn.setCatalog(poolConfig.getDefaultCatalog());
 			}catch( SQLException e) {
-				log.warn("BeeCP({}))failed to set default on executing to 'setCatalog'",poolName,e);
+				log.warn("BeeCP({}))failed to set default on executing to 'setCatalog'",poolName);
 			}
 		}
 
@@ -296,7 +296,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				rawConn.setSchema(poolConfig.getDefaultSchema());
 			}catch(Throwable e) {
 				supportSchema=false;
-				log.warn("BeeCP({})driver not support 'schema'",poolName,e);
+				log.warn("BeeCP({})driver not support 'schema'",poolName);
 			}
 		}
 
@@ -311,7 +311,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				}
 			}catch(Throwable e) {
 				supportNetworkTimeout=false;
-				log.warn("BeeCP({})driver not support 'networkTimeout'",poolName,e);
+				log.warn("BeeCP({})driver not support 'networkTimeout'",poolName);
 			}
 		}
 
@@ -328,7 +328,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					st.setQueryTimeout(ConnectionTestTimeout);
 				}catch(Throwable ee){
 					supportQueryTimeout=false;
-					log.warn("BeeCP({})driver not support 'queryTimeout'",poolName,e);
+					log.warn("BeeCP({})driver not support 'queryTimeout'",poolName);
 				}finally{
 					oclose(st);
 				}
@@ -451,13 +451,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 	// take one PooledConnection
 	private Connection takeOneConnection(long deadline, Borrower borrower) throws SQLException {
-		for (PooledConnection pConn : connArray) {
+		for (PooledConnection pConn:connArray) {
 			if (ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn)) {
 				return createProxyConnection(pConn, borrower);
 			}
 		}
+
 		//create directly
-		PooledConnection pConn;
+		PooledConnection pConn=null;
 		if(connArray.length<PoolMaxSize && (pConn=createPooledConn(CONNECTION_USING))!=null){
 			return createProxyConnection(pConn,borrower);
 		}
@@ -528,6 +529,17 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				unpark(this);
 		}
 	}
+
+	/**
+	 * remove connection
+	 *
+	 * @param pConn
+	 *            target connection need release
+	 */
+	 void abandonOnReturn(PooledConnection pConn) {
+		removePooledConn(pConn,DESC_REMOVE_BAD);
+		tryToCreateNewConnByAsyn();
+	 }
 
 	/**
 	 * return connection to pool
