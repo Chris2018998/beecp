@@ -36,7 +36,7 @@ class StatementCache {
 	private HashMap<Object,CacheNode>nodeMap;
 	public StatementCache(int capacity) {
 		this.capacity=capacity;
-		this.nodeMap = new HashMap<Object,CacheNode>(capacity);
+		this.nodeMap = new HashMap<Object,CacheNode>(capacity*2);
 	}
 	public PreparedStatement getStatement(Object k) {
 		CacheNode n = nodeMap.get(k);
