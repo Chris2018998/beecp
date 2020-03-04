@@ -28,28 +28,34 @@ import static cn.beecp.util.BeecpUtil.oclose;
  */
 class ProxyStatementBase{
 	private boolean isClosed;
-	private int statementType=0;
-	private boolean stmCacheValid=false;
+	private int statementType;
+	private boolean stmCacheValid;
 	protected Statement delegate;
 	protected PreparedStatement delegate1;
 	protected CallableStatement delegate2;
 
-	protected PooledConnection pConn;//called by subClsss to update time
-	protected ProxyConnectionBase proxyConn;//called by subClsss to check close state
+	protected PooledConnection pConn;//called by subclass to update time
+	protected ProxyConnectionBase proxyConn;//called by subclass to check close state
 
 	public ProxyStatementBase(Statement delegate,ProxyConnectionBase proxyConn,PooledConnection pConn){
 		this.pConn=pConn;
 		this.proxyConn=proxyConn;
-		this.delegate = delegate;
+		this.delegate=delegate;
+		this.statementType=0;
+		this.stmCacheValid=false;
 	}
 	public ProxyStatementBase(PreparedStatement delegate,ProxyConnectionBase proxyConn,PooledConnection pConn,boolean stmCacheValid){
-		this(delegate,proxyConn,pConn);
+		this.pConn=pConn;
+		this.proxyConn=proxyConn;
+		this.delegate=delegate;
 		this.statementType=1;
 		this.delegate1=delegate;
 		this.stmCacheValid=stmCacheValid;
 	}
 	public ProxyStatementBase(CallableStatement delegate,ProxyConnectionBase proxyConn,PooledConnection pConn,boolean stmCacheValid){
-		this(delegate,proxyConn,pConn);
+		this.pConn=pConn;
+		this.proxyConn=proxyConn;
+		this.delegate=delegate;
 		this.statementType=2;
 		this.delegate2=delegate;
 		this.stmCacheValid=stmCacheValid;

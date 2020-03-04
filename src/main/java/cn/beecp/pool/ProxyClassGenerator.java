@@ -368,7 +368,7 @@ public final class ProxyClassGenerator {
 			if (newCtMethodm.getReturnType() == CtClass.voidType) {
 				methodBuffer.append(delegateName+methodName + "($$);");
 				if(methodName.startsWith("execute"))
-					methodBuffer.append("pooledConn.updateAccessTimeWithCommitDirty();");
+					methodBuffer.append("pConn.updateAccessTimeWithCommitDirty();");
 			} else {
 				methodBuffer.append(newCtMethodm.getReturnType().getName() + " re="+delegateName+methodName + "($$);");
 				if(methodName.startsWith("execute"))methodBuffer.append("pConn.updateAccessTimeWithCommitDirty();");

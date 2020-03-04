@@ -15,14 +15,14 @@
  */
 package cn.beecp.pool;
 
-import static cn.beecp.pool.PoolExceptionList.AutoCommitChangeForbiddennException;
-import static cn.beecp.pool.PoolExceptionList.ConnectionClosedException;
-import static cn.beecp.util.BeecpUtil.equalsText;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.util.concurrent.Executor;
+
+import static cn.beecp.pool.PoolExceptionList.AutoCommitChangeForbiddennException;
+import static cn.beecp.pool.PoolExceptionList.ConnectionClosedException;
+import static cn.beecp.util.BeecpUtil.equalsText;
 /**
  * raw connection wrapper
  * 
@@ -32,7 +32,7 @@ import java.util.concurrent.Executor;
 abstract class ProxyConnectionBase implements Connection{
 	private boolean isClosed;
 	protected Connection delegate;
-	protected PooledConnection pConn;//called by subClsss to update time
+	protected PooledConnection pConn;//called by subclass to update time
 
 	public ProxyConnectionBase(PooledConnection pConn) {
 		this.pConn=pConn;

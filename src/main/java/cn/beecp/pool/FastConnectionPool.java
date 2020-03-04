@@ -473,7 +473,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 
 		try {// wait one transferred connection
 			waitQueue.offer(borrower);
-
 			for (;;) {
 				stateObject = borrower.stateObject;
 				if (stateObject instanceof PooledConnection) {
@@ -868,7 +867,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			return false;
 		}
 	}
-
 	// Transfer Policy
 	interface TransferPolicy {
 		int getCheckStateCode();
