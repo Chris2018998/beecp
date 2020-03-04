@@ -40,9 +40,13 @@ import java.util.logging.Logger;
 public final class BeeDataSource extends BeeDataSourceConfig implements DataSource {
 
 	/**
+	 *  pool initialized
+	 */
+	private volatile boolean inited;
+	/**
 	 * connection pool
 	 */
-	private volatile ConnectionPool pool=null;
+	private ConnectionPool pool=null;
 
 	/**
 	 * failed to create
@@ -77,6 +81,7 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 		try {
 			config.copyTo(this);
 			pool = createPool(this);
+			inited=true;
 		}catch(SQLException e){
 			throw new ExceptionInInitializerError(e);
 		}
@@ -103,13 +108,14 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	 *             if pool is closed or waiting timeout,then throw exception
 	 */
 	public Connection getConnection() throws SQLException {
-		if(pool!=null)return pool.getConnection(maxWait);
+		if(inited)return pool.getConnection(maxWait);
 
 		if(writeLock.tryLock()) {
-			if(pool==null){
+			if(!inited){
 				try {
 					failedCause = null;
-					pool = createPool(this);
+					pool=createPool(this);
+					inited=true;
 				} catch (SQLException e) {
 					failedCause = e;
 					throw e;
@@ -147,8 +153,11 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 		throw new SQLException("Not support");
 	}
 	public void close(){
-		if(pool!=null)
+		if(pool!=null) {
 			pool.shutdown();
+			pool=null;
+			inited=false;
+		}
 	}
 	public PrintWriter getLogWriter() throws SQLException {
 		throw new SQLException("Not supported");
