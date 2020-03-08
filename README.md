@@ -34,10 +34,61 @@ project for performance test code,please visit：https://github.com/Chris2018998
 Download <a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
 
 
+Demo(SpringBoot)
+---
+
+*application.properties*
+
+```java
+spring.datasource.username=xx
+spring.datasource.password=xx
+spring.datasource.url=xx
+spring.datasource.driverClassName=xxx
+spring.datasource.datasourceJndiName=xxx
+```
+
+*DataSourceConfig.java*
+
+```java
+@Configuration
+public class DataSourceConfig {
+  @Value("${spring.datasource.driverClassName}")
+  private String driver;
+  @Value("${spring.datasource.url}")
+  private String url;
+  @Value("${spring.datasource.username}")
+  private String user;
+  @Value("${spring.datasource.password}")
+  private String password;
+  @Value("${spring.datasource.datasourceJndiName}")
+  private String datasourceJndiName;
+  private BeeDataSourceFactory dataSourceFactory = new BeeDataSourceFactory();
+  
+  @Bean
+  @Primary
+  @ConfigurationProperties(prefix="spring.datasource")
+  public DataSource primaryDataSource() {
+    return DataSourceBuilder.create().type(cn.beecp.BeeDataSource.class).build();
+  }
+  
+  @Bean
+  public DataSource secondDataSource(){
+    return new BeeDataSource(new BeeDataSourceConfig(driver,url,user,password));
+  }
+  
+  @Bean
+  public DataSource thirdDataSource()throws SQLException {
+    try{
+       return dataSourceFactory.lookup(datasourceJndiName);
+     }catch(NamingException e){
+       throw new SQLException("Jndi DataSource not found："+datasourceJndiName);
+     }
+  }
+}
+```
 
 
-
-Release download
+Maven download
 ---
 
 Java7
@@ -119,58 +170,3 @@ Configuration
 | connectionFactoryClassName|Custom JDBC connection factory class name              | default is null          |
 | enableJMX                 |JMX Ind                                |                    | |
 	
-
-
-Refence demo(SpringBoot)
----
-
-*application.properties*
-
-```java
-spring.datasource.username=xx
-spring.datasource.password=xx
-spring.datasource.url=xx
-spring.datasource.driverClassName=xxx
-spring.datasource.datasourceJndiName=xxx
-```
-
-*DataSourceConfig.java*
-
-```java
-@Configuration
-public class DataSourceConfig {
-  @Value("${spring.datasource.driverClassName}")
-  private String driver;
-  @Value("${spring.datasource.url}")
-  private String url;
-  @Value("${spring.datasource.username}")
-  private String user;
-  @Value("${spring.datasource.password}")
-  private String password;
-  @Value("${spring.datasource.datasourceJndiName}")
-  private String datasourceJndiName;
-  private BeeDataSourceFactory dataSourceFactory = new BeeDataSourceFactory();
-  
-  @Bean
-  @Primary
-  @ConfigurationProperties(prefix="spring.datasource")
-  public DataSource primaryDataSource() {
-    return DataSourceBuilder.create().type(cn.beecp.BeeDataSource.class).build();
-  }
-  
-  @Bean
-  public DataSource secondDataSource(){
-    return new BeeDataSource(new BeeDataSourceConfig(driver,url,user,password));
-  }
-  
-  @Bean
-  public DataSource thirdDataSource()throws SQLException {
-    try{
-       return dataSourceFactory.lookup(datasourceJndiName);
-     }catch(NamingException e){
-       throw new SQLException("Jndi DataSource not found："+datasourceJndiName);
-     }
-  }
-}
-```
-
