@@ -159,7 +159,7 @@ Bee_C(5.3623) > Bee_F(6.8492) > HikariCP(9.0176)
  
 性能测试代码请访问项目：https://github.com/Chris2018998/PoolPerformance
 
-**2：** 采用光连接池的性能基准测试结果
+**2：** 采用光连接池的性能基准测试结果(I3-7100,8G)
 
 <img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200308_I3_7100_HikariCP_Bech_Pict.png"></img>
 
