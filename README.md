@@ -13,6 +13,30 @@ Feature
 
 2: Less code: 21 files, 2600 lines of source code
 
+Performance
+---
+The performance of each connection pool is tested by multi-threaded query (1000 threads execute 1000 times each, totally 1 million times), and the time-consuming distribution and average time-consuming are printed. Finally, the connection pools are ranked according to the usual time-consuming. Single time statistics (machine status impact on the test results):
+
+[datasource.getConnection(),connection.prepareStatement,statement.execute(),statement.close(),connection.close()]</i>
+
+1：Below are the test results of each connection pool at Mysql5.6 (milliseconds)
+
+Bee_C(5.3623) > Bee_F(6.8492) > HikariCP(9.0176)
+
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191105_JDBCPool_I54300.log">20191105_JDBCPool_I54300.log</a>
+
+project for performance test code,please visit：https://github.com/Chris2018998/PoolPerformance
+ 
+2：Test with HikariCP benchmark(I3-7100,8G)
+
+<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200308_I3_7100_HikariCP_Bech_Pict.png"></img>
+
+Download <a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
+
+
+
+
+
 Release download
 ---
 
@@ -149,24 +173,4 @@ public class DataSourceConfig {
   }
 }
 ```
-
-Performance
----
-The performance of each connection pool is tested by multi-threaded query (1000 threads execute 1000 times each, totally 1 million times), and the time-consuming distribution and average time-consuming are printed. Finally, the connection pools are ranked according to the usual time-consuming. Single time statistics (machine status impact on the test results):
-
-[datasource.getConnection(),connection.prepareStatement,statement.execute(),statement.close(),connection.close()]</i>
-
-1：Below are the test results of each connection pool at Mysql5.6 (milliseconds)
-
-Bee_C(5.3623) > Bee_F(6.8492) > HikariCP(9.0176)
-
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191105_JDBCPool_I54300.log">20191105_JDBCPool_I54300.log</a>
-
-project for performance test code,please visit：https://github.com/Chris2018998/PoolPerformance
- 
-2：Test with HikariCP benchmark(I3-7100,8G)
-
-<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200308_I3_7100_HikariCP_Bech_Pict.png"></img>
-
-Download <a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
 
