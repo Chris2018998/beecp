@@ -358,7 +358,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private boolean testOnBorrow(PooledConnection pConn) {
 		return !TestOnBorrow || (currentTimeMillis() - pConn.lastAccessTime - ConnectionTestInterval <=0) || isActiveConn(pConn);
 	}
-	boolean testOnReturn(PooledConnection pConn) {
+	private boolean testOnReturn(PooledConnection pConn) {
 		return !TestOnReturn || (currentTimeMillis() - pConn.lastAccessTime - ConnectionTestInterval <=0) || isActiveConn(pConn);
 	}
 
