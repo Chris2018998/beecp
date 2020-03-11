@@ -58,9 +58,8 @@ public interface ConnectionPool {
 	/**
 	 * return connection to pool
 	 * @param pConn target connection need release
-	 * @param needTest, true check active
 	 */
-	 void release(PooledConnection pConn, boolean needTest);
+	 void recycle(PooledConnection pConn);
 		
 	/**
 	 * close pool

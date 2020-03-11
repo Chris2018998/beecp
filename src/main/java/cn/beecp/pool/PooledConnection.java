@@ -87,10 +87,9 @@ class PooledConnection extends StatementCache{
 	//***************called by connection proxy ********//
 	void returnToPoolBySelf(){
 		proxyConn=null;
-
-		if(resetRawConnOnReturn())
-			pool.release(this,true);
-        else
+		if(resetRawConnOnReturn()) {
+			pool.recycle(this);
+		}else
 		    pool.abandonOnReturn(this);
 	}
 	void setCurAutoCommit(boolean curAutoCommit) {

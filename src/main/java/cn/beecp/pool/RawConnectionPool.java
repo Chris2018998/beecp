@@ -121,10 +121,8 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 	 *
 	 * @param pConn
 	 *            target connection need release
-	 * @param needTest,
-	 *            true check active
 	 */
-	public void release(PooledConnection pConn, boolean needTest) {}
+	public void recycle(PooledConnection pConn) {}
 
 	/**
 	 * close pool

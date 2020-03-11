@@ -27,7 +27,7 @@ import static cn.beecp.pool.PoolExceptionList.StatementClosedException;
  * @version 1.0
  */
 class ProxyStatementBase{
-	boolean isClosed;
+	private boolean isClosed;
 	private boolean stmCacheValid;
 	protected Statement delegate;
 	protected PooledConnection pConn;//called by subclass to update time

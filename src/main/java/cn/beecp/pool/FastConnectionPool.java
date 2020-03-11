@@ -266,7 +266,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private void setDefaultOnRawConn(Connection rawConn){
 		try{
 			rawConn.setAutoCommit(poolConfig.isDefaultAutoCommit());
-		}catch( SQLException e) {
+		}catch( Throwable e) {
 			log.warn("BeeCP({})failed to set default on executing 'setAutoCommit'",poolName);
 		}
 
@@ -278,14 +278,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 		try{
 			rawConn.setReadOnly(poolConfig.isDefaultReadOnly());
-		}catch( SQLException e){
+		}catch( Throwable e){
 			log.warn("BeeCP({}))failed to set default on executing to 'setReadOnly'",poolName);
 		}
 
 		if(!isNullText(poolConfig.getDefaultCatalog())){
 			try{
 				rawConn.setCatalog(poolConfig.getDefaultCatalog());
-			}catch( SQLException e) {
+			}catch( Throwable e) {
 				log.warn("BeeCP({}))failed to set default on executing to 'setCatalog'",poolName);
 			}
 		}
@@ -358,7 +358,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private boolean testOnBorrow(PooledConnection pConn) {
 		return !TestOnBorrow || (currentTimeMillis() - pConn.lastAccessTime - ConnectionTestInterval <=0) || isActiveConn(pConn);
 	}
-	private boolean testOnReturn(PooledConnection pConn) {
+	boolean testOnReturn(PooledConnection pConn) {
 		return !TestOnReturn || (currentTimeMillis() - pConn.lastAccessTime - ConnectionTestInterval <=0) || isActiveConn(pConn);
 	}
 
@@ -434,7 +434,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			}
 		} catch (Throwable e) {
 			if (borrower != null && borrower.hasHoldNewOne) {// has borrowed one
-				this.release(borrower.lastUsedConn, false);
+				this.recycle(borrower.lastUsedConn);
 			}
 
 			if (e instanceof SQLException) {
@@ -542,18 +542,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *
 	 * @param pConn
 	 *            target connection need release
-	 * @param needTest,
-	 *            true check active
 	 */
-	public void release(PooledConnection pConn, boolean needTest) {
-		if (needTest && !testOnReturn(pConn))return;
-
-		transferPolicy.beforeTransfer(pConn);
-		for(Borrower borrower:waitQueue){
-			if(pConn.state!=ConUnCatchStateCode)return;
-			if(transferToWaiter(borrower,pConn))return;
+	public void recycle(PooledConnection pConn) {
+		if(testOnReturn(pConn)){
+			transferPolicy.beforeTransfer(pConn);
+			for(Borrower borrower:waitQueue){
+				if(pConn.state!=ConUnCatchStateCode)return;
+				if(transferToWaiter(borrower,pConn))return;
+			}
+			transferPolicy.onFailTransfer(pConn);
 		}
-		transferPolicy.onFailTransfer(pConn);
 	}
 	/**
 	 * @param exception:
@@ -721,7 +719,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		TransferThread(PooledConnection pConn){this.pConn=pConn;}
 		public void run(){
 			if(isConn) {
-				release(pConn, false);
+                recycle(pConn);
 			}else {
 				transferException(e);
 			}
