@@ -351,9 +351,9 @@ public final class ProxyClassGenerator {
 
 		String delegateName="delegate.";
 		if("java.sql.PreparedStatement".equals(ctStatementIntf.getName())){
-			delegateName="delegate1.";
+			delegateName="((PreparedStatement)delegate).";
 		}else if("java.sql.CallableStatement".equals(ctStatementIntf.getName())){
-			delegateName="delegate2.";
+			delegateName="((CallableStatement)delegate).";
 		}
 
 		for (CtMethod ctMethod : linkedList) {

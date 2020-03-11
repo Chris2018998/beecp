@@ -166,7 +166,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			this.start();
 
 			semaphore = new Semaphore(poolConfig.getConcurrentSize(), poolConfig.isFairMode());
-			
+
 			networkTimeoutExecutor.setMaximumPoolSize(config.getMaxActive());
 			idleCheckSchFuture = idleSchExecutor.scheduleAtFixedRate(new Runnable() {
 				public void run() {// check idle connection
@@ -346,16 +346,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *         false if false then close it
 	 */
 	private boolean isActiveConn(PooledConnection pConn) {
-		boolean isActive=false;
-		try {
-			return(isActive=testPolicy.isActive(pConn));
-		} finally {
-			if (!isActive) {
-				pConn.state=CONNECTION_CLOSED;
-				removePooledConn(pConn,DESC_REMOVE_BAD);
-				tryToCreateNewConnByAsyn();
-			}
-		}
+		if(testPolicy.isActive(pConn))
+			return true;
+
+		pConn.state=CONNECTION_CLOSED;
+		removePooledConn(pConn,DESC_REMOVE_BAD);
+		tryToCreateNewConnByAsyn();
+		return false;
 	}
 
 	private boolean testOnBorrow(PooledConnection pConn) {
@@ -416,8 +413,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			PooledConnection pConn = borrower.initBeforeBorrow();
 			if (pConn != null && ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
 				if(testOnBorrow(pConn))
-				 return createProxyConnection(pConn, borrower);
-				
+					return createProxyConnection(pConn, borrower);
+
 				borrower.lastUsedConn = null;
 			}
 		} else {
@@ -470,7 +467,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		int spinSize = MaxTimedSpins;
 		Thread borrowThread=borrower.thread;
 		borrower.stateObject=BORROWER_NORMAL;
-	 
+
 		try {// wait one transferred connection
 			waitQueue.offer(borrower);
 			for (;;) {
@@ -535,10 +532,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 * @param pConn
 	 *            target connection need release
 	 */
-	 void abandonOnReturn(PooledConnection pConn) {
+	void abandonOnReturn(PooledConnection pConn) {
 		removePooledConn(pConn,DESC_REMOVE_BAD);
 		tryToCreateNewConnByAsyn();
-	 }
+	}
 
 	/**
 	 * return connection to pool
@@ -701,7 +698,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					if((pConn = createPooledConn(CONNECTION_USING)) != null) {
 						new TransferThread(pConn).start();
 					}else{//pool full
-					 	break;
+						break;
 					}
 				} catch (SQLException e) {
 					new TransferThread(e).start();
@@ -837,7 +834,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 				st.execute(ConnectionTestSQL);
 				return true;
-			} catch (SQLException e) {
+			} catch (Throwable e) {
 				log.error("BeeCP({})failed to test connection",poolName,e);
 				return false;
 			} finally {
@@ -845,7 +842,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					con.rollback();
 					if(AutoCommit&&autoCommitChged)
 						con.setAutoCommit(true);
-				} catch (SQLException e){
+				} catch (Throwable e){
 					log.error("BeeCP({})failed to execute 'rollback or setAutoCommit(true)' after connection test",poolName,e);
 				}
 				oclose(st);
@@ -857,11 +854,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		public boolean isActive(PooledConnection pConn) {
 			Connection con = pConn.rawConn;
 			try {
-			      if(con.isValid(ConnectionTestTimeout)){
-				  pConn.updateAccessTime();
-				  return true;
-			       }
-			} catch (SQLException e) {
+				if(con.isValid(ConnectionTestTimeout)){
+					pConn.updateAccessTime();
+					return true;
+				}
+			} catch (Throwable e) {
 				log.error("BeeCP({})failed to test connection",poolName,e);
 			}
 			return false;
