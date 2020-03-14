@@ -125,11 +125,10 @@ class PooledConnection extends StatementCache{
 			try {
 				rawConn.rollback();
 				updateAccessTime();
-			} catch (SQLException e) {
+				commitDirtyInd=false;
+			} catch (Throwable e) {
 				log.error("Failed to rollback on return to pool", e);
 				return false;
-			}finally{
-				commitDirtyInd=false;
 			}
 		}
 
@@ -203,7 +202,7 @@ class PooledConnection extends StatementCache{
 		try {//clear warnings
 			rawConn.clearWarnings();
 			return true;
-		} catch (SQLException e) {
+		} catch (Throwable e) {
 			log.error("Failed to clear warnings",e);
 			return false;
 		}

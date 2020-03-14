@@ -53,8 +53,6 @@ abstract class ProxyResultSetBase implements ResultSet {
 		checkClose();
 		isClosed=true;
 		oclose(delegate);
-		delegate=null;
-		proxyStatement=null;
 	}
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		checkClose();

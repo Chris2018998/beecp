@@ -64,7 +64,6 @@ class ProxyStatementBase{
 		this.isClosed=true;
 		if(!stmCacheValid)
 			oclose(delegate);
-		this.delegate=null;
 	}
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		checkClose();
