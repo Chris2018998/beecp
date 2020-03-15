@@ -244,6 +244,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 	//remove Pooled connection
 	private void removePooledConn(PooledConnection pConn,String removeType) {
+		pConn.state=CONNECTION_CLOSED;
 		synchronized (connArrayLock) {
 			pConn.closeRawConn();
 			int oldLen = connArray.length;
@@ -345,10 +346,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *         false if false then close it
 	 */
 	private boolean isActiveConn(PooledConnection pConn) {
-		if(testPolicy.isActive(pConn))
-			return true;
+		if(testPolicy.isActive(pConn))return true;
 
-		pConn.state=CONNECTION_CLOSED;
 		removePooledConn(pConn,DESC_REMOVE_BAD);
 		tryToCreateNewConnByAsyn();
 		return false;
@@ -372,10 +371,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			for (int i=0,size=poolConfig.getInitialSize();i < size; i++)
 				createPooledConn(CONNECTION_IDLE);
 		} catch (SQLException e) {
-			for (PooledConnection pConn : connArray) {
-				pConn.state = CONNECTION_CLOSED;
+			for (PooledConnection pConn : connArray)
 				removePooledConn(pConn, DESC_REMOVE_INIT);
-			}
 			throw e;
 		}
 	}
@@ -522,7 +519,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *            target connection need release
 	 */
 	void abandonOnReturn(PooledConnection pConn) {
-		pConn.state=CONNECTION_CLOSED;
 		removePooledConn(pConn,DESC_REMOVE_BAD);
 		tryToCreateNewConnByAsyn();
 	}
