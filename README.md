@@ -19,7 +19,7 @@ The performance of each connection pool is tested by multi-threaded query (1000 
 
 [datasource.getConnection(),connection.prepareStatement,statement.execute(),statement.close(),connection.close()]</i>
 
-1：Below are the test results of each connection pool at Mysql5.6 (milliseconds)
+1：Below are the test results of each connection pool at Mysql5.6 (milliseconds) 
 
 Bee_C(5.3623) > Bee_F(6.8492) > HikariCP(9.0176)
 
@@ -29,7 +29,7 @@ project for performance test code,please visit：https://github.com/Chris2018998
  
 2：Test with HikariCP benchmark(I3-7100,8G)
 
-<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200308_I3_7100_HikariCP_Bech_Pict.png"></img>
+<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200315_I3_7100_HikariCP_Bech_Pict.png"></img>
 
 Download <a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
 
