@@ -31,7 +31,7 @@ Bee_C(5.3623) > Bee_F(6.8492) > HikariCP(9.0176)
 
 **2：** 采用光连接池的性能基准测试结果(I3-7100,8G)
 
-<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200308_I3_7100_HikariCP_Bech_Pict.png"></img>
+<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200315_I3_7100_HikariCP_Bech_Pict.bmp"></img>
 
 下载性能测试源码：<a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
 
