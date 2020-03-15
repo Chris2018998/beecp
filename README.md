@@ -43,7 +43,7 @@ Demo(SpringBoot)
 spring.datasource.username=xx
 spring.datasource.password=xx
 spring.datasource.url=xx
-spring.datasource.driverClassName=xxx
+spring.datasource.driverClassName=xxx 
 spring.datasource.datasourceJndiName=xxx
 ```
 
