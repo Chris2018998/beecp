@@ -47,7 +47,7 @@ class PooledConnection extends StatementCache{
 	
 	//changed indicator
 	private boolean[] changedInds=new boolean[6]; //0:autoCommit,1:transactionIsolation,2:readOnly,3:catalog,4:schema,5:networkTimeout
-	private byte changedCount=0;
+	private short changedCount=0;
 	final static short Pos_AutoCommitInd=0;
 	final static short Pos_TransactionIsolationInd=1;
 	final static short Pos_ReadOnlyInd=2;
