@@ -103,10 +103,11 @@ class PooledConnection extends StatementCache{
 		lastAccessTime=currentTimeMillis();
 	}
     void setChangedInd(short pos,boolean changed){
-		if(changedInds[pos]=changed)
-			changedCount++;
-		else
-			changedCount--;
+		if(!changedInds[pos] && changed)//false ->true      + 1
+		   changedCount++;
+		else if(changedInds[pos] && !changed)//true-->false  -1
+		   changedCount--;
+		changedInds[pos]=changed;
 		updateAccessTime();
     }
 
