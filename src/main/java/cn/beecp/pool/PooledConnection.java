@@ -109,93 +109,56 @@ class PooledConnection extends StatementCache{
 	}
 	//reset connection on return to pool
 	private boolean resetRawConnOnReturn() {
-		if (!curAutoCommit&&commitDirtyInd){//Roll back when commit dirty
-			try {
+		try {
+			if (!curAutoCommit && commitDirtyInd) {//Roll back when commit dirty
 				rawConn.rollback();
 				updateAccessTime();
-				commitDirtyInd=false;
-			} catch (Throwable e) {
-				log.error("Failed to rollback on return to pool", e);
-				return false;
+				commitDirtyInd = false;
 			}
-		}
 
-		//reset begin
-		if (changedCount > 0) {
-			if (changedInds[0]) {//reset autoCommit
-				try {
+			//reset begin
+			if (changedCount > 0) {
+				if (changedInds[0]) {//reset autoCommit
 					rawConn.setAutoCommit(pConfig.isDefaultAutoCommit());
 					curAutoCommit = pConfig.isDefaultAutoCommit();
 					updateAccessTime();
-					changedInds[0] = false;
-				} catch (Throwable e) {
-					log.error("Failed to reset autoCommit to:{}", pConfig.isDefaultAutoCommit(), e);
-					return false;
 				}
-			}
-			if (changedInds[1]) {
-				try {
+				if (changedInds[1]) {
 					rawConn.setTransactionIsolation(pConfig.getDefaultTransactionIsolationCode());
 					updateAccessTime();
 					changedInds[1] = false;
-				} catch (Throwable e) {
-					log.error("Failed to reset transactionIsolation to:{}", pConfig.getDefaultTransactionIsolation(), e);
-					return false;
 				}
-			}
-
-			if (changedInds[2]) {//reset readonly
-				try {
+				if (changedInds[2]) {//reset readonly
 					rawConn.setReadOnly(pConfig.isDefaultReadOnly());
 					updateAccessTime();
 					changedInds[2] = false;
-				} catch (Throwable e) {
-					log.error("Failed to reset readOnly to:{}", pConfig.isDefaultReadOnly(), e);
-					return false;
 				}
-			}
 
-			if (changedInds[3]) {//reset catalog
-				try {
+				if (changedInds[3]) {//reset catalog
 					rawConn.setCatalog(pConfig.getDefaultCatalog());
 					updateAccessTime();
 					changedInds[3] = false;
-				} catch (Throwable e) {
-					log.error("Failed to reset catalog to:{}", pConfig.getDefaultCatalog(), e);
-					return false;
 				}
-			}
-			//for JDK1.7 begin
-			if (changedInds[4] && isSupportSchema()) {//reset shema
-				try {
+				//for JDK1.7 begin
+				if (changedInds[4] && isSupportSchema()) {//reset shema
 					rawConn.setSchema(pConfig.getDefaultSchema());
 					updateAccessTime();
 					changedInds[4] = false;
-				} catch (Throwable e) {
-					log.error("Failed to reset schema to:{}", pConfig.getDefaultSchema(), e);
-					return false;
 				}
-			}
-
-			if (changedInds[5] && isSupportNetworkTimeout()) {//reset networkTimeout
-				try {
+				if (changedInds[5] && isSupportNetworkTimeout()) {//reset networkTimeout
 					rawConn.setNetworkTimeout(pool.getNetworkTimeoutExecutor(), pool.getNetworkTimeout());
 					updateAccessTime();
 					changedInds[5] = false;
-				} catch (Throwable e) {
-					log.error("Failed to reset networkTimeout to:{}", pool.getNetworkTimeout(), e);
-					return false;
 				}
-			}
-			//for JDK1.7 end
-			changedCount = 0;
-		}//reset end
+				//for JDK1.7 end
+				changedCount = 0;
+			}//reset end
 
-		try {//clear warnings
+			//clear warnings
 			rawConn.clearWarnings();
 			return true;
 		} catch (Throwable e) {
-			log.error("Failed to clear warnings",e);
+			log.error("Connection reset error", e);
 			return false;
 		}
 	}
