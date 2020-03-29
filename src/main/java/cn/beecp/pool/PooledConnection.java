@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import static cn.beecp.pool.PoolObjectsState.CONNECTION_IDLE;
 import static cn.beecp.util.BeecpUtil.oclose;
 import static java.lang.System.currentTimeMillis;
 
@@ -48,22 +47,13 @@ class PooledConnection extends StatementCache{
 	//changed indicator
 	private boolean[] changedInds=new boolean[6]; //0:autoCommit,1:transactionIsolation,2:readOnly,3:catalog,4:schema,5:networkTimeout
 	private short changedCount=0;
-	final static short Pos_AutoCommitInd=0;
-	final static short Pos_TransactionIsolationInd=1;
-	final static short Pos_ReadOnlyInd=2;
-	final static short Pos_CatalogInd=3;
-	final static short Pos_SchemaInd=4;
-	final static short Pos_NetworkTimeoutInd=5;
 
-	public PooledConnection(Connection rawConn,FastConnectionPool connPool,BeeDataSourceConfig config)throws SQLException{
-		 this(rawConn,connPool,config,CONNECTION_IDLE);
-	}
-	public PooledConnection(Connection rawConn,FastConnectionPool connPool,BeeDataSourceConfig config,int connState)throws SQLException{
+	public PooledConnection(Connection rawConn,int connState,FastConnectionPool connPool,BeeDataSourceConfig config)throws SQLException{
 		super(config.getPreparedStatementCacheSize());
 		pool=connPool;
+		state=connState;
 		this.rawConn=rawConn;
 
-		state=connState;
 		pConfig=config;
 		curAutoCommit=pConfig.isDefaultAutoCommit();
 		stmCacheValid = pConfig.getPreparedStatementCacheSize()>0;
@@ -87,9 +77,9 @@ class PooledConnection extends StatementCache{
 	//***************called by connection proxy ********//
 	void returnToPoolBySelf(){
 		proxyConn=null;
-		if(resetRawConnOnReturn()) {
+		if(resetRawConnOnReturn())
 			pool.recycle(this);
-		}else
+		else
 		    pool.abandonOnReturn(this);
 	}
 	void setCurAutoCommit(boolean curAutoCommit) {
@@ -114,9 +104,6 @@ class PooledConnection extends StatementCache{
     boolean isSupportSchema() {
 		return pool.isSupportSchema();
 	}
-	boolean isSupportIsValid() {
-		return pool.isSupportIsValid();
-	}
 	boolean isSupportNetworkTimeout() {
 		return  pool.isSupportNetworkTimeout();
 	}
@@ -135,69 +122,73 @@ class PooledConnection extends StatementCache{
 
 		//reset begin
 		if (changedCount > 0) {
-			int pos=-1;
-			try{
-				if (changedInds[0]) {//reset autoCommit
-					pos=0;
+			if (changedInds[0]) {//reset autoCommit
+				try {
 					rawConn.setAutoCommit(pConfig.isDefaultAutoCommit());
-					curAutoCommit=pConfig.isDefaultAutoCommit();
+					curAutoCommit = pConfig.isDefaultAutoCommit();
 					updateAccessTime();
-					changedInds[0]=false;
+					changedInds[0] = false;
+				} catch (Throwable e) {
+					log.error("Failed to reset autoCommit to:{}", pConfig.isDefaultAutoCommit(), e);
+					return false;
 				}
-				if (changedInds[1]) {
-					pos=1;
+			}
+			if (changedInds[1]) {
+				try {
 					rawConn.setTransactionIsolation(pConfig.getDefaultTransactionIsolationCode());
 					updateAccessTime();
 					changedInds[1] = false;
+				} catch (Throwable e) {
+					log.error("Failed to reset transactionIsolation to:{}", pConfig.getDefaultTransactionIsolation(), e);
+					return false;
 				}
-				if (changedInds[2]) {//reset readonly
-					pos=2;
+			}
+
+			if (changedInds[2]) {//reset readonly
+				try {
 					rawConn.setReadOnly(pConfig.isDefaultReadOnly());
 					updateAccessTime();
 					changedInds[2] = false;
+				} catch (Throwable e) {
+					log.error("Failed to reset readOnly to:{}", pConfig.isDefaultReadOnly(), e);
+					return false;
 				}
-				if (changedInds[3]) {//reset catalog
-					pos=3;
+			}
+
+			if (changedInds[3]) {//reset catalog
+				try {
 					rawConn.setCatalog(pConfig.getDefaultCatalog());
 					updateAccessTime();
 					changedInds[3] = false;
+				} catch (Throwable e) {
+					log.error("Failed to reset catalog to:{}", pConfig.getDefaultCatalog(), e);
+					return false;
 				}
-				//for JDK1.7 begin
-				if (changedInds[4]) {//reset shema
-					if(isSupportSchema()) {
-						pos=4;
-						rawConn.setSchema(pConfig.getDefaultSchema());
-						updateAccessTime();
-						changedInds[4] = false;
-					}
+			}
+			//for JDK1.7 begin
+			if (changedInds[4] && isSupportSchema()) {//reset shema
+				try {
+					rawConn.setSchema(pConfig.getDefaultSchema());
+					updateAccessTime();
+					changedInds[4] = false;
+				} catch (Throwable e) {
+					log.error("Failed to reset schema to:{}", pConfig.getDefaultSchema(), e);
+					return false;
 				}
-				if (changedInds[5]) {//reset networkTimeout
-					if(isSupportNetworkTimeout()) {
-						pos=5;
-						rawConn.setNetworkTimeout(pool.getNetworkTimeoutExecutor(), pool.getNetworkTimeout());
-						updateAccessTime();
-						changedInds[5] = false;
-					}
-				}
-			} catch (Throwable e) {
-				switch(pos) {
-					case 0:
-						log.error("Failed to reset autoCommit to:{}", pConfig.isDefaultAutoCommit(), e);return false;
-					case 1:
-						log.error("Failed to reset transactionIsolation to:{}", pConfig.getDefaultTransactionIsolation(), e);return false;
-					case 2:
-						log.error("Failed to reset readOnly to:{}", pConfig.isDefaultReadOnly(), e);return false;
-					case 3:
-						log.error("Failed to reset catalog to:{}", pConfig.getDefaultCatalog(), e);return false;
-					case 4:
-						log.error("Failed to reset schema to:{}", pConfig.getDefaultSchema(), e);return false;
-					case 5:
-						log.error("Failed to reset networkTimeout to:{}", pool.getNetworkTimeout(), e);return false;
-					default:return false;
+			}
+
+			if (changedInds[5] && isSupportNetworkTimeout()) {//reset networkTimeout
+				try {
+					rawConn.setNetworkTimeout(pool.getNetworkTimeoutExecutor(), pool.getNetworkTimeout());
+					updateAccessTime();
+					changedInds[5] = false;
+				} catch (Throwable e) {
+					log.error("Failed to reset networkTimeout to:{}", pool.getNetworkTimeout(), e);
+					return false;
 				}
 			}
 			//for JDK1.7 end
-			changedCount=0;
+			changedCount = 0;
 		}//reset end
 
 		try {//clear warnings

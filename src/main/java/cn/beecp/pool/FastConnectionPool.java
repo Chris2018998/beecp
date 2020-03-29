@@ -230,7 +230,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			if (oldLen < PoolMaxSize) {
 				Connection con= connFactory.create();
 				setDefaultOnRawConn(con);
-				PooledConnection pConn = new PooledConnection(con,this,poolConfig,connState);// add
+				PooledConnection pConn = new PooledConnection(con,connState,this,poolConfig);// add
 				PooledConnection[] arrayNew = new PooledConnection[oldLen + 1];
 				System.arraycopy(connArray, 0, arrayNew, 0, oldLen);
 				arrayNew[oldLen] = pConn;// tail
