@@ -98,7 +98,7 @@ Java7
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>2.2.5</version>
+   <version>2.2.6</version>
 </dependency>
 ```
 
