@@ -43,7 +43,7 @@ class PooledConnection extends StatementCache{
 	boolean curAutoCommit;
 	private FastConnectionPool pool;
 	private static Logger log = LoggerFactory.getLogger(PooledConnection.class);
-	
+
 	//changed indicator
 	private boolean[] changedInds=new boolean[6]; //0:autoCommit,1:transactionIsolation,2:readOnly,3:catalog,4:schema,5:networkTimeout
 	private short changedCount=0;
@@ -112,42 +112,34 @@ class PooledConnection extends StatementCache{
 		try {
 			if (!curAutoCommit && commitDirtyInd) {//Roll back when commit dirty
 				rawConn.rollback();
-				updateAccessTime();
 				commitDirtyInd = false;
 			}
-
 			//reset begin
 			if (changedCount > 0) {
 				if (changedInds[0]) {//reset autoCommit
 					rawConn.setAutoCommit(pConfig.isDefaultAutoCommit());
 					curAutoCommit = pConfig.isDefaultAutoCommit();
-					updateAccessTime();
+                    changedInds[0] = false;
 				}
 				if (changedInds[1]) {
 					rawConn.setTransactionIsolation(pConfig.getDefaultTransactionIsolationCode());
-					updateAccessTime();
 					changedInds[1] = false;
 				}
 				if (changedInds[2]) {//reset readonly
 					rawConn.setReadOnly(pConfig.isDefaultReadOnly());
-					updateAccessTime();
 					changedInds[2] = false;
 				}
-
 				if (changedInds[3]) {//reset catalog
 					rawConn.setCatalog(pConfig.getDefaultCatalog());
-					updateAccessTime();
 					changedInds[3] = false;
 				}
 				//for JDK1.7 begin
 				if (changedInds[4] && isSupportSchema()) {//reset shema
 					rawConn.setSchema(pConfig.getDefaultSchema());
-					updateAccessTime();
 					changedInds[4] = false;
 				}
 				if (changedInds[5] && isSupportNetworkTimeout()) {//reset networkTimeout
 					rawConn.setNetworkTimeout(pool.getNetworkTimeoutExecutor(), pool.getNetworkTimeout());
-					updateAccessTime();
 					changedInds[5] = false;
 				}
 				//for JDK1.7 end
@@ -156,6 +148,7 @@ class PooledConnection extends StatementCache{
 
 			//clear warnings
 			rawConn.clearWarnings();
+			updateAccessTime();
 			return true;
 		} catch (Throwable e) {
 			log.error("Connection reset error", e);
