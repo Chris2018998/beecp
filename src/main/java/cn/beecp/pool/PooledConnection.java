@@ -109,10 +109,12 @@ class PooledConnection extends StatementCache{
 	}
 	//reset connection on return to pool
 	private boolean resetRawConnOnReturn() {
+		boolean needUpdateTime=false;
 		try {
 			if (!curAutoCommit && commitDirtyInd) {//Roll back when commit dirty
 				rawConn.rollback();
 				commitDirtyInd = false;
+				needUpdateTime=true;
 			}
 			//reset begin
 			if (changedCount > 0) {
@@ -143,12 +145,13 @@ class PooledConnection extends StatementCache{
 					changedInds[5] = false;
 				}
 				//for JDK1.7 end
-				changedCount = 0;
+				changedCount=0;
+				needUpdateTime=true;
 			}//reset end
+			if(needUpdateTime)updateAccessTime();
 
 			//clear warnings
 			rawConn.clearWarnings();
-			updateAccessTime();
 			return true;
 		} catch (Throwable e) {
 			log.error("Connection reset error", e);
