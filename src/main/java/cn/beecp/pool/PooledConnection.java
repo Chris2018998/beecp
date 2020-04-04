@@ -108,8 +108,9 @@ class PooledConnection extends StatementCache{
 		return  pool.isSupportNetworkTimeout();
 	}
 	//reset connection on return to pool
+	private boolean needUpdateTime;
 	private boolean resetRawConnOnReturn() {
-		boolean needUpdateTime=false;
+		needUpdateTime=false;
 		try {
 			if (!curAutoCommit && commitDirtyInd) {//Roll back when commit dirty
 				rawConn.rollback();
