@@ -108,14 +108,14 @@ class PooledConnection extends StatementCache{
 		return  pool.isSupportNetworkTimeout();
 	}
 	//reset connection on return to pool
-	private boolean needUpdateTime;
+	private boolean updTimeInReset;
 	private boolean resetRawConnOnReturn() {
-		needUpdateTime=false;
+		updTimeInReset=false;
 		try {
 			if (!curAutoCommit && commitDirtyInd) {//Roll back when commit dirty
 				rawConn.rollback();
 				commitDirtyInd = false;
-				needUpdateTime=true;
+				updTimeInReset=true;
 			}
 			//reset begin
 			if (changedCount > 0) {
@@ -147,9 +147,9 @@ class PooledConnection extends StatementCache{
 				}
 				//for JDK1.7 end
 				changedCount=0;
-				needUpdateTime=true;
+				updTimeInReset=true;
 			}//reset end
-			if(needUpdateTime)updateAccessTime();
+			if(updTimeInReset)updateAccessTime();
 
 			//clear warnings
 			rawConn.clearWarnings();
