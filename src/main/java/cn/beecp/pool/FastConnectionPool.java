@@ -473,14 +473,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					} finally {
 						waitQueue.remove(borrower);
 					}
-
 					if(isInterrupted)throw RequestInterruptException;
-					throw RequestTimeoutException;
 				}finally { semaphore.release();}
-			} else {
-				throw RequestTimeoutException;
 			}
-		} catch (Throwable e) {
+
+			throw RequestTimeoutException;
+		} catch (Throwable e){
 			if (borrower.hasHoldNewOne) {// has borrowed one
 				this.recycle(borrower.lastUsedConn);
 			}
