@@ -82,7 +82,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 	private int networkTimeout;
 	private boolean supportSchema=true;
-	private boolean supportIsValid=true;
 	private boolean supportNetworkTimeout=true;
 	private boolean supportQueryTimeout=true;
 	private boolean supportIsValidTested=false;
@@ -208,9 +207,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	boolean isSupportSchema() {
 		return supportSchema;
 	}
-	boolean isSupportIsValid() {
-		return supportIsValid;
-	}
 	boolean isSupportNetworkTimeout() {
 		return supportNetworkTimeout;
 	}
@@ -320,7 +316,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				rawConn.isValid(1);
 				this.testPolicy = new ConnValidTestPolicy();
 			} catch (Throwable e) {
-				this.supportIsValid = false;
 				log.warn("BeeCP({})driver not support 'isValid'",poolName);
 				Statement st=null;
 				try {
