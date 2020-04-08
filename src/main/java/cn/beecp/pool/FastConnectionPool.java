@@ -429,7 +429,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					}
 
 					//3:try to get one transferred connection
-					long waitTime;
 					Object stateObject;
 					int spinSize = MaxTimedSpins;
 					Thread borrowThread=borrower.thread;
@@ -456,14 +455,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 								continue;
 							}
 
-							if (isTimeout||(isTimeout=(waitTime=deadline-nanoTime())<=0)) {
+							if (isTimeout||(isTimeout=(wait=deadline-nanoTime())<=0)) {
 								if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_TIMEOUT))break;
 								continue;
 							}
 
-							if (spinSize-->0)continue;//spin
+							if (spinSize>0){spinSize--;continue;}//spin
 							if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_WAITING))
-								parkNanos(borrower, waitTime);
+								parkNanos(borrower, wait);
 						} // for
 					} finally {
 						waitQueue.remove(borrower);
