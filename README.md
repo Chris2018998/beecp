@@ -109,7 +109,7 @@ Java6
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>1.6.6</version>
+   <version>1.6.7</version>
 </dependency>
 ```
 
