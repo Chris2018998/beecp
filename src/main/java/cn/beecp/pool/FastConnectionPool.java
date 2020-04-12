@@ -33,13 +33,13 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import static cn.beecp.pool.PoolExceptionList.*;
+import static cn.beecp.pool.PoolExceptionList.RequestInterruptException;
 import static cn.beecp.pool.PoolObjectsState.*;
 import static cn.beecp.util.BeecpUtil.isNullText;
 import static cn.beecp.util.BeecpUtil.oclose;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.System.nanoTime;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.*;
 import static java.util.concurrent.locks.LockSupport.*;
 
 /**
@@ -53,7 +53,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private boolean AutoCommit;
 	private boolean TestOnBorrow;
 	private boolean TestOnReturn;
-	private long DefaultMaxWaitMills;//milliseconds
+	private long DefaultMaxWait;//nanoseconds
 	private int ConUnCatchStateCode;
 	private String ConnectionTestSQL;//select
 	private int ConnectionTestTimeout;//seconds
@@ -106,7 +106,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private static final AtomicIntegerFieldUpdater<FastConnectionPool> PoolStateUpdater = AtomicIntegerFieldUpdater.newUpdater(FastConnectionPool.class, "poolState");
 	private static final AtomicIntegerFieldUpdater<FastConnectionPool> CreateConnThreadStateUpdater = AtomicIntegerFieldUpdater.newUpdater(FastConnectionPool.class, "createConnThreadState");
 
-	private static final long MillsToNanoTimes=1_000_000L;
 	private static final String DESC_REMOVE_INIT="init";
 	private static final String DESC_REMOVE_BAD="bad";
 	private static final String DESC_REMOVE_IDLE="idle";
@@ -140,7 +139,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			if(isNullText(ConnectionTestSQL))
 				ConnectionTestSQL="select 1 from dual";
 
-			DefaultMaxWaitMills = poolConfig.getMaxWait();
+			DefaultMaxWait = MILLISECONDS.toNanos(poolConfig.getMaxWait());
 			ConnectionTestInterval = poolConfig.getConnectionTestInterval();
 			TestOnBorrow = poolConfig.isTestOnBorrow();
 			TestOnReturn = poolConfig.isTestOnReturn();
@@ -222,14 +221,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	//create Pooled connection
 	private PooledConnection createPooledConn(int connState) throws SQLException {
 		synchronized (connArrayLock) {
-			int oldLen = connArray.length;
-			if (oldLen < PoolMaxSize) {
+			if (connArray.length < PoolMaxSize) {
 				Connection con= connFactory.create();
 				setDefaultOnRawConn(con);
 				PooledConnection pConn = new PooledConnection(con,connState,this,poolConfig);// add
-				PooledConnection[] arrayNew = new PooledConnection[oldLen + 1];
-				System.arraycopy(connArray, 0, arrayNew, 0, oldLen);
-				arrayNew[oldLen] = pConn;// tail
+				PooledConnection[] arrayNew = new PooledConnection[connArray.length + 1];
+				System.arraycopy(connArray, 0, arrayNew, 0, connArray.length);
+				arrayNew[connArray.length] = pConn;// tail
 				connArray = arrayNew;
 				log.debug("BeeCP({})created pooledConn:{}",poolName,pConn);
 				return pConn;
@@ -241,13 +239,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	//remove Pooled connection
 	private void removePooledConn(PooledConnection pConn,String removeType) {
 		pConn.state=CONNECTION_CLOSED;
+		pConn.closeRawConn();
 		synchronized (connArrayLock) {
-			pConn.closeRawConn();
-			int oldLen = connArray.length;
-			PooledConnection[] arrayNew = new PooledConnection[oldLen - 1];
-			for (int i = 0; i < oldLen; i++) {
+			PooledConnection[] arrayNew = new PooledConnection[connArray.length - 1];
+			for (int i = 0; i < connArray.length; i++) {
 				if (connArray[i] == pConn) {
-					System.arraycopy(connArray, i + 1, arrayNew, i, oldLen - i - 1);
+					System.arraycopy(connArray, i + 1, arrayNew, i, connArray.length - i - 1);
 					break;
 				} else {
 					arrayNew[i] = connArray[i];
@@ -373,7 +370,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 
 	/**
-	 * borrow a connection from pool
+	 * borrow one connection from pool
 	 *
 	 * @return If exists idle connection in pool,then return one;if not, waiting
 	 *         until other borrower release
@@ -381,28 +378,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *             if pool is closed or waiting timeout,then throw exception
 	 */
 	public Connection getConnection() throws SQLException {
-		return getConnection(DefaultMaxWaitMills);
-	}
-
-	/**
-	 * borrow one connection from pool
-	 *
-	 * @param wait
-	 *            must be greater than zero
-	 *
-	 * @return If exists idle connection in pool,then return one;if not, waiting
-	 *         until other borrower release
-	 * @throws SQLException
-	 *             if pool is closed or waiting timeout,then throw exception
-	 */
-	public Connection getConnection(long wait) throws SQLException {
 		if (poolState != POOL_NORMAL)throw PoolCloseException;
 
-		PooledConnection pConn;
 		WeakReference<Borrower> bRef = threadLocal.get();
 		Borrower borrower=(bRef !=null)?bRef.get():null;
 		if (borrower != null) {
-			pConn=borrower.initBeforeBorrow();
+			PooledConnection pConn=borrower.initBeforeBorrow();
 			if (pConn != null && ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
 				if(testOnBorrow(pConn))return createProxyConnection(pConn, borrower);
 
@@ -414,19 +395,19 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		}
 
 		try {
-			wait*=MillsToNanoTimes;
-			long deadline=nanoTime()+wait;
-			if (semaphore.tryAcquire(wait,NANOSECONDS)) {
+			long watTime=DefaultMaxWait;
+			long deadline=nanoTime()+watTime;
+			if (semaphore.tryAcquire(watTime,NANOSECONDS)) {
 				try {
-					 //1:try to  search one from array
-					for (PooledConnection pConn2:connArray) {
-						if (ConnStateUpdater.compareAndSet(pConn2, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn2))
-							return createProxyConnection(pConn2, borrower);
+					//1:try to  search one from array
+					for (PooledConnection pConn:connArray) {
+						if (ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn))
+							return createProxyConnection(pConn, borrower);
 					}
 					//2:try to create one directly
-					if(connArray.length<PoolMaxSize && (pConn=createPooledConn(CONNECTION_USING))!=null){
+					PooledConnection pConn;
+					if(connArray.length<PoolMaxSize && (pConn=createPooledConn(CONNECTION_USING))!=null)
 						return createProxyConnection(pConn,borrower);
-					}
 
 					//3:try to get one transferred connection
 					Object stateObject;
@@ -437,7 +418,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 					try {// wait one transferred connection
 						waitQueue.offer(borrower);
-						for (;;) {
+						while (true){
 							stateObject = borrower.stateObject;
 							if (stateObject instanceof PooledConnection) {
 								pConn = (PooledConnection) stateObject;
@@ -455,14 +436,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 								continue;
 							}
 
-							if (isTimeout||(isTimeout=(wait=deadline-nanoTime())<=0)) {
+							if (isTimeout||(isTimeout=(watTime=deadline-nanoTime())<=0)) {
 								if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_TIMEOUT))break;
 								continue;
 							}
 
 							if (spinSize>0){spinSize--;continue;}//spin
 							if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_WAITING))
-								parkNanos(borrower, wait);
+								parkNanos(borrower, watTime);
 						} // for
 					} finally {
 						waitQueue.remove(borrower);
@@ -573,7 +554,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	// shutdown pool
 	public void shutdown() {
 		long parkNanos = SECONDS.toNanos(poolConfig.getWaitTimeToClearPool());
-		for (;;) {
+		while (true) {
 			if (PoolStateUpdater.compareAndSet(this,POOL_NORMAL,POOL_CLOSED)) {
 				log.info("BeeCP({})begin to shutdown",poolName);
 				removeAllConnections(poolConfig.isForceCloseConnection(),DESC_REMOVE_DESTROY);
@@ -653,7 +634,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	// exit connection creation thread
 	private void shutdownCreateConnThread() {
 		int curSts;
-		for (;;) {
+		while (true) {
 			curSts=createConnThreadState;
 			if (CreateConnThreadStateUpdater.compareAndSet(this,curSts,THREAD_DEAD)) {
 				if(curSts == THREAD_WAITING)
@@ -791,10 +772,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			try {
 				//may be a store procedure or a function in this test sql,so need rollback finally
 				//for example: select xxx() from dual
-				if(AutoCommit){
+				if(AutoCommit)
 					con.setAutoCommit(false);
-					autoCommitChged=true;
-				}
 
 				st = con.createStatement();
 				pConn.updateAccessTime();
@@ -814,8 +793,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			} finally {
 				try {
 					con.rollback();
-					if(AutoCommit&&autoCommitChged)
-						con.setAutoCommit(true);
+					if(AutoCommit)con.setAutoCommit(true);
 				} catch (Throwable e){
 					log.error("BeeCP({})failed to execute 'rollback or setAutoCommit(true)' after connection test",poolName,e);
 				}

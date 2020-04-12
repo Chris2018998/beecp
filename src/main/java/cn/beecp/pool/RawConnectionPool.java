@@ -43,7 +43,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
  */
 public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJMXBean {
 	private Semaphore poolSemaphore;
-	private long DefaultMaxWaitMills;
+	private long DefaultMaxWait;
 	private BeeDataSourceConfig poolConfig;
 	private String poolName;
 	private static Logger log = LoggerFactory.getLogger(RawConnectionPool.class);
@@ -57,7 +57,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 	 */
 	public void init(BeeDataSourceConfig config){
 		poolConfig = config;
-		DefaultMaxWaitMills = poolConfig.getMaxWait();
+		DefaultMaxWait = MILLISECONDS.toNanos(poolConfig.getMaxWait());
 		poolSemaphore = new Semaphore(poolConfig.getConcurrentSize(), poolConfig.isFairMode());
 		poolName = !isNullText(config.getPoolName()) ? config.getPoolName(): "RawPool-" + PoolNameIndex.getAndIncrement();
 
@@ -79,7 +79,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 	}
 
 	/**
-	 * borrow a connection from pool
+	 * borrow one connection from pool
 	 *
 	 * @return If exists idle connection in pool,then return one;if not, waiting
 	 *         until other borrower release
@@ -87,24 +87,8 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 	 *             if pool is closed or waiting timeout,then throw exception
 	 */
 	public Connection getConnection() throws SQLException {
-		return getConnection(DefaultMaxWaitMills);
-	}
-
-	/**
-	 * borrow one connection from pool
-	 *
-	 * @param wait
-	 *            must be greater than zero
-	 *
-	 * @return If exists idle connection in pool,then return one;if not, waiting
-	 *         until other borrower release
-	 * @throws SQLException
-	 *             if pool is closed or waiting timeout,then throw exception
-	 */
-	public Connection getConnection(long wait) throws SQLException {
 		try {
-			wait = MILLISECONDS.toNanos(wait);
-			if (poolSemaphore.tryAcquire(wait, NANOSECONDS)) {
+			if (poolSemaphore.tryAcquire(DefaultMaxWait,NANOSECONDS)) {
 				return poolConfig.getConnectionFactory().create();
 			} else {
 				throw RequestTimeoutException;

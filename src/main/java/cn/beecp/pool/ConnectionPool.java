@@ -44,18 +44,6 @@ public interface ConnectionPool {
 	Connection getConnection() throws SQLException;
 
 	/**
-	 * borrow one connection from pool
-	 * 
-	 * @param wait must be greater than zero
-	 *             
-	 * @return If exists idle connection in pool,then return one;if not, waiting
-	 *         until other borrower release
-	 * @throws SQLException
-	 *             if pool is closed or waiting timeout,then throw exception
-	 */
-	Connection getConnection(long wait) throws SQLException;
-	
-	/**
 	 * return connection to pool
 	 * @param pConn target connection need release
 	 */
