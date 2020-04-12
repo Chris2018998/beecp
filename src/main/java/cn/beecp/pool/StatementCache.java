@@ -40,11 +40,24 @@ class StatementCache {
 	}
 	public PreparedStatement getStatement(Object k) {
 		CacheNode n = nodeMap.get(k);
-		if(n != null) {
-			if(n!=tail)moveToTail(n);
-			return n.v;
+		if(n == null) return null;
+
+		if(n!=tail) {
+			//remove from chain
+			if (n == head) {//at head
+				head = head.next;
+			} else {//at middle
+				n.pre.next = n.next;
+				n.next.pre = n.pre;
+			}
+
+			//append to tail
+			tail.next = n;
+			n.pre = tail;
+			n.next = null;
+			tail = n;
 		}
-		return null;
+		return n.v;
 	}
 	public void putStatement(Object k,PreparedStatement v) {
 		CacheNode n = new CacheNode(k, v);
@@ -53,8 +66,8 @@ class StatementCache {
 			tail = head = n;
 		} else {
 			tail.next = n;
-			n.pre = tail;
-			tail = n;
+            n.pre = tail;
+            tail = n;
 
 			if (nodeMap.size() > capacity) {
 				nodeMap.remove(head.k);
@@ -64,7 +77,6 @@ class StatementCache {
 					tail = null;
 				} else {
 					head = head.next;
-					head.pre = null;
 				}
 			}
 		}
@@ -74,38 +86,18 @@ class StatementCache {
 		while (itor.hasNext()) {
 			Map.Entry<Object,CacheNode> entry=itor.next();
 			itor.remove();
-			CacheNode node= entry.getValue();
-			oclose(node.v);
+			oclose(entry.getValue().v);
 		}
 
 		head=null;
 		tail=null;
 	}
 
-	//below are node chain operation method
-	private void moveToTail(CacheNode n) {
-		if(n==tail)return;
-		//remove from chain
-		if (head == n) {//at head
-			head = n.next;
-			head.pre = null;
-		} else {//at middle
-			n.pre.next = n.next;
-			n.next.pre = n.pre;
-		}
-
-		//append to tail
-		tail.next = n;
-		n.pre = tail;
-		n.next = null;
-		tail = tail.next;//new tail
-	}
-
 	static class CacheNode {// double linked chain node
 		Object k;
 		PreparedStatement v;
-		CacheNode pre = null;
-		CacheNode next = null;
+		CacheNode pre;
+		CacheNode next;
 		CacheNode(Object k, PreparedStatement v) {
 			this.k = k;
 			this.v = v;
