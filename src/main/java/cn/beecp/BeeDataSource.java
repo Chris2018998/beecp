@@ -108,7 +108,7 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	 *             if pool is closed or waiting timeout,then throw exception
 	 */
 	public Connection getConnection() throws SQLException {
-		if(inited)return pool.getConnection(maxWait);
+		if(inited)return pool.getConnection();
 
 		if(writeLock.tryLock()) {
 			if(!inited){
@@ -132,7 +132,7 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 			}
 		}
 
-		return pool.getConnection(maxWait);
+		return pool.getConnection();
 	}
 
 	/**
