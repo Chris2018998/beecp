@@ -767,13 +767,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	class SQLQueryTestPolicy implements ConnectionTestPolicy {
 		public boolean isActive(PooledConnection pConn){
 			boolean autoCommitChged=false;
+			boolean exexcutedTest=false;
 			Statement st = null;
 			Connection con = pConn.rawConn;
 			try {
 				//may be a store procedure or a function in this test sql,so need rollback finally
 				//for example: select xxx() from dual
-				if(AutoCommit)
-					con.setAutoCommit(false);
+				if(AutoCommit){
+				     con.setAutoCommit(false);
+				     autoCommitChged=true;
+				}
 
 				st = con.createStatement();
 				pConn.updateAccessTime();
@@ -786,18 +789,21 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				}
 
 				st.execute(ConnectionTestSQL);
+				
+				con.rollback();//why? maybe store procedure in test sql
 				return true;
 			} catch (Throwable e) {
 				log.error("BeeCP({})failed to test connection",poolName,e);
 				return false;
 			} finally {
+			      oclose(st);
+			      if(AutoCommit&& autoCommitChged){
 				try {
-					con.rollback();
-					if(AutoCommit)con.setAutoCommit(true);
+				  con.setAutoCommit(true);
 				} catch (Throwable e){
-					log.error("BeeCP({})failed to execute 'rollback or setAutoCommit(true)' after connection test",poolName,e);
+				   log.error("BeeCP({})failed to execute 'rollback or setAutoCommit(true)' after connection test",poolName,e);
 				}
-				oclose(st);
+			      }
 			}
 		}
 	}
