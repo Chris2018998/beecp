@@ -796,7 +796,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				log.error("BeeCP({})failed to test connection",poolName,e);
 				return false;
 			} finally {
-			      oclose(st);
+			      if(st!=null)oclose(st);
 			      if(AutoCommit&& autoCommitChged){
 				try {
 				  con.setAutoCommit(true);
