@@ -15,15 +15,23 @@ Feature
 
 Performance
 ---
-The performance of each connection pool is tested by multi-threaded query (1000 threads execute 1000 times each, totally 1 million times), and the time-consuming distribution and average time-consuming are printed. Finally, the connection pools are ranked according to the usual time-consuming. Single time statistics (machine status impact on the test results):
+ 1: Pool connection borrow test:1000 threads X 1000 times
+ 
+[datasource.getConnection(),connection.close()]</i>
 
-[datasource.getConnection(),connection.prepareStatement,statement.execute(),statement.close(),connection.close()]</i>
+1：Avg time(milliseconds) 
 
-1：Below are the test results of each connection pool at Mysql5.6 (milliseconds) 
+Bee_C(0.0001) > Bee_F(0.0534) > HikariCP(0.1515)
 
-Bee_C(5.3623) > Bee_F(6.8492) > HikariCP(9.0176)
+PC: Win7 I3-7100 8G mysql5.6.46_64
 
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191105_JDBCPool_I54300.log">20191105_JDBCPool_I54300.log</a>
+Pool init size10, max size:10
+
+Pool version: HikariCP-3.3.1,BeeCP-2.3.2
+
+DB restart after every pool test
+
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200417_JDBCPool_I37100.log">20200417_JDBCPool_I37100.log</a>
 
 project for performance test code,please visit：https://github.com/Chris2018998/PoolPerformance
  
