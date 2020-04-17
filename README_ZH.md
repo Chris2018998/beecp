@@ -19,7 +19,9 @@
 **1：** 100万次(1000线程 x 1000次)访问真实数据库，测试连接池性能，并打印耗时分布以及平均耗时，最后依据平时耗时为各连接池进行名次排列，单次时间统计(机器状态对测试结果有较大影响)，单次计时间范围： [datasource.getConnection(),connection.close()]</i>
 
 下面为各连接池在mysql5.6的下测试结果（单位：毫秒）
-测试结果(milliseconds): Bee_C(0.0001) > Bee_F(0.0534) > HikariCP(0.1515)
+Bee_C(0.0001) > Bee_F(0.0534) > HikariCP(0.1515)
+
+(我可以说性能是光连池的1000倍？^-^ )
 
 ```java
 PC: Win7 I3-7100 8G mysql5.6.46_64
@@ -37,6 +39,7 @@ Pool version: HikariCP-3.3.1,BeeCP-2.3.2
 性能测试代码请访问项目：https://github.com/Chris2018998/PoolPerformance
 
 **2：** 采用光连接池的性能基准测试结果(I3-7100,8G)
+
 
 <img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200315_I3_7100_HikariCP_Bech_Pict.png"></img>
 
