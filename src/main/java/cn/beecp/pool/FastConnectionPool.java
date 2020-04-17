@@ -322,7 +322,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					supportQueryTimeout=false;
 					log.warn("BeeCP({})driver not support 'queryTimeout'",poolName);
 				}finally{
-					oclose(st);
+					if(st!=null)oclose(st);
 				}
 			} finally {
 				supportIsValidTested = true;
