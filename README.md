@@ -15,13 +15,12 @@ Feature
 
 Performance
 ---
- 1: Pool connection borrow test:1000 threads X 1000 times
+
+1: Pool connection borrow test:1000 threads X 1000 times
  
 [datasource.getConnection(),connection.close()]</i>
 
-1：Avg time(milliseconds) 
-
-Bee_C(0.0001) > Bee_F(0.0534) > HikariCP(0.1515)
+Avg time(milliseconds): Bee_C(0.0001) > Bee_F(0.0534) > HikariCP(0.1515)
 
 ```java
 PC: Win7 I3-7100 8G mysql5.6.46_64
