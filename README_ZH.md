@@ -16,16 +16,23 @@
 三：性能测试
 ---
 
-**1：** 100万次(1000线程 x 1000次)访问真实数据库，测试连接池性能，并打印耗时分布以及平均耗时，最后依据平时耗时为各连接池进行名次排列，单次时间统计(机器状态对测试结果有较大影响)，单次计时间范围：
-
-[datasource.getConnection(),connection.prepareStatement,statement.execute(),statement.close(),connection.close()]</i>
+**1：** 100万次(1000线程 x 1000次)访问真实数据库，测试连接池性能，并打印耗时分布以及平均耗时，最后依据平时耗时为各连接池进行名次排列，单次时间统计(机器状态对测试结果有较大影响)，单次计时间范围： [datasource.getConnection(),connection.close()]</i>
 
 下面为各连接池在mysql5.6的下测试结果（单位：毫秒）
+测试结果(milliseconds): Bee_C(0.0001) > Bee_F(0.0534) > HikariCP(0.1515)
 
-Bee_C(5.3623) > Bee_F(6.8492) > HikariCP(9.0176)
+```java
+PC: Win7 I3-7100 8G mysql5.6.46_64
+
+Pool init size10, max size:10
+
+Pool version: HikariCP-3.3.1,BeeCP-2.3.2
+
+每次测试重新启动数据库 
+```
 
 日志文件下载
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20191105_JDBCPool_I54300.log">20191105_JDBCPool_I54300.log</a>
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200417_JDBCPool_I37100.log">20200417_JDBCPool_I37100.log</a>
  
 性能测试代码请访问项目：https://github.com/Chris2018998/PoolPerformance
 
