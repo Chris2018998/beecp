@@ -767,7 +767,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	class SQLQueryTestPolicy implements ConnectionTestPolicy {
 		public boolean isActive(PooledConnection pConn){
 			boolean autoCommitChged=false;
-			boolean exexcutedTest=false;
 			Statement st = null;
 			Connection con = pConn.rawConn;
 			try {
