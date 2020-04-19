@@ -22,8 +22,6 @@
 
 Bee_C(0.0001) > Bee_F(0.0534) > HikariCP(0.1515)
 
-(我可以说性能是光连池的1000倍？^-^ )
-
 ```java
 PC: Win7 I3-7100 8G mysql5.6.46_64
 
@@ -106,7 +104,7 @@ public class DataSourceConfig {
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>2.3.1</version>
+   <version>2.3.2</version>
 </dependency>
 ```
 
