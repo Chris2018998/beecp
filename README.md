@@ -26,7 +26,7 @@ Pool init size10, max size:10
 
 DB restart after every pool test
 
-```java
+```
 | Time(ms)         |   HikariC3.3.1  |  Bee_F(BeeCP-2.3.2)| Bee_C(BeeCP-2.3.2)    |
 | ---------------- |---------------- | -------------------| ----------------------| 
 | Total time       | 151516          | 53384              |          142          | 
