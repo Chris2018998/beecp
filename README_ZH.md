@@ -20,7 +20,6 @@
 
 连接池借用归还测试结果（单位：毫秒）
 
----
 | Time(ms)         |   HikariC3.3.1  |  Bee_F(BeeCP-2.3.2)| Bee_C(BeeCP-2.3.2)    |
 | ---------------- |---------------- | -------------------| ----------------------| 
 | Total time       | 151516          | 53384              |          142          | 
@@ -34,7 +33,7 @@ Pool init size10, max size:10
 Pool version: HikariCP-3.3.1,BeeCP-2.3.2
 
 每次测试重新启动数据库 
-```
+
 
 日志文件下载
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200417_JDBCPool_I37100.log">20200417_JDBCPool_I37100.log</a>
