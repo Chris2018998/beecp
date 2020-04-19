@@ -25,6 +25,7 @@ PC: Win7 I3-7100 8G mysql5.6.46_64
 Pool init size10, max size:10
 
 DB restart after every pool test
+
 ---
 | Time(ms)         |   HikariC3.3.1  |  Bee_F(BeeCP-2.3.2)| Bee_C(BeeCP-2.3.2)    |
 | ---------------- |---------------- | -------------------| ----------------------| 
