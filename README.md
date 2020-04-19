@@ -20,17 +20,20 @@ Performance
  
 [datasource.getConnection(),connection.close()]</i>
 
-Avg time(milliseconds): Bee_C(0.0001) > Bee_F(0.0534) > HikariCP(0.1515)
-
-```java
 PC: Win7 I3-7100 8G mysql5.6.46_64
 
 Pool init size10, max size:10
 
-Pool version: HikariCP-3.3.1,BeeCP-2.3.2
-
 DB restart after every pool test
-```
+
+```java
+| Time(ms)         |   HikariC3.3.1  |  Bee_F(BeeCP-2.3.2)| Bee_C(BeeCP-2.3.2)    |
+| ---------------- |---------------- | -------------------| ----------------------| 
+| Total time       | 151516          | 53384              |          142          | 
+| Avg time         | 0.1515          | 0.0534             |        0.0001         ||  
+
+
+
 
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200417_JDBCPool_I37100.log">20200417_JDBCPool_I37100.log</a>
