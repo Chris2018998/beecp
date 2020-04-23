@@ -23,11 +23,11 @@
 
 说明：
 
+Bee_F:公平模式池，Bee_C:竞争模式池
+
 总时间=线程1耗时 + 线程2耗时 + ...... + 线程1000耗时, 平均时间 = 总时间/1000000
 
-测试电脑: Win7 I3-7100 8G mysql5.6.46_64
-
-连接池设置：init size10 max size:10
+测试电脑: Win7 I3-7100 8G mysql5.6.46_64  连接池设置: init size10 max size:10
 
 每次测试重新启动数据库,日志文件下载：<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200417_JDBCPool_I37100.log">20200417_JDBCPool_I37100.log</a>
  
