@@ -23,7 +23,7 @@ Performance
 | Total time       | 151516          | 53384              |          142          | 
 | Avg time         | 0.1515          | 0.0534             |        0.0001         ||  
 
-Total time=Thread1 time + Thread2 time + ...... + Thread3 time,  Avg time  = Total time/1000000
+Total time=Thread1 time + Thread2 time + ...... + Thread1000 time,  Avg time  = Total time/1000000
 
 PC: Win7 I3-7100 8G mysql5.6.46_64
 
