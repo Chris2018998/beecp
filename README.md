@@ -12,11 +12,11 @@ Feature
 1: Good performance: faster than <a href="https://github.com/brettwooldridge/HikariCP">HikariCP</a> 
 
 2: Less code: 21 files, 2600 lines of source code
-
+ 
 Performance
 ---
 
-1: Connection borrow test:1000 threads X 1000 times,time scope:[datasource.getConnection(),connection.close()]
+1: One million times borrow tests[1000 X 1000],time scope:[datasource.getConnection(),connection.close()]
 
 | Time(ms)         |   HikariC3.3.1  |  Bee_F(BeeCP-2.3.2)| Bee_C(BeeCP-2.3.2)    |
 | ---------------- |---------------- | -------------------| ----------------------| 
