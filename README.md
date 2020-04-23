@@ -16,7 +16,7 @@ Feature
 Performance
 ---
 
-1: Pool connection borrow test:1000 threads X 1000 times,time scope:[datasource.getConnection(),connection.close()]
+1: Connection borrow test:1000 threads X 1000 times,time scope:[datasource.getConnection(),connection.close()]
 
 | Time(ms)         |   HikariC3.3.1  |  Bee_F(BeeCP-2.3.2)| Bee_C(BeeCP-2.3.2)    |
 | ---------------- |---------------- | -------------------| ----------------------| 
