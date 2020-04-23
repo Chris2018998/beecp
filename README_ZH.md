@@ -29,13 +29,8 @@ PC: Win7 I3-7100 8G mysql5.6.46_64
 
 Pool init size10, max size:10
 
-Pool version: HikariCP-3.3.1,BeeCP-2.3.2
 
-每次测试重新启动数据库 
-
-
-日志文件下载
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200417_JDBCPool_I37100.log">20200417_JDBCPool_I37100.log</a>
+每次测试重新启动数据库，日志文件下载：<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200417_JDBCPool_I37100.log">20200417_JDBCPool_I37100.log</a>
  
 性能测试代码请访问项目：https://github.com/Chris2018998/PoolPerformance
 
