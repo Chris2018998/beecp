@@ -16,19 +16,16 @@
 三：性能测试
 ---
 
-**1：** 连接池100万次借用归还测试(1000线程 x 1000次)
-单次计时间范围:[datasource.getConnection(),connection.close()] 测试结果如下
+**1：** 100万次借用归还测试(1000线程 x 1000次),单次计时间范围:[datasource.getConnection(),connection.close()] 结果如下
 
 | Time(ms)         |   HikariC3.3.1  |  Bee_F(BeeCP-2.3.2)| Bee_C(BeeCP-2.3.2)    |
 | ---------------- |---------------- | -------------------| ----------------------| 
 | Total time       | 151516          | 53384              |          142          | 
 | Avg time         | 0.1515          | 0.0534             |        0.0001         ||  
 
-测试环境
-PC: Win7 I3-7100 8G mysql5.6.46_64
+测试电脑: Win7 I3-7100 8G mysql5.6.46_64
 
-Pool init size10, max size:10
-
+连接池设置：init size10, max size:10
 
 每次测试重新启动数据库，日志文件下载：<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200417_JDBCPool_I37100.log">20200417_JDBCPool_I37100.log</a>
  
