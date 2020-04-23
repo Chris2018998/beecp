@@ -14,7 +14,7 @@
 
 三：性能测试
 ---
-**1：** 100万次借用归还测试(1000线程 x 1000次),单次计时间范围:[datasource.getConnection(),connection.close()] 结果如下
+**1：** 100万次借用测试(1000线程 x 1000次),单次计时间范围:[datasource.getConnection(),connection.close()] 结果如下
 
 | 时间(ms)    |   HikariC3.3.1  |  Bee_F(BeeCP-2.3.2)| Bee_C(BeeCP-2.3.2)    |
 | ----------- |----------------| -------------------| ----------------------| 
