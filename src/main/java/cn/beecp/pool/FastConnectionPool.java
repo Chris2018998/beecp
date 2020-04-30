@@ -85,7 +85,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private boolean supportNetworkTimeout=true;
 	private boolean supportQueryTimeout=true;
 	private boolean supportIsValidTested=false;
-	private ThreadPoolExecutor networkTimeoutExecutor = new ThreadPoolExecutor(0,10,15,SECONDS, new SynchronousQueue<Runnable>(),new ThreadFactory() {
+
+	private ThreadPoolExecutor networkTimeoutExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
+			Runtime.getRuntime().availableProcessors(),15,SECONDS, new LinkedBlockingQueue<Runnable>(),new ThreadFactory() {
 		public Thread newThread(Runnable r) {
 			Thread timeoutThread = new Thread(r);
 			timeoutThread.setDaemon(true);
@@ -131,6 +133,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			poolName = !isNullText(config.getPoolName()) ? config.getPoolName():"FastPool-" + PoolNameIndex.getAndIncrement();
 			log.info("BeeCP({})starting....",poolName);
 
+
 			PoolMaxSize=poolConfig.getMaxActive();
 			AutoCommit=poolConfig.isDefaultAutoCommit();
 			ConnectionTestSQL = poolConfig.getConnectionTestSQL();
@@ -164,7 +167,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			this.start();
 
 			semaphore = new Semaphore(poolConfig.getConcurrentSize(), poolConfig.isFairMode());
-			networkTimeoutExecutor.setMaximumPoolSize(config.getMaxActive());
+			idleSchExecutor.allowCoreThreadTimeOut(true);
+			networkTimeoutExecutor.allowCoreThreadTimeOut(true);
 			idleCheckSchFuture = idleSchExecutor.scheduleAtFixedRate(new Runnable() {
 				public void run() {// check idle connection
 					closeIdleTimeoutConnection();
@@ -647,12 +651,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	public void run() {
 		int tryCreatedCount =0;PooledConnection pConn;
 		while (createConnThreadState==THREAD_WORKING) {
-			while(tryCreatedCount++<=createNotifyCount.get() && !waitQueue.isEmpty()) {
+			while(tryCreatedCount<createNotifyCount.get()) {
 				try {
-					if((pConn = createPooledConn(CONNECTION_USING)) != null)
-						new TransferThread(pConn).start();
-					else//pool full
-						break;
+					tryCreatedCount++;
+					if(!waitQueue.isEmpty()) {
+						if ((pConn = createPooledConn(CONNECTION_USING)) != null)
+							new TransferThread(pConn).start();
+						else//pool full
+							break;
+					}
 				} catch (SQLException e) {
 					new TransferThread(e).start();
 				}
