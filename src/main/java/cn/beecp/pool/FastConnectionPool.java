@@ -649,11 +649,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		while (createConnThreadState==THREAD_WORKING) {
 			while(tryCreatedCount++<=createNotifyCount.get() && !waitQueue.isEmpty()) {
 				try {
-					if((pConn = createPooledConn(CONNECTION_USING)) != null) {
+					if((pConn = createPooledConn(CONNECTION_USING)) != null)
 						new TransferThread(pConn).start();
-					}else{//pool full
+					else//pool full
 						break;
-					}
 				} catch (SQLException e) {
 					new TransferThread(e).start();
 				}
