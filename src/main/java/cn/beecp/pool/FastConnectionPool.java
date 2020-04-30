@@ -167,7 +167,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			this.start();
 
 			semaphore = new Semaphore(poolConfig.getConcurrentSize(), poolConfig.isFairMode());
-			idleSchExecutor.allowCoreThreadTimeOut(true);
 			networkTimeoutExecutor.allowCoreThreadTimeOut(true);
 			idleCheckSchFuture = idleSchExecutor.scheduleAtFixedRate(new Runnable() {
 				public void run() {// check idle connection
