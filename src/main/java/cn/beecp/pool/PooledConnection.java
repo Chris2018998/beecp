@@ -92,7 +92,7 @@ class PooledConnection extends StatementCache{
 		commitDirtyInd=!curAutoCommit;
 		lastAccessTime=currentTimeMillis();
 	}
-    void setChangedInd(short pos,boolean changed){
+    void setChangedInd(int pos,boolean changed){
 		if(!changedInds[pos] && changed)//false ->true      + 1
 		   changedCount++;
 		else if(changedInds[pos] && !changed)//true-->false  -1

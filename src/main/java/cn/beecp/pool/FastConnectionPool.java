@@ -625,7 +625,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 	// notify to create connections to pool
 	private void tryToCreateNewConnByAsyn() {
-		if(connArray.length+createNotifyCount.get()<PoolMaxSize)  {
+		if(connArray.length+createNotifyCount.get()+1<=PoolMaxSize)  {
 			createNotifyCount.incrementAndGet();
 			if(CreateConnThreadStateUpdater.compareAndSet(this, THREAD_WAITING, THREAD_WORKING))
 				unpark(this);
@@ -645,10 +645,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 	// create connection to pool
 	public void run() {
-		int createdCount =0;
-		PooledConnection pConn;
+		int tryCreatedCount =0;PooledConnection pConn;
 		while (createConnThreadState==THREAD_WORKING) {
-			while(++createdCount<=createNotifyCount.get() && !waitQueue.isEmpty()) {
+			while(tryCreatedCount++<=createNotifyCount.get() && !waitQueue.isEmpty()) {
 				try {
 					if((pConn = createPooledConn(CONNECTION_USING)) != null) {
 						new TransferThread(pConn).start();
@@ -660,8 +659,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				}
 			}
 
-			createdCount =0;
-			createNotifyCount.set(0);
+			if(createNotifyCount.addAndGet(-tryCreatedCount)<0)createNotifyCount.set(0);
+			tryCreatedCount =0;
 			if (CreateConnThreadStateUpdater.compareAndSet(this,THREAD_WORKING, THREAD_WAITING)) {
 				park(this);
 			}

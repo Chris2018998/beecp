@@ -34,12 +34,12 @@ abstract class ProxyConnectionBase implements Connection{
 	protected Connection delegate;
 	protected PooledConnection pConn;//called by subclass to update time
 
-	private final static short Pos_AutoCommitInd=0;
-	private final static short Pos_TransactionIsolationInd=1;
-	private final static short Pos_ReadOnlyInd=2;
-	private final static short Pos_CatalogInd=3;
-	private final static short Pos_SchemaInd=4;
-	private final static short Pos_NetworkTimeoutInd=5;
+	private final static int Pos_AutoCommitInd=0;
+	private final static int Pos_TransactionIsolationInd=1;
+	private final static int Pos_ReadOnlyInd=2;
+	private final static int Pos_CatalogInd=3;
+	private final static int Pos_SchemaInd=4;
+	private final static int Pos_NetworkTimeoutInd=5;
 
 	public ProxyConnectionBase(PooledConnection pConn) {
 		this.pConn=pConn;
