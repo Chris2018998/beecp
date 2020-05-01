@@ -19,8 +19,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-
 import static cn.beecp.util.BeecpUtil.oclose;
 
 /**
@@ -42,7 +40,7 @@ class StatementCache {
 		CacheNode n = nodeMap.get(k);
 		if(n == null) return null;
 
-		if(n!=tail) {
+		if(nodeMap.size()>1 && n!=tail) {
 			//remove from chain
 			if (n == head) {//at head
 				head = head.next;
@@ -50,7 +48,6 @@ class StatementCache {
 				n.pre.next = n.next;
 				n.next.pre = n.pre;
 			}
-
 			//append to tail
 			tail.next = n;
 			n.pre = tail;
