@@ -162,8 +162,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			exitHook = new ConnectionPoolHook();
 			Runtime.getRuntime().addShutdownHook(exitHook);
 
-			this.setDaemon(true);
-			this.setName("ConnectionAdd");
+			this.setName("PooledConnectionAdd");
 			this.start();
 
 			semaphore = new Semaphore(poolConfig.getConcurrentSize(), poolConfig.isFairMode());
@@ -613,8 +612,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				}
 			} // for
 
-			if (connArray.length > 0)
-				parkNanos(parkNanos);
+			if (connArray.length > 0)parkNanos(parkNanos);
 		} // while
 	}
 
@@ -628,7 +626,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 	// notify to create connections to pool
 	private void tryToCreateNewConnByAsyn() {
-		if(connArray.length+createNotifyCount.get()+1<=PoolMaxSize)  {
+		if(connArray.length+createNotifyCount.get()<PoolMaxSize)  {
 			createNotifyCount.incrementAndGet();
 			if(CreateConnThreadStateUpdater.compareAndSet(this, THREAD_WAITING, THREAD_WORKING))
 				unpark(this);
@@ -640,35 +638,36 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		while (true) {
 			curSts=createConnThreadState;
 			if (CreateConnThreadStateUpdater.compareAndSet(this,curSts,THREAD_DEAD)) {
-				if(curSts == THREAD_WAITING)
-					unpark(this);
+				if(curSts == THREAD_WAITING)unpark(this);
 				break;
 			}
 		}
 	}
 	// create connection to pool
 	public void run() {
-		int tryCreatedCount =0;PooledConnection pConn;
-		while (createConnThreadState==THREAD_WORKING) {
-			while(tryCreatedCount<createNotifyCount.get()) {
+		int tryCreatedCount=0;PooledConnection pConn;
+		while (true) {
+			while(createConnThreadState==THREAD_WORKING && tryCreatedCount++<createNotifyCount.get()) {
 				try {
-					tryCreatedCount++;
 					if(!waitQueue.isEmpty()) {
 						if ((pConn = createPooledConn(CONNECTION_USING)) != null)
 							new TransferThread(pConn).start();
 						else//pool full
 							break;
+					}else{
+						break;
 					}
 				} catch (SQLException e) {
 					new TransferThread(e).start();
 				}
 			}
 
-			if(createNotifyCount.addAndGet(-tryCreatedCount)<0)createNotifyCount.set(0);
-			tryCreatedCount =0;
-			if (CreateConnThreadStateUpdater.compareAndSet(this,THREAD_WORKING, THREAD_WAITING)) {
+			tryCreatedCount=0;
+			createNotifyCount.set(0);
+			if(createConnThreadState==THREAD_DEAD)break;
+			if(CreateConnThreadStateUpdater.compareAndSet(this,THREAD_WORKING, THREAD_WAITING))
 				park(this);
-			}
+			if(createConnThreadState==THREAD_DEAD)break;
 		}
 	}
 	//new connection TransferThread
