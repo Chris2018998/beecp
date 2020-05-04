@@ -26,9 +26,6 @@ class Borrower {
 	volatile Object stateObject;
 	PooledConnection lastUsedConn;
 	Thread thread=Thread.currentThread();
-	public boolean equals(Object o) {
-		return this == o;
-	}
 	public PooledConnection initBeforeBorrow() {
 		hasHoldNewOne = false;
 		return lastUsedConn;

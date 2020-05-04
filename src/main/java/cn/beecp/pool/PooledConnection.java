@@ -59,9 +59,6 @@ class PooledConnection extends StatementCache{
 		stmCacheValid = pConfig.getPreparedStatementCacheSize()>0;
 		updateAccessTime();
 	}
-	public String toString() { return rawConn.toString();}
-	public boolean equals(Object obj) { return this==obj;}
-
 	void closeRawConn() {//called by pool
 		if(proxyConn!=null){
 			proxyConn.setAsClosed();
