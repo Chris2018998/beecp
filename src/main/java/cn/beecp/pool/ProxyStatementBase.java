@@ -28,7 +28,7 @@ import static cn.beecp.pool.PoolExceptionList.StatementClosedException;
  */
 class ProxyStatementBase{
 	private boolean isClosed;
-	private boolean stmCacheValid;
+	private boolean cacheInd;
 	protected Statement delegate;
 	protected PooledConnection pConn;//called by subclass to update time
 	protected ProxyConnectionBase proxyConn;//called by subclass to check close state
@@ -37,19 +37,19 @@ class ProxyStatementBase{
 		this.pConn=pConn;
 		this.proxyConn=proxyConn;
 		this.delegate=delegate;
-		this.stmCacheValid=false;
+		this.cacheInd=false;
 	}
-	public ProxyStatementBase(PreparedStatement delegate,ProxyConnectionBase proxyConn,PooledConnection pConn,boolean stmCacheValid){
+	public ProxyStatementBase(PreparedStatement delegate,ProxyConnectionBase proxyConn,PooledConnection pConn,boolean cacheInd){
 		this.pConn=pConn;
 		this.proxyConn=proxyConn;
 		this.delegate=delegate;
-		this.stmCacheValid=stmCacheValid;
+		this.cacheInd=cacheInd;
 	}
-	public ProxyStatementBase(CallableStatement delegate,ProxyConnectionBase proxyConn,PooledConnection pConn,boolean stmCacheValid){
+	public ProxyStatementBase(CallableStatement delegate,ProxyConnectionBase proxyConn,PooledConnection pConn,boolean cacheInd){
 		this.pConn=pConn;
 		this.proxyConn=proxyConn;
 		this.delegate=delegate;
-		this.stmCacheValid=stmCacheValid;
+		this.cacheInd=cacheInd;
 	}
 	public Connection getConnection() throws SQLException{
 		checkClose();
@@ -62,7 +62,7 @@ class ProxyStatementBase{
 	public void close() throws SQLException {
 		checkClose();
 		this.isClosed=true;
-		if(!stmCacheValid)
+		if(!cacheInd)
 			oclose(delegate);
 	}
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
