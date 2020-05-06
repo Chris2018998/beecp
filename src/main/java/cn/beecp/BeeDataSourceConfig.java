@@ -102,16 +102,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	 * 'PreparedStatement' cache size
 	 */
 	private int preparedStatementCacheSize = 16;
-	
-	/**
-	 * check on borrow connection
-	 */
-	private boolean testOnBorrow=true;
-	
-	/**
-	 * check on borrow connection
-	 */
-	private boolean testOnReturn;
 
 	/**
 	 * connection.setAutoCommit(boolean);
@@ -165,9 +155,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	private String connectionTestSQL = "select 1 from dual";
 
 	/**
-	 * connection validate timeout:5 seconds
+	 * connection validate timeout:3 seconds
 	 */
-	private int connectionTestTimeout = 5;
+	private int connectionTestTimeout = 3;
 	 
 	/**
 	 * milliseconds,max inactive time to check active for borrower
@@ -329,20 +319,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	public void setPreparedStatementCacheSize(int preparedStatementCacheSize) {
 		if(!this.checked && preparedStatementCacheSize>0)
 		this.preparedStatementCacheSize = preparedStatementCacheSize;
-	}
-	public boolean isTestOnBorrow() {
-		return testOnBorrow;
-	}
-	public void setTestOnBorrow(boolean testOnBorrow) {
-		if(!this.checked)
-		this.testOnBorrow = testOnBorrow;
-	}
-	public boolean isTestOnReturn() {
-		return testOnReturn;
-	}
-	public void setTestOnReturn(boolean testOnReturn) {
-		if(!this.checked)
-		this.testOnReturn = testOnReturn;
 	}
 	public boolean isDefaultAutoCommit() {
 		return defaultAutoCommit;

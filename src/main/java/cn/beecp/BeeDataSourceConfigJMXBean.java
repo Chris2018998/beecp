@@ -44,10 +44,6 @@ public interface BeeDataSourceConfigJMXBean {
 
 	int getPreparedStatementCacheSize();
 
-	boolean isTestOnBorrow();
-
-	boolean isTestOnReturn();
-
 	boolean isDefaultAutoCommit();
 
 	String getDefaultTransactionIsolation();
