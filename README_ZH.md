@@ -149,8 +149,6 @@ public class DataSourceConfig {
 | maxActive       | 连接池最大个数                  |                                   | 
 | concurrentSize  | 请求并发数（借用者线程数）        | 不允许大于连接最大数                 |
 | preparedStatementCacheSize |SQL宣言缓存大小       | 0 表示不适用缓存                    |
-| testOnBorrow    |借用者获取连接后，测试连接有效性  | 无效则关闭连接                      |
-| testOnReturn    |连接归还池时，测试连接有效性     | 无效则关闭连接                       |
 | defaultAutoCommit|连接是否为自动提交              | 默认true                            |
 | defaultTransactionIsolation|事物等级             | 默认读提交，Connection.TRANSACTION_READ_COMMITTED |
 | defaultCatalog    |                             |                                     |
