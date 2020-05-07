@@ -493,10 +493,22 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *            target connection need release
 	 */
 	public void recycle(PooledConnection pConn) {
+		Object state;
 		transferPolicy.beforeTransfer(pConn);
-		for(Borrower borrower : waitQueue)
-			if (pConn.state != ConUnCatchStateCode || transferToWaiter(pConn,borrower)) return;
+		for (Borrower borrower : waitQueue) {
+			while(true){
+				if(pConn.state != ConUnCatchStateCode )return;
 
+				state=borrower.stateObject;
+				if((state != BORROWER_NORMAL && state != BORROWER_WAITING))break;
+				if(BorrowerStateUpdater.compareAndSet(borrower,state,pConn)) {
+					if (state == BORROWER_WAITING) unpark(borrower.thread);
+					return;
+				} else {
+					yield();
+				}
+			}
+		}
 		transferPolicy.onFailedTransfer(pConn);
 	}
 	/**
@@ -504,22 +516,19 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *            transfer Exception to waiter
 	 */
 	private void transferException(SQLException exception) {
-		for(Borrower borrower:waitQueue){
-			if(transferToWaiter(exception,borrower))return;
-		}
-	}
-	private static boolean transferToWaiter(Object val,Borrower waiter) {
-		Object curSt=waiter.stateObject;
-		while(curSt == BORROWER_NORMAL || curSt == BORROWER_WAITING){
-			if(BorrowerStateUpdater.compareAndSet(waiter,curSt,val)) {
-				if(curSt == BORROWER_WAITING)unpark(waiter.thread);
-				return true;
-			}else{
-				Thread.yield();
+		Object state;
+		for (Borrower borrower : waitQueue) {
+			while(true){
+				state=borrower.stateObject;
+				if((state != BORROWER_NORMAL && state != BORROWER_WAITING))break;
+				if(BorrowerStateUpdater.compareAndSet(borrower,state,exception)) {
+					if (state == BORROWER_WAITING) unpark(borrower.thread);
+					return;
+				} else {
+					yield();
+				}
 			}
-			curSt=waiter.stateObject;
 		}
-		return false;
 	}
 
 	/**

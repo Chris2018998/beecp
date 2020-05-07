@@ -67,8 +67,8 @@ abstract class ProxyConnectionBase implements Connection{
 		
 		delegate.setAutoCommit(autoCommit);
 		pConn.curAutoCommit = autoCommit;
+        if(autoCommit)pConn.commitDirtyInd=false;
 		pConn.setChangedInd(Pos_AutoCommitInd,autoCommit!=pConn.defaultAutoCommit);
-		if(autoCommit)pConn.commitDirtyInd=false;
 	}
 	public void setTransactionIsolation(int level) throws SQLException {
 		checkClose();
@@ -87,21 +87,13 @@ abstract class ProxyConnectionBase implements Connection{
 	}
 	public boolean isValid(int timeout) throws SQLException {
 		checkClose();
-		if (pConn.isSupportValidTest()){
-			return delegate.isValid(timeout);
-		}else{
-			throw PoolExceptionList.FeatureNotSupportedException;
-		}
+		return delegate.isValid(timeout);
 	}
 	//for JDK1.7 begin
 	public void setSchema(String schema) throws SQLException {
 		checkClose();
-		if (pConn.isSupportSchema()){
-			delegate.setSchema(schema);
-			pConn.setChangedInd(Pos_SchemaInd, !equalsText(schema, pConn.defaultSchema));
-		}else{
-			throw PoolExceptionList.FeatureNotSupportedException;
-		}
+		delegate.setSchema(schema);
+		pConn.setChangedInd(Pos_SchemaInd, !equalsText(schema, pConn.defaultSchema));
 	}
 	public void abort(Executor executor) throws SQLException{
 		checkClose();
@@ -118,20 +110,12 @@ abstract class ProxyConnectionBase implements Connection{
 	}
 	public int getNetworkTimeout() throws SQLException{
 		checkClose();
-		if (pConn.isSupportNetworkTimeout()) {
-			return 	delegate.getNetworkTimeout();
-		}else{
-			throw PoolExceptionList.FeatureNotSupportedException;
-		}
+		return delegate.getNetworkTimeout();
 	}
 	public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
 		checkClose();
-		if (pConn.isSupportNetworkTimeout()) {
-			delegate.setNetworkTimeout(executor, milliseconds);
-			pConn.setChangedInd(Pos_NetworkTimeoutInd, true);
-		}else{
-			throw PoolExceptionList.FeatureNotSupportedException;
-		}
+		delegate.setNetworkTimeout(executor, milliseconds);
+		pConn.setChangedInd(Pos_NetworkTimeoutInd, true);
 	}
 	//for JDK1.7 end
 
