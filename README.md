@@ -156,8 +156,6 @@ Configuration
 | maxActive          | pool max size                 |                                   | 
 | concurrentSize     | borrower thread concurrent size  | not greater than  'maxActive'   |
 | preparedStatementCacheSize |statment cache size       | 0 cache is invalid            |
-| testOnBorrow       |test connection valid on borrowed | invalid,then close it         |
-| testOnReturn       |test connection valid on return   |  invalid,then close it        |
 | defaultAutoCommit  |default autoCommit                | default is true               |
 | defaultTransactionIsolation|trasaction level          | default:Connection.TRANSACTION_READ_COMMITTED |
 | defaultCatalog     |                                  |                                     |
