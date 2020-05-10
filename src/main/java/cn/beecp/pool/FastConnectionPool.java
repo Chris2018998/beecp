@@ -33,7 +33,6 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import static cn.beecp.pool.PoolExceptionList.*;
-import static cn.beecp.pool.PoolExceptionList.RequestInterruptException;
 import static cn.beecp.pool.PoolObjectsState.*;
 import static cn.beecp.util.BeecpUtil.isNullText;
 import static cn.beecp.util.BeecpUtil.oclose;
@@ -50,7 +49,6 @@ import static java.util.concurrent.locks.LockSupport.*;
  */
 public final class FastConnectionPool extends Thread implements ConnectionPool, ConnectionPoolJMXBean{
 	private int PoolMaxSize;
-	private boolean AutoCommit;
 	private long DefaultMaxWaitNanos;//nanoseconds
 	private int ConUnCatchStateCode;
 	private String ConnectionTestSQL;//select
@@ -68,12 +66,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<>();
 	private ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<>();
 	private ScheduledFuture<?> idleCheckSchFuture = null;
-	private ScheduledThreadPoolExecutor idleSchExecutor = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
+	private ScheduledThreadPoolExecutor idleSchExecutor = new ScheduledThreadPoolExecutor(1,new ThreadFactory() {
 		public Thread newThread(Runnable r) {
-			Thread idleScanThread = new Thread(r);
-			idleScanThread.setDaemon(true);
-			idleScanThread.setName("IdleScanThread");
-			return idleScanThread;
+			return new Thread(r,"IdleScanThread");
 		}
 	});
 
@@ -87,10 +82,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private ThreadPoolExecutor networkTimeoutExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
 			Runtime.getRuntime().availableProcessors(),15,SECONDS, new LinkedBlockingQueue<Runnable>(),new ThreadFactory() {
 		public Thread newThread(Runnable r) {
-			Thread timeoutThread = new Thread(r);
-			timeoutThread.setDaemon(true);
-			timeoutThread.setName("NetworkTimeoutExecutor");
-			return timeoutThread;
+			return  new Thread(r,"NetworkTimeoutExecutor");
 		}
 	});
 
@@ -109,10 +101,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private static final String DESC_REMOVE_INIT="init";
 	private static final String DESC_REMOVE_BAD="bad";
 	private static final String DESC_REMOVE_IDLE="idle";
-	private static final String DESC_REMOVE_HOLDTIMEOUT="hold timeout";
+	private static final String DESC_REMOVE_HOLD_TIMEOUT="hold_timeout";
 	private static final String DESC_REMOVE_CLOSED="closed";
 	private static final String DESC_REMOVE_RESET="reset";
-	private static final String DESC_REMOVE_DESTROY="close";
+	private static final String DESC_REMOVE_DESTROY="destroy";
 
 	/**
 	 * initialize pool with configuration
@@ -131,18 +123,17 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			poolName = !isNullText(config.getPoolName()) ? config.getPoolName():"FastPool-" + PoolNameIndex.getAndIncrement();
 			log.info("BeeCP({})starting....",poolName);
 
-
 			PoolMaxSize=poolConfig.getMaxActive();
-			AutoCommit=poolConfig.isDefaultAutoCommit();
-			ConnectionTestSQL = poolConfig.getConnectionTestSQL();
-			ConnectionTestTimeout = poolConfig.getConnectionTestTimeout();
-			this.testPolicy= new SQLQueryTestPolicy();
+			connFactory=poolConfig.getConnectionFactory();
+			ConnectionTestSQL=poolConfig.getConnectionTestSQL();
+			ConnectionTestTimeout=poolConfig.getConnectionTestTimeout();
+			this.testPolicy= new SQLQueryTestPolicy(poolConfig.isDefaultAutoCommit());
 			if(isNullText(ConnectionTestSQL))
 				ConnectionTestSQL="select 1 from dual";
 
 			DefaultMaxWaitNanos=MILLISECONDS.toNanos(poolConfig.getMaxWait());
-			ConnectionTestInterval = poolConfig.getConnectionTestInterval();
-			connFactory =poolConfig.getConnectionFactory();
+			ConnectionTestInterval=poolConfig.getConnectionTestInterval();
+			createInitConnections(poolConfig.getInitialSize());
 
 			String mode;
 			if (poolConfig.isFairMode()) {
@@ -157,10 +148,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 			exitHook = new ConnectionPoolHook();
 			Runtime.getRuntime().addShutdownHook(exitHook);
-
-			this.setName("PooledConnectionAdd");
-			this.start();
-
 			semaphore = new Semaphore(poolConfig.getConcurrentSize(), poolConfig.isFairMode());
 			networkTimeoutExecutor.allowCoreThreadTimeOut(true);
 			idleCheckSchFuture = idleSchExecutor.scheduleAtFixedRate(new Runnable() {
@@ -170,8 +157,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			},config.getIdleCheckTimeInitDelay(),config.getIdleCheckTimeInterval(), TimeUnit.MILLISECONDS);
 
 			registerJMX();
-			createInitConnections();
-			poolState=POOL_NORMAL;
 			log.info("BeeCP({})has startup{mode:{},init size:{},max size:{},concurrent size:{},max wait:{}ms,driver:{}}",
 					poolName,
 					mode,
@@ -180,6 +165,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					poolConfig.getConcurrentSize(),
 					poolConfig.getMaxWait(),
 					poolConfig.getDriverClassName());
+
+			poolState=POOL_NORMAL;
+			this.setName("PooledConnectionAdd");
+			this.start();
 		} else {
 			throw new SQLException("Pool has initialized");
 		}
@@ -357,9 +346,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 * @throws SQLException
 	 *             error occurred in creating connections
 	 */
-	private void createInitConnections() throws SQLException {
+	private void createInitConnections(int initSize) throws SQLException {
 		try {
-			for (int i=0,size=poolConfig.getInitialSize();i < size; i++)
+			for (int i=0;i<initSize; i++)
 				createPooledConn(CONNECTION_IDLE);
 		} catch (SQLException e) {
 			for (PooledConnection pConn : connArray)
@@ -502,7 +491,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				state=borrower.stateObject;
 				if((state != BORROWER_NORMAL && state != BORROWER_WAITING))break;
 				if(BorrowerStateUpdater.compareAndSet(borrower,state,pConn)) {
-					if (state == BORROWER_WAITING) unpark(borrower.thread);
+					if(state == BORROWER_WAITING) unpark(borrower.thread);
 					return;
 				} else {
 					yield();
@@ -548,7 +537,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				} else if (state == CONNECTION_USING) {
 					boolean isHolTimeoutInNotUsing = ((currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldIdleTimeout() >= 0));
 					if (isHolTimeoutInNotUsing && ConnStateUpdater.compareAndSet(pConn, state, CONNECTION_CLOSED)) {
-						removePooledConn(pConn, DESC_REMOVE_HOLDTIMEOUT);
+						removePooledConn(pConn, DESC_REMOVE_HOLD_TIMEOUT);
 						tryToCreateNewConnByAsyn();
 					}
 				} else if (state == CONNECTION_CLOSED) {
@@ -774,6 +763,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 	// SQL check Policy
 	class SQLQueryTestPolicy implements ConnectionTestPolicy {
+		private boolean AutoCommit;
+		public SQLQueryTestPolicy(boolean autoCommit){
+			this.AutoCommit=autoCommit;
+		}
 		public boolean isActive(PooledConnection pConn){
 			boolean autoCommitChged=false;
 			Statement st = null;

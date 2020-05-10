@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 package cn.beecp.pool;
+
 import java.sql.PreparedStatement;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import static cn.beecp.util.BeecpUtil.oclose;
 
@@ -28,20 +28,19 @@ import static cn.beecp.util.BeecpUtil.oclose;
  * @author Chris.liao
  * @version 1.0
  */
-class StatementCache {
+class StatementCache extends HashMap<Object,CacheNode> {
 	private int capacity;
 	private CacheNode head=null;//old
 	private CacheNode tail=null;//new
-	private HashMap<Object,CacheNode>nodeMap;
 	public StatementCache(int capacity) {
+		super(capacity*2);
 		this.capacity=capacity;
-		this.nodeMap = new HashMap<Object,CacheNode>(capacity*2);
 	}
-	public PreparedStatement getStatement(Object k) {
-		CacheNode n = nodeMap.get(k);
+	public PreparedStatement getPreparedStatement(Object k) {
+		CacheNode n = this.get(k);
 		if(n == null) return null;
 
-		if(nodeMap.size()>1 && n!=tail) {
+		if(this.size()>1 && n!=tail) {
 			//remove from chain
 			if (n == head) {//at head
 				head = head.next;
@@ -49,6 +48,7 @@ class StatementCache {
 				n.pre.next = n.next;
 				n.next.pre = n.pre;
 			}
+
 			//append to tail
 			tail.next = n;
 			n.pre = tail;
@@ -57,9 +57,9 @@ class StatementCache {
 		}
 		return n.v;
 	}
-	public void putStatement(Object k,PreparedStatement v) {
+	public void putPreparedStatement(Object k,PreparedStatement v) {
 		CacheNode n = new CacheNode(k, v);
-		nodeMap.put(k, n);
+		this.put(k, n);
 		if (head == null) {
 			tail = head = n;
 		} else {
@@ -67,8 +67,8 @@ class StatementCache {
             n.pre = tail;
             tail = n;
 
-			if (nodeMap.size() > capacity) {
-				nodeMap.remove(head.k);
+			if (this.size() > capacity) {
+				this.remove(head.k);
 				oclose(head.v);
 				if (head == tail) {
 					head = null;
@@ -80,26 +80,23 @@ class StatementCache {
 		}
 	}
 	void clearStatement() {
-		Iterator<Map.Entry<Object, CacheNode>> itor=nodeMap.entrySet().iterator();
-		while (itor.hasNext()) {
-			Map.Entry<Object,CacheNode> entry=itor.next();
-			itor.remove();
-			oclose(entry.getValue().v);
+		Iterator<Entry<Object, CacheNode>> iterator=this.entrySet().iterator();
+		while (iterator.hasNext()) {
+			oclose(iterator.next().getValue().v);
 		}
-
+		clear();
 		head=null;
 		tail=null;
 	}
-
-	static class CacheNode {// double linked chain node
-		Object k;
-		PreparedStatement v;
-		CacheNode pre;
-		CacheNode next;
-		CacheNode(Object k, PreparedStatement v) {
-			this.k = k;
-			this.v = v;
-		}
+}
+class CacheNode {// double linked chain node
+	Object k;
+	PreparedStatement v;
+	CacheNode pre;
+	CacheNode next;
+	CacheNode(Object k, PreparedStatement v) {
+		this.k = k;
+		this.v = v;
 	}
 }
 class StatementCachePsKey{
