@@ -31,16 +31,12 @@ class PoolExceptionList {
 	static final SQLException RequestInterruptException = new SQLException("Request interrupt");
 	
 	static final SQLException PoolCloseException = new SQLException("Pool has been closed or in resting");
-	
-	static final SQLException WaitTimeException = new SQLException("Wait time must be greater than zero");
 
     static final SQLException ConnectionClosedException = new SQLException("Connection has been closed");
 	
 	static final SQLException StatementClosedException = new SQLException("Statement has been closed");
 	
 	static final SQLException ResultSetClosedException = new SQLException("ResultSet has been closed");
-
-	static final SQLException FeatureNotSupportedException = new SQLException("Feature not supported");
 
 	static final SQLException AutoCommitChangeForbiddennException = new SQLException("Execute 'commit' or 'rollback' before this operation");
 

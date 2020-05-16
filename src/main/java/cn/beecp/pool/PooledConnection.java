@@ -48,15 +48,14 @@ class PooledConnection extends StatementCache{
 	String defaultCatalog;
 	String defaultSchema;
 	int defaultNetworkTimeout;
-	ThreadPoolExecutor defaultNetworkTimeoutExecutor;
+	private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
 
 	private FastConnectionPool pool;
-	private static Logger log = LoggerFactory.getLogger(PooledConnection.class);
-
 	private short changedCount=0;
 	//changed indicator
 	private boolean[] changedInd=new boolean[]{false,false,false,false,false,false};//0:autoCommit,1:transactionIsolation,2:readOnly,3:catalog,4:schema,5:networkTimeout
 	private static final boolean[] DEFAULT_IND=new boolean[]{false,false,false,false,false,false};
+	private static Logger log = LoggerFactory.getLogger(PooledConnection.class);
 
 	public PooledConnection(Connection rawConn,int connState,FastConnectionPool connPool,BeeDataSourceConfig config)throws SQLException{
 		super(config.getPreparedStatementCacheSize());
@@ -64,7 +63,7 @@ class PooledConnection extends StatementCache{
 		state=connState;
 		this.rawConn=rawConn;
 
-		//pConfig=config;
+		//default value
 		defaultAutoCommit=config.isDefaultAutoCommit();
 		defaultTransactionIsolationCode=config.getDefaultTransactionIsolationCode();
 		defaultReadOnly=config.isDefaultReadOnly();
@@ -102,7 +101,7 @@ class PooledConnection extends StatementCache{
 		lastAccessTime=currentTimeMillis();
 	}
     void setChangedInd(int pos,boolean changed){
-		if(!changedInd[pos] && changed)//false ->true      + 1
+		if(!changedInd[pos] && changed)//false ->true       +1
 		   changedCount++;
 		else if(changedInd[pos] && !changed)//true-->false  -1
 		   changedCount--;
