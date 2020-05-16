@@ -101,7 +101,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	/**
 	 * 'PreparedStatement' cache size
 	 */
-	private int preparedStatementCacheSize = 16;
+	private int preparedStatementCacheSize = 10;
 
 	/**
 	 * connection.setAutoCommit(boolean);
@@ -317,7 +317,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		return preparedStatementCacheSize;
 	}
 	public void setPreparedStatementCacheSize(int preparedStatementCacheSize) {
-		if(!this.checked && preparedStatementCacheSize>0)
+		if(!this.checked && preparedStatementCacheSize>=0)
 		this.preparedStatementCacheSize = preparedStatementCacheSize;
 	}
 	public boolean isDefaultAutoCommit() {
