@@ -45,8 +45,8 @@ abstract class ProxyConnectionBase implements Connection{
 
 	public ProxyConnectionBase(PooledConnection pConn) {
 		this.pConn=pConn;
-		delegate=pConn.rawConn;
 		pConn.proxyConn=this;
+		delegate=pConn.rawConn;
 	}
 	void setAsClosed(){
 		isClosed=true;

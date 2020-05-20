@@ -61,9 +61,8 @@ class ProxyStatementBase{
 	}
 	public void close() throws SQLException {
 		checkClose();
-		this.isClosed=true;
-		if(!cacheInd)
-			oclose(delegate);
+		isClosed=true;
+		if(!cacheInd)oclose(delegate);
 	}
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		checkClose();

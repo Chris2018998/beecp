@@ -58,7 +58,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 	public void init(BeeDataSourceConfig config){
 		poolConfig = config;
 		DefaultMaxWait = MILLISECONDS.toNanos(poolConfig.getMaxWait());
-		poolSemaphore = new Semaphore(poolConfig.getConcurrentSize(), poolConfig.isFairMode());
+		poolSemaphore = new Semaphore(poolConfig.getBorrowConcurrentSize(), poolConfig.isFairMode());
 		poolName = !isNullText(config.getPoolName()) ? config.getPoolName(): "RawPool-" + PoolNameIndex.getAndIncrement();
 
 		String mode;
@@ -73,7 +73,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 				poolName,
 				0,
 				0,
-				poolConfig.getConcurrentSize(),
+				poolConfig.getBorrowConcurrentSize(),
 				mode,
 				poolConfig.getDriverClassName());
 	}
@@ -129,7 +129,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 		return 0;
 	}
 	public int getSemaphoreAcquiredSize(){
-		return poolConfig.getConcurrentSize()-poolSemaphore.availablePermits();
+		return poolConfig.getBorrowConcurrentSize()-poolSemaphore.availablePermits();
 	}
 	public int getSemaphoreWaitingSize(){
 		return poolSemaphore.getQueueLength();

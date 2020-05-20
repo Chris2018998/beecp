@@ -148,7 +148,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 			exitHook = new ConnectionPoolHook();
 			Runtime.getRuntime().addShutdownHook(exitHook);
-			semaphore = new Semaphore(poolConfig.getConcurrentSize(), poolConfig.isFairMode());
+			semaphore = new Semaphore(poolConfig.getBorrowConcurrentSize(), poolConfig.isFairMode());
 			networkTimeoutExecutor.allowCoreThreadTimeOut(true);
 			idleCheckSchFuture = idleSchExecutor.scheduleAtFixedRate(new Runnable() {
 				public void run() {// check idle connection
@@ -162,7 +162,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					mode,
 					connArray.length,
 					config.getMaxActive(),
-					poolConfig.getConcurrentSize(),
+					poolConfig.getBorrowConcurrentSize(),
 					poolConfig.getMaxWait(),
 					poolConfig.getDriverClassName());
 
@@ -207,7 +207,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		return networkTimeoutExecutor;
 	}
 	private boolean existBorrower() {
-		return poolConfig.getConcurrentSize()>semaphore.availablePermits()||semaphore.hasQueuedThreads();
+		return poolConfig.getBorrowConcurrentSize()>semaphore.availablePermits()||semaphore.hasQueuedThreads();
 	}
 	//create Pooled connection
 	private PooledConnection createPooledConn(int connState) throws SQLException {
@@ -711,7 +711,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		return(active>0)?active:0;
 	}
 	public int getSemaphoreAcquiredSize(){
-		return poolConfig.getConcurrentSize()-semaphore.availablePermits();
+		return poolConfig.getBorrowConcurrentSize()-semaphore.availablePermits();
 	}
 	public int getSemaphoreWaitingSize(){
 		return semaphore.getQueueLength();

@@ -36,7 +36,6 @@ class StatementCache extends HashMap<Object,CacheNode> {
 		super(capacity*2);
 		this.capacity=capacity;
 	}
-
 	public PreparedStatement getPreparedStatement(Object k) {
 		CacheNode n = this.get(k);
 		if(n == null) return null;
@@ -81,10 +80,9 @@ class StatementCache extends HashMap<Object,CacheNode> {
 		}
 	}
 	void clearStatement() {
-		Iterator<Entry<Object, CacheNode>> iterator=this.entrySet().iterator();
-		while (iterator.hasNext()) {
-			oclose(iterator.next().getValue().v);
-		}
+		Iterator<CacheNode> iterator=this.values().iterator();
+		while (iterator.hasNext())
+			oclose(iterator.next().v);
 		clear();
 		head=null;
 		tail=null;
