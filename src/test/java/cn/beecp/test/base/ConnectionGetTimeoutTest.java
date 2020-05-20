@@ -15,16 +15,16 @@
  */
 package cn.beecp.test.base;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.concurrent.CountDownLatch;
-
 import cn.beecp.BeeDataSource;
 import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 import cn.beecp.util.BeecpUtil;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.concurrent.CountDownLatch;
 
 public class ConnectionGetTimeoutTest extends TestCase {
 	private BeeDataSource ds;
@@ -37,7 +37,7 @@ public class ConnectionGetTimeoutTest extends TestCase {
 		config.setPassword(Config.JDBC_PASSWORD);
 		config.setMaxWait(3000);
 		config.setMaxActive(1);
-		config.setConcurrentSize(1);
+		config.setBorrowConcurrentSize(1);
 		ds = new BeeDataSource(config);
 	}
 
