@@ -94,9 +94,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	private int maxActive=10;
 	
 	/**
-	 * pool concurrent Size
+	 * pool borrow concurrent Size
 	 */
-	private int concurrentSize;
+	private int borrowConcurrentSize;
 	
 	/**
 	 * 'PreparedStatement' cache size
@@ -224,7 +224,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		this.username = user;
 		this.password = password;
 		this.driverClassName = driver;
-		concurrentSize =Runtime.getRuntime().availableProcessors();
+		borrowConcurrentSize =Runtime.getRuntime().availableProcessors();
 		defaultTransactionIsolation=TransactionIsolationLevel.LEVEL_READ_COMMITTED;
 		defaultTransactionIsolationCode=TransactionIsolationLevel.CODE_READ_COMMITTED;
 	}
@@ -306,12 +306,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		if(!this.checked && maxActive>0)
 		this.maxActive = maxActive;
 	}
-	public int getConcurrentSize() {
-		return concurrentSize;
+	public int getBorrowConcurrentSize() {
+		return borrowConcurrentSize;
 	}
-	public void setConcurrentSize(int concurrentSize) {
-		if(!this.checked && concurrentSize>0)
-		this.concurrentSize = concurrentSize;
+	public void setBorrowConcurrentSize(int borrowConcurrentSize) {
+		if(!this.checked && borrowConcurrentSize>0)
+		this.borrowConcurrentSize = borrowConcurrentSize;
 	}
 	public int getPreparedStatementCacheSize() {
 		return preparedStatementCacheSize;
@@ -548,10 +548,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 			throw new IllegalArgumentException("Pool init size must be greater than zero");
 		if (this.initialSize > maxActive)
 			throw new IllegalArgumentException("Pool initiation size must be less than pool max size");
-		if (this.concurrentSize <=0)
-			throw new IllegalArgumentException("Pool concurrent size must be greater than zero");
-		if (this.concurrentSize > maxActive)
-			throw new IllegalArgumentException("Pool concurrent size must be less than pool max size");
+		if (this.borrowConcurrentSize <=0)
+			throw new IllegalArgumentException("Pool borrow concurrent size must be greater than zero");
+		if (this.borrowConcurrentSize > maxActive)
+			throw new IllegalArgumentException("Pool borrow concurrent size must be less than pool max size");
 		if (this.idleTimeout <= 0)
 			throw new IllegalArgumentException("Connection max idle time must be greater than zero");
 		if (this.maxWait <= 0)
