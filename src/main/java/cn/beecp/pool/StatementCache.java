@@ -144,7 +144,6 @@ class PsCacheKey {
 
         hashCode = Arrays.hashCode(columnIndexes);
         hashCode = prime * hashCode + sql.hashCode();
-        ;
     }
 
     public PsCacheKey(String sql, String[] columnNames) {
