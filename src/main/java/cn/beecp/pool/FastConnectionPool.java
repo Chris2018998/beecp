@@ -27,6 +27,7 @@ import java.lang.ref.WeakReference;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Iterator;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
@@ -483,18 +484,19 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 */
 	public void recycle(PooledConnection pConn) {
 		Object state;
+		Borrower borrower;
 		transferPolicy.beforeTransfer(pConn);
-		for (Borrower borrower : waitQueue) {
+		Iterator<Borrower>iterator=waitQueue.iterator();
+		while(iterator.hasNext()) {
+			borrower=iterator.next();
 			while(true){
-				if(pConn.state != ConUnCatchStateCode )return;
+				if(pConn.state != ConUnCatchStateCode)return;
 
 				state=borrower.stateObject;
 				if((state != BORROWER_NORMAL && state != BORROWER_WAITING))break;
-				if(BorrowerStateUpdater.compareAndSet(borrower,state,pConn)) {
+				if(BorrowerStateUpdater.compareAndSet(borrower,state,pConn)) {//transfer successful
 					if(state == BORROWER_WAITING) unpark(borrower.thread);
 					return;
-				} else {
-					yield();
 				}
 			}
 		}
@@ -506,15 +508,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 */
 	private void transferException(SQLException exception) {
 		Object state;
-		for (Borrower borrower : waitQueue) {
+        Borrower borrower;
+        Iterator<Borrower>iterator=waitQueue.iterator();
+        while(iterator.hasNext()) {
+            borrower=iterator.next();
 			while(true){
 				state=borrower.stateObject;
 				if((state != BORROWER_NORMAL && state != BORROWER_WAITING))break;
 				if(BorrowerStateUpdater.compareAndSet(borrower,state,exception)) {
 					if (state == BORROWER_WAITING) unpark(borrower.thread);
 					return;
-				} else {
-					yield();
 				}
 			}
 		}
