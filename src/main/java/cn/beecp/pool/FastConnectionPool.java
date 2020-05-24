@@ -493,7 +493,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				if(pConn.state != ConUnCatchStateCode)return;
 
 				state=borrower.stateObject;
-				if((state != BORROWER_NORMAL && state != BORROWER_WAITING))break;
+				if((state!=BORROWER_NORMAL && state != BORROWER_WAITING))break;
 				if(BorrowerStateUpdater.compareAndSet(borrower,state,pConn)) {//transfer successful
 					if(state == BORROWER_WAITING) unpark(borrower.thread);
 					return;
@@ -514,9 +514,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             borrower=iterator.next();
 			while(true){
 				state=borrower.stateObject;
-				if((state != BORROWER_NORMAL && state != BORROWER_WAITING))break;
-				if(BorrowerStateUpdater.compareAndSet(borrower,state,exception)) {
-					if (state == BORROWER_WAITING) unpark(borrower.thread);
+				if((state!=BORROWER_NORMAL && state != BORROWER_WAITING))break;
+				if(BorrowerStateUpdater.compareAndSet(borrower,state,exception)) {//transfer successful
+					if(state == BORROWER_WAITING) unpark(borrower.thread);
 					return;
 				}
 			}
