@@ -174,8 +174,7 @@ class PsCacheKey {
 
         hashCode = prime * resultSetType + resultSetConcurrency;
         hashCode = prime * hashCode + resultSetHoldability;
-        hashCode = prime * hashCode + +sql.hashCode();
-        ;
+        hashCode = prime * hashCode + sql.hashCode();
     }
 
     @Override
@@ -245,7 +244,7 @@ class CsCacheKey {
 
         hashCode = prime * resultSetType + resultSetConcurrency;
         hashCode = prime * hashCode + resultSetHoldability;
-        hashCode = prime * hashCode + +sql.hashCode();
+        hashCode = prime * hashCode +sql.hashCode();
         ;
     }
 
