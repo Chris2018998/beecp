@@ -490,10 +490,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		while(iterator.hasNext()) {
 			borrower=iterator.next();
 			while(true){
-				if(pConn.state != ConUnCatchStateCode)return;
-
 				state=borrower.stateObject;
-				if((state!=BORROWER_NORMAL && state != BORROWER_WAITING))break;
+				if((state!=BORROWER_NORMAL && state!=BORROWER_WAITING))break;
+
+				if(pConn.state != ConUnCatchStateCode)return;
 				if(BorrowerStateUpdater.compareAndSet(borrower,state,pConn)) {//transfer successful
 					if(state == BORROWER_WAITING) unpark(borrower.thread);
 					return;
