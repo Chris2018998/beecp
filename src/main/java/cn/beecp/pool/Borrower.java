@@ -22,16 +22,7 @@ package cn.beecp.pool;
  * @version 1.0
  */
 class Borrower {
-	boolean hasHoldNewOne;
 	volatile Object stateObject;
 	PooledConnection lastUsedConn;
 	Thread thread=Thread.currentThread();
-	public PooledConnection initBeforeBorrow() {
-		hasHoldNewOne = false;
-		return lastUsedConn;
-	}
-	public void setBorrowedConnection(PooledConnection conn) {
-		lastUsedConn = conn;
-		hasHoldNewOne = true;
-	}
 }

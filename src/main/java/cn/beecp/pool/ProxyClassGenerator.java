@@ -230,7 +230,7 @@ public final class ProxyClassGenerator {
 			CtMethod createProxyConnectionMethod=ctFastConnectionPoolClass.getDeclaredMethod("createProxyConnection",ctcreateProxyConnectionParamTypes);
 			body.delete(0, body.length());
 			body.append("{");
-			body.append(" $2.setBorrowedConnection($1);");
+			body.append(" $2.lastUsedConn=$1;");
 			body.append(" return new ProxyConnection($1);");
 			body.append("}");
 			createProxyConnectionMethod.setBody(body.toString());

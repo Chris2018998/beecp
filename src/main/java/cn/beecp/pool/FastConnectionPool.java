@@ -372,7 +372,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		WeakReference<Borrower> bRef = threadLocal.get();
 		Borrower borrower=(bRef !=null)?bRef.get():null;
 		if (borrower != null) {
-			PooledConnection pConn=borrower.initBeforeBorrow();
+			PooledConnection pConn=borrower.lastUsedConn;
 			if (pConn != null && ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
 				if(testOnBorrow(pConn))return createProxyConnection(pConn, borrower);
 
@@ -383,7 +383,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			threadLocal.set(new WeakReference<>(borrower));
 		}
 
-		try {
+		try{
 			long deadline=nanoTime()+DefaultMaxWaitNanos;
 			if (semaphore.tryAcquire(DefaultMaxWaitNanos,NANOSECONDS)) {
 				try {
@@ -444,20 +444,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					if(isInterrupted)throw RequestInterruptException;
 				}finally { semaphore.release();}
 			}
-
 			throw RequestTimeoutException;
-		} catch (Throwable e){
-			if (borrower.hasHoldNewOne) {// has borrowed one
-				this.recycle(borrower.lastUsedConn);
-			}
-
-			if (e instanceof SQLException) {
-				throw (SQLException) e;
-			} else if (e instanceof InterruptedException) {
-				throw RequestInterruptException;
-			} else {
-				throw new SQLException("Failed to take connection", e);
-			}
+		}catch(InterruptedException e){
+			throw RequestInterruptException;
 		}
 	}
 
