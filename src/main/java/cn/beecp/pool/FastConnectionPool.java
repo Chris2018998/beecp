@@ -404,6 +404,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					Thread borrowThread=borrower.thread;
 					borrower.stateObject=BORROWER_NORMAL;
 					boolean isTimeout=false,isInterrupted=false;
+					SQLException failedException=null;
 
 					try {// wait one transferred connection
 						waitQueue.offer(borrower);
@@ -417,7 +418,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 								borrower.stateObject = BORROWER_NORMAL;//reset to normal
 								yield();continue;
 							} else if (stateObject instanceof SQLException) {
-								throw (SQLException) stateObject;
+								failedException=(SQLException)stateObject;
+								break;
 							}
 
 							if (isInterrupted||(isInterrupted=borrowThread.isInterrupted())) {
@@ -433,10 +435,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 							if (spinSize>0){spinSize--;continue;}//spin
 							if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_WAITING))
 								parkNanos(borrower, watTimeNanos);
-						} // for
+						} // while
 					} finally {
 						waitQueue.remove(borrower);
 					}
+
+					if(failedException!=null)throw failedException;
 					if(isInterrupted)throw RequestInterruptException;
 				}finally { semaphore.release();}
 			}
