@@ -215,7 +215,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				System.arraycopy(connArray, 0, arrayNew, 0, connArray.length);
 				arrayNew[connArray.length] = pConn;// tail
 				connArray = arrayNew;
-				log.debug("BeeCP({})created pooledConn:{}",poolName,pConn);
 				return pConn;
 			}else{
 				return null;
@@ -236,9 +235,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					arrayNew[i] = connArray[i];
 				}
 			}
-
 			connArray = arrayNew;
-			log.debug("BeeCP({})removed {}pooledConn:{}",poolName,removeType,pConn);
 		}
 	}
 	//set default attribute on raw connection
