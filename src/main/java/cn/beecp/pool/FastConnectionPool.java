@@ -65,14 +65,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private ConnectionFactory connFactory;
 	private final Object connArrayLock =new Object();
 	private volatile PooledConnection[] connArray = new PooledConnection[0];
-	private ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<>();
-	private ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<>();
+	private ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
+	private ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
 	private ScheduledFuture<?> idleCheckSchFuture = null;
-	private ScheduledThreadPoolExecutor idleSchExecutor = new ScheduledThreadPoolExecutor(1,new ThreadFactory() {
-		public Thread newThread(Runnable r) {
-			return new Thread(r,"IdleScanThread");
-		}
-	});
+	private ScheduledThreadPoolExecutor idleSchExecutor = new ScheduledThreadPoolExecutor(1);
 
 	private int networkTimeout;
 	private boolean supportValidTest=true;
@@ -82,11 +78,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private boolean supportIsValidTested=false;
 
 	private ThreadPoolExecutor networkTimeoutExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
-			Runtime.getRuntime().availableProcessors(),15,SECONDS, new LinkedBlockingQueue<Runnable>(),new ThreadFactory() {
-		public Thread newThread(Runnable r) {
-			return  new Thread(r,"NetworkTimeoutExecutor");
-		}
-	});
+			Runtime.getRuntime().availableProcessors(),15,SECONDS, new LinkedBlockingQueue<Runnable>());
 
 	private String poolName;
 	private volatile int poolState=POOL_UNINIT;
@@ -383,7 +375,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			}
 		} else {
 			borrower = new Borrower();
-			threadLocal.set(new WeakReference<>(borrower));
+			threadLocal.set(new WeakReference<Borrower>(borrower));
 		}
 
 		try{
