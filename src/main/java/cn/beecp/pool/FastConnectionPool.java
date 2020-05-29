@@ -54,6 +54,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private int ConUnCatchStateCode;
 	private String ConnectionTestSQL;//select
 	private int ConnectionTestTimeout;//seconds
+	private long MaxLifeTime;//milliseconds
 	private long ConnectionTestInterval;//milliseconds
 	private ConnectionPoolHook exitHook;
 	private BeeDataSourceConfig poolConfig;
@@ -133,6 +134,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				ConnectionTestSQL="select 1 from dual";
 
 			DefaultMaxWaitNanos=MILLISECONDS.toNanos(poolConfig.getMaxWait());
+			MaxLefTime=poolConfig.getMaxLifeTime();
 			ConnectionTestInterval=poolConfig.getConnectionTestInterval();
 			createInitConnections(poolConfig.getInitialSize());
 
@@ -339,7 +341,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		return false;
 	}
 	private boolean testOnBorrow(PooledConnection pConn) {
-		return (currentTimeMillis() - pConn.lastAccessTime - ConnectionTestInterval <=0) || isActiveConn(pConn);
+		long currentTime=currentTimeMillis();
+		return (currentTime-pConn.createTime-MaxLifeTime<0 &&currentTime-pConn.lastAccessTime-ConnectionTestInterval <=0) || isActiveConn(pConn);
 	}
 	/**
 	 * create initialization connections
@@ -525,13 +528,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			for (PooledConnection pConn : connArray) {
 				int state = pConn.state;
 				if (state == CONNECTION_IDLE && !existBorrower()) {
-					boolean isTimeoutInIdle = ((currentTimeMillis() - pConn.lastAccessTime - poolConfig.getIdleTimeout() >= 0));
+					long currentTime=currentTimeMillis();
+					boolean isTimeoutInIdle=((currentTime-pConn.createTime-MaxLifeTime>=0)||(currentTime - pConn.lastAccessTime - poolConfig.getIdleTimeout()>= 0));
 					if (isTimeoutInIdle && ConnStateUpdater.compareAndSet(pConn, state, CONNECTION_CLOSED)) {//need close idle
 						removePooledConn(pConn, DESC_REMOVE_IDLE);
 						tryToCreateNewConnByAsyn();
 					}
 				} else if (state == CONNECTION_USING) {
-					boolean isHolTimeoutInNotUsing = ((currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldIdleTimeout() >= 0));
+					boolean isHolTimeoutInNotUsing = ((currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldIdleTimeout()>= 0));
 					if (isHolTimeoutInNotUsing && ConnStateUpdater.compareAndSet(pConn, state, CONNECTION_CLOSED)) {
 						removePooledConn(pConn, DESC_REMOVE_HOLD_TIMEOUT);
 						tryToCreateNewConnByAsyn();
