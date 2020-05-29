@@ -104,7 +104,7 @@ Java7
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>2.4.0</version>
+   <version>2.4.1</version>
 </dependency>
 ```
 
@@ -154,7 +154,7 @@ Configuration
 | fairMode           | fair mode for pool            | default is false                   |
 | initialSize        | pool initial size             |                                   |
 | maxActive          | pool max size                 |                                   | 
-| concurrentSize     | borrower thread concurrent size  | not greater than  'maxActive'   |
+| borrowConcurrentSize | borrower thread concurrent size  | not greater than  'maxActive'   |
 | preparedStatementCacheSize |statment cache size       | 0 cache is invalid            |
 | defaultAutoCommit  |default autoCommit                | default is true               |
 | defaultTransactionIsolation|trasaction level          | default:Connection.TRANSACTION_READ_COMMITTED |
@@ -164,6 +164,7 @@ Configuration
 | maxWait            |max wait time to borrow a connection(mills)| default is 8 seconds       |
 | idleTimeout        |max idle time in pool(mills)      | default is 3 minutes                |  
 | holdIdleTimeout    |max hold idle time in pool(mills)  | default is 5 minutes              |  
+| maxLifeTime        |max time in pool                   | default is 30 minutes              |  
 | connectionTestSQL  |Connection valid test sql          | a 'select' statment               |  
 | connectionTestTimeout |Connection valid test timeout(seconds)  | default 5 seconds         |  
 | connectionTestInterval |connection valid test interval time(mills)| default 500ms          |  
