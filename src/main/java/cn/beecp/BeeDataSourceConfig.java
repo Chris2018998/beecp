@@ -147,7 +147,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	/** 
 	 * max hold time in Unused(milliseconds),pool will release it by forced 
 	 */
-	private long holdIdleTimeout=MINUTES.toMillis(5);
+	private long holdTimeout=MINUTES.toMillis(5);
 
 	/**
 	 * max Life Time: maxLifeTime> idleTimeout && maxLifeTime > holdIdleTimeout
@@ -374,19 +374,19 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	  if(!this.checked && idleTimeout>0) 
 		this.idleTimeout = idleTimeout;
 	}
-	public long getHoldIdleTimeout() {
-		return holdIdleTimeout;
+	public long getHoldTimeout() {
+		return holdTimeout;
 	}
-	public void setHoldIdleTimeout(long maxHoldTimeInUnused) {
-		if(!this.checked && maxHoldTimeInUnused>0) 
-		this.holdIdleTimeout = maxHoldTimeInUnused;
+	public void setHoldIdleTimeout(long holdTimeout) {
+		if(!this.checked && holdTimeout>0)
+		this.holdTimeout = holdTimeout;
 	}
 
 	public long getMaxLifeTime() {
 		return maxLifeTime;
 	}
 	public void setMaxLifeTime(long maxLifeTime) {
-		if(!this.checked && maxLifeTime>idleTimeout && maxLifeTime>holdIdleTimeout)
+		if(!this.checked && maxLifeTime>idleTimeout && maxLifeTime>holdTimeout)
 			this.maxLifeTime = maxLifeTime;
 	}
 
@@ -568,12 +568,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 			throw new IllegalArgumentException("Pool 'borrowConcurrentSize' must not be greater than pool max size");
 		if (this.idleTimeout <= 0)
 			throw new IllegalArgumentException("Connection 'idleTimeout' must be greater than zero");
-		if (this.holdIdleTimeout <= 0)
-			throw new IllegalArgumentException("Connection 'holdIdleTimeout' must be greater than zero");
+		if (this.holdTimeout <= 0)
+			throw new IllegalArgumentException("Connection 'holdTimeout' must be greater than zero");
 		if(maxLifeTime<idleTimeout)
 			throw new IllegalArgumentException("Connection 'maxLifeTime' must be greater than 'idleTimeout'");
-		if(maxLifeTime<holdIdleTimeout)
-			throw new IllegalArgumentException("Connection 'maxLifeTime' must be greater than 'holdIdleTimeout'");
+		if(maxLifeTime<holdTimeout)
+			throw new IllegalArgumentException("Connection 'maxLifeTime' must be greater than 'holdTimeout'");
 		if (this.maxWait <= 0)
 			throw new IllegalArgumentException("Borrower 'maxWait' must be greater than zero");
 		if (this.preparedStatementCacheSize < 0)
