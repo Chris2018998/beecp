@@ -96,7 +96,7 @@ public class DataSourceConfig {
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>2.4.0</version>
+   <version>2.4.1</version>
 </dependency>
 ```
 
@@ -147,7 +147,7 @@ public class DataSourceConfig {
 | fairMode        | 连接池是否公平模式               | 公平锁,等待者优先获取连接            |
 | initialSize     | 连接池初始大小                  |                                   |
 | maxActive       | 连接池最大个数                  |                                   | 
-| concurrentSize  | 请求并发数（借用者线程数）        | 不允许大于连接最大数                 |
+| borrowConcurrentSize  | 信号量请求并发数（借用者线程数）| 不允许大于连接最大数                 |
 | preparedStatementCacheSize |SQL宣言缓存大小       | 0 表示不适用缓存                    |
 | defaultAutoCommit|连接是否为自动提交              | 默认true                            |
 | defaultTransactionIsolation|事物等级             | 默认读提交，Connection.TRANSACTION_READ_COMMITTED |
@@ -157,6 +157,7 @@ public class DataSourceConfig {
 | maxWait           |连接借用等待最大时间(毫秒)       | 默认8秒，连接请求最大等待时间           |
 | idleTimeout       |连接闲置最大时间(毫秒)          | 默认3分钟，超时会被清理                 |  
 | holdIdleTimeout   |连接被持有不用的最大时间(毫秒)    | 默认5分钟，超时会被清理                 |  
+| maxLifeTime       |在池中的最大时间(毫秒)            | 默认30分钟，超时会被清理                 |  
 | connectionTestSQL |连接有效性测试SQL语句           | 一条 select 语句，不建议放入存储过程     |  
 | connectionTestTimeout |连接有效性测试超时时间(秒)   |默认5秒 执行查询测试语句时间，在指定时间范围内等待反应|  
 | connectionTestInterval |连接测试的间隔时间(毫秒)     |默认500毫秒 连接上次活动时间点与当前时间时间差值小于它，则假定连接是有效的|  
