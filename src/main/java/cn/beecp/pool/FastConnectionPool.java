@@ -522,7 +522,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 						tryToCreateNewConnByAsyn();
 					}
 				} else if (state == CONNECTION_USING) {
-					boolean isHolTimeoutInNotUsing = ((currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldIdleTimeout()>= 0));
+					boolean isHolTimeoutInNotUsing = ((currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldTimeout()>= 0));
 					if (isHolTimeoutInNotUsing && ConnStateUpdater.compareAndSet(pConn, state, CONNECTION_CLOSED)) {
 						removePooledConn(pConn, DESC_REMOVE_HOLD_TIMEOUT);
 						tryToCreateNewConnByAsyn();
@@ -586,7 +586,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 							removePooledConn(pConn,source);
 						}
 					} else {
-						boolean isTimeout = ((currentTimeMillis()-pConn.lastAccessTime-poolConfig.getHoldIdleTimeout()>= 0));
+						boolean isTimeout = ((currentTimeMillis()-pConn.lastAccessTime-poolConfig.getHoldTimeout()>= 0));
 						if (isTimeout && ConnStateUpdater.compareAndSet(pConn, CONNECTION_USING, CONNECTION_CLOSED)) {
 							removePooledConn(pConn,source);
 						}
