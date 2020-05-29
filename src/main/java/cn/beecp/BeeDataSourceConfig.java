@@ -148,7 +148,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	 * max hold time in Unused(milliseconds),pool will release it by forced 
 	 */
 	private long holdIdleTimeout=MINUTES.toMillis(5);
-	
+
+	/**
+	 * max Life Time: maxLifeTime> idleTimeout && maxLifeTime > holdIdleTimeout
+	 */
+	private long maxLifeTime=MINUTES.toMillis(30);
+
 	/**
 	 * a test SQL to check connection active state
 	 */
@@ -376,6 +381,15 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		if(!this.checked && maxHoldTimeInUnused>0) 
 		this.holdIdleTimeout = maxHoldTimeInUnused;
 	}
+
+	public long getMaxLifeTime() {
+		return maxLifeTime;
+	}
+	public void setMaxLifeTime(long maxLifeTime) {
+		if(!this.checked && maxLifeTime>idleTimeout && maxLifeTime>holdIdleTimeout)
+			this.maxLifeTime = maxLifeTime;
+	}
+
 	public String getConnectionTestSQL() {
 		return connectionTestSQL;
 	}
@@ -554,6 +568,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 			throw new IllegalArgumentException("Pool borrow concurrent size must be less than pool max size");
 		if (this.idleTimeout <= 0)
 			throw new IllegalArgumentException("Connection max idle time must be greater than zero");
+		if (this.holdIdleTimeout <= 0)
+			throw new IllegalArgumentException("Connection not use time in holding must be greater than zero");
+		if(maxLifeTime<idleTimeout)
+			throw new IllegalArgumentException("Connection maxLifeTime must be greater than idleTimeout");
+		if(maxLifeTime<holdIdleTimeout)
+			throw new IllegalArgumentException("Connection maxLifeTime must be greater than holdIdleTimeout");
 		if (this.maxWait <= 0)
 			throw new IllegalArgumentException("Borrower max wait time must be greater than zero");
 		if (this.preparedStatementCacheSize < 0)
