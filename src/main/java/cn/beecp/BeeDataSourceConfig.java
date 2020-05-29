@@ -557,27 +557,27 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		}
 		
 		if (this.maxActive <= 0)
-			throw new IllegalArgumentException("Pool max size must be greater than zero");
+			throw new IllegalArgumentException("Pool 'maxActive' must be greater than zero");
 		if (this.initialSize < 0)
-			throw new IllegalArgumentException("Pool init size must be greater than zero");
+			throw new IllegalArgumentException("Pool 'initialSize' must be greater than zero");
 		if (this.initialSize > maxActive)
-			throw new IllegalArgumentException("Pool initiation size must be less than pool max size");
+			throw new IllegalArgumentException("Pool 'initialSize' must not be greater than 'maxActive'");
 		if (this.borrowConcurrentSize <=0)
-			throw new IllegalArgumentException("Pool borrow concurrent size must be greater than zero");
+			throw new IllegalArgumentException("Pool 'borrowConcurrentSize' must be greater than zero");
 		if (this.borrowConcurrentSize > maxActive)
-			throw new IllegalArgumentException("Pool borrow concurrent size must be less than pool max size");
+			throw new IllegalArgumentException("Pool 'borrowConcurrentSize' must not be greater than pool max size");
 		if (this.idleTimeout <= 0)
-			throw new IllegalArgumentException("Connection max idle time must be greater than zero");
+			throw new IllegalArgumentException("Connection 'idleTimeout' must be greater than zero");
 		if (this.holdIdleTimeout <= 0)
-			throw new IllegalArgumentException("Connection not use time in holding must be greater than zero");
+			throw new IllegalArgumentException("Connection 'holdIdleTimeout' must be greater than zero");
 		if(maxLifeTime<idleTimeout)
-			throw new IllegalArgumentException("Connection maxLifeTime must be greater than idleTimeout");
+			throw new IllegalArgumentException("Connection 'maxLifeTime' must be greater than 'idleTimeout'");
 		if(maxLifeTime<holdIdleTimeout)
-			throw new IllegalArgumentException("Connection maxLifeTime must be greater than holdIdleTimeout");
+			throw new IllegalArgumentException("Connection 'maxLifeTime' must be greater than 'holdIdleTimeout'");
 		if (this.maxWait <= 0)
-			throw new IllegalArgumentException("Borrower max wait time must be greater than zero");
+			throw new IllegalArgumentException("Borrower 'maxWait' must be greater than zero");
 		if (this.preparedStatementCacheSize < 0)
-			throw new IllegalArgumentException("Statement cache size can't be lesser than zero");
+			throw new IllegalArgumentException("Connection 'preparedStatementCacheSize' must not be lesser than zero");
 
 		defaultTransactionIsolationCode=TransactionIsolationLevel.nameToCode(defaultTransactionIsolation);
 		if(defaultTransactionIsolationCode==-999){
@@ -588,7 +588,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		//if (this.validationQuerySQL != null && validationQuerySQL.trim().length() == 0) {
 		if (!isNullText(this.connectionTestSQL) && !this.connectionTestSQL.trim().toLowerCase().startsWith("select "))
 		//fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end	
-			throw new IllegalArgumentException("Connection validate SQL must start with 'select '");
+			throw new IllegalArgumentException("Connection 'connectionTestSQL' must start with 'select '");
 		//}
 	}
 	private void setDataSourceProperty(String propName,Object propValue,Object bean)throws Exception{
