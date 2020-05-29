@@ -134,7 +134,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				ConnectionTestSQL="select 1 from dual";
 
 			DefaultMaxWaitNanos=MILLISECONDS.toNanos(poolConfig.getMaxWait());
-			MaxLefTime=poolConfig.getMaxLifeTime();
+			MaxLifeTime=poolConfig.getMaxLifeTime();
 			ConnectionTestInterval=poolConfig.getConnectionTestInterval();
 			createInitConnections(poolConfig.getInitialSize());
 
