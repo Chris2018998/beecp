@@ -317,21 +317,19 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 
 	/**
-	 * check connection state,when
+	 * check connection state
 	 *
 	 * @return if the checked connection is active then return true,otherwise
 	 *         false if false then close it
 	 */
-	private boolean isActiveConn(PooledConnection pConn) {
-		if(testPolicy.isActive(pConn))return true;
+	private boolean testOnBorrow(PooledConnection pConn) {
+		long currentTime=currentTimeMillis();
+		if(currentTime-pConn.createTime-MaxLifeTime<0 &&currentTime-pConn.lastAccessTime-ConnectionTestInterval <=0) return true;
 
+		if(testPolicy.isActive(pConn))return true;
 		removePooledConn(pConn,DESC_REMOVE_BAD);
 		tryToCreateNewConnByAsyn();
 		return false;
-	}
-	private boolean testOnBorrow(PooledConnection pConn) {
-		long currentTime=currentTimeMillis();
-		return (currentTime-pConn.createTime-MaxLifeTime<0 &&currentTime-pConn.lastAccessTime-ConnectionTestInterval <=0) || isActiveConn(pConn);
 	}
 	/**
 	 * create initialization connections
