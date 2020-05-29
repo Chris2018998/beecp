@@ -94,7 +94,7 @@ public class DataSourceConfig {
 ```
 
 
-Maven download
+Release download
 ---
 
 Java7
