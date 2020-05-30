@@ -75,8 +75,11 @@ class PooledConnection extends StatementCache{
 
 		curAutoCommit=defaultAutoCommit;
 		stmCacheValid = config.getPreparedStatementCacheSize()>0;
-		createTime=currentTimeMillis();
-		lastAccessTime=createTime;
+		lastAccessTime=currentTimeMillis();
+		createTime=lastAccessTime+config.getMaxLifeTime();
+		/**
+		 *  currentTime-pConn.createTime-MaxLifeTime  change to------> currentTime-(pConn.createTime+MaxLifeTime)
+		 */
 	}
 	void closeRawConn() {//called by pool
 		if(proxyConn!=null){

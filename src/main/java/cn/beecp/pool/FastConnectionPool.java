@@ -64,6 +64,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private ConnectionTestPolicy testPolicy;
 	private ConnectionFactory connFactory;
 	private final Object connArrayLock =new Object();
+	private final Object connNotifyLock =new Object();
 	private volatile PooledConnection[] connArray = new PooledConnection[0];
 	private ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
 	private ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
@@ -83,7 +84,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private String poolName;
 	private volatile int poolState=POOL_UNINIT;
 	private volatile int createConnThreadState=THREAD_WORKING;
-	private AtomicInteger createNotifyCount = new AtomicInteger(0);
+	private AtomicInteger needAddConnSize = new AtomicInteger(0);
 	private static Logger log = LoggerFactory.getLogger(FastConnectionPool.class);
 	private static AtomicInteger PoolNameIndex = new AtomicInteger(1);
 	private static final int MaxTimedSpins = (Runtime.getRuntime().availableProcessors() < 2) ? 0 : 32;
@@ -324,9 +325,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 */
 	private boolean testOnBorrow(PooledConnection pConn) {
 		long currentTime=currentTimeMillis();
-		if(currentTime-pConn.createTime-MaxLifeTime<0 &&currentTime-pConn.lastAccessTime-ConnectionTestInterval <=0) return true;
+		if(currentTime-pConn.createTime<0)
+			if(currentTime-pConn.lastAccessTime-ConnectionTestInterval<0 || testPolicy.isActive(pConn)) return true;
 
-		if(testPolicy.isActive(pConn))return true;
 		removePooledConn(pConn,DESC_REMOVE_BAD);
 		tryToCreateNewConnByAsyn();
 		return false;
@@ -516,7 +517,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				int state = pConn.state;
 				if (state == CONNECTION_IDLE && !existBorrower()) {
 					long currentTime=currentTimeMillis();
-					boolean isTimeoutInIdle=((currentTime-pConn.createTime-MaxLifeTime>=0)||(currentTime - pConn.lastAccessTime - poolConfig.getIdleTimeout()>= 0));
+					boolean isTimeoutInIdle=(currentTime-pConn.createTime>=0 || currentTime - pConn.lastAccessTime - poolConfig.getIdleTimeout()>=0);
 					if (isTimeoutInIdle && ConnStateUpdater.compareAndSet(pConn, state, CONNECTION_CLOSED)) {//need close idle
 						removePooledConn(pConn, DESC_REMOVE_IDLE);
 						tryToCreateNewConnByAsyn();
@@ -586,7 +587,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 							removePooledConn(pConn,source);
 						}
 					} else {
-						boolean isTimeout = ((currentTimeMillis()-pConn.lastAccessTime-poolConfig.getHoldTimeout()>= 0));
+						boolean isTimeout = (currentTimeMillis()-pConn.lastAccessTime-poolConfig.getHoldTimeout()>= 0);
 						if (isTimeout && ConnStateUpdater.compareAndSet(pConn, CONNECTION_USING, CONNECTION_CLOSED)) {
 							removePooledConn(pConn,source);
 						}
@@ -608,10 +609,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 	// notify to create connections to pool
 	private void tryToCreateNewConnByAsyn() {
-		if(connArray.length+createNotifyCount.get()<PoolMaxSize)  {
-			createNotifyCount.incrementAndGet();
-			if(CreateConnThreadStateUpdater.compareAndSet(this, THREAD_WAITING, THREAD_WORKING))
-				unpark(this);
+		if(connArray.length+needAddConnSize.get()+1<=PoolMaxSize) {
+			synchronized(connNotifyLock){
+				if(connArray.length+needAddConnSize.get()+1<=PoolMaxSize)  {
+					needAddConnSize.incrementAndGet();
+					if(CreateConnThreadStateUpdater.compareAndSet(this, THREAD_WAITING, THREAD_WORKING))
+						unpark(this);
+				}
+			}
 		}
 	}
 	// exit connection creation thread
@@ -619,37 +624,32 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		int curSts;
 		while (true) {
 			curSts=createConnThreadState;
-			if (CreateConnThreadStateUpdater.compareAndSet(this,curSts,THREAD_DEAD)) {
-				if(curSts == THREAD_WAITING)unpark(this);
+			if ((curSts==THREAD_WORKING||curSts==THREAD_WAITING )&&CreateConnThreadStateUpdater.compareAndSet(this,curSts,THREAD_DEAD)) {
+				if(curSts==THREAD_WAITING)unpark(this);
 				break;
 			}
 		}
 	}
+
 	// create connection to pool
 	public void run() {
-		int tryCreatedCount=0;PooledConnection pConn;
-		while (true) {
-			while(createConnThreadState==THREAD_WORKING && tryCreatedCount++<createNotifyCount.get()) {
-				try {
-					if(!waitQueue.isEmpty()) {
+		PooledConnection pConn;
+		while(true) {
+			while(needAddConnSize.get() > 0) {
+				needAddConnSize.decrementAndGet();
+				if (!waitQueue.isEmpty()) {
+					try {
 						if ((pConn = createPooledConn(CONNECTION_USING)) != null)
 							new TransferThread(pConn).start();
-						else//pool full
-							break;
-					}else{
-						break;
+					} catch (SQLException e) {
+						new TransferThread(e).start();
 					}
-				} catch (SQLException e) {
-					new TransferThread(e).start();
 				}
 			}
 
-			tryCreatedCount=0;
-			createNotifyCount.set(0);
-			if(createConnThreadState==THREAD_DEAD)break;
-			if(CreateConnThreadStateUpdater.compareAndSet(this,THREAD_WORKING, THREAD_WAITING))
+			if (needAddConnSize.get()==0 && CreateConnThreadStateUpdater.compareAndSet(this, THREAD_WORKING, THREAD_WAITING))
 				park(this);
-			if(createConnThreadState==THREAD_DEAD)break;
+			if (createConnThreadState == THREAD_DEAD) break;
 		}
 	}
 	//new connection TransferThread

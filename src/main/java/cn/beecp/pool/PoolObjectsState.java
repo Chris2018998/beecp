@@ -34,7 +34,7 @@ class PoolObjectsState {
 	static final int CONNECTION_USING       = 2;
 	static final int CONNECTION_CLOSED      = 3;
 	
-	//WORK THREAD STATE
+	//ADD CONNECTION THREAD STATE
 	static final int THREAD_WORKING         = 1;
 	static final int THREAD_WAITING         = 2;
 	static final int THREAD_DEAD            = 3;
