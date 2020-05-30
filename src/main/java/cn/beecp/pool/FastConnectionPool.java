@@ -69,7 +69,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
 	private ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
 	private ScheduledFuture<?> idleCheckSchFuture = null;
-	private ScheduledThreadPoolExecutor idleSchExecutor = new ScheduledThreadPoolExecutor(1);
+	private ScheduledThreadPoolExecutor idleSchExecutor = new ScheduledThreadPoolExecutor(2);
 
 	private int networkTimeout;
 	private boolean supportValidTest=true;
@@ -216,12 +216,17 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				System.arraycopy(connArray, 0, arrayNew, 0, connArray.length);
 				arrayNew[connArray.length] = pConn;// tail
 				connArray = arrayNew;
+
+				if(MaxLifeTime>0) {
+					pConn.maxLifeTimeSchFuture=idleSchExecutor.schedule(pConn, MaxLifeTime, MILLISECONDS);
+				}
 				return pConn;
 			}else{
 				return null;
 			}
 		}
 	}
+
 	//remove Pooled connection
 	private void removePooledConn(PooledConnection pConn,String removeType) {
 		pConn.state=CONNECTION_CLOSED;
@@ -325,7 +330,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 */
 	private boolean testOnBorrow(PooledConnection pConn) {
 		long currentTime=currentTimeMillis();
-		if(currentTime-pConn.createTime<0)
+		if(pConn.isAllowBorrow)
 			if(currentTime-pConn.lastAccessTime-ConnectionTestInterval<0 || testPolicy.isActive(pConn)) return true;
 
 		removePooledConn(pConn,DESC_REMOVE_BAD);
@@ -344,7 +349,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				createPooledConn(CONNECTION_IDLE);
 		} catch (SQLException e) {
 			for (PooledConnection pConn : connArray)
-				removePooledConn(pConn, DESC_REMOVE_INIT);
+				removePooledConn(pConn,DESC_REMOVE_INIT);
 			throw e;
 		}
 	}
@@ -516,8 +521,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			for (PooledConnection pConn : connArray) {
 				int state = pConn.state;
 				if (state == CONNECTION_IDLE && !existBorrower()) {
-					long currentTime=currentTimeMillis();
-					boolean isTimeoutInIdle=(currentTime-pConn.createTime>=0 || currentTime - pConn.lastAccessTime - poolConfig.getIdleTimeout()>=0);
+					boolean isTimeoutInIdle=(!pConn.isAllowBorrow || currentTimeMillis() - pConn.lastAccessTime - poolConfig.getIdleTimeout()>=0);
 					if (isTimeoutInIdle && ConnStateUpdater.compareAndSet(pConn, state, CONNECTION_CLOSED)) {//need close idle
 						removePooledConn(pConn, DESC_REMOVE_IDLE);
 						tryToCreateNewConnByAsyn();
@@ -543,12 +547,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			if (PoolStateUpdater.compareAndSet(this,POOL_NORMAL,POOL_CLOSED)) {
 				log.info("BeeCP({})begin to shutdown",poolName);
 				removeAllConnections(poolConfig.isForceCloseConnection(),DESC_REMOVE_DESTROY);
-				while (true) {
-					if (idleCheckSchFuture.cancel(true)) break;
+				while (!idleCheckSchFuture.isCancelled() && !idleCheckSchFuture.isDone()) {
+					idleCheckSchFuture.cancel(true);
 				}
 
-				idleSchExecutor.shutdown();
-				networkTimeoutExecutor.shutdown();
+				idleSchExecutor.shutdownNow();
+				networkTimeoutExecutor.shutdownNow();
 				shutdownCreateConnThread();
 				unregisterJMX();
 
@@ -577,6 +581,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		long parkNanos = SECONDS.toNanos(poolConfig.getWaitTimeToClearPool());
 		while (connArray.length > 0) {
 			for (PooledConnection pConn : connArray) {
+				ScheduledFuture<?> maxLifeTimeSchFuture = pConn.maxLifeTimeSchFuture;
+				if (maxLifeTimeSchFuture != null){
+					while (!maxLifeTimeSchFuture.isCancelled() && !maxLifeTimeSchFuture.isDone()) {
+						maxLifeTimeSchFuture.cancel(true);
+					}
+				}
+
 				if (ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_CLOSED)) {
 					removePooledConn(pConn,source);
 				} else if (pConn.state == CONNECTION_CLOSED) {
@@ -597,6 +608,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 			if (connArray.length > 0)parkNanos(parkNanos);
 		} // while
+		idleSchExecutor.getQueue().clear();
 	}
 
 	/**
