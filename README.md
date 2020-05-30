@@ -163,7 +163,7 @@ Configuration
 | defaultReadOnly    |                                  | default is false                     |
 | maxWait            |max wait time to borrow a connection(mills)| default is 8 seconds       |
 | idleTimeout        |max idle time in pool(mills)      | default is 3 minutes                |  
-| holdIdleTimeout    |max hold idle time in pool(mills)  | default is 5 minutes              |  
+| holdTimeout        |max hold time in not using        | default is 5 minutes              |  
 | maxLifeTime        |max time in pool                   | default is 30 minutes              |  
 | connectionTestSQL  |Connection valid test sql          | a 'select' statment               |  
 | connectionTestTimeout |Connection valid test timeout(seconds)  | default 5 seconds         |  
