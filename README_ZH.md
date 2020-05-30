@@ -96,7 +96,7 @@ public class DataSourceConfig {
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>2.4.1</version>
+   <version>2.4.2</version>
 </dependency>
 ```
 
