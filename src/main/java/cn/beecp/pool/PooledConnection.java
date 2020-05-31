@@ -157,10 +157,10 @@ class PooledConnection extends StatementCache implements Runnable{
 				changedCount=0;
 				arraycopy(DEFAULT_IND,0,changedInd,0,6);
 			}//reset end
-			if(updTimeInd)lastAccessTime=currentTimeMillis();
-
+			
 			//clear warnings
 			rawConn.clearWarnings();
+			if(updTimeInd)lastAccessTime=currentTimeMillis();
 			return true;
 		} catch (Throwable e) {
 			log.error("Connection reset error", e);
