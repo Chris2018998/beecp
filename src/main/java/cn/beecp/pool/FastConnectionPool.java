@@ -329,9 +329,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *         false if false then close it
 	 */
 	private boolean testOnBorrow(PooledConnection pConn) {
-		long currentTime=currentTimeMillis();
 		if(pConn.isAllowBorrow)
-			if(currentTime-pConn.lastAccessTime-ConnectionTestInterval<0 || testPolicy.isActive(pConn)) return true;
+			if(currentTimeMillis()-pConn.lastAccessTime-ConnectionTestInterval<0 || testPolicy.isActive(pConn)) return true;
 
 		removePooledConn(pConn,DESC_REMOVE_BAD);
 		tryToCreateNewConnByAsyn();

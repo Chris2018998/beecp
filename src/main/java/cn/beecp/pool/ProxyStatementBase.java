@@ -33,19 +33,7 @@ class ProxyStatementBase{
 	protected PooledConnection pConn;//called by subclass to update time
 	protected ProxyConnectionBase proxyConn;//called by subclass to check close state
 
-	public ProxyStatementBase(Statement delegate,ProxyConnectionBase proxyConn,PooledConnection pConn){
-		this.pConn=pConn;
-		this.proxyConn=proxyConn;
-		this.delegate=delegate;
-		this.cacheInd=false;
-	}
-	public ProxyStatementBase(PreparedStatement delegate,ProxyConnectionBase proxyConn,PooledConnection pConn,boolean cacheInd){
-		this.pConn=pConn;
-		this.proxyConn=proxyConn;
-		this.delegate=delegate;
-		this.cacheInd=cacheInd;
-	}
-	public ProxyStatementBase(CallableStatement delegate,ProxyConnectionBase proxyConn,PooledConnection pConn,boolean cacheInd){
+	public ProxyStatementBase(Statement delegate,ProxyConnectionBase proxyConn,PooledConnection pConn,boolean cacheInd){
 		this.pConn=pConn;
 		this.proxyConn=proxyConn;
 		this.delegate=delegate;
@@ -55,6 +43,7 @@ class ProxyStatementBase{
 		checkClose();
 		return proxyConn;
 	}
+	public boolean isClosed()throws SQLException{return isClosed;}
 	protected void checkClose() throws SQLException {
 		if(isClosed)throw StatementClosedException;
 		proxyConn.checkClose();
@@ -64,14 +53,17 @@ class ProxyStatementBase{
 		isClosed=true;
 		if(!cacheInd)oclose(delegate);
 	}
+
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		checkClose();
-		return iface.isInstance(delegate);
+		return iface.isInstance(this);
 	}
-	@SuppressWarnings("unchecked")
 	public <T> T unwrap(Class<T> iface) throws SQLException{
 		checkClose();
 		String message="Wrapped object is not an instance of "+iface;
-		if(iface.isInstance(delegate))return (T)this; else throw new SQLException(message);
+		if(iface.isInstance(this))
+			return (T)this;
+		else
+			throw new SQLException(message);
 	}
 }

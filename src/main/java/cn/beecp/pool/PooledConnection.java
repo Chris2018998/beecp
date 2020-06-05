@@ -79,7 +79,6 @@ class PooledConnection extends StatementCache implements Runnable{
 		curAutoCommit=defaultAutoCommit;
 		stmCacheValid = config.getPreparedStatementCacheSize()>0;
 		lastAccessTime=currentTimeMillis();
-
 	}
 	public void run(){
 		isAllowBorrow=false;//remark as discard
