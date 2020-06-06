@@ -46,7 +46,7 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	/**
 	 * connection pool
 	 */
-	private ConnectionPool pool=null;
+	private ConnectionPool pool;
 
 	/**
 	 * failed to create
