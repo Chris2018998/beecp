@@ -82,17 +82,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			Runtime.getRuntime().availableProcessors(),15,SECONDS, new LinkedBlockingQueue<Runnable>());
 
 	private String poolName;
-	private volatile int poolState=POOL_UNINIT;
-	private volatile int createConnThreadState=THREAD_WORKING;
+	private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
+	private AtomicInteger createConnThreadState =new AtomicInteger(THREAD_WORKING);
 	private AtomicInteger needAddConnSize = new AtomicInteger(0);
 	private static Logger log = LoggerFactory.getLogger(FastConnectionPool.class);
 	private static AtomicInteger PoolNameIndex = new AtomicInteger(1);
 	private static final int MaxTimedSpins = (Runtime.getRuntime().availableProcessors() < 2) ? 0 : 32;
 	private static final AtomicIntegerFieldUpdater<PooledConnection> ConnStateUpdater = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class, "state");
 	private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowerStateUpdater = AtomicReferenceFieldUpdater.newUpdater(Borrower.class, Object.class, "stateObject");
-	private static final AtomicIntegerFieldUpdater<FastConnectionPool> PoolStateUpdater = AtomicIntegerFieldUpdater.newUpdater(FastConnectionPool.class, "poolState");
-	private static final AtomicIntegerFieldUpdater<FastConnectionPool> CreateConnThreadStateUpdater = AtomicIntegerFieldUpdater.newUpdater(FastConnectionPool.class, "createConnThreadState");
-
+	
 	private static final String DESC_REMOVE_INIT="init";
 	private static final String DESC_REMOVE_BAD="bad";
 	private static final String DESC_REMOVE_IDLE="idle";
@@ -110,7 +108,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *             check configuration fail or to create initiated connection
 	 */
 	public void init(BeeDataSourceConfig config) throws SQLException {
-		if (poolState== POOL_UNINIT) {
+		if (poolState.get()== POOL_UNINIT) {
 			checkProxyClasses();
 			if(config == null)throw new SQLException("DataSource configuration can't be null");
 			poolConfig = config;
@@ -162,7 +160,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					poolConfig.getMaxWait(),
 					poolConfig.getDriverClassName());
 
-			poolState=POOL_NORMAL;
+			poolState.set(POOL_NORMAL);
 			this.setName("PooledConnectionAdd");
 			this.start();
 		} else {
@@ -362,7 +360,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *             if pool is closed or waiting timeout,then throw exception
 	 */
 	public Connection getConnection() throws SQLException {
-		if (poolState != POOL_NORMAL)throw PoolCloseException;
+		if (poolState.get() != POOL_NORMAL)throw PoolCloseException;
 
 		//try to get from threadLocal cache
 		WeakReference<Borrower> bRef = threadLocal.get();
@@ -518,7 +516,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 * or dead connections,or long time not active connections in using state
 	 */
 	private void closeIdleTimeoutConnection() {
-		if (poolState == POOL_NORMAL) {
+		if (poolState.get() == POOL_NORMAL) {
 			for (PooledConnection pConn : connArray) {
 				int state = pConn.state;
 				if (state == CONNECTION_IDLE && !existBorrower()) {
@@ -545,7 +543,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	public void shutdown() {
 		long parkNanos = SECONDS.toNanos(poolConfig.getWaitTimeToClearPool());
 		while (true) {
-			if (PoolStateUpdater.compareAndSet(this,POOL_NORMAL,POOL_CLOSED)) {
+			if (poolState.compareAndSet(POOL_NORMAL,POOL_CLOSED)) {
 				log.info("BeeCP({})begin to shutdown",poolName);
 				removeAllConnections(poolConfig.isForceCloseConnection(),DESC_REMOVE_DESTROY);
 				while (!idleCheckSchFuture.isCancelled() && !idleCheckSchFuture.isDone()) {
@@ -565,7 +563,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 				log.info("BeeCP({})has shutdown",poolName);
 				break;
-			} else if (poolState == POOL_CLOSED) {
+			} else if (poolState.get() == POOL_CLOSED) {
 				break;
 			} else {
 				parkNanos(parkNanos);// wait 3 seconds
@@ -626,7 +624,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			synchronized(connNotifyLock){
 				if(connArray.length+needAddConnSize.get()+1<=PoolMaxSize)  {
 					needAddConnSize.incrementAndGet();
-					if(CreateConnThreadStateUpdater.compareAndSet(this, THREAD_WAITING, THREAD_WORKING))
+					if(createConnThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
 						unpark(this);
 				}
 			}
@@ -636,8 +634,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private void shutdownCreateConnThread() {
 		int curSts;
 		while (true) {
-			curSts=createConnThreadState;
-			if ((curSts==THREAD_WORKING||curSts==THREAD_WAITING )&&CreateConnThreadStateUpdater.compareAndSet(this,curSts,THREAD_DEAD)) {
+			curSts=createConnThreadState.get();
+			if ((curSts==THREAD_WORKING||curSts==THREAD_WAITING )&&createConnThreadState.compareAndSet(curSts,THREAD_DEAD)) {
 				if(curSts==THREAD_WAITING)unpark(this);
 				break;
 			}
@@ -660,9 +658,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				}
 			}
 
-			if (needAddConnSize.get()==0 && CreateConnThreadStateUpdater.compareAndSet(this, THREAD_WORKING, THREAD_WAITING))
+			if (needAddConnSize.get()==0 && createConnThreadState.compareAndSet(THREAD_WORKING, THREAD_WAITING))
 				park(this);
-			if (createConnThreadState == THREAD_DEAD) break;
+			if (createConnThreadState.get() == THREAD_DEAD) break;
 		}
 	}
 	//new connection TransferThread
@@ -687,11 +685,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 	// close all connections
 	public void reset(boolean force) {
-		if (PoolStateUpdater.compareAndSet(this,POOL_NORMAL, POOL_RESTING)) {
+		if (poolState.compareAndSet(POOL_NORMAL, POOL_RESTING)) {
 			log.info("BeeCP({})begin to reset.",poolName);
 			removeAllConnections(force,DESC_REMOVE_RESET);
 			log.info("All pooledConns were cleared");
-			poolState=POOL_NORMAL;// restore state;
+			poolState.set(POOL_NORMAL);// restore state;
 			log.info("BeeCP({})finished reseting",poolName);
 		}
 	}

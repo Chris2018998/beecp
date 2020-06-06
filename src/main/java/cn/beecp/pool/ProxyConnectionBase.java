@@ -19,6 +19,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import static cn.beecp.pool.PoolExceptionList.AutoCommitChangeForbiddennException;
 import static cn.beecp.pool.PoolExceptionList.ConnectionClosedException;
@@ -32,9 +33,10 @@ import static java.lang.System.currentTimeMillis;
  * @version 1.0
  */
 abstract class ProxyConnectionBase implements Connection{
-	private boolean isClosed;
 	protected Connection delegate;
 	protected PooledConnection pConn;//called by subclass to update time
+ 	private volatile Boolean closedInd=Boolean.FALSE;
+ 	private static final AtomicReferenceFieldUpdater<ProxyConnectionBase,Boolean> closedStateUpd = AtomicReferenceFieldUpdater.newUpdater(ProxyConnectionBase.class, Boolean.class,"closedInd");
 
 	private final static int Pos_AutoCommitInd=0;
 	private final static int Pos_TransactionIsolationInd=1;
@@ -49,16 +51,17 @@ abstract class ProxyConnectionBase implements Connection{
 		delegate=pConn.rawConn;
 	}
 	void setAsClosed(){
-		isClosed=true;
+		closedInd=Boolean.TRUE;
 	}
-    public boolean isClosed()throws SQLException{return isClosed;}
+    public boolean closedState()throws SQLException{return closedInd;}
 	protected void checkClose() throws SQLException {
-		if(isClosed)throw ConnectionClosedException;
+		if(closedInd)throw ConnectionClosedException;
 	}
 	public void close() throws SQLException {
-		this.checkClose();
-		isClosed = true;
-		pConn.returnToPoolBySelf();
+		if(!closedInd&& closedStateUpd.compareAndSet(this,Boolean.FALSE,Boolean.TRUE))
+			pConn.returnToPoolBySelf();
+		else
+		   throw ConnectionClosedException;
 	}
 
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
