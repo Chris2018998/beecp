@@ -112,7 +112,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	public void init(BeeDataSourceConfig config) throws SQLException {
 		if (poolState== POOL_UNINIT) {
 			checkProxyClasses();
-			if(config == null)throw new SQLException("Datasource configuration can't be null");
+			if(config == null)throw new SQLException("DataSource configuration can't be null");
 			poolConfig = config;
 
 			poolName = !isNullText(config.getPoolName()) ? config.getPoolName():"FastPool-" + PoolNameIndex.getAndIncrement();
@@ -364,6 +364,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	public Connection getConnection() throws SQLException {
 		if (poolState != POOL_NORMAL)throw PoolCloseException;
 
+		//try to get from threadLocal cache
 		WeakReference<Borrower> bRef = threadLocal.get();
 		Borrower borrower=(bRef !=null)?bRef.get():null;
 		if (borrower != null) {
@@ -379,8 +380,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		}
 
 		try{
+			boolean isInterrupted=false;
+			SQLException failedException=null;
 			long deadline=nanoTime()+DefaultMaxWaitNanos;
-			if (semaphore.tryAcquire(DefaultMaxWaitNanos,NANOSECONDS)) {
+			if (semaphore.tryAcquire(DefaultMaxWaitNanos,NANOSECONDS)) {//concurrent gateway
 				try {
 					//1:try to  search one from array
 					for (PooledConnection pConn:connArray) {
@@ -393,13 +396,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 						return createProxyConnection(pConn,borrower);
 
 					//3:try to get one transferred connection
-					long watTimeNanos;
+					long waitNanoTime;
 					Object stateObject;
+					boolean isTimeout=false;
 					int spinSize = MaxTimedSpins;
 					Thread borrowThread=borrower.thread;
 					borrower.stateObject=BORROWER_NORMAL;
-					boolean isTimeout=false,isInterrupted=false;
-					SQLException failedException=null;
 
 					try {// wait one transferred connection
 						waitQueue.offer(borrower);
@@ -422,23 +424,23 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 								continue;
 							}
 
-							if (isTimeout||(isTimeout=(watTimeNanos=deadline-nanoTime())<=0)) {
+							if (isTimeout||(isTimeout=(waitNanoTime=deadline-nanoTime())<=0)) {
 								if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_TIMEOUT))break;
 								continue;
 							}
 
 							if (spinSize>0){spinSize--;continue;}//spin
 							if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_WAITING))
-								parkNanos(borrower, watTimeNanos);
+								parkNanos(borrower, waitNanoTime);
 						} // while
 					} finally {
 						waitQueue.remove(borrower);
 					}
-
-					if(failedException!=null)throw failedException;
-					if(isInterrupted)throw RequestInterruptException;
 				}finally { semaphore.release();}
 			}
+
+			if(failedException!=null)throw failedException;
+			if(isInterrupted)throw RequestInterruptException;
 			throw RequestTimeoutException;
 		}catch(InterruptedException e){
 			throw RequestInterruptException;
