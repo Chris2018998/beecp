@@ -1,0 +1,6 @@
+BeeCP-2.4.2
+ 1:add maxLifeTime controll
+
+BeeCP-2.4.3
+ 1:add safe synchronization on connection.close()
+ 2:some source code optimize
