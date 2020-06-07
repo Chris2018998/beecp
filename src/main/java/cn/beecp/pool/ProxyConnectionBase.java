@@ -53,7 +53,7 @@ abstract class ProxyConnectionBase implements Connection{
 	void setAsClosed(){
 		closedInd=Boolean.TRUE;
 	}
-    public boolean closedState()throws SQLException{return closedInd;}
+	public boolean isClosed()throws SQLException{return closedInd;}
 	protected void checkClose() throws SQLException {
 		if(closedInd)throw ConnectionClosedException;
 	}

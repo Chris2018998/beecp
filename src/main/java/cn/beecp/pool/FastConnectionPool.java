@@ -363,10 +363,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		if (poolState.get() != POOL_NORMAL)throw PoolCloseException;
 
 		//try to get from threadLocal cache
+		PooledConnection pConn;
 		WeakReference<Borrower> bRef = threadLocal.get();
 		Borrower borrower=(bRef !=null)?bRef.get():null;
 		if (borrower != null) {
-			PooledConnection pConn=borrower.lastUsedConn;
+			pConn=borrower.lastUsedConn;
 			if (pConn != null && ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
 				if(testOnBorrow(pConn))return createProxyConnection(pConn, borrower);
 
@@ -384,12 +385,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			if (semaphore.tryAcquire(DefaultMaxWaitNanos,NANOSECONDS)) {//concurrent gateway
 				try {
 					//1:try to  search one from array
-					for (PooledConnection pConn:connArray) {
+					PooledConnection[]array=connArray;
+					for (int i=0,len=array.length;i<len;i++) {
+						pConn=array[i];
 						if (ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn))
 							return createProxyConnection(pConn, borrower);
 					}
+
 					//2:try to create one directly
-					PooledConnection pConn;
 					if(connArray.length<PoolMaxSize && (pConn=createPooledConn(CONNECTION_USING))!=null)
 						return createProxyConnection(pConn,borrower);
 
@@ -400,7 +403,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					int spinSize = MaxTimedSpins;
 					Thread borrowThread=borrower.thread;
 					borrower.stateObject=BORROWER_NORMAL;
-
 					try {// wait one transferred connection
 						waitQueue.offer(borrower);
 						while (true){
@@ -427,8 +429,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 								continue;
 							}
 
-							if (spinSize>0){spinSize--;continue;}//spin
-							if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_WAITING))
+							if (spinSize>0)spinSize--;
+							else if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_WAITING))
 								parkNanos(borrower, waitNanoTime);
 						} // while
 					} finally {
@@ -446,7 +448,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 
 	// create proxy to wrap connection as result
-	private static ProxyConnectionBase createProxyConnection(PooledConnection pConn, Borrower borrower)
+	private static Connection createProxyConnection(PooledConnection pConn, Borrower borrower)
 			throws SQLException {
 		// borrower.setBorrowedConnection(pConn);
 		// return pConn.proxyConnCurInstance=new ProxyConnection(pConn);
