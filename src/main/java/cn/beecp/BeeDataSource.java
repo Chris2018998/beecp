@@ -49,9 +49,9 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	private ConnectionPool pool;
 
 	/**
-	 * failed to create
+	 * failed cause to creating pool
 	 */
-	private volatile SQLException failedCause=null;
+	private SQLException failedCause;
 
 	/**
 	 * read Write Locker
