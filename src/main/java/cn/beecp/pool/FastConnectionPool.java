@@ -529,9 +529,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					}
 				} else if (state == CONNECTION_USING) {
 					boolean isHolTimeoutInNotUsing = ((currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldTimeout()>= 0));
-					if (isHolTimeoutInNotUsing && ConnStateUpdater.compareAndSet(pConn, state, CONNECTION_CLOSED)) {
-						removePooledConn(pConn, DESC_REMOVE_HOLD_TIMEOUT);
-						tryToCreateNewConnByAsyn();
+					if(isHolTimeoutInNotUsing &&pConn.proxyConn.remarkAsHoldTimeout()){//why?
+						if (ConnStateUpdater.compareAndSet(pConn, state, CONNECTION_CLOSED)) {
+							removePooledConn(pConn, DESC_REMOVE_HOLD_TIMEOUT);
+							tryToCreateNewConnByAsyn();
+						}
 					}
 				} else if (state == CONNECTION_CLOSED) {
 					removePooledConn(pConn, DESC_REMOVE_CLOSED);
@@ -595,12 +597,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					removePooledConn(pConn,source);
 				} else if (pConn.state == CONNECTION_USING) {
 					if (force) {
-						if (ConnStateUpdater.compareAndSet(pConn, CONNECTION_USING, CONNECTION_CLOSED)) {
-							removePooledConn(pConn,source);
+						if(pConn.proxyConn.remarkAsHoldTimeout()){
+							if (ConnStateUpdater.compareAndSet(pConn, CONNECTION_USING, CONNECTION_CLOSED))
+								removePooledConn(pConn,source);
 						}
 					} else {
 						boolean isTimeout = (currentTimeMillis()-pConn.lastAccessTime-poolConfig.getHoldTimeout()>= 0);
-						if (isTimeout && ConnStateUpdater.compareAndSet(pConn, CONNECTION_USING, CONNECTION_CLOSED)) {
+						if (isTimeout &&pConn.proxyConn.remarkAsHoldTimeout()){
+							pConn.proxyConn=null;
+							if(ConnStateUpdater.compareAndSet(pConn, CONNECTION_USING, CONNECTION_CLOSED))
 							removePooledConn(pConn,source);
 						}
 					}
@@ -622,9 +627,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 	// notify to create connections to pool
 	private void tryToCreateNewConnByAsyn() {
-		if(connArray.length+needAddConnSize.get()+1<=PoolMaxSize) {
+		if(connArray.length+needAddConnSize.get()<PoolMaxSize) {
 			synchronized(connNotifyLock){
-				if(connArray.length+needAddConnSize.get()+1<=PoolMaxSize)  {
+				if(connArray.length+needAddConnSize.get()<PoolMaxSize)  {
 					needAddConnSize.incrementAndGet();
 					if(createConnThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
 						unpark(this);

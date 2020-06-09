@@ -57,6 +57,9 @@ abstract class ProxyConnectionBase implements Connection{
 	protected void checkClose() throws SQLException {
 		if(closedInd)throw ConnectionClosedException;
 	}
+	boolean remarkAsHoldTimeout() {//called by ScheduledThreadPoolExecutor in pool
+		return closedStateUpd.compareAndSet(this,Boolean.FALSE,Boolean.TRUE);
+	}
 	public void close() throws SQLException {
 		if(closedStateUpd.compareAndSet(this,Boolean.FALSE,Boolean.TRUE))//safe close controll
 		   pConn.returnToPoolBySelf();
