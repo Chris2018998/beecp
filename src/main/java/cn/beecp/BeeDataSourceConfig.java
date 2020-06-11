@@ -150,11 +150,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	private long holdTimeout=MINUTES.toMillis(5);
 
 	/**
-	 * max Life Time: maxLifeTime> idleTimeout && maxLifeTime > holdIdleTimeout
-	 */
-	private long maxLifeTime=MINUTES.toMillis(30);
-
-	/**
 	 * a test SQL to check connection active state
 	 */
 	private String connectionTestSQL = "select 1 from dual";
@@ -381,15 +376,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		if(!this.checked && holdTimeout>0)
 		this.holdTimeout = holdTimeout;
 	}
-
-	public long getMaxLifeTime() {
-		return maxLifeTime;
-	}
-	public void setMaxLifeTime(long maxLifeTime) {
-		if(!this.checked && maxLifeTime>idleTimeout && maxLifeTime>holdTimeout)
-			this.maxLifeTime = maxLifeTime;
-	}
-
 	public String getConnectionTestSQL() {
 		return connectionTestSQL;
 	}
@@ -570,10 +556,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 			throw new IllegalArgumentException("Connection 'idleTimeout' must be greater than zero");
 		if (this.holdTimeout <= 0)
 			throw new IllegalArgumentException("Connection 'holdTimeout' must be greater than zero");
-		if(maxLifeTime<idleTimeout)
-			throw new IllegalArgumentException("Connection 'maxLifeTime' must be greater than 'idleTimeout'");
-		if(maxLifeTime<holdTimeout)
-			throw new IllegalArgumentException("Connection 'maxLifeTime' must be greater than 'holdTimeout'");
 		if (this.maxWait <= 0)
 			throw new IllegalArgumentException("Borrower 'maxWait' must be greater than zero");
 		if (this.preparedStatementCacheSize < 0)

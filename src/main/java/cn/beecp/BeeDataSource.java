@@ -42,7 +42,7 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	/**
 	 *  pool initialized
 	 */
-	private volatile boolean inited;
+	private boolean inited;
 	/**
 	 * connection pool
 	 */
