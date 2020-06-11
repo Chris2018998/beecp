@@ -212,8 +212,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				System.arraycopy(connArray, 0, arrayNew, 0, connArray.length);
 				arrayNew[connArray.length] = pConn;// tail
 				connArray = arrayNew;
-
-
 				return pConn;
 			}else{
 				return null;
