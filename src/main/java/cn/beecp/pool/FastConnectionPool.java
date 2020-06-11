@@ -54,7 +54,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private int ConUnCatchStateCode;
 	private String ConnectionTestSQL;//select
 	private int ConnectionTestTimeout;//seconds
-	private long MaxLifeTime;//milliseconds
 	private long ConnectionTestInterval;//milliseconds
 	private ConnectionPoolHook exitHook;
 	private BeeDataSourceConfig poolConfig;
@@ -69,7 +68,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
 	private ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
 	private ScheduledFuture<?> idleCheckSchFuture = null;
-	private ScheduledThreadPoolExecutor idleSchExecutor = new ScheduledThreadPoolExecutor(2);
+	private ScheduledThreadPoolExecutor idleSchExecutor = new ScheduledThreadPoolExecutor(1);
 
 	private int networkTimeout;
 	private boolean supportValidTest=true;
@@ -125,7 +124,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				ConnectionTestSQL="select 1 from dual";
 
 			DefaultMaxWaitNanos=MILLISECONDS.toNanos(poolConfig.getMaxWait());
-			MaxLifeTime=poolConfig.getMaxLifeTime();
 			ConnectionTestInterval=poolConfig.getConnectionTestInterval();
 			createInitConnections(poolConfig.getInitialSize());
 
@@ -215,9 +213,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				arrayNew[connArray.length] = pConn;// tail
 				connArray = arrayNew;
 
-				if(MaxLifeTime>0) {
-					pConn.maxLifeTimeSchFuture=idleSchExecutor.schedule(pConn, MaxLifeTime, MILLISECONDS);
-				}
+
 				return pConn;
 			}else{
 				return null;
@@ -327,8 +323,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *         false if false then close it
 	 */
 	private boolean testOnBorrow(PooledConnection pConn) {
-		if(pConn.isAllowBorrow)
-			if(currentTimeMillis()-pConn.lastAccessTime-ConnectionTestInterval<0 || testPolicy.isActive(pConn)) return true;
+		if(currentTimeMillis()-pConn.lastAccessTime-ConnectionTestInterval<0 || testPolicy.isActive(pConn)) return true;
 
 		removePooledConn(pConn,DESC_REMOVE_BAD);
 		tryToCreateNewConnByAsyn();
@@ -522,18 +517,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			for (PooledConnection pConn : connArray) {
 				int state = pConn.state;
 				if (state == CONNECTION_IDLE && !existBorrower()) {
-					boolean isTimeoutInIdle=(!pConn.isAllowBorrow || currentTimeMillis() - pConn.lastAccessTime - poolConfig.getIdleTimeout()>=0);
+					boolean isTimeoutInIdle=(currentTimeMillis() - pConn.lastAccessTime - poolConfig.getIdleTimeout()>=0);
 					if (isTimeoutInIdle && ConnStateUpdater.compareAndSet(pConn, state, CONNECTION_CLOSED)) {//need close idle
 						removePooledConn(pConn, DESC_REMOVE_IDLE);
 						tryToCreateNewConnByAsyn();
 					}
 				} else if (state == CONNECTION_USING) {
+					ProxyConnectionBase proxyConn=pConn.proxyConn;
 					boolean isHolTimeoutInNotUsing = ((currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldTimeout()>= 0));
-					if(isHolTimeoutInNotUsing &&pConn.proxyConn.remarkAsHoldTimeout()){//why?
-						if (ConnStateUpdater.compareAndSet(pConn, state, CONNECTION_CLOSED)) {
-							removePooledConn(pConn, DESC_REMOVE_HOLD_TIMEOUT);
-							tryToCreateNewConnByAsyn();
-						}
+					if(isHolTimeoutInNotUsing &&proxyConn!=null && proxyConn.setAsClosed()){//recycle connection
+					 	this.recycle(pConn);
 					}
 				} else if (state == CONNECTION_CLOSED) {
 					removePooledConn(pConn, DESC_REMOVE_CLOSED);
@@ -584,27 +577,20 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		long parkNanos = SECONDS.toNanos(poolConfig.getWaitTimeToClearPool());
 		while (connArray.length > 0) {
 			for (PooledConnection pConn : connArray) {
-				ScheduledFuture<?> maxLifeTimeSchFuture = pConn.maxLifeTimeSchFuture;
-				if (maxLifeTimeSchFuture != null){
-					while (!maxLifeTimeSchFuture.isCancelled() && !maxLifeTimeSchFuture.isDone()) {
-						maxLifeTimeSchFuture.cancel(true);
-					}
-				}
-
 				if (ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_CLOSED)) {
 					removePooledConn(pConn,source);
 				} else if (pConn.state == CONNECTION_CLOSED) {
 					removePooledConn(pConn,source);
 				} else if (pConn.state == CONNECTION_USING) {
+					ProxyConnectionBase proxyConn=pConn.proxyConn;
 					if (force) {
-						if(pConn.proxyConn.remarkAsHoldTimeout()){
+						if(proxyConn!=null &&proxyConn.setAsClosed()){
 							if (ConnStateUpdater.compareAndSet(pConn, CONNECTION_USING, CONNECTION_CLOSED))
 								removePooledConn(pConn,source);
 						}
 					} else {
 						boolean isTimeout = (currentTimeMillis()-pConn.lastAccessTime-poolConfig.getHoldTimeout()>= 0);
-						if (isTimeout &&pConn.proxyConn.remarkAsHoldTimeout()){
-							pConn.proxyConn=null;
+						if (isTimeout &&proxyConn!=null &&proxyConn.setAsClosed()){
 							if(ConnStateUpdater.compareAndSet(pConn, CONNECTION_USING, CONNECTION_CLOSED))
 							removePooledConn(pConn,source);
 						}

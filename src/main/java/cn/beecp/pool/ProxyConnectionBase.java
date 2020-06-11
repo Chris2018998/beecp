@@ -35,10 +35,10 @@ import static java.lang.System.currentTimeMillis;
 abstract class ProxyConnectionBase implements Connection{
 	protected Connection delegate;
 	protected PooledConnection pConn;//called by subclass to update time
- 	private volatile Boolean closedInd=Boolean.FALSE;
- 	private static final AtomicReferenceFieldUpdater<ProxyConnectionBase,Boolean> closedStateUpd = AtomicReferenceFieldUpdater.newUpdater(ProxyConnectionBase.class, Boolean.class,"closedInd");
+    private volatile Boolean closedInd=Boolean.FALSE;
+    private static final AtomicReferenceFieldUpdater<ProxyConnectionBase,Boolean> closedStateUpd = AtomicReferenceFieldUpdater.newUpdater(ProxyConnectionBase.class, Boolean.class,"closedInd");
 
-	private final static int Pos_AutoCommitInd=0;
+    private final static int Pos_AutoCommitInd=0;
 	private final static int Pos_TransactionIsolationInd=1;
 	private final static int Pos_ReadOnlyInd=2;
 	private final static int Pos_CatalogInd=3;
@@ -50,23 +50,20 @@ abstract class ProxyConnectionBase implements Connection{
 		pConn.proxyConn=this;
 		delegate=pConn.rawConn;
 	}
-	void setAsClosed(){
-		closedInd=Boolean.TRUE;
-	}
 	public boolean isClosed()throws SQLException{return closedInd;}
 	protected void checkClose() throws SQLException {
 		if(closedInd)throw ConnectionClosedException;
 	}
-	boolean remarkAsHoldTimeout() {//called by ScheduledThreadPoolExecutor in pool
+	boolean setAsClosed(){
 		return closedStateUpd.compareAndSet(this,Boolean.FALSE,Boolean.TRUE);
 	}
 	public void close() throws SQLException {
-		if(closedStateUpd.compareAndSet(this,Boolean.FALSE,Boolean.TRUE))//safe close controll
-		   pConn.returnToPoolBySelf();
-		else
-		   throw ConnectionClosedException;
+        if(closedStateUpd.compareAndSet(this,Boolean.FALSE,Boolean.TRUE)){
+            pConn.returnToPoolBySelf();
+        }else{
+            throw ConnectionClosedException;
+        }
 	}
-
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
 		checkClose();
 		if(!pConn.curAutoCommit && pConn.commitDirtyInd)

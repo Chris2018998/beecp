@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import static cn.beecp.util.BeecpUtil.oclose;
@@ -34,16 +33,13 @@ import static java.lang.System.currentTimeMillis;
  * @author Chris.Liao
  * @version 1.0
  */
-class PooledConnection extends StatementCache implements Runnable{
+class PooledConnection extends StatementCache{
 	volatile int state;
 	boolean stmCacheValid;
 	Connection rawConn;
 	ProxyConnectionBase proxyConn;
 
 	volatile long lastAccessTime;
-	volatile boolean isAllowBorrow=true;//false will removed from pool
-	ScheduledFuture<?> maxLifeTimeSchFuture;
-
 	boolean commitDirtyInd;
 	boolean curAutoCommit;
 	boolean defaultAutoCommit;
@@ -79,9 +75,6 @@ class PooledConnection extends StatementCache implements Runnable{
 		curAutoCommit=defaultAutoCommit;
 		stmCacheValid = config.getPreparedStatementCacheSize()>0;
 		lastAccessTime=currentTimeMillis();
-	}
-	public void run(){
-		isAllowBorrow=false;//remark as discard
 	}
 	void closeRawConn() {//called by pool
 		if(proxyConn!=null){
