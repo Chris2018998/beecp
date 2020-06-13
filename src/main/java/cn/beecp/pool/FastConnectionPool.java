@@ -355,7 +355,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	public Connection getConnection() throws SQLException {
 		if (poolState.get() != POOL_NORMAL)throw PoolCloseException;
 
-		//try to get from threadLocal cache
+		//0:try to get from threadLocal cache
 		PooledConnection pConn;
 		WeakReference<Borrower> bRef = threadLocal.get();
 		Borrower borrower=(bRef !=null)?bRef.get():null;
@@ -512,7 +512,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 */
 	private void closeIdleTimeoutConnection() {
 		if (poolState.get() == POOL_NORMAL) {
-			for (PooledConnection pConn : connArray) {
+			PooledConnection[]array=connArray;
+			for (int i=0,len=array.length;i<len;i++) {
+				PooledConnection pConn=array[i];
 				int state = pConn.state;
 				if (state == CONNECTION_IDLE && !existBorrower()) {
 					boolean isTimeoutInIdle=(currentTimeMillis() - pConn.lastAccessTime - poolConfig.getIdleTimeout()>=0);
@@ -524,7 +526,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					ProxyConnectionBase proxyConn=pConn.proxyConn;
 					boolean isHolTimeoutInNotUsing = ((currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldTimeout()>= 0));
 					if(isHolTimeoutInNotUsing &&proxyConn!=null && proxyConn.setAsClosed()){//recycle connection
-					 	this.recycle(pConn);
+						try{
+							pConn.resetRawConnOnReturn();
+							this.recycle(pConn);
+						}catch(Throwable e){
+							this.abandonOnReturn(pConn);
+						}
 					}
 				} else if (state == CONNECTION_CLOSED) {
 					removePooledConn(pConn, DESC_REMOVE_CLOSED);
@@ -536,7 +543,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 	// shutdown pool
 	public void shutdown() {
-		long parkNanos = SECONDS.toNanos(poolConfig.getWaitTimeToClearPool());
+		long parkNanoSeconds = SECONDS.toNanos(poolConfig.getWaitTimeToClearPool());
 		while (true) {
 			if (poolState.compareAndSet(POOL_NORMAL,POOL_CLOSED)) {
 				log.info("BeeCP({})begin to shutdown",poolName);
@@ -561,7 +568,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			} else if (poolState.get() == POOL_CLOSED) {
 				break;
 			} else {
-				parkNanos(parkNanos);// wait 3 seconds
+				parkNanos(parkNanoSeconds);// wait 3 seconds
 			}
 		}
 	}
@@ -572,9 +579,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			transferException(PoolCloseException);
 		}
 
-		long parkNanos = SECONDS.toNanos(poolConfig.getWaitTimeToClearPool());
+		long parkNanoSeconds = SECONDS.toNanos(poolConfig.getWaitTimeToClearPool());
 		while (connArray.length > 0) {
-			for (PooledConnection pConn : connArray) {
+			PooledConnection[]array=connArray;
+			for (int i=0,len=array.length;i<len;i++) {
+				PooledConnection pConn=array[i];
 				if (ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_CLOSED)) {
 					removePooledConn(pConn,source);
 				} else if (pConn.state == CONNECTION_CLOSED) {
@@ -596,7 +605,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				}
 			} // for
 
-			if (connArray.length > 0)parkNanos(parkNanos);
+			if (connArray.length > 0)parkNanos(parkNanoSeconds);
 		} // while
 		idleSchExecutor.getQueue().clear();
 	}

@@ -77,24 +77,30 @@ class PooledConnection extends StatementCache{
 		lastAccessTime=currentTimeMillis();
 	}
 	void closeRawConn() {//called by pool
-		if(proxyConn!=null){
-			proxyConn.setAsClosed();
-			proxyConn=null;
+		try{
+			if(proxyConn!=null){
+				proxyConn.setAsClosed();
+				proxyConn=null;
+			}
+			if(stmCacheValid)this.clearStatement();
+			resetRawConnOnReturn();
+		}catch(SQLException e) {
+			log.error("Connection close error", e);
+		}finally{
+			oclose(rawConn);
 		}
-
-		resetRawConnOnReturn();
-		if(stmCacheValid)
-			this.clearStatement();
-		oclose(rawConn);
 	}
 
 	//***************called by connection proxy ********//
-	void returnToPoolBySelf(){
-		proxyConn=null;
-		if(resetRawConnOnReturn())
+	void returnToPoolBySelf()throws SQLException{
+		try{
+			proxyConn=null;
+			resetRawConnOnReturn();
 			pool.recycle(this);
-		else
-		    pool.abandonOnReturn(this);
+		}catch(SQLException e) {
+			pool.abandonOnReturn(this);
+			throw e;
+		}
 	}
 	void updateAccessTimeWithCommitDirty() {
 		commitDirtyInd=!curAutoCommit;
@@ -117,46 +123,40 @@ class PooledConnection extends StatementCache{
 		return  pool.isSupportNetworkTimeout();
 	}
 	private boolean updTimeInd;
-	private boolean resetRawConnOnReturn() {
-		try {
-			updTimeInd=false;
-			if (!curAutoCommit && commitDirtyInd) {//Roll back when commit dirty
-				rawConn.rollback();
-				commitDirtyInd=false;
-				updTimeInd=true;
-			}
-			//reset begin
-			if (changedCount > 0) {
-				updTimeInd=true;
-				if (changedInd[0]) {//reset autoCommit
-					rawConn.setAutoCommit(defaultAutoCommit);
-					curAutoCommit =defaultAutoCommit;
-				}
-				if (changedInd[1])
-					rawConn.setTransactionIsolation(defaultTransactionIsolationCode);
-				if (changedInd[2]) //reset readonly
-					rawConn.setReadOnly(defaultReadOnly);
-				if (changedInd[3]) //reset catalog
-					rawConn.setCatalog(defaultCatalog);
-
-				//for JDK1.7 begin
-				if (changedInd[4]) //reset schema
-					rawConn.setSchema(defaultSchema);
-				if (changedInd[5]) //reset networkTimeout
-					rawConn.setNetworkTimeout(defaultNetworkTimeoutExecutor,defaultNetworkTimeout);
-				//for JDK1.7 end
-
-				changedCount=0;
-				arraycopy(DEFAULT_IND,0,changedInd,0,6);
-			}//reset end
-			
-			//clear warnings
-			rawConn.clearWarnings();
-			if(updTimeInd)lastAccessTime=currentTimeMillis();
-			return true;
-		} catch (Throwable e) {
-			log.error("Connection reset error", e);
-			return false;
+	void resetRawConnOnReturn()throws SQLException {
+		updTimeInd = false;
+		if (!curAutoCommit && commitDirtyInd) {//Roll back when commit dirty
+			rawConn.rollback();
+			commitDirtyInd = false;
+			updTimeInd = true;
 		}
+		//reset begin
+		if (changedCount > 0) {
+			updTimeInd = true;
+			if (changedInd[0]) {//reset autoCommit
+				rawConn.setAutoCommit(defaultAutoCommit);
+				curAutoCommit = defaultAutoCommit;
+			}
+			if (changedInd[1])
+				rawConn.setTransactionIsolation(defaultTransactionIsolationCode);
+			if (changedInd[2]) //reset readonly
+				rawConn.setReadOnly(defaultReadOnly);
+			if (changedInd[3]) //reset catalog
+				rawConn.setCatalog(defaultCatalog);
+
+			//for JDK1.7 begin
+			if (changedInd[4]) //reset schema
+				rawConn.setSchema(defaultSchema);
+			if (changedInd[5]) //reset networkTimeout
+				rawConn.setNetworkTimeout(defaultNetworkTimeoutExecutor, defaultNetworkTimeout);
+			//for JDK1.7 end
+
+			changedCount = 0;
+			arraycopy(DEFAULT_IND, 0, changedInd, 0, 6);
+		}//reset end
+
+		//clear warnings
+		rawConn.clearWarnings();
+		if (updTimeInd) lastAccessTime = currentTimeMillis();
 	}
 }
