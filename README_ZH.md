@@ -12,6 +12,8 @@
 
 2：代码少：21个文件，2600行源码
 
+   想知道为什么它性能高的的原因吗，请点击<a href="https://github.com/Chris2018998/BeeCP/wiki/%E6%83%B3%E7%9F%A5%E9%81%93%E5%B0%8F%E8%9C%9C%E8%9C%82%E8%BF%9E%E6%8E%A5%E6%B1%A0%E6%80%A7%E8%83%BD%E4%B8%BA%E5%95%A5%E8%BF%99%E4%B9%88%E9%AB%98%E5%90%97%EF%BC%9F">这里</a> 
+
 三：性能测试
 ---
 **1：** 100万次借用测试(1000线程 x 1000次),单次计时间范围:[datasource.getConnection(),connection.close()] 结果如下
@@ -96,7 +98,7 @@ public class DataSourceConfig {
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>2.4.3</version>
+   <version>2.4.4</version>
 </dependency>
 ```
 
