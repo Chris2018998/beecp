@@ -78,9 +78,9 @@ class PooledConnection extends StatementCache{
 	}
 	void closeRawConn() {//called by pool
 		try{
-			if(proxyConn!=null){
+			if(proxyConn!=null) {
 				proxyConn.setAsClosed();
-				proxyConn=null;
+				proxyConn = null;
 			}
 			if(stmCacheValid)this.clearStatement();
 			resetRawConnOnReturn();

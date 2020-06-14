@@ -224,10 +224,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		pConn.state=CONNECTION_CLOSED;
 		pConn.closeRawConn();
 		synchronized (connArrayLock) {
-			PooledConnection[] arrayNew = new PooledConnection[connArray.length - 1];
-			for (int i = 0; i < connArray.length; i++) {
+			int oldLen=connArray.length;
+			PooledConnection[] arrayNew = new PooledConnection[oldLen - 1];
+			for (int i = 0; i < oldLen; i++) {
 				if (connArray[i] == pConn) {
-					System.arraycopy(connArray, i + 1, arrayNew, i, connArray.length - i - 1);
+					System.arraycopy(connArray, i + 1, arrayNew, i, oldLen- i - 1);
 					break;
 				} else {
 					arrayNew[i] = connArray[i];
