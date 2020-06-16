@@ -373,8 +373,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		}
 
 		try{
-			boolean isInterrupted=false;
-			SQLException failedException=null;
 			long deadline=nanoTime()+DefaultMaxWaitNanos;
 			if (semaphore.tryAcquire(DefaultMaxWaitNanos,NANOSECONDS)) {//concurrent gateway
 				try {
@@ -394,6 +392,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					long waitNanoTime;
 					Object stateObject;
 					boolean isTimeout=false;
+					boolean isInterrupted=false;
 					int spinSize = MaxTimedSpins;
 					Thread borrowThread=borrower.thread;
 					borrower.stateObject=BORROWER_NORMAL;
@@ -409,8 +408,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 								borrower.stateObject = BORROWER_NORMAL;//reset to normal
 								yield();continue;
 							} else if (stateObject instanceof SQLException) {
-								failedException=(SQLException)stateObject;
-								break;
+								throw (SQLException)stateObject;
 							}
 
 							if (isInterrupted||(isInterrupted=borrowThread.isInterrupted())) {
@@ -427,14 +425,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 							else if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_WAITING))
 								parkNanos(borrower, waitNanoTime);
 						} // while
+						
+						if(isInterrupted)throw RequestInterruptException;
 					} finally {
 						waitQueue.remove(borrower);
 					}
 				}finally { semaphore.release();}
 			}
-
-			if(failedException!=null)throw failedException;
-			if(isInterrupted)throw RequestInterruptException;
 			throw RequestTimeoutException;
 		}catch(InterruptedException e){
 			throw RequestInterruptException;
@@ -467,14 +464,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *            target connection need release
 	 */
 	public void recycle(PooledConnection pConn) {
-		Object state;
-		Borrower borrower;
 		transferPolicy.beforeTransfer(pConn);
 		Iterator<Borrower>iterator=waitQueue.iterator();
 		while(iterator.hasNext()) {
-			borrower=iterator.next();
+			Borrower borrower=iterator.next();
 			while(true){
-				state=borrower.stateObject;
+				Object state state=borrower.stateObject;
 				if((state!=BORROWER_NORMAL && state!=BORROWER_WAITING))break;
 
 				if(pConn.state != ConUnCatchStateCode)return;
@@ -491,13 +486,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *            transfer Exception to waiter
 	 */
 	private void transferException(SQLException exception) {
-		Object state;
-        Borrower borrower;
-        Iterator<Borrower>iterator=waitQueue.iterator();
-        while(iterator.hasNext()) {
-            borrower=iterator.next();
+            Iterator<Borrower>iterator=waitQueue.iterator();
+            while(iterator.hasNext()) {
+            Borrower borrower;=iterator.next();
 			while(true){
-				state=borrower.stateObject;
+				Object state=borrower.stateObject;
 				if((state!=BORROWER_NORMAL && state != BORROWER_WAITING))break;
 				if(BorrowerStateUpdater.compareAndSet(borrower,state,exception)) {//transfer successful
 					if(state == BORROWER_WAITING) unpark(borrower.thread);
