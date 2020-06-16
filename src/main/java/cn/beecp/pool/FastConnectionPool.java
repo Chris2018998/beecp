@@ -376,7 +376,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			long deadline=nanoTime()+DefaultMaxWaitNanos;
 			if (semaphore.tryAcquire(DefaultMaxWaitNanos,NANOSECONDS)) {//concurrent gateway
 				try {
-					//1:try to  search one from array
+					//1:try to search one from array
 					PooledConnection[]array=connArray;
 					for (int i=0,len=array.length;i<len;i++) {
 						pConn=array[i];
