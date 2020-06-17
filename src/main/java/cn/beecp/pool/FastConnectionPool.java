@@ -376,7 +376,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			long deadline=nanoTime()+DefaultMaxWaitNanos;
 			if (semaphore.tryAcquire(DefaultMaxWaitNanos,NANOSECONDS)) {//concurrent gateway
 				try {
-					//1:try to search one from array
+					//1:try to  search one from array
 					PooledConnection[]array=connArray;
 					for (int i=0,len=array.length;i<len;i++) {
 						pConn=array[i];
@@ -389,49 +389,49 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 						return createProxyConnection(pConn,borrower);
 
 					//3:try to get one transferred connection
-					long waitNanoTime;
 					Object stateObject;
-					boolean isTimeout=false;
+					long waitNanoTime;
+					boolean isNotTimeout=true;
 					boolean isInterrupted=false;
 					int spinSize = MaxTimedSpins;
 					Thread borrowThread=borrower.thread;
 					borrower.stateObject=BORROWER_NORMAL;
 					try {// wait one transferred connection
 						waitQueue.offer(borrower);
-						while (true){
+						while (true) {
 							stateObject = borrower.stateObject;
 							if (stateObject instanceof PooledConnection) {
 								pConn = (PooledConnection) stateObject;
-								if(transferPolicy.tryToCatch(pConn)&&testOnBorrow(pConn))
+								if (transferPolicy.tryToCatch(pConn) && testOnBorrow(pConn))
 									return createProxyConnection(pConn, borrower);
 
 								borrower.stateObject = BORROWER_NORMAL;//reset to normal
-								yield();continue;
+								yield();
+								continue;
 							} else if (stateObject instanceof SQLException) {
-								throw (SQLException)stateObject;
+								throw (SQLException) stateObject;
 							}
 
-							if (isInterrupted||(isInterrupted=borrowThread.isInterrupted())) {
-								if(BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_INTERRUPTED))break;
+							if (isInterrupted || (isInterrupted = borrowThread.isInterrupted())) {
+								if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_INTERRUPTED))
+									throw RequestInterruptException;
 								continue;
 							}
 
-							if (isTimeout||(isTimeout=(waitNanoTime=deadline-nanoTime())<=0)) {
-								if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_TIMEOUT))break;
-								continue;
+							if (isNotTimeout && (isNotTimeout=(waitNanoTime = deadline - nanoTime())>0)) {
+								if (spinSize > 0) spinSize--;
+								else if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_WAITING))
+									parkNanos(borrower, waitNanoTime);
+							} else if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_TIMEOUT)){
+								throw RequestTimeoutException;
 							}
-
-							if (spinSize>0)spinSize--;
-							else if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_WAITING))
-								parkNanos(borrower, waitNanoTime);
 						} // while
-						
-						if(isInterrupted)throw RequestInterruptException;
 					} finally {
 						waitQueue.remove(borrower);
 					}
 				}finally { semaphore.release();}
 			}
+
 			throw RequestTimeoutException;
 		}catch(InterruptedException e){
 			throw RequestInterruptException;
@@ -464,18 +464,22 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *            target connection need release
 	 */
 	public void recycle(PooledConnection pConn) {
+		Object state;
+		Borrower borrower;
 		transferPolicy.beforeTransfer(pConn);
 		Iterator<Borrower>iterator=waitQueue.iterator();
 		while(iterator.hasNext()) {
-			Borrower borrower=iterator.next();
+			borrower=iterator.next();
 			while(true){
-				Object state state=borrower.stateObject;
-				if((state!=BORROWER_NORMAL && state!=BORROWER_WAITING))break;
-
-				if(pConn.state != ConUnCatchStateCode)return;
-				if(BorrowerStateUpdater.compareAndSet(borrower,state,pConn)) {//transfer successful
-					if(state == BORROWER_WAITING) unpark(borrower.thread);
-					return;
+				state=borrower.stateObject;
+				if(state==BORROWER_NORMAL || state==BORROWER_WAITING) {
+					if (pConn.state != ConUnCatchStateCode) return;
+					if (BorrowerStateUpdater.compareAndSet(borrower, state, pConn)) {//transfer successful
+						if (state == BORROWER_WAITING) unpark(borrower.thread);
+						return;
+					}
+				}else{
+					break;
 				}
 			}
 		}
@@ -486,15 +490,20 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *            transfer Exception to waiter
 	 */
 	private void transferException(SQLException exception) {
-            Iterator<Borrower>iterator=waitQueue.iterator();
-            while(iterator.hasNext()) {
-            Borrower borrower;=iterator.next();
+		Object state;
+		Borrower borrower;
+		Iterator<Borrower>iterator=waitQueue.iterator();
+		while(iterator.hasNext()) {
+			borrower=iterator.next();
 			while(true){
-				Object state=borrower.stateObject;
-				if((state!=BORROWER_NORMAL && state != BORROWER_WAITING))break;
-				if(BorrowerStateUpdater.compareAndSet(borrower,state,exception)) {//transfer successful
-					if(state == BORROWER_WAITING) unpark(borrower.thread);
-					return;
+				state=borrower.stateObject;
+				if(state==BORROWER_NORMAL || state==BORROWER_WAITING) {
+					if (BorrowerStateUpdater.compareAndSet(borrower, state, exception)) {//transfer successful
+						if (state == BORROWER_WAITING) unpark(borrower.thread);
+						return;
+					}
+				}else{
+					break;
 				}
 			}
 		}
@@ -518,7 +527,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					}
 				} else if (state == CONNECTION_USING) {
 					ProxyConnectionBase proxyConn=pConn.proxyConn;
-					boolean isHolTimeoutInNotUsing = ((currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldTimeout()>= 0));
+					boolean isHolTimeoutInNotUsing = currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldTimeout()>= 0;
 					if(isHolTimeoutInNotUsing &&proxyConn!=null && proxyConn.setAsClosed()){//recycle connection
 						try{
 							pConn.resetRawConnOnReturn();
