@@ -389,8 +389,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 						return createProxyConnection(pConn,borrower);
 
 					//3:try to get one transferred connection
-					Object stateObject;
 					long waitNanoTime;
+					Object stateObject;
 					boolean isNotTimeout=true;
 					boolean isNotInterrupted=true;
 					int spinSize = MaxTimedSpins;
@@ -461,8 +461,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *            target connection need release
 	 */
 	public void recycle(PooledConnection pConn) {
-		Object state;
-		Borrower borrower;
+		Object state;Borrower borrower;
 		transferPolicy.beforeTransfer(pConn);
 		Iterator<Borrower>iterator=waitQueue.iterator();
 		while(iterator.hasNext()) {
@@ -487,8 +486,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *            transfer Exception to waiter
 	 */
 	private void transferException(SQLException exception) {
-		Object state;
-		Borrower borrower;
+		Object state;Borrower borrower;
 		Iterator<Borrower>iterator=waitQueue.iterator();
 		while(iterator.hasNext()) {
 			borrower=iterator.next();
