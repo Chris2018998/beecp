@@ -376,7 +376,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			long deadline=nanoTime()+DefaultMaxWaitNanos;
 			if (semaphore.tryAcquire(DefaultMaxWaitNanos,NANOSECONDS)) {//concurrent gateway
 				try {
-					//1:try to  search one from array
+					//1:try to search one from array
 					PooledConnection[]array=connArray;
 					for (int i=0,len=array.length;i<len;i++) {
 						pConn=array[i];
@@ -392,7 +392,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					Object stateObject;
 					long waitNanoTime;
 					boolean isNotTimeout=true;
-					boolean isInterrupted=false;
+					boolean isNotInterrupted=true;
 					int spinSize = MaxTimedSpins;
 					Thread borrowThread=borrower.thread;
 					borrower.stateObject=BORROWER_NORMAL;
@@ -407,24 +407,21 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 								borrower.stateObject = BORROWER_NORMAL;//reset to normal
 								yield();
-								continue;
 							} else if (stateObject instanceof SQLException) {
 								throw (SQLException) stateObject;
 							}
 
-							if (isInterrupted || (isInterrupted = borrowThread.isInterrupted())) {
-								if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_INTERRUPTED))
-									throw RequestInterruptException;
-								continue;
-							}
-
-							if (isNotTimeout && (isNotTimeout=(waitNanoTime = deadline - nanoTime())>0)) {
-								if (spinSize > 0) spinSize--;
-								else if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_WAITING))
-									parkNanos(borrower, waitNanoTime);
-							} else if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_TIMEOUT)){
-								throw RequestTimeoutException;
-							}
+							if (isNotInterrupted && (isNotInterrupted=!borrowThread.isInterrupted())) {
+								if (isNotTimeout && (isNotTimeout=(waitNanoTime = deadline - nanoTime())>0)) {
+									if (spinSize>0)
+										spinSize--;
+									else if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_WAITING))
+										parkNanos(borrower, waitNanoTime);
+								} else if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_TIMEOUT)){
+									throw RequestTimeoutException;
+								}
+							}else if (BorrowerStateUpdater.compareAndSet(borrower, stateObject, BORROWER_INTERRUPTED))
+								throw RequestInterruptException;
 						} // while
 					} finally {
 						waitQueue.remove(borrower);
