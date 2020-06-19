@@ -406,7 +406,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 									return createProxyConnection(pConn, borrower);
 
 								borrower.stateObject = BORROWER_NORMAL;//reset to normal
-								yield();
+								yield();continue;
 							} else if (stateObject instanceof SQLException) {
 								throw (SQLException) stateObject;
 							}
