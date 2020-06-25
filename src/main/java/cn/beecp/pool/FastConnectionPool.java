@@ -69,7 +69,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private final ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
 	private final ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
 	private ScheduledFuture<?> idleCheckSchFuture = null;
-	private final ScheduledThreadPoolExecutor idleSchExecutor = new ScheduledThreadPoolExecutor(1);
+	private ScheduledThreadPoolExecutor idleSchExecutor = new ScheduledThreadPoolExecutor(1,new ThreadFactory() {
+		public Thread newThread(Runnable r) {
+			Thread th= new Thread(r,"IdleScanThread");
+			th.setDaemon(true);
+			return th;
+		}
+	});
 
 	private int networkTimeout;
 	private boolean supportValidTest=true;
@@ -79,7 +85,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private boolean supportIsValidTested=false;
 
 	private ThreadPoolExecutor networkTimeoutExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
-			Runtime.getRuntime().availableProcessors(),15,SECONDS, new LinkedBlockingQueue<Runnable>());
+			Runtime.getRuntime().availableProcessors(),15,SECONDS, new LinkedBlockingQueue<Runnable>(),new ThreadFactory() {
+		public Thread newThread(Runnable r) {
+			Thread th= new Thread(r,"NetworkTimeoutExecutor");
+			th.setDaemon(true);
+			return th;
+		}
+	});
 
 	private String poolName;
 	private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
@@ -160,6 +172,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					poolConfig.getDriverClassName());
 
 			poolState.set(POOL_NORMAL);
+			this.setDaemon(true);
 			this.setName("PooledConnectionAdd");
 			this.start();
 		} else {
@@ -426,7 +439,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                                     throw RequestInterruptException;
                                 }
                             }
-                        }
+                        }//while
                     } finally {
                         this.waitQueue.remove(borrower);
                     }
@@ -550,7 +563,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				try {
 					Runtime.getRuntime().removeShutdownHook(exitHook);
 				} catch (Throwable e) {
-					log.error("BeeCP({})failed to remove pool hook",poolName);
+					log.warn("BeeCP({})failed to remove pool hook",poolName);
 				}
 
 				log.info("BeeCP({})has shutdown",poolName);
