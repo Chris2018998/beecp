@@ -27,7 +27,9 @@ import java.lang.ref.WeakReference;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
@@ -695,6 +697,19 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			poolState.set(POOL_NORMAL);// restore state;
 			log.info("BeeCP({})finished reseting",poolName);
 		}
+	}
+
+	public Map printPoolInfo(){
+		 Map<String,Integer> mapInfo=new HashMap<>();
+		 int totSize=getConnTotalSize();
+		 int idleSize=getConnIdleSize();
+		 mapInfo.put("ConnTotalSize",totSize);
+		 mapInfo.put("ConnIdleSize",idleSize);
+		 mapInfo.put("ConnUsingSize",totSize-idleSize);
+		 mapInfo.put("SemaphoreWaiterSize",getSemaphoreWaitingSize());
+		 mapInfo.put("TransferWaiterSize",getSemaphoreWaitingSize());
+		log.info("Pool info:"+mapInfo);
+		 return mapInfo;
 	}
 	public int getConnTotalSize(){
 		return connArray.length;
