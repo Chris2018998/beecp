@@ -5,7 +5,7 @@
 	<groupId>com.github.chris2018998</groupId>
 	<artifactId>BeeCP</artifactId>
 	<version>2.4.7</version>
-	<name>Bee Connection Pool</name>
+	<name>BeeCP</name>
 	<url>https://github.com/Chris2018998/BeeCP</url>
 	<description>High Performance JDBC Connection Pool</description>
 
