@@ -180,7 +180,7 @@ JDBC Driver and DB List
 |  DB             |  JDBC Driver Class              |   Refer url                  |
 | ----------------| ---------------------------     | ------------------------    |
 |Mariadb         |org.mariadb.jdbc.Driver   	   |  jdbc:mariadb://localhost/test  |
-|ySQL            |om.mysql.jdbc.Driver            |  jdbc:mysql://localhost/test    |
+|MySQL            |om.mysql.jdbc.Driver            |  jdbc:mysql://localhost/test    |
 |Oracle          |oracle.jdbc.driver.OracleDriver |  jdbc:oracle:thin:@localhost:1521:orcl|
 |MSSQL           |com.microsoft.sqlserver.jdbc.SQLServerDriver | jdbc:sqlserver://localhost:1433;databaseName=test|
 |Postgresql      |org.postgresql.Driver                 |  jdbc:postgresql://localhost:5432/postgres|
