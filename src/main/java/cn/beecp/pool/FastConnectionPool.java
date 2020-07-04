@@ -428,7 +428,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
                                 if (isNotInterrupted && (isNotInterrupted = !borrowThread.isInterrupted())) {
                                     long waitNanoTime;
-                                    if (isNotTimeout && (isNotTimeout = (waitNanoTime = deadline - System.nanoTime()) > 0L)) {
+                                    if (isNotTimeout && (isNotTimeout = (waitNanoTime = deadline - nanoTime()) > 0L)) {
                                         if (spinSize > 0) {
                                             --spinSize;
                                         } else if (BorrowerStateUpdater.compareAndSet(borrower, stateObject,BORROWER_WAITING)) {
@@ -840,13 +840,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		}
 	}
 	// Transfer Policy
-	interface TransferPolicy {
+	static interface TransferPolicy {
 		int getCheckStateCode();
 		void beforeTransfer(PooledConnection pConn);
 		boolean tryToCatch(PooledConnection pConn);
 		void onFailedTransfer(PooledConnection pConn);
 	}
-	class CompeteTransferPolicy implements TransferPolicy {
+	static final class CompeteTransferPolicy implements TransferPolicy {
 		public int getCheckStateCode() {return CONNECTION_IDLE;}
 		public boolean tryToCatch(PooledConnection pConn) {
 			return ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING); }
@@ -855,7 +855,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			pConn.state=CONNECTION_IDLE;
 		}
 	}
-	class FairTransferPolicy implements TransferPolicy {
+	static final class FairTransferPolicy implements TransferPolicy {
 		public int getCheckStateCode() {return CONNECTION_USING; }
 		public boolean tryToCatch(PooledConnection pConn) {
 			return pConn.state == CONNECTION_USING;
