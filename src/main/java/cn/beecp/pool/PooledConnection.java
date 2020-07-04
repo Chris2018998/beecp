@@ -53,7 +53,7 @@ class PooledConnection extends StatementCache{
 	private FastConnectionPool pool;
 	private short changedCount;
 	//changed indicator
-	private boolean[] changedInd=new boolean[]{false,false,false,false,false,false};//0:autoCommit,1:transactionIsolation,2:readOnly,3:catalog,4:schema,5:networkTimeout
+	private boolean[] changedInd=DEFAULT_IND; 
 	private static final boolean[] DEFAULT_IND=new boolean[]{false,false,false,false,false,false};
 	private static Logger log = LoggerFactory.getLogger(PooledConnection.class);
 
