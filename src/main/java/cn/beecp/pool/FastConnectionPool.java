@@ -373,11 +373,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		if (poolState.get() != POOL_NORMAL)throw PoolCloseException;
 
 		//0:try to get from threadLocal cache
-		PooledConnection pConn;
 		WeakReference<Borrower> bRef = threadLocal.get();
 		Borrower borrower=(bRef !=null)?bRef.get():null;
 		if (borrower != null) {
-			pConn=borrower.lastUsedConn;
+			PooledConnection pConn=borrower.lastUsedConn;
 			if (pConn != null && ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
 				if(testOnBorrow(pConn))return createProxyConnection(pConn, borrower);
 
@@ -395,12 +394,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					//1:try to search one from array
 					PooledConnection[]array=connArray;
 					for (int i=0,len=array.length;i<len;i++) {
-						pConn=array[i];
-						if (ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn))
-							return createProxyConnection(pConn, borrower);
+						if (ConnStateUpdater.compareAndSet(array[i],CONNECTION_IDLE,CONNECTION_USING) && testOnBorrow(array[i]))
+							return createProxyConnection(array[i],borrower);
 					}
 
 					//2:try to create one directly
+					PooledConnection pConn;
 					if(connArray.length<PoolMaxSize && (pConn=createPooledConn(CONNECTION_USING))!=null)
 						return createProxyConnection(pConn,borrower);
 
@@ -417,7 +416,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                             Object stateObject = borrower.stateObject;
                             if (stateObject instanceof PooledConnection) {
                                 pConn = (PooledConnection)stateObject;
-                                if (this.transferPolicy.tryToCatch(pConn) && this.testOnBorrow(pConn))
+                                if (this.transferPolicy.tryCatch(pConn) && this.testOnBorrow(pConn))
                                     return createProxyConnection(pConn, borrower);
 
                                 borrower.stateObject = PoolObjectsState.BORROWER_NORMAL;
@@ -455,7 +454,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 
 	// create proxy to wrap connection as result
-	private static Connection createProxyConnection(PooledConnection pConn, Borrower borrower)
+	private static final Connection createProxyConnection(PooledConnection pConn, Borrower borrower)
 			throws SQLException {
 		// borrower.setBorrowedConnection(pConn);
 		// return pConn.proxyConnCurInstance=new ProxyConnection(pConn);
@@ -843,12 +842,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	static interface TransferPolicy {
 		int getCheckStateCode();
 		void beforeTransfer(PooledConnection pConn);
-		boolean tryToCatch(PooledConnection pConn);
+		boolean tryCatch(PooledConnection pConn);
 		void onFailedTransfer(PooledConnection pConn);
 	}
 	static final class CompeteTransferPolicy implements TransferPolicy {
 		public int getCheckStateCode() {return CONNECTION_IDLE;}
-		public boolean tryToCatch(PooledConnection pConn) {
+		public boolean tryCatch(PooledConnection pConn) {
 			return ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING); }
 		public void onFailedTransfer(PooledConnection pConn) { }
 		public void beforeTransfer(PooledConnection pConn) {
@@ -857,7 +856,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 	static final class FairTransferPolicy implements TransferPolicy {
 		public int getCheckStateCode() {return CONNECTION_USING; }
-		public boolean tryToCatch(PooledConnection pConn) {
+		public boolean tryCatch(PooledConnection pConn) {
 			return pConn.state == CONNECTION_USING;
 		}
 		public void onFailedTransfer(PooledConnection pConn){pConn.state=CONNECTION_IDLE; }
