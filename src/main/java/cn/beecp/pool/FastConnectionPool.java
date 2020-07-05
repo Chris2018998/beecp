@@ -699,7 +699,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 
 	public Map printPoolInfo(){
-		 Map<String,Integer> mapInfo=new HashMap<>(5);
+		 Map<String,Integer> mapInfo=new HashMap<String,Integer>(5);
 		 int totSize=getConnTotalSize();
 		 int idleSize=getConnIdleSize();
 		 mapInfo.put("ConnTotalSize",totSize);
