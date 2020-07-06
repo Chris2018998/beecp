@@ -32,7 +32,7 @@ public class DataSourceConnectionFactoryTest extends TestCase {
         config.setUsername(Config.JDBC_USER);
         config.setPassword(Config.JDBC_PASSWORD);
         config.addConnectProperty("url",Config.JDBC_URL);
-        config.setConnectionFactoryClassName("com.mysql.jdbc.jdbc2.optional.MysqlDataSource");
+        config.setConnectionFactoryClassName("com.mysql.cj.jdbc.MysqlDataSource");
         config.setInitialSize(5);
         config.setConnectionTestSQL("SELECT 1 from dual");
         config.setIdleTimeout(3000);
