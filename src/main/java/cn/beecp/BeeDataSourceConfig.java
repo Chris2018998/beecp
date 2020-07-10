@@ -17,8 +17,6 @@ package cn.beecp;
 
 import cn.beecp.pool.DataSourceConnectionFactory;
 import cn.beecp.pool.DriverConnectionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.io.File;
@@ -214,8 +212,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	 */
 	static final String DefaultImplementClassName = "cn.beecp.pool.FastConnectionPool";
 
-	private Logger log = LoggerFactory.getLogger(BeeDataSourceConfig.class);
-	
 	public BeeDataSourceConfig() {
       this(null,null,null,null);
 	}
@@ -453,7 +449,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	  if(!this.checked)
 		this.enableJMX = enableJMX;
 	}
-	void copyTo(BeeDataSourceConfig config){
+	void copyTo(BeeDataSourceConfig config)throws SQLException{
 		int modifiers;
 		Field[] fields=BeeDataSourceConfig.class.getDeclaredFields();
 		for(Field field:fields){
@@ -467,27 +463,27 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 				if(!accessible)field.setAccessible(true);
 				field.set(config, field.get(this));
 			}catch(Exception e){
-				log.warn("Failed to copy field["+field.getName()+"]",e);
+				throw new BeeDataSourceConfigException("Failed to copy field["+field.getName()+"]",e);
 			}finally{
 				if(!accessible)field.setAccessible(accessible);
 			}
 		}
 	}
 	
-	private Driver loadJdbcDriver(String driverClassName) throws IllegalArgumentException {
+	private Driver loadJdbcDriver(String driverClassName) throws BeeDataSourceConfigException {
 		try {
 			Class<?> driverClass = Class.forName(driverClassName,true,this.getClass().getClassLoader());
 			Driver driver=(Driver)driverClass.newInstance();
 			if(!driver.acceptsURL(this.jdbcUrl))throw new InstantiationException();
 			return driver;
 		} catch (ClassNotFoundException e) {
-			throw new IllegalArgumentException("Driver class[" + driverClassName + "]not found");
+			throw new BeeDataSourceConfigException("Driver class[" + driverClassName + "]not found");
 		} catch (InstantiationException e) {
-			throw new IllegalArgumentException("Driver class[" + driverClassName + "]can't be instantiated");
+			throw new BeeDataSourceConfigException("Driver class[" + driverClassName + "]can't be instantiated");
 		} catch (IllegalAccessException e) {
-			throw new IllegalArgumentException("Driver class[" + driverClassName + "]can't be instantiated",e);
+			throw new BeeDataSourceConfigException("Driver class[" + driverClassName + "]can't be instantiated",e);
 		} catch (SQLException e) {
-			throw new IllegalArgumentException("Driver class[" + driverClassName + "]can't be instantiated",e);
+			throw new BeeDataSourceConfigException("Driver class[" + driverClassName + "]can't be instantiated",e);
 		}
 	}
 	//check pool configuration
@@ -501,9 +497,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 			} 
 			
 			if (isNullText(jdbcUrl))
-				throw new IllegalArgumentException("Connect url can't be null");
+				throw new BeeDataSourceConfigException("Connect url can't be null");
 			if (connectDriver==null)
-				throw new IllegalArgumentException("Failed to load jdbc Driver");
+				throw new BeeDataSourceConfigException("Failed to load jdbc Driver");
 			
 			if (!isNullText(this.username))
 				this.connectProperties.put("user", this.username);
@@ -525,52 +521,52 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 							try {
 								setDataSourceProperty((String)entry.getKey(),entry.getValue(),driverDataSource);
 							}catch(Exception e){
-								throw new IllegalArgumentException("Failed to set datasource property["+entry.getKey()+"]",e);
+								throw new BeeDataSourceConfigException("Failed to set datasource property["+entry.getKey()+"]",e);
 							}
 						}
 					}
 					connectionFactory=new DataSourceConnectionFactory(driverDataSource,username,password);
 				}else{
-					throw new IllegalArgumentException("Custom connection factory class must be implemented 'ConnectionFactory' interface");
+					throw new BeeDataSourceConfigException("Custom connection factory class must be implemented 'ConnectionFactory' interface");
 				}
 			} catch (ClassNotFoundException e) {
-				throw new IllegalArgumentException("Class("+connectionFactoryClassName+")not found ");
+				throw new BeeDataSourceConfigException("Class("+connectionFactoryClassName+")not found ");
 			} catch (InstantiationException e) {
-				throw new IllegalArgumentException("Failed to instantiate connection factory class:"+connectionFactoryClassName,e);
+				throw new BeeDataSourceConfigException("Failed to instantiate connection factory class:"+connectionFactoryClassName,e);
 			} catch (IllegalAccessException e) {
-				throw new IllegalArgumentException("Failed to instantiate connection factory class:"+connectionFactoryClassName,e);
+				throw new BeeDataSourceConfigException("Failed to instantiate connection factory class:"+connectionFactoryClassName,e);
 			}
 		}
 		
 		if (this.maxActive <= 0)
-			throw new IllegalArgumentException("Pool 'maxActive' must be greater than zero");
+			throw new BeeDataSourceConfigException("Pool 'maxActive' must be greater than zero");
 		if (this.initialSize < 0)
-			throw new IllegalArgumentException("Pool 'initialSize' must be greater than zero");
+			throw new BeeDataSourceConfigException("Pool 'initialSize' must be greater than zero");
 		if (this.initialSize > maxActive)
-			throw new IllegalArgumentException("Pool 'initialSize' must not be greater than 'maxActive'");
+			throw new BeeDataSourceConfigException("Pool 'initialSize' must not be greater than 'maxActive'");
 		if (this.borrowConcurrentSize <=0)
-			throw new IllegalArgumentException("Pool 'borrowConcurrentSize' must be greater than zero");
+			throw new BeeDataSourceConfigException("Pool 'borrowConcurrentSize' must be greater than zero");
 		if (this.borrowConcurrentSize > maxActive)
-			throw new IllegalArgumentException("Pool 'borrowConcurrentSize' must not be greater than pool max size");
+			throw new BeeDataSourceConfigException("Pool 'borrowConcurrentSize' must not be greater than pool max size");
 		if (this.idleTimeout <= 0)
-			throw new IllegalArgumentException("Connection 'idleTimeout' must be greater than zero");
+			throw new BeeDataSourceConfigException("Connection 'idleTimeout' must be greater than zero");
 		if (this.holdTimeout <= 0)
-			throw new IllegalArgumentException("Connection 'holdTimeout' must be greater than zero");
+			throw new BeeDataSourceConfigException("Connection 'holdTimeout' must be greater than zero");
 		if (this.maxWait <= 0)
-			throw new IllegalArgumentException("Borrower 'maxWait' must be greater than zero");
+			throw new BeeDataSourceConfigException("Borrower 'maxWait' must be greater than zero");
 		if (this.preparedStatementCacheSize < 0)
-			throw new IllegalArgumentException("Connection 'preparedStatementCacheSize' must not be lesser than zero");
+			throw new BeeDataSourceConfigException("Connection 'preparedStatementCacheSize' must not be lesser than zero");
 
 		defaultTransactionIsolationCode=TransactionIsolationLevel.nameToCode(defaultTransactionIsolation);
 		if(defaultTransactionIsolationCode==-999){
-			throw new IllegalArgumentException("Valid transaction isolation level list:"+TransactionIsolationLevel.TRANS_LEVEL_LIST);
+			throw new BeeDataSourceConfigException("Valid transaction isolation level list:"+TransactionIsolationLevel.TRANS_LEVEL_LIST);
 		}
 
 		//fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 begin
 		//if (this.validationQuerySQL != null && validationQuerySQL.trim().length() == 0) {
 		if (!isNullText(this.connectionTestSQL) && !this.connectionTestSQL.trim().toLowerCase().startsWith("select "))
 		//fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end	
-			throw new IllegalArgumentException("Connection 'connectionTestSQL' must start with 'select '");
+			throw new BeeDataSourceConfigException("Connection 'connectionTestSQL' must start with 'select '");
 		//}
 	}
 	private void setDataSourceProperty(String propName,Object propValue,Object bean)throws Exception{

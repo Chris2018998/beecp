@@ -179,7 +179,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
 		return new BeeDataSource(config);
 	}
 	
-	class JndiDataSourceWrapper implements DataSource {
+	static final class JndiDataSourceWrapper implements DataSource {
 		private DataSource delegete;
 		public JndiDataSourceWrapper(DataSource delegete) {
 			this.delegete = delegete;
