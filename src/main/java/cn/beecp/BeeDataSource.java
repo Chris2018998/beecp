@@ -26,7 +26,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
 /**
- * Bee DataSource,there are three pool implementation for it.
+ * Bee DataSource,there are two pool implementation for it.
  *
  * 1) cn.beecp.pool.FastConnectionPool:base implementation with semaphore
  * 2) cn.beecp.pool.RawConnectionPool:return raw connections to borrowers directly(maybe used for BeeNode)
