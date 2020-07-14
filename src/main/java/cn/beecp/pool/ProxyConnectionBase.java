@@ -60,7 +60,7 @@ abstract class ProxyConnectionBase implements Connection{
 		return (closedInd==FALSE)?closedStateUpd.compareAndSet(this,FALSE,TRUE):false;
 	}
 	public void close() throws SQLException {
-        if(closedInd==FALSE&&closedStateUpd.compareAndSet(this,FALSE,TRUE)){
+        if(closedStateUpd.compareAndSet(this,FALSE,TRUE)){
             pConn.returnToPoolBySelf();
         }else{
             throw ConnectionClosedException;
