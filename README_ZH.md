@@ -53,7 +53,8 @@ config.setPassword("root");
 config.setMaxActive(10);
 config.setInitialSize(0);
 config.setMaxWait(8000);//ms
-DataSource ds=new BeeDataSource(config);
+//DataSource ds=new BeeDataSource(config);
+BeeDataSource ds=new BeeDataSource(config);
 Connection con=ds.getConnection();
 ....
 
