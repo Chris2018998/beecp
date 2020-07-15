@@ -38,8 +38,30 @@ Bee_F:公平模式池，Bee_C:竞争模式池
 
 <img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/PoolPerformaceCompare.png"></img> 下载性能测试源码：<a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
 
-四：参考Demo（SpringBoot）
+四：参考Demo
 ---
+
+Demo1
+---
+
+```java
+BeeDataSourceConfig config = new BeeDataSourceConfig();
+config.setDriverClassName("com.mysql.jdbc.Driver");
+config.setJdbcUrl("jdbc:mysql://localhost/test");
+config.setUsername("root");
+config.setPassword("root");
+config.setMaxActive(10);
+config.setInitialSize(0);
+config.setMaxWait(8000);//ms
+DataSource ds=new BeeDataSource(config);
+Connection con=ds.getConnection();
+....
+
+```
+
+Demo2（SpringBoot）
+---
+
 *application.properties*
 
 ```java
