@@ -40,9 +40,26 @@ project for performance test code,please visit：https://github.com/Chris2018998
 Download <a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
  
 
-Demo(SpringBoot)
---- 
+Demo1
+---
 
+```java
+BeeDataSourceConfig config = new BeeDataSourceConfig();
+config.setDriverClassName("com.mysql.jdbc.Driver");
+config.setJdbcUrl("jdbc:mysql://localhost/test");
+config.setUsername("root");
+config.setPassword("root");
+config.setMaxActive(10);
+config.setInitialSize(0);
+config.setMaxWait(8000);//ms
+DataSource ds=new BeeDataSource(config);
+....
+
+```
+
+Demo2(SpringBoot)
+--- 
+ 
 *application.properties*
 
 ```java
