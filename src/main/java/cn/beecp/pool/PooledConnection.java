@@ -122,17 +122,14 @@ class PooledConnection extends StatementCache{
 	boolean isSupportNetworkTimeout() {
 		return  pool.isSupportNetworkTimeout();
 	}
-	private boolean updTimeInd;
+
 	void resetRawConnOnReturn()throws SQLException {
-		updTimeInd = false;
 		if (!curAutoCommit && commitDirtyInd) {//Roll back when commit dirty
 			rawConn.rollback();
 			commitDirtyInd = false;
-			updTimeInd = true;
 		}
 		//reset begin
 		if (changedCount > 0) {
-			updTimeInd = true;
 			if (changedInd[0]) {//reset autoCommit
 				rawConn.setAutoCommit(defaultAutoCommit);
 				curAutoCommit = defaultAutoCommit;
@@ -157,6 +154,5 @@ class PooledConnection extends StatementCache{
 
 		//clear warnings
 		rawConn.clearWarnings();
-		if (updTimeInd) lastAccessTime = currentTimeMillis();
 	}
 }
