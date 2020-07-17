@@ -60,11 +60,11 @@ abstract class ProxyConnectionBase implements Connection{
 		return (closedInd==FALSE)?closedStateUpd.compareAndSet(this,FALSE,TRUE):false;
 	}
 	public void close() throws SQLException {
-        if(closedStateUpd.compareAndSet(this,FALSE,TRUE)){
-            pConn.returnToPoolBySelf();
-        }else{
-            throw ConnectionClosedException;
-        }
+          if(closedStateUpd.compareAndSet(this,FALSE,TRUE)){
+             pConn.returnToPoolBySelf();
+          }else{
+             throw ConnectionClosedException;
+          }
 	}
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
 		checkClose();
@@ -73,13 +73,15 @@ abstract class ProxyConnectionBase implements Connection{
 		
 		delegate.setAutoCommit(autoCommit);
 		pConn.curAutoCommit = autoCommit;
-        if(autoCommit)pConn.commitDirtyInd=false;
+        	if(autoCommit)pConn.commitDirtyInd=false;
 		pConn.setChangedInd(Pos_AutoCommitInd,autoCommit!=pConn.defaultAutoCommit);
+		pConn.lastAccessTime=currentTimeMillis();
 	}
 	public void setTransactionIsolation(int level) throws SQLException {
 		checkClose();
 		delegate.setTransactionIsolation(level);
 		pConn.setChangedInd(Pos_TransactionIsolationInd,level!=pConn.defaultTransactionIsolationCode);
+		pConn.lastAccessTime=currentTimeMillis();
 	}
 	public void setReadOnly(boolean readOnly) throws SQLException {
 		checkClose();
@@ -141,7 +143,6 @@ abstract class ProxyConnectionBase implements Connection{
 		checkClose();
 		delegate.rollback(savepoint);
 		pConn.lastAccessTime=currentTimeMillis();
-		pConn.commitDirtyInd=false;
 	}
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		checkClose();
