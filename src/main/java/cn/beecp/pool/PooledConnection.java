@@ -112,8 +112,7 @@ class PooledConnection extends StatementCache{
 		else if(changedInd[pos] && !changed)//true-->false  -1
 		   changedCount--;
 		changedInd[pos]=changed;
-
-		lastAccessTime=currentTimeMillis();
+		//lastAccessTime=currentTimeMillis();
 	}
 	boolean isSupportValidTest() {return pool.isSupportValidTest();}
     boolean isSupportSchema() {
