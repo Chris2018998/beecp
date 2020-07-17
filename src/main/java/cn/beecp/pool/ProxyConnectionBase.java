@@ -139,11 +139,6 @@ abstract class ProxyConnectionBase implements Connection{
 		pConn.lastAccessTime=currentTimeMillis();
 		pConn.commitDirtyInd=false;
 	}
-	public void rollback(Savepoint savepoint) throws SQLException{
-		checkClose();
-		delegate.rollback(savepoint);
-		pConn.lastAccessTime=currentTimeMillis();
-	}
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		checkClose();
 		return iface.isInstance(this);
