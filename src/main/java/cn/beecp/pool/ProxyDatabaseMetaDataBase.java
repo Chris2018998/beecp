@@ -36,18 +36,18 @@ abstract class ProxyDatabaseMetaDataBase implements DatabaseMetaData {
 		this.proxyConn=proxyConn;
 	}
 	public Connection getConnection() throws SQLException{
-		checkClose();
+		checkClosed();
 		return proxyConn;
 	}
-	protected void checkClose() throws SQLException {
-		proxyConn.checkClose();
+	protected void checkClosed() throws SQLException {
+		proxyConn.checkClosed();
 	}
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-		checkClose();
+		checkClosed();
 		return iface.isInstance(this);
 	}
 	public <T> T unwrap(Class<T> iface) throws SQLException{
-		checkClose();
+		checkClosed();
 		String message="Wrapped object is not an instance of "+iface;
 		if(iface.isInstance(this))
 			return (T)this;

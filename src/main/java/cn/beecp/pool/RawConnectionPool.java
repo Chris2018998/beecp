@@ -27,6 +27,7 @@ import java.sql.SQLException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static cn.beecp.pool.PoolExceptionList.PoolCloseException;
 import static cn.beecp.pool.PoolExceptionList.RequestInterruptException;
 import static cn.beecp.pool.PoolExceptionList.RequestTimeoutException;
 import static cn.beecp.util.BeecpUtil.isNullText;
@@ -42,6 +43,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
  * @version 1.0
  */
 public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJMXBean {
+	private volatile boolean isShutdown;
 	private Semaphore poolSemaphore;
 	private long DefaultMaxWait;
 	private BeeDataSourceConfig poolConfig;
@@ -88,6 +90,8 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 	 */
 	public Connection getConnection() throws SQLException {
 		try {
+			if(isShutdown)throw PoolCloseException;
+
 			if (poolSemaphore.tryAcquire(DefaultMaxWait,NANOSECONDS)) {
 				return poolConfig.getConnectionFactory().create();
 			} else {
@@ -112,7 +116,15 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 	 * close pool
 	 */
 	public void shutdown() {
+		isShutdown=true;
 		unregisterJMX();
+	}
+
+	/**
+	 * is pool shutdown
+	 */
+	public boolean isShutdown(){
+		return isShutdown;
 	}
 
 	//******************************** JMX **************************************//

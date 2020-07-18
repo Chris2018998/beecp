@@ -53,11 +53,11 @@ abstract class ProxyConnectionBase implements Connection{
 		delegate=pConn.rawConn;
 	}
 	public boolean isClosed()throws SQLException{return closedInd;}
-	protected void checkClose() throws SQLException {
+	protected void checkClosed() throws SQLException {
 		if(closedInd)throw ConnectionClosedException;
 	}
 	boolean setAsClosed(){
-		return (closedInd==FALSE)?closedStateUpd.compareAndSet(this,FALSE,TRUE):false;
+		return closedStateUpd.compareAndSet(this,FALSE,TRUE);
 	}
 	public void close() throws SQLException {
           if(closedStateUpd.compareAndSet(this,FALSE,TRUE)){
@@ -67,7 +67,7 @@ abstract class ProxyConnectionBase implements Connection{
           }
 	}
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
-		checkClose();
+		checkClosed();
 		if(!pConn.curAutoCommit && pConn.commitDirtyInd)
 		  throw AutoCommitChangeForbiddennException;
 		
@@ -78,33 +78,33 @@ abstract class ProxyConnectionBase implements Connection{
 		pConn.lastAccessTime=currentTimeMillis();
 	}
 	public void setTransactionIsolation(int level) throws SQLException {
-		checkClose();
+		checkClosed();
 		delegate.setTransactionIsolation(level);
 		pConn.setChangedInd(Pos_TransactionIsolationInd,level!=pConn.defaultTransactionIsolationCode);
 		pConn.lastAccessTime=currentTimeMillis();
 	}
 	public void setReadOnly(boolean readOnly) throws SQLException {
-		checkClose();
+		checkClosed();
 		delegate.setReadOnly(readOnly);
 		pConn.setChangedInd(Pos_ReadOnlyInd,readOnly!=pConn.defaultReadOnly);
 	}
 	public void setCatalog(String catalog) throws SQLException {
-		checkClose();
+		checkClosed();
 		delegate.setCatalog(catalog);
 		pConn.setChangedInd(Pos_CatalogInd,!equalsText(catalog, pConn.defaultCatalog));
 	}
 	public boolean isValid(int timeout) throws SQLException {
-		checkClose();
+		checkClosed();
 		return delegate.isValid(timeout);
 	}
 	//for JDK1.7 begin
 	public void setSchema(String schema) throws SQLException {
-		checkClose();
+		checkClosed();
 		delegate.setSchema(schema);
 		pConn.setChangedInd(Pos_SchemaInd, !equalsText(schema, pConn.defaultSchema));
 	}
 	public void abort(Executor executor) throws SQLException{
-		checkClose();
+		checkClosed();
 		if(executor == null) throw new SQLException("executor can't be null");
 		executor.execute(new Runnable() {
 			public void run() {
@@ -117,34 +117,34 @@ abstract class ProxyConnectionBase implements Connection{
 		});
 	}
 	public int getNetworkTimeout() throws SQLException{
-		checkClose();
+		checkClosed();
 		return delegate.getNetworkTimeout();
 	}
 	public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-		checkClose();
+		checkClosed();
 		delegate.setNetworkTimeout(executor, milliseconds);
 		pConn.setChangedInd(Pos_NetworkTimeoutInd, true);
 	}
 	//for JDK1.7 end
 
 	public void commit() throws SQLException{
-		checkClose();
+		checkClosed();
 		delegate.commit();
 		pConn.lastAccessTime=currentTimeMillis();
 		pConn.commitDirtyInd=false;
 	}
 	public void rollback() throws SQLException{
-		checkClose();
+		checkClosed();
 		delegate.rollback();
 		pConn.lastAccessTime=currentTimeMillis();
 		pConn.commitDirtyInd=false;
 	}
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-		checkClose();
+		checkClosed();
 		return iface.isInstance(this);
 	}
 	public <T> T unwrap(Class<T> iface) throws SQLException{
-		checkClose();
+		checkClosed();
 		String message="Wrapped object is not an instance of "+iface;
 		if(iface.isInstance(this))
 			return (T)this;

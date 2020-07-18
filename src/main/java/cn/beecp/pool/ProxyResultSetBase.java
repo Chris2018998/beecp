@@ -42,25 +42,25 @@ abstract class ProxyResultSetBase implements ResultSet {
 		proxyStatementIsNotNull=proxyStatement!=null;
 	}
 	public Statement getStatement() throws SQLException{
-		checkClose();
+		checkClosed();
 		return (Statement)proxyStatement;
 	}
 	public boolean isClosed()throws SQLException{return isClosed;}
-	protected void checkClose() throws SQLException {
+	protected void checkClosed() throws SQLException {
 		if(isClosed)throw ResultSetClosedException;
-		if(proxyStatementIsNotNull)proxyStatement.checkClose();
+		if(proxyStatementIsNotNull)proxyStatement.checkClosed();
 	}
 	public void close() throws SQLException {
-		checkClose();
+		checkClosed();
 		isClosed=true;
 		oclose(delegate);
 	}
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-		checkClose();
+		checkClosed();
 		return iface.isInstance(this);
 	}
 	public <T> T unwrap(Class<T> iface) throws SQLException{
-		checkClose();
+		checkClosed();
 		String message="Wrapped object is not an instance of "+iface;
 		if(iface.isInstance(this))
 			return (T)this;

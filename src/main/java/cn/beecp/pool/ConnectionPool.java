@@ -53,6 +53,11 @@ public interface ConnectionPool {
 	 * close pool
 	 */
 	void shutdown();
-	
+
+	/**
+	 * is pool shutdown
+	 */
+	boolean isShutdown();
+
 }
 	

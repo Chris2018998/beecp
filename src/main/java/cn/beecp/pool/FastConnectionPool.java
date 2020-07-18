@@ -416,14 +416,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			if (semaphore.tryAcquire(DefaultMaxWaitNanos,NANOSECONDS)) {//concurrent gateway
 				try {
 					//1:try to search one from array
+					PooledConnection pConn;
 					PooledConnection[]array=connArray;
 					for (int i=0,len=array.length;i<len;i++) {
-						if (ConnStateUpdater.compareAndSet(array[i],CONNECTION_IDLE,CONNECTION_USING) && testOnBorrow(array[i]))
-							return createProxyConnection(array[i],borrower);
+						pConn=array[i];
+						if (ConnStateUpdater.compareAndSet(pConn,CONNECTION_IDLE,CONNECTION_USING) && testOnBorrow(pConn))
+							return createProxyConnection(pConn,borrower);
 					}
 
 					//2:try to create one directly
-					PooledConnection pConn;
 					if(connArray.length<PoolMaxSize && (pConn=createPooledConn(CONNECTION_USING))!=null)
 						return createProxyConnection(pConn,borrower);
 
@@ -599,6 +600,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				parkNanos(parkNanoSeconds);// wait 3 seconds
 			}
 		}
+	}
+
+	public boolean isShutdown() {
+		return poolState.get()==POOL_CLOSED;
 	}
 
 	// remove all connections

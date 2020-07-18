@@ -285,7 +285,7 @@ public final class ProxyClassGenerator {
 
 			methodBuffer.delete(0, methodBuffer.length());
 			methodBuffer.append("{");
-			methodBuffer.append("checkClose();");
+			methodBuffer.append("checkClosed();");
 			if (ctMethod.getReturnType() == ctStatementClass) {
 				methodBuffer.append("return new ProxyStatement(delegate."+methodName+"($$),this,pConn);");
 			}else if(ctMethod.getReturnType() == ctPreparedStatementClass){
@@ -358,7 +358,7 @@ public final class ProxyClassGenerator {
 
 			methodBuffer.delete(0, methodBuffer.length());
 			methodBuffer.append("{");
-			methodBuffer.append("checkClose();");
+			methodBuffer.append("checkClosed();");
 
 			if (ctMethod.getReturnType() == CtClass.voidType) {
 				methodBuffer.append(delegateName+methodName + "($$);");
@@ -411,7 +411,7 @@ public final class ProxyClassGenerator {
 
 			methodBuffer.delete(0, methodBuffer.length());
 			methodBuffer.append("{");
-			methodBuffer.append("checkClose();");
+			methodBuffer.append("checkClosed();");
 
 			if (ctMethod.getReturnType() == ctResultSetClass) {
 				methodBuffer.append("return new ProxyResultSet(delegate."+methodName+"($$),null,pConn);");
@@ -450,7 +450,7 @@ public final class ProxyClassGenerator {
 
 			methodBuffer.delete(0, methodBuffer.length());
 			methodBuffer.append("{");
-			methodBuffer.append("checkClose();");
+			methodBuffer.append("checkClosed();");
 
 			if (methodName.equals("close")) {
 				//methodBuffer.append("super." + methodName + "($$);");
