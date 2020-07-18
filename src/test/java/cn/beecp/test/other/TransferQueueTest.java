@@ -5,7 +5,10 @@ import cn.beecp.util.ConcurrentTransferQueue;
 import java.math.BigDecimal;
 import java.util.Queue;
 import java.util.Random;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -18,15 +21,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class TransferQueueTest{
     public static void main(String[]args)throws Exception{
         int offerThreadSize=10,pollThreadSize=10,takeTimes=100;
-
-//      testTransferQueue("ArrayBlockingQueue",new ArrayBlockingQueue<Object>(10000),offerThreadSize,pollThreadSize,takeTimes);
+       testTransferQueue("ArrayBlockingQueue",new ArrayBlockingQueue<Object>(1000),offerThreadSize,pollThreadSize,takeTimes);
 //      testTransferQueue("LinkedBlockingQueue",new LinkedBlockingQueue<Object>(),offerThreadSize,pollThreadSize,takeTimes);
-//      testTransferQueue("LinkedTransferQueue",new LinkedTransferQueue<Object>(),offerThreadSize,pollThreadSize,takeTimes);
-        testTransferQueue("ConcurrentTransferQueue",new ConcurrentTransferQueue<Object>(),offerThreadSize,pollThreadSize,takeTimes);
+//     testTransferQueue("LinkedTransferQueue",new LinkedTransferQueue<Object>(),offerThreadSize,pollThreadSize,takeTimes);
+        //testTransferQueue("ConcurrentTransferQueue",new ConcurrentTransferQueue<Object>(),offerThreadSize,pollThreadSize,takeTimes);
     }
 
     private static void testTransferQueue(String queueName,Queue<Object> queue,int offerThreadSize, int pollThreadSize,int takeTimes) throws Exception{
-        long startTime = System.nanoTime() + TimeUnit.SECONDS.toNanos(20);
+        long startTime = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
         CountDownLatch latch = new CountDownLatch(pollThreadSize);
         PutThread[] putThreads = new PutThread[offerThreadSize];
         PollThread[] pollThreads = new PollThread[pollThreadSize];
