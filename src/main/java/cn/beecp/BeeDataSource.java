@@ -152,13 +152,29 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	public Connection getConnection(String username, String password) throws SQLException {
 		throw new SQLException("Not support");
 	}
-	public void close(){
+
+	public void close()throws SQLException {
+		checkClosed();
 		if(pool!=null) {
 			pool.shutdown();
-			pool=null;
-			inited=false;
 		}
 	}
+	public boolean isClosed()throws SQLException {
+		if(pool!=null) {
+			return pool.isShutdown();
+		}else{
+			throw new SQLException("DataSource not initialized");
+		}
+	}
+	private void checkClosed()throws SQLException {
+		if(pool!=null) {
+			if(pool.isShutdown())
+				throw new SQLException("DataSource has closed");
+		}else{
+			throw new SQLException("DataSource not initialized");
+		}
+	}
+
 	public PrintWriter getLogWriter() throws SQLException {
 		throw new SQLException("Not supported");
 	}
@@ -174,12 +190,19 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	public int getLoginTimeout() throws SQLException {
 		throw new SQLException("Not supported");
 	}
-	public <T> T unwrap(Class<T> iface) throws SQLException {
-		throw new SQLException("Not supported");
-	}
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-		throw new SQLException("Not supported");
+		checkClosed();
+		return iface.isInstance(this);
 	}
+	public <T> T unwrap(Class<T> iface) throws SQLException{
+		checkClosed();
+		String message="Wrapped object is not an instance of "+iface;
+		if(iface.isInstance(this))
+			return (T)this;
+		else
+			throw new SQLException(message);
+	}
+
 	/**
 	 * create a pool instance by specified class name in configuration,
 	 * and initialize the pool with configuration
@@ -187,7 +210,7 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	 * @param config  pool configuration
 	 * @return a initialized pool for data source
 	 */
-	private ConnectionPool createPool(BeeDataSourceConfig config)throws SQLException{
+	private static final ConnectionPool createPool(BeeDataSourceConfig config)throws SQLException{
 		String poolImplementClassName=config.getPoolImplementClassName();
 
 		try {
@@ -204,7 +227,7 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 			pool.init(config);
 			return pool;
 		} catch (ClassNotFoundException e) {
-			throw new SQLException("Not found conneciton pool implementation class:" + poolImplementClassName);
+			throw new SQLException("Not found connection pool implementation class:" + poolImplementClassName);
 		} catch (Throwable e) {
 			throw new SQLException(e);
 		}
