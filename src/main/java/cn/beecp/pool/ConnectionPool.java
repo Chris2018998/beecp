@@ -56,6 +56,7 @@ public interface ConnectionPool {
 
 	/**
 	 * is pool shutdown
+	 * @return true,has shutdown,false active
 	 */
 	boolean isShutdown();
 
