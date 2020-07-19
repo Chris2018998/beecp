@@ -52,7 +52,7 @@ public class ConcurrentTransferQueue<E> extends AbstractQueue<E> {
 	private static final Status STS_INTERRUPTED = new Status();
 
 	/**
-	 * CAS updater on waiter's transferValue field
+	 * CAS updater on waiter's stateValue field
 	 */
 	private static final AtomicReferenceFieldUpdater<Waiter, Object> TransferUpdater = AtomicReferenceFieldUpdater
 			.newUpdater(Waiter.class, Object.class, "stateValue");
@@ -174,15 +174,14 @@ public class ConcurrentTransferQueue<E> extends AbstractQueue<E> {
 		Waiter waiter = new Waiter();
 		try {
 			waiterQueue.offer(waiter);
-			if (waiter.stateValue == STS_NORMAL && TransferUpdater.compareAndSet(waiter, STS_NORMAL, STS_WAITING)) {
+			if (TransferUpdater.compareAndSet(waiter,STS_NORMAL,STS_WAITING)) {
 				if (timeout > 0)
 					LockSupport.parkNanos(unit.toNanos(timeout));
 				else
 					LockSupport.park(waiter);
 
-				if (waiter.stateValue == STS_WAITING && waiter.thread.isInterrupted() && TransferUpdater.compareAndSet(waiter, STS_WAITING, STS_INTERRUPTED)) {
+				if (waiter.thread.isInterrupted() && TransferUpdater.compareAndSet(waiter,STS_WAITING, STS_INTERRUPTED))
 					throw new InterruptedException();
-				}
 			}
 		}finally {
 			waiterQueue.remove(waiter);
