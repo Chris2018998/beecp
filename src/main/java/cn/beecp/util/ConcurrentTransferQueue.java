@@ -24,173 +24,170 @@ import java.util.concurrent.locks.LockSupport;
 
 /**
  * TransferQueue Implementation with class <tt>ConcurrentLinkedQueue</tt>
- * 
+ *
  * @author Chris.Liao
  */
 public class ConcurrentTransferQueue<E> extends AbstractQueue<E> {
-	private static final class Waiter {
-		//poll thread
-		Thread thread = Thread.currentThread();
-		//transfer value or waiter status
-		volatile Object stateValue = STS_NORMAL;
-	}
-	private static final class State {}
+    /**
+     * Waiter normal status
+     */
+    private static final State STS_NORMAL = new State();
+    /**
+     * Waiter in waiting status
+     */
+    private static final State STS_WAITING = new State();
+    /**
+     * Waiter thread interrupted
+     */
+    private static final State STS_INTERRUPTED = new State();
+    /**
+     * CAS updater on waiter's stateValue field
+     */
+    private static final AtomicReferenceFieldUpdater<Waiter, Object> TransferUpdater = AtomicReferenceFieldUpdater
+            .newUpdater(Waiter.class, Object.class, "stateValue");
+    /**
+     * store element
+     */
+    private ConcurrentLinkedQueue<E> elementQueue = new ConcurrentLinkedQueue<E>();
+    /**
+     * store poll waiter
+     */
+    private ConcurrentLinkedQueue<Waiter> waiterQueue = new ConcurrentLinkedQueue<Waiter>();
 
-	/**
-	 * Waiter normal status
-	 */
-	private static final State STS_NORMAL = new State();
+    /**
+     * Retrieves, but does not remove, the head of this queue,
+     * or returns {@code null} if this queue is empty.
+     *
+     * @return the head of this queue, or {@code null} if this queue is empty
+     */
+    public E peek() {
+        return elementQueue.peek();
+    }
 
-	/**
-	 * Waiter in waiting status
-	 */
-	private static final State STS_WAITING = new State();
+    /**
+     * Returns the number of elements in this queue.  If this queue
+     * contains more than {@code Integer.MAX_VALUE} elements, returns
+     * {@code Integer.MAX_VALUE}.
+     *
+     * <p>Beware that, unlike in most collections, this method is
+     * <em>NOT</em> a constant-time operation. Because of the
+     * asynchronous nature of these queues, determining the current
+     * number of elements requires an O(n) traversal.
+     * Additionally, if elements are added or removed during execution
+     * of this method, the returned result may be inaccurate.  Thus,
+     * this method is typically not very useful in concurrent
+     * applications.
+     *
+     * @return the number of elements in this queue
+     */
+    public int size() {
+        return elementQueue.size();
+    }
 
-	/**
-	 * Waiter thread interrupted
-	 */
-	private static final State STS_INTERRUPTED = new State();
+    /**
+     * Returns an iterator over the elements in this queue in proper sequence.
+     * The elements will be returned in order from first (head) to last (tail).
+     *
+     * <p>The returned iterator is
+     * <a href="package-summary.html#Weakly"><i>weakly consistent</i></a>.
+     *
+     * @return an iterator over the elements in this queue in proper sequence
+     */
+    public Iterator<E> iterator() {
+        return elementQueue.iterator();
+    }
 
-	/**
-	 * CAS updater on waiter's stateValue field
-	 */
-	private static final AtomicReferenceFieldUpdater<Waiter, Object> TransferUpdater = AtomicReferenceFieldUpdater
-			.newUpdater(Waiter.class, Object.class, "stateValue");
-	/**
-	 * store element
-	 */
-	private ConcurrentLinkedQueue<E> elementQueue = new ConcurrentLinkedQueue<E>();
+    /**
+     * add element to queue,if exists poll waiter,then transfer it to waiter directly,
+     * if not exists,then add it to element queue;
+     *
+     * @param e element expect to add into queue
+     * @return boolean ,true:successful to transfer or add into queue
+     */
+    public boolean offer(E e) {
+        if (tryTransfer(e)) return true;
+        return elementQueue.offer(e);
+    }
 
-	/**
-	 * store poll waiter
-	 */
-	private ConcurrentLinkedQueue<Waiter> waiterQueue = new ConcurrentLinkedQueue<Waiter>();
+    /**
+     * try to transfers the element to a consumer
+     *
+     * @param e the element to transfer
+     * @return {@code true} if successful, or {@code false} if
+     * the specified waiting time elapses before completion,
+     * in which case the element is not left enqueued
+     */
+    public boolean tryTransfer(E e) {
+        Waiter waiter;
+        while ((waiter = waiterQueue.poll()) != null) {
+            for (Object state = waiter.stateValue; (state == STS_NORMAL || state == STS_WAITING); state = waiter.stateValue) {
+                if (TransferUpdater.compareAndSet(waiter, state, e)) {
+                    if (state == STS_WAITING) LockSupport.unpark(waiter.thread);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
-	/**
-	 * Retrieves, but does not remove, the head of this queue,
-	 * or returns {@code null} if this queue is empty.
-	 *
-	 * @return the head of this queue, or {@code null} if this queue is empty
-	 */
-	public E peek(){
-		return elementQueue.peek();
-	}
+    /**
+     * Poll one element from queue,if not exists,then wait one transferred
+     *
+     * @return element
+     */
+    public E poll() {
+        try {
+            return poll(-1, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            return null;
+        }
+    }
 
-	/**
-	 * Returns the number of elements in this queue.  If this queue
-	 * contains more than {@code Integer.MAX_VALUE} elements, returns
-	 * {@code Integer.MAX_VALUE}.
-	 *
-	 * <p>Beware that, unlike in most collections, this method is
-	 * <em>NOT</em> a constant-time operation. Because of the
-	 * asynchronous nature of these queues, determining the current
-	 * number of elements requires an O(n) traversal.
-	 * Additionally, if elements are added or removed during execution
-	 * of this method, the returned result may be inaccurate.  Thus,
-	 * this method is typically not very useful in concurrent
-	 * applications.
-	 *
-	 * @return the number of elements in this queue
-	 */
-	public  int size(){
-		return elementQueue.size();
-	}
+    /**
+     * Retrieves and removes the head of this queue, waiting up to the
+     * specified wait time if necessary for an element to become available.
+     *
+     * @param timeout how long to wait before giving up, in units of
+     *                {@code unit}
+     * @param unit    a {@code TimeUnit} determining how to interpret the
+     *                {@code timeout} parameter
+     * @return the head of this queue, or {@code null} if the
+     * specified waiting time elapses before an element is available
+     * @throws InterruptedException if interrupted while waiting
+     */
+    public E poll(long timeout, TimeUnit unit) throws InterruptedException {
+        E e = elementQueue.poll();
+        if (e != null) return e;
 
-	/**
-	 * Returns an iterator over the elements in this queue in proper sequence.
-	 * The elements will be returned in order from first (head) to last (tail).
-	 *
-	 * <p>The returned iterator is
-	 * <a href="package-summary.html#Weakly"><i>weakly consistent</i></a>.
-	 *
-	 * @return an iterator over the elements in this queue in proper sequence
-	 */
-	public Iterator<E> iterator(){
-		return elementQueue.iterator();
-	}
+        Waiter waiter = new Waiter();
+        try {
+            waiterQueue.offer(waiter);
+            if (TransferUpdater.compareAndSet(waiter, STS_NORMAL, STS_WAITING)) {
+                if (timeout > 0)
+                    LockSupport.parkNanos(unit.toNanos(timeout));
+                else
+                    LockSupport.park(waiter);
 
-	/**
-	 * add element to queue,if exists poll waiter,then transfer it to waiter directly,
-	 * if not exists,then add it to element queue;
-	 *
-	 * 	@param e element expect to add into queue
-	 *  @return  boolean ,true:successful to transfer or add into queue
-	 */
-	public boolean offer(E e) {
- 		if(tryTransfer(e))return true;
- 		return elementQueue.offer(e);
-	}
+                if (waiter.thread.isInterrupted() && TransferUpdater.compareAndSet(waiter, STS_WAITING, STS_INTERRUPTED))
+                    throw new InterruptedException();
+            }
+        } finally {
+            if (waiter.stateValue instanceof State)
+                waiterQueue.remove(waiter);
+        }
 
-	/**
-	 * try to transfers the element to a consumer
-	 * @param e the element to transfer
-	 * @return {@code true} if successful, or {@code false} if
-	 *         the specified waiting time elapses before completion,
-	 *         in which case the element is not left enqueued
-	 */
-	public boolean tryTransfer(E e) {
-		Iterator<Waiter> iterator = waiterQueue.iterator();
-		while (iterator.hasNext()) {
-			Waiter waiter = iterator.next();
-			for (Object state = waiter.stateValue;(state==STS_NORMAL||state==STS_WAITING);state=waiter.stateValue) {
-				if (TransferUpdater.compareAndSet(waiter, state, e)) {
-					if (state == STS_WAITING)LockSupport.unpark(waiter.thread);
-					return true;
-				}
-			}
-		}
-		return false;
-	}
+        if (waiter.stateValue instanceof State) {
+            return null;
+        } else {
+            return (E) waiter.stateValue;
+        }
+    }
 
-	/**
-	 * Poll one element from queue,if not exists,then wait one transferred
-	 *
-	 *  @return element
-	 */
-	public E poll() {
-		try {
-			return poll(-1, TimeUnit.NANOSECONDS);
-		}catch(InterruptedException e){
-			return null;
-		}
-	}
-
-	/**
-	 * Retrieves and removes the head of this queue, waiting up to the
-	 * specified wait time if necessary for an element to become available.
-	 *
-	 * @param timeout how long to wait before giving up, in units of
-	 *        {@code unit}
-	 * @param unit a {@code TimeUnit} determining how to interpret the
-	 *        {@code timeout} parameter
-	 * @return the head of this queue, or {@code null} if the
-	 *         specified waiting time elapses before an element is available
-	 * @throws InterruptedException if interrupted while waiting
-	 */
-	public E poll(long timeout, TimeUnit unit) throws InterruptedException {
-		E e = elementQueue.poll();
-		if(e != null)return e;
-
-		Waiter waiter = new Waiter();
-		try {
-			waiterQueue.offer(waiter);
-			if (TransferUpdater.compareAndSet(waiter,STS_NORMAL,STS_WAITING)) {
-				if (timeout > 0)
-					LockSupport.parkNanos(unit.toNanos(timeout));
-				else
-					LockSupport.park(waiter);
-
-				if (waiter.thread.isInterrupted() && TransferUpdater.compareAndSet(waiter,STS_WAITING, STS_INTERRUPTED))
-					throw new InterruptedException();
-			}
-		}finally {
-			waiterQueue.remove(waiter);
-		}
-
-		if(waiter.stateValue instanceof State) {
-			return null;
-		}else {
-			return (E)waiter.stateValue;
-		}
-	}
+    private static final class Waiter {
+        //poll thread
+        Thread thread = Thread.currentThread();
+        //transfer value or waiter status
+        volatile Object stateValue = STS_NORMAL;
+    }
+    private static final class State { }
 }
