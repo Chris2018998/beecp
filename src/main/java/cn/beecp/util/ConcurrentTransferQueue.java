@@ -34,22 +34,22 @@ public class ConcurrentTransferQueue<E> extends AbstractQueue<E> {
 		//transfer value or waiter status
 		volatile Object stateValue = STS_NORMAL;
 	}
-	private static final class Status {}
+	private static final class State {}
 
 	/**
 	 * Waiter normal status
 	 */
-	private static final Status STS_NORMAL = new Status();
+	private static final State STS_NORMAL = new State();
 
 	/**
 	 * Waiter in waiting status
 	 */
-	private static final Status STS_WAITING = new Status();
+	private static final State STS_WAITING = new State();
 
 	/**
 	 * Waiter thread interrupted
 	 */
-	private static final Status STS_INTERRUPTED = new Status();
+	private static final State STS_INTERRUPTED = new State();
 
 	/**
 	 * CAS updater on waiter's stateValue field
@@ -187,7 +187,7 @@ public class ConcurrentTransferQueue<E> extends AbstractQueue<E> {
 			waiterQueue.remove(waiter);
 		}
 
-		if(waiter.stateValue instanceof Status) {
+		if(waiter.stateValue instanceof State) {
 			return null;
 		}else {
 			return (E)waiter.stateValue;
