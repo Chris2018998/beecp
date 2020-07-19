@@ -127,8 +127,6 @@ public class ConcurrentTransferQueue<E> extends AbstractQueue<E> {
 	 * @return {@code true} if successful, or {@code false} if
 	 *         the specified waiting time elapses before completion,
 	 *         in which case the element is not left enqueued
-	 * @throws InterruptedException if interrupted while waiting,
-	 *         in which case the element is not left enqueued
 	 */
 	public boolean tryTransfer(E e) {
 		Iterator<Waiter> iterator = waiterQueue.iterator();
