@@ -17,13 +17,16 @@ package cn.beecp.util;
 
 import java.util.AbstractQueue;
 import java.util.Iterator;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.locks.LockSupport;
 
 /**
- * TransferQueue Implementation with class <ConcurrentLinkedQueue>
+ * TransferQueue Implementation with class <tt>ConcurrentLinkedQueue</tt>
  * 
  * @author Chris.Liao
  */
@@ -145,9 +148,16 @@ public class ConcurrentTransferQueue<E> extends AbstractQueue<E> {
 	}
 
 	/**
-	 * Poll one element from queue,if not exists,then wait with specified time for one transferred
+	 * Retrieves and removes the head of this queue, waiting up to the
+	 * specified wait time if necessary for an element to become available.
 	 *
-	 *  @return element
+	 * @param timeout how long to wait before giving up, in units of
+	 *        {@code unit}
+	 * @param unit a {@code TimeUnit} determining how to interpret the
+	 *        {@code timeout} parameter
+	 * @return the head of this queue, or {@code null} if the
+	 *         specified waiting time elapses before an element is available
+	 * @throws InterruptedException if interrupted while waiting
 	 */
 	public E poll(long timeout, TimeUnit unit) throws InterruptedException {
 		E e = elementQueue.poll();
