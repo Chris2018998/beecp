@@ -17,10 +17,7 @@ package cn.beecp.util;
 
 import java.util.AbstractQueue;
 import java.util.Iterator;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.locks.LockSupport;
@@ -120,6 +117,20 @@ public class ConcurrentTransferQueue<E> extends AbstractQueue<E> {
 	 *  @return  boolean ,true:successful to transfer or add into queue
 	 */
 	public boolean offer(E e) {
+ 		if(tryTransfer(e))return true;
+ 		return elementQueue.offer(e);
+	}
+
+	/**
+	 * try to transfers the element to a consumer
+	 * @param e the element to transfer
+	 * @return {@code true} if successful, or {@code false} if
+	 *         the specified waiting time elapses before completion,
+	 *         in which case the element is not left enqueued
+	 * @throws InterruptedException if interrupted while waiting,
+	 *         in which case the element is not left enqueued
+	 */
+	public boolean tryTransfer(E e) {
 		Iterator<Waiter> iterator = waiterQueue.iterator();
 		while (iterator.hasNext()) {
 			Waiter waiter = iterator.next();
@@ -130,8 +141,7 @@ public class ConcurrentTransferQueue<E> extends AbstractQueue<E> {
 				}
 			}
 		}
-
-		return elementQueue.offer(e);
+		return false;
 	}
 
 	/**
