@@ -30,6 +30,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
@@ -128,11 +129,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private static final int MaxTimedSpins = (Runtime.getRuntime().availableProcessors() < 2) ? 0 : 32;
 	private static final AtomicIntegerFieldUpdater<PooledConnection> ConnStateUpdater = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class, "state");
 	private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowerStateUpdater = AtomicReferenceFieldUpdater.newUpdater(Borrower.class, Object.class, "stateObject");
+	private static final long spinForTimeoutThreshold = 1000L;
 
 	private static final String DESC_REMOVE_INIT="init";
 	private static final String DESC_REMOVE_BAD="bad";
 	private static final String DESC_REMOVE_IDLE="idle";
-	private static final String DESC_REMOVE_HOLD_TIMEOUT="hold_timeout";
 	private static final String DESC_REMOVE_CLOSED="closed";
 	private static final String DESC_REMOVE_RESET="reset";
 	private static final String DESC_REMOVE_DESTROY="destroy";
@@ -454,9 +455,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                                     long waitNanoTime;
                                     if (isNotTimeout && (isNotTimeout = (waitNanoTime = deadline - nanoTime()) > 0L)) {
                                         if (spinSize > 0) {
-                                            --spinSize;
-                                        } else if (BorrowerStateUpdater.compareAndSet(borrower, stateObject,BORROWER_WAITING)) {
-                                            LockSupport.parkNanos(borrower, waitNanoTime);
+                                            spinSize--;
+                                        } else if (waitNanoTime>spinForTimeoutThreshold && BorrowerStateUpdater.compareAndSet(borrower, stateObject,BORROWER_WAITING)) {
+                                            LockSupport.parkNanos(this, waitNanoTime);
                                         }
                                     } else if (BorrowerStateUpdater.compareAndSet(borrower, stateObject,BORROWER_TIMEOUT)) {
                                         throw RequestTimeoutException;
