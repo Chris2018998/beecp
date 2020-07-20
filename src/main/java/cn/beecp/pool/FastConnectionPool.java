@@ -430,8 +430,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 						return createProxyConnection(pConn,borrower);
 
 					//3:try to get one transferred connection
-                    boolean isNotTimeout = true;
-                    boolean isNotInterrupted = true;
+					long timeout;
+                    boolean isNotTimeout=true;
+                    boolean isInterrupted=false;
                     int spinSize = MaxTimedSpins;
                     Thread borrowThread = borrower.thread;
                     borrower.stateObject = PoolObjectsState.BORROWER_NORMAL;
@@ -451,21 +452,23 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                                 if (stateObject instanceof SQLException)
                                     throw (SQLException)stateObject;
 
-                                if (isNotInterrupted && (isNotInterrupted = !borrowThread.isInterrupted())) {
-                                    long waitNanoTime;
-                                    if (isNotTimeout && (isNotTimeout = (waitNanoTime = deadline - nanoTime()) > 0L)) {
-                                        if (spinSize > 0) {
-                                            spinSize--;
-                                        } else if (waitNanoTime>spinForTimeoutThreshold && BorrowerStateUpdater.compareAndSet(borrower, stateObject,BORROWER_WAITING)) {
-                                            LockSupport.parkNanos(this, waitNanoTime);
-                                        }
-                                    } else if (BorrowerStateUpdater.compareAndSet(borrower, stateObject,BORROWER_TIMEOUT)) {
-                                        throw RequestTimeoutException;
-                                    }
-                                } else if (BorrowerStateUpdater.compareAndSet(borrower, stateObject,BORROWER_INTERRUPTED)) {
-                                    throw RequestInterruptException;
-                                }
-                            }
+								if (isInterrupted){
+									if(BorrowerStateUpdater.compareAndSet(borrower,stateObject,BORROWER_INTERRUPTED))
+										throw RequestInterruptException;
+									continue;
+								}
+
+								if (isNotTimeout && (isNotTimeout = (timeout = deadline - nanoTime()) > 0L)) {
+									if (spinSize > 0) {
+										spinSize--;
+									} else if (timeout>spinForTimeoutThreshold && BorrowerStateUpdater.compareAndSet(borrower, stateObject,BORROWER_WAITING)) {
+										LockSupport.parkNanos(this,timeout);
+										isInterrupted=borrowThread.isInterrupted();
+									}
+								}else if(BorrowerStateUpdater.compareAndSet(borrower,stateObject,BORROWER_TIMEOUT)) {
+									throw RequestTimeoutException;
+								}
+							}
                         }//while
                     } finally {
                         this.waitQueue.remove(borrower);
