@@ -166,7 +166,7 @@ public class ConcurrentTransferQueue<E> extends AbstractQueue<E> {
                 if (timeout > 0)
                     LockSupport.parkNanos(unit.toNanos(timeout));
                 else
-                    LockSupport.park(waiter);
+                    LockSupport.park();
 
                 if (waiter.thread.isInterrupted() && TransferUpdater.compareAndSet(waiter, STS_WAITING, STS_INTERRUPTED))
                     throw new InterruptedException();
