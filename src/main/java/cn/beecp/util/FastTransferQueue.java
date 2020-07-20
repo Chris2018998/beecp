@@ -190,19 +190,18 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
                 if ((timeout = deadline - nanoTime()) > 0) {
                     if (spinSize > 0) {
                         spinSize--;
-                        continue;
-                    } else if (TransferUpdater.compareAndSet(waiter, stateValue, STS_WAITING)) {
+                    } else if (timeout>spinForTimeoutThreshold && TransferUpdater.compareAndSet(waiter, stateValue, STS_WAITING)) {
                         LockSupport.parkNanos(this, timeout);
+                        if (waiterThd.isInterrupted())break;
                     }
                 } else {
-                    TransferUpdater.compareAndSet(waiter, stateValue, STS_TIMEOUT);
+                    TransferUpdater.compareAndSet(waiter,stateValue,STS_TIMEOUT);
                     break;
                 }
             } else {
                 LockSupport.park(this);
+                if (waiterThd.isInterrupted())break;
             }
-
-            if (waiterThd.isInterrupted())break;
         }//while
 
         if (waiter.stateValue instanceof State)
