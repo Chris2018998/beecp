@@ -140,7 +140,7 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
 
     /**
      * if exists element in queue,then retrieves and removes the head of this queue,
-     * if not exists,then waiting for a transferred element by <method>offer<method>
+     * if not exists,then waiting for a transferred element by method:<tt>offer</tt>
      *
      * @param timeout how long to wait before giving up, in units of
      *        {@code unit}
