@@ -448,26 +448,26 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
                                 borrower.stateObject = PoolObjectsState.BORROWER_NORMAL;
                                 yield();
-                            } else {
-                                if (stateObject instanceof SQLException)
-                                    throw (SQLException)stateObject;
+                            }
 
-								if (isInterrupted){
-									if(BorrowerStateUpdater.compareAndSet(borrower,stateObject,BORROWER_INTERRUPTED))
-										throw RequestInterruptException;
-									continue;
-								}
+							if (stateObject instanceof SQLException)
+								throw (SQLException)stateObject;
 
-								if (isNotTimeout && (isNotTimeout = (timeout = deadline - nanoTime()) > 0L)) {
-									if (spinSize > 0) {
-										spinSize--;
-									} else if (timeout>spinForTimeoutThreshold && BorrowerStateUpdater.compareAndSet(borrower, stateObject,BORROWER_WAITING)) {
-										LockSupport.parkNanos(this,timeout);
-										isInterrupted=borrowThread.isInterrupted();
-									}
-								}else if(BorrowerStateUpdater.compareAndSet(borrower,stateObject,BORROWER_TIMEOUT)) {
-									throw RequestTimeoutException;
+							if (isInterrupted){
+								if(BorrowerStateUpdater.compareAndSet(borrower,stateObject,BORROWER_INTERRUPTED))
+									throw RequestInterruptException;
+								continue;
+							}
+
+							if (isNotTimeout && (isNotTimeout = (timeout = deadline - nanoTime()) > 0L)) {
+								if (spinSize > 0) {
+									spinSize--;
+								} else if (timeout>spinForTimeoutThreshold && BorrowerStateUpdater.compareAndSet(borrower, stateObject,BORROWER_WAITING)) {
+									LockSupport.parkNanos(this,timeout);
+									isInterrupted=borrowThread.isInterrupted();
 								}
+							}else if(BorrowerStateUpdater.compareAndSet(borrower,stateObject,BORROWER_TIMEOUT)) {
+								throw RequestTimeoutException;
 							}
                         }//while
                     } finally {
