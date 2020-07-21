@@ -39,10 +39,6 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
      */
     private static final State STS_WAITING = new State();
     /**
-     * Wait timeout
-     */
-    private static final State STS_TIMEOUT = new State();
-    /**
      * spin min time value
      */
     private static final long spinForTimeoutThreshold = 1000L;
@@ -195,7 +191,6 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
                         if (waiterThd.isInterrupted())break;
                     }
                 } else {
-                    TransferUpdater.compareAndSet(waiter,stateValue,STS_TIMEOUT);
                     break;
                 }
             } else {
