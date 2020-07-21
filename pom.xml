@@ -118,7 +118,9 @@
 				<version>2.22.0</version>
 				<configuration>
 					<skipTests>false</skipTests>
-					<includes>TestRunner.java</includes>
+					<includes>
+						<include>cn/beecp/test/TestRunner.java</include>
+					</includes>
 				</configuration>
 			</plugin>
 
