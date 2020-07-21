@@ -25,7 +25,7 @@ import java.util.concurrent.locks.LockSupport;
 import static java.lang.System.nanoTime;
 
 /**
- * TransferQueue Implementation with class <tt>ConcurrentLinkedQueue</tt>
+ * TransferQueue Implementation with class:{@link ConcurrentLinkedQueue}
  *
  * @author Chris.Liao
  */
@@ -39,7 +39,7 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
      */
     private static final State STS_WAITING = new State();
     /**
-     * spin min time value
+     * nanoSecond,spin min time value
      */
     private static final long spinForTimeoutThreshold = 1000L;
     /**
@@ -52,10 +52,10 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
     private static final InterruptedException InterruptedException=new InterruptedException();
 
     /**
-     * CAS updater on waiter's stateValue field
+     * CAS updater on waiter's state field
      */
     private static final AtomicReferenceFieldUpdater<Waiter, Object> TransferUpdater = AtomicReferenceFieldUpdater
-            .newUpdater(Waiter.class, Object.class, "stateValue");
+            .newUpdater(Waiter.class, Object.class, "state");
     /**
      * store element
      */
@@ -76,18 +76,7 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
     }
 
     /**
-     * Returns the number of elements in this queue.  If this queue
-     * contains more than {@code Integer.MAX_VALUE} elements, returns
-     * {@code Integer.MAX_VALUE}.
-     *
-     * <p>Beware that, unlike in most collections, this method is
-     * <em>NOT</em> a constant-time operation. Because of the
-     * asynchronous nature of these queues, determining the current
-     * number of elements requires an O(n) traversal.
-     * Additionally, if elements are added or removed during execution
-     * of this method, the returned result may be inaccurate.  Thus,
-     * this method is typically not very useful in concurrent
-     * applications.
+     * Returns the number of elements in this queue.
      *
      * @return the number of elements in this queue
      */
@@ -109,7 +98,7 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
     }
 
     /**
-     * add element to queue,if exists poll waiter,then transfer it to waiter directly,
+     * if exists poll waiter,then transfer it to waiter directly,
      * if not exists,then add it to element queue;
      *
      * @param e element expect to add into queue
@@ -124,14 +113,12 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
      * try to transfers the element to a consumer
      *
      * @param e the element to transfer
-     * @return {@code true} if successful, or {@code false} if
-     * the specified waiting time elapses before completion,
-     * in which case the element is not left enqueued
+     * @return {@code true} transfer successful, or {@code false} transfer failed
      */
     public boolean tryTransfer(E e) {
         Waiter waiter;
         while ((waiter = waiterQueue.poll()) != null) {
-            for (Object state = waiter.stateValue; (state == STS_NORMAL || state == STS_WAITING); state = waiter.stateValue) {
+            for (Object state = waiter.state; (state == STS_NORMAL || state == STS_WAITING); state = waiter.state) {
                 if (TransferUpdater.compareAndSet(waiter, state, e)) {
                     if (state == STS_WAITING) LockSupport.unpark(waiter.thread);
                     return true;
@@ -142,16 +129,13 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
     }
 
     /**
-     * Poll one element from queue,if not exists,then wait one transferred
+     * Retrieves and removes the head of this queue,
+     * or returns {@code null} if this queue is empty.
      *
-     * @return element
+     * @return the head of this queue, or {@code null} if this queue is empty
      */
     public E poll() {
-        try {
-            return poll(-1, TimeUnit.NANOSECONDS);
-        } catch (InterruptedException e) {
-            return null;
-        }
+        return elementQueue.poll();
     }
 
     /**
@@ -159,11 +143,11 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
      * specified wait time if necessary for an element to become available.
      *
      * @param timeout how long to wait before giving up, in units of
-     *                {@code unit}
-     * @param unit    a {@code TimeUnit} determining how to interpret the
-     *                {@code timeout} parameter
+     *        {@code unit}
+     * @param unit a {@code TimeUnit} determining how to interpret the
+     *        {@code timeout} parameter
      * @return the head of this queue, or {@code null} if the
-     * specified waiting time elapses before an element is available
+     *         specified waiting time elapses before an element is available
      * @throws InterruptedException if interrupted while waiting
      */
     public E poll(long timeout, TimeUnit unit) throws InterruptedException {
@@ -171,42 +155,35 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
         if (e != null) return e;
 
         int spinSize = maxTimedSpins;
+        final long deadline = nanoTime()+unit.toNanos(timeout);
+
         Waiter waiter = new Waiter();
-        Thread waiterThd = waiter.thread;
-
-        final boolean timed = timeout > 0;
-        final long deadline = timed ? nanoTime() + unit.toNanos(timeout) : 0L;
-
+        Thread thread=waiter.thread;
         waiterQueue.offer(waiter);
         while (true) {
-            Object stateValue = waiter.stateValue;
-            if (!(stateValue instanceof State)) return (E) stateValue;
+            Object state = waiter.state;
+            if (!(state instanceof State)) return (E) state;
 
-            if (timed) {
-                if ((timeout = deadline - nanoTime()) > 0) {
-                    if (spinSize > 0) {
-                        spinSize--;
-                    } else if (timeout>spinForTimeoutThreshold && TransferUpdater.compareAndSet(waiter, stateValue, STS_WAITING)) {
-                        LockSupport.parkNanos(this, timeout);
-                        if (waiterThd.isInterrupted())break;
-                    }
-                } else {
-                    break;
+            if ((timeout = deadline - nanoTime()) > 0) {
+                if (spinSize > 0) {
+                    spinSize--;
+                } else if (timeout>spinForTimeoutThreshold && TransferUpdater.compareAndSet(waiter, state, STS_WAITING)) {
+                    LockSupport.parkNanos(this, timeout);
+                    if (thread.isInterrupted())break;
                 }
-            } else {
-                LockSupport.park(this);
-                if (waiterThd.isInterrupted())break;
+            } else {//timeout
+                break;
             }
         }//while
 
-        if (waiter.stateValue instanceof State)
+        if (waiter.state instanceof State)
             waiterQueue.remove(waiter);
 
-        if (waiter.stateValue instanceof State) {
-            if(waiterThd.isInterrupted())throw InterruptedException;
+        if (waiter.state instanceof State) {
+            if(thread.isInterrupted())throw InterruptedException;
             return null;
         } else {
-            return (E) waiter.stateValue;
+            return (E) waiter.state;
         }
     }
 
@@ -215,6 +192,6 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
         //poll thread
         Thread thread = Thread.currentThread();
         //transfer value or waiter status
-        volatile Object stateValue = STS_NORMAL;
+        volatile Object state = STS_NORMAL;
     }
 }
