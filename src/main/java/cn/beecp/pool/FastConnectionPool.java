@@ -461,7 +461,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 							if (isNotTimeout && (isNotTimeout = (timeout = deadline - nanoTime()) > 0L)) {
 								if (spinSize > 0) {
-									spinSize--;
+									--spinSize;
 								} else if (timeout>spinForTimeoutThreshold && BorrowerStateUpdater.compareAndSet(borrower, stateObject,BORROWER_WAITING)) {
 									LockSupport.parkNanos(this,timeout);
 									isInterrupted=borrowThread.isInterrupted();
