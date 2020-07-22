@@ -49,7 +49,7 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
     /**
      * Thread Interrupted Exception
      */
-    private static final InterruptedException InterruptedException=new InterruptedException();
+    private static final InterruptedException RequestInterruptException=new InterruptedException();
 
     /**
      * CAS updater on waiter's state field
@@ -105,8 +105,7 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
      * @return boolean ,true:successful to transfer or add into queue
      */
     public boolean offer(E e) {
-        if (tryTransfer(e)) return true;
-        return elementQueue.offer(e);
+        return tryTransfer(e)?true:elementQueue.offer(e);
     }
 
     /**
@@ -166,7 +165,7 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
 
             if ((timeout = deadline - nanoTime()) > 0) {
                 if (spinSize > 0) {
-                    spinSize--;
+                    --spinSize;
                 } else if (timeout>spinForTimeoutThreshold && TransferUpdater.compareAndSet(waiter, state, STS_WAITING)) {
                     LockSupport.parkNanos(this, timeout);
                     if (thread.isInterrupted())break;
@@ -180,7 +179,7 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
             waiterQueue.remove(waiter);
 
         if (waiter.state instanceof State) {
-            if(thread.isInterrupted())throw InterruptedException;
+            if(thread.isInterrupted())throw RequestInterruptException;
             return null;
         } else {
             return (E) waiter.state;
