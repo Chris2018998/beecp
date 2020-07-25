@@ -64,7 +64,7 @@ public class QueueTransferTest {
             consumers[i].start();
         }
 
-        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(5));
+        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(10));
 
         //Producers
         for (int i = 0; i < producerSize; i++) {
