@@ -24,7 +24,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.LinkedTransferQueue;
-import java.util.concurrent.SynchronousQueue;
 
 /**
  * Queue Write ReadTest
@@ -36,11 +35,11 @@ public class QueueWriteReadTest {
         int threadSize = 1000, takeTimes = 10000;
         System.out.println(".................Queue Write/Read......................");
         testWriteAndRead("ArrayBlockingQueue", new ArrayBlockingQueue<Object>(1000), threadSize, takeTimes);
-        testWriteAndRead("LinkedBlockingQueue", new LinkedBlockingQueue<Object>(), threadSize,takeTimes);
-        testWriteAndRead("LinkedTransferQueue", new LinkedTransferQueue<Object>(), threadSize,takeTimes);
+        testWriteAndRead("LinkedBlockingQueue", new LinkedBlockingQueue<Object>(), threadSize, takeTimes);
+        testWriteAndRead("LinkedTransferQueue", new LinkedTransferQueue<Object>(), threadSize, takeTimes);
         //testWriteAndRead("SynchronousQueue", new SynchronousQueue<Object>(), threadSize,takeTimes);
-        testWriteAndRead("FastTransferQueue", new FastTransferQueue<Object>(), threadSize,takeTimes);
-        testWriteAndRead("ConcurrentLinkedQueue", new ConcurrentLinkedQueue<Object>(), threadSize,takeTimes);
+        testWriteAndRead("FastTransferQueue", new FastTransferQueue<Object>(), threadSize, takeTimes);
+        testWriteAndRead("ConcurrentLinkedQueue", new ConcurrentLinkedQueue<Object>(), threadSize, takeTimes);
     }
 
     private static void testWriteAndRead(String queueName, Queue<Object> queue, int testThreadSize, int operateSize) throws Exception {

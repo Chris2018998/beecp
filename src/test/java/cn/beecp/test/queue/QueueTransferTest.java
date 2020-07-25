@@ -21,8 +21,6 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -42,11 +40,11 @@ public class QueueTransferTest {
     public static void main(String[] args) throws Exception {
         int producerSize = 10, consumerSize = 10000;
         System.out.println(".................QueueTransferTest......................");
-        ArrayList<Long> timeList=new ArrayList<Long>(5);
-//        timeList.add(testTransferQueue("ArrayBlockingQueue", new ArrayBlockingQueue<TransferPacket>(1000), producerSize, consumerSize));
-//        timeList.add(testTransferQueue("LinkedBlockingQueue", new LinkedBlockingQueue<TransferPacket>(), producerSize, consumerSize));
-//        timeList.add(testTransferQueue("LinkedTransferQueue", new LinkedTransferQueue<TransferPacket>(), producerSize, consumerSize));
-//        timeList.add(testTransferQueue("SynchronousQueue", new SynchronousQueue<TransferPacket>(), producerSize, consumerSize));
+        ArrayList<Long> timeList = new ArrayList<Long>(5);
+        timeList.add(testTransferQueue("ArrayBlockingQueue", new ArrayBlockingQueue<TransferPacket>(1000), producerSize, consumerSize));
+        timeList.add(testTransferQueue("LinkedBlockingQueue", new LinkedBlockingQueue<TransferPacket>(), producerSize, consumerSize));
+        timeList.add(testTransferQueue("LinkedTransferQueue", new LinkedTransferQueue<TransferPacket>(), producerSize, consumerSize));
+        timeList.add(testTransferQueue("SynchronousQueue", new SynchronousQueue<TransferPacket>(), producerSize, consumerSize));
         timeList.add(testTransferQueue("FastTransferQueue", new FastTransferQueue<TransferPacket>(), producerSize, consumerSize));
 
         Collections.sort(timeList);

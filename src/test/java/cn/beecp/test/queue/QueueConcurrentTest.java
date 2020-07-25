@@ -19,8 +19,6 @@ import cn.beecp.util.FastTransferQueue;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Queue;
@@ -43,13 +41,13 @@ public class QueueConcurrentTest {
     public static void main(String[] args) throws Exception {
         int producerSize = 10, consumerSize = 1000, operateSize = 100;
         System.out.println(".................QueueConcurrentTest......................");
-        ArrayList<Long> timeList=new ArrayList<Long>(5);
+        ArrayList<Long> timeList = new ArrayList<Long>(5);
 
-//        timeList.add(testTransferQueue("ArrayBlockingQueue", new ArrayBlockingQueue<Object>(1000), producerSize, consumerSize, operateSize));
-//        timeList.add(testTransferQueue("LinkedBlockingQueue", new LinkedBlockingQueue<Object>(), producerSize, consumerSize, operateSize));
-//        timeList.add(testTransferQueue("LinkedTransferQueue", new LinkedTransferQueue<Object>(), producerSize, consumerSize, operateSize));
-//        timeList.add(testTransferQueue("SynchronousQueue", new SynchronousQueue<Object>(), producerSize, consumerSize, operateSize));
-         timeList.add(testTransferQueue("FastTransferQueue", new FastTransferQueue<Object>(), producerSize, consumerSize, operateSize));
+        timeList.add(testTransferQueue("ArrayBlockingQueue", new ArrayBlockingQueue<Object>(1000), producerSize, consumerSize, operateSize));
+        timeList.add(testTransferQueue("LinkedBlockingQueue", new LinkedBlockingQueue<Object>(), producerSize, consumerSize, operateSize));
+        timeList.add(testTransferQueue("LinkedTransferQueue", new LinkedTransferQueue<Object>(), producerSize, consumerSize, operateSize));
+        timeList.add(testTransferQueue("SynchronousQueue", new SynchronousQueue<Object>(), producerSize, consumerSize, operateSize));
+        timeList.add(testTransferQueue("FastTransferQueue", new FastTransferQueue<Object>(), producerSize, consumerSize, operateSize));
         Collections.sort(timeList);
         System.out.println(timeList);
     }
