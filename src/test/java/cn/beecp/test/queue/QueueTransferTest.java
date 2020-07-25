@@ -38,7 +38,7 @@ import java.util.concurrent.locks.LockSupport;
  */
 public class QueueTransferTest {
     public static void main(String[] args) throws Exception {
-        int producerSize = 10, consumerSize = 10000;
+        int producerSize = 10, consumerSize = 1000;
         System.out.println(".................QueueTransferTest......................");
         ArrayList<Long> timeList = new ArrayList<Long>(5);
         timeList.add(testTransferQueue("ArrayBlockingQueue", new ArrayBlockingQueue<TransferPacket>(1000), producerSize, consumerSize));
