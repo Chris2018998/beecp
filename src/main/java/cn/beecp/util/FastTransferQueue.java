@@ -39,6 +39,15 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
      */
     private static final State STS_WAITING = new State();
     /**
+     * Waiter wait timeout
+     */
+    private static final State STS_TIMEOUT = new State();
+    /**
+     * Waiter thread interrupt
+     */
+    private static final State STS_INTERRUPTED = new State();
+
+    /**
      * nanoSecond,spin min time value
      */
     private static final long spinForTimeoutThreshold = 1000L;
@@ -153,36 +162,41 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
         E e = elementQueue.poll();
         if (e != null) return e;
 
+        boolean isNotTimeout=true;
+        boolean isInterrupted=false;
         int spinSize = maxTimedSpins;
-        final long deadline = nanoTime()+unit.toNanos(timeout);
-
         Waiter waiter = new Waiter();
         Thread thread=waiter.thread;
+
         waiterQueue.offer(waiter);
+        final long deadline = nanoTime()+unit.toNanos(timeout);
+
         while (true) {
             Object state = waiter.state;
             if (!(state instanceof State)) return (E) state;
 
-            if ((timeout = deadline - nanoTime()) > 0) {
+            if (isInterrupted){
+                if(TransferUpdater.compareAndSet(waiter,state,STS_INTERRUPTED)){
+                    waiterQueue.remove(waiter);
+                    throw RequestInterruptException;
+                }
+                continue;
+            }
+
+            if (isNotTimeout && (isNotTimeout = (timeout = deadline - nanoTime()) > 0L)) {
                 if (spinSize > 0) {
                     --spinSize;
-                } else if (timeout>spinForTimeoutThreshold && TransferUpdater.compareAndSet(waiter, state, STS_WAITING)) {
-                    LockSupport.parkNanos(this, timeout);
-                    if (thread.isInterrupted())break;
+                } else if (timeout>spinForTimeoutThreshold && TransferUpdater.compareAndSet(waiter,state,STS_WAITING)) {
+                    LockSupport.parkNanos(this,timeout);
+                    if((isInterrupted=thread.isInterrupted())&& TransferUpdater.compareAndSet(waiter,state,STS_INTERRUPTED)){
+                        waiterQueue.remove(waiter);
+                        throw RequestInterruptException;
+                    }
                 }
-            } else {//timeout
-                break;
+            }else if(TransferUpdater.compareAndSet(waiter,state,STS_TIMEOUT)) {
+                waiterQueue.remove(waiter);
+                return null;
             }
-        }//while
-
-        if (waiter.state instanceof State)
-            waiterQueue.remove(waiter);
-
-        if (waiter.state instanceof State) {
-            if(thread.isInterrupted())throw RequestInterruptException;
-            return null;
-        } else {
-            return (E) waiter.state;
         }
     }
 
