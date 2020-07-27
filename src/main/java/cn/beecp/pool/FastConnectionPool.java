@@ -433,12 +433,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					long timeout;
                     boolean isNotTimeout=true;
                     boolean isInterrupted=false;
-                    int spinSize = MaxTimedSpins;
                     Thread borrowThread = borrower.thread;
                     borrower.stateObject = PoolObjectsState.BORROWER_NORMAL;
 
                     try {
-                        this.waitQueue.offer(borrower);
+                        waitQueue.offer(borrower);
+						int spinSize =(waitQueue.peek()==borrower)?MaxTimedSpins:0;
+
                         while(true) {
                             Object stateObject = borrower.stateObject;
                             if (stateObject instanceof PooledConnection) {
