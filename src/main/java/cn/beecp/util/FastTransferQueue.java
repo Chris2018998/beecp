@@ -164,12 +164,13 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
 
         boolean isNotTimeout=true;
         boolean isInterrupted=false;
-        int spinSize = maxTimedSpins;
+
         Waiter waiter = new Waiter();
         Thread thread=waiter.thread;
 
         waiterQueue.offer(waiter);
         final long deadline = nanoTime()+unit.toNanos(timeout);
+        int spinSize =(waiterQueue.peek()==waiter)?maxTimedSpins:0;
 
         while (true) {
             Object state = waiter.state;
