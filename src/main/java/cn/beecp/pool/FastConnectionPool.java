@@ -126,11 +126,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private AtomicInteger needAddConnSize = new AtomicInteger(0);
 	private static Logger log = LoggerFactory.getLogger(FastConnectionPool.class);
 	private static AtomicInteger PoolNameIndex = new AtomicInteger(1);
-	private static final int MaxTimedSpins = (Runtime.getRuntime().availableProcessors() < 2) ? 0 : 32;
+	private static final long spinForTimeoutThreshold = 1000L;
+   	private static final int maxTimedSpins = (Runtime.getRuntime().availableProcessors() < 2) ? 0 : 32;
 	private static final AtomicIntegerFieldUpdater<PooledConnection> ConnStateUpdater = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class, "state");
 	private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowerStateUpdater = AtomicReferenceFieldUpdater.newUpdater(Borrower.class, Object.class, "stateObject");
-	private static final long spinForTimeoutThreshold = 1000L;
-
+ 
 	private static final String DESC_REMOVE_INIT="init";
 	private static final String DESC_REMOVE_BAD="bad";
 	private static final String DESC_REMOVE_IDLE="idle";
@@ -438,9 +438,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
                     try {
                         waitQueue.offer(borrower);
-						int spinSize =(waitQueue.peek()==borrower)?MaxTimedSpins:0;
-
-                        while(true) {
+			int spinSize =(waitQueue.peek()==borrower)?maxTimedSpins:0;
+			    
+         		while(true) {
                             Object stateObject = borrower.stateObject;
                             if (stateObject instanceof PooledConnection) {
                                 pConn = (PooledConnection)stateObject;
