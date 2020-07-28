@@ -129,7 +129,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private static final long spinForTimeoutThreshold = 1000L;
    	private static final int maxTimedSpins = (Runtime.getRuntime().availableProcessors() < 2) ? 0 : 32;
 	private static final AtomicIntegerFieldUpdater<PooledConnection> ConnStateUpdater = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class, "state");
-	private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowerStateUpdater = AtomicReferenceFieldUpdater.newUpdater(Borrower.class, Object.class, "stateObject");
+	private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowerStateUpdater = AtomicReferenceFieldUpdater.newUpdater(Borrower.class, Object.class, "state");
  
 	private static final String DESC_REMOVE_INIT="init";
 	private static final String DESC_REMOVE_BAD="bad";
@@ -434,28 +434,26 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     boolean isNotTimeout=true;
                     boolean isInterrupted=false;
                     Thread borrowThread = borrower.thread;
-                    borrower.stateObject = PoolObjectsState.BORROWER_NORMAL;
+                    borrower.state = PoolObjectsState.BORROWER_NORMAL;
 
                     try {
                         waitQueue.offer(borrower);
-			int spinSize =(waitQueue.peek()==borrower)?maxTimedSpins:0;
+						int spinSize =(waitQueue.peek()==borrower)?maxTimedSpins:0;
 			    
-         		while(true) {
-                            Object stateObject = borrower.stateObject;
-                            if (stateObject instanceof PooledConnection) {
-                                pConn = (PooledConnection)stateObject;
+         				while(true) {
+                            Object state = borrower.state;
+                            if (state instanceof PooledConnection) {
+                                pConn = (PooledConnection)state;
                                 if (this.transferPolicy.tryCatch(pConn) && this.testOnBorrow(pConn))
                                     return createProxyConnection(pConn, borrower);
 
-                                borrower.stateObject = PoolObjectsState.BORROWER_NORMAL;
-                                yield();
-                            }
-
-							if (stateObject instanceof SQLException)
-								throw (SQLException)stateObject;
+                                borrower.state = PoolObjectsState.BORROWER_NORMAL;
+                                yield();continue;
+                            }else if (state instanceof SQLException)
+								throw (SQLException)state;
 
 							if (isInterrupted){
-								if(BorrowerStateUpdater.compareAndSet(borrower,stateObject,BORROWER_INTERRUPTED))
+								if(BorrowerStateUpdater.compareAndSet(borrower,state,BORROWER_INTERRUPTED))
 									throw RequestInterruptException;
 								continue;
 							}
@@ -463,11 +461,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 							if (isNotTimeout && (isNotTimeout = (timeout = deadline - nanoTime()) > 0L)) {
 								if (spinSize > 0) {
 									--spinSize;
-								} else if (timeout>spinForTimeoutThreshold && BorrowerStateUpdater.compareAndSet(borrower, stateObject,BORROWER_WAITING)) {
+								} else if (timeout>spinForTimeoutThreshold && BorrowerStateUpdater.compareAndSet(borrower,state,BORROWER_WAITING)) {
 									LockSupport.parkNanos(this,timeout);
 									isInterrupted=borrowThread.isInterrupted();
 								}
-							}else if(BorrowerStateUpdater.compareAndSet(borrower,stateObject,BORROWER_TIMEOUT)) {
+							}else if(BorrowerStateUpdater.compareAndSet(borrower,state,BORROWER_TIMEOUT)) {
 								throw RequestTimeoutException;
 							}
                         }//while
@@ -513,7 +511,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		Iterator<Borrower>iterator=waitQueue.iterator();
 		while(iterator.hasNext()) {
 			Borrower borrower=iterator.next();
-			for(Object state = borrower.stateObject; state == PoolObjectsState.BORROWER_NORMAL || state == PoolObjectsState.BORROWER_WAITING; state = borrower.stateObject) {
+			for(Object state = borrower.state; state == PoolObjectsState.BORROWER_NORMAL || state == PoolObjectsState.BORROWER_WAITING; state = borrower.state) {
 				if (pConn.state != ConUnCatchStateCode) return;
 				if (BorrowerStateUpdater.compareAndSet(borrower, state, pConn)) {//transfer successful
 					if (state == BORROWER_WAITING) unpark(borrower.thread);
@@ -531,7 +529,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		Iterator<Borrower>iterator=waitQueue.iterator();
 		while(iterator.hasNext()) {
 			Borrower borrower=iterator.next();
-			for(Object state = borrower.stateObject; state == PoolObjectsState.BORROWER_NORMAL || state == PoolObjectsState.BORROWER_WAITING; state = borrower.stateObject) {
+			for(Object state = borrower.state; state == PoolObjectsState.BORROWER_NORMAL || state == PoolObjectsState.BORROWER_WAITING; state = borrower.state) {
 				if (BorrowerStateUpdater.compareAndSet(borrower, state, exception)) {//transfer successful
 					if (state == BORROWER_WAITING) unpark(borrower.thread);
 					return;
