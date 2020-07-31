@@ -42,6 +42,4 @@ class PoolObjectsState {
 	//BORROWER STATE
 	static final Object BORROWER_NORMAL      = new Object();
 	static final Object BORROWER_WAITING     = new Object();
-	static final Object BORROWER_TIMEOUT     = new Object();
-	static final Object BORROWER_INTERRUPTED = new Object();
 }
