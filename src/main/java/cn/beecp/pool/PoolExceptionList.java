@@ -38,6 +38,8 @@ class PoolExceptionList {
 	
 	static final SQLException ResultSetClosedException = new SQLException("ResultSet has been closed");
 
-	static final SQLException AutoCommitChangeForbiddennException = new SQLException("Execute 'commit' or 'rollback' before this operation");
+	static final SQLException AutoCommitChangeForbiddenException = new SQLException("Execute 'commit' or 'rollback' before this operation");
+
+	static final SQLException DriverNotSupportNetworkTimeoutException= new SQLException("Driver not support 'networkTimeout'");
 
 }	

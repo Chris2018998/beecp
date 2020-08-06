@@ -21,10 +21,9 @@ import java.sql.Savepoint;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
+import static cn.beecp.pool.PoolExceptionList.*;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Boolean.FALSE;
-import static cn.beecp.pool.PoolExceptionList.AutoCommitChangeForbiddennException;
-import static cn.beecp.pool.PoolExceptionList.ConnectionClosedException;
 import static cn.beecp.util.BeecpUtil.equalsText;
 import static java.lang.System.currentTimeMillis;
 
@@ -69,7 +68,7 @@ abstract class ProxyConnectionBase implements Connection{
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
 		checkClosed();
 		if(!pConn.curAutoCommit && pConn.commitDirtyInd)
-		  throw AutoCommitChangeForbiddennException;
+		  throw AutoCommitChangeForbiddenException;
 		
 		delegate.setAutoCommit(autoCommit);
 		pConn.curAutoCommit = autoCommit;
@@ -122,8 +121,12 @@ abstract class ProxyConnectionBase implements Connection{
 	}
 	public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
 		checkClosed();
-		delegate.setNetworkTimeout(executor, milliseconds);
-		pConn.setChangedInd(Pos_NetworkTimeoutInd, true);
+		if(pConn.isSupportNetworkTimeout()) {
+			delegate.setNetworkTimeout(executor, milliseconds);
+			pConn.setChangedInd(Pos_NetworkTimeoutInd, milliseconds != pConn.defaultNetworkTimeout);
+		}else{
+			throw DriverNotSupportNetworkTimeoutException;
+		}
 	}
 	//for JDK1.7 end
 

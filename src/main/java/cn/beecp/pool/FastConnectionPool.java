@@ -293,7 +293,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		if(supportNetworkTimeout){//test networkTimeout
 			try {//set networkTimeout
 				this.networkTimeout=rawConn.getNetworkTimeout();
-				if(networkTimeout<=0) {
+				if(networkTimeout<0) {
 					supportNetworkTimeout=false;
 					log.warn("BeeCP({})driver not support 'networkTimeout'",poolName);
 				}else{
