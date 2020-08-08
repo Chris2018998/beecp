@@ -4,3 +4,9 @@ BeeCP-2.4.2
 BeeCP-2.4.3
  1:add safe synchronization on connection.close()
  2:some source code optimize
+
+
+BeeCP-2.5.1
+ 1:Connection retrieve source code optimization 
+ 2:fix Connction reanonly not reset issue(#18)
+ 3:fix Connction networtimeout check worning(#16)
