@@ -99,7 +99,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	/**
 	 * 'PreparedStatement' cache size
 	 */
-	private int preparedStatementCacheSize = 10;
+	private int preparedStatementCacheSize;
 
 	/**
 	 * connection.setAutoCommit(boolean);
