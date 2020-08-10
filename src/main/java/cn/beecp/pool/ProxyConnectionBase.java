@@ -36,7 +36,7 @@ import static java.lang.System.currentTimeMillis;
 abstract class ProxyConnectionBase implements Connection{
 	protected Connection delegate;
 	protected PooledConnection pConn;//called by subclass to update time
-	private volatile boolean closedInd;
+	private boolean closedInd;
 
     private final static int Pos_AutoCommitInd=0;
 	private final static int Pos_TransactionIsolationInd=1;
