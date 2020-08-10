@@ -59,12 +59,11 @@ abstract class ProxyConnectionBase implements Connection{
 	synchronized boolean setAsClosed(){
 	    return closedInd?false:(closedInd=true);
 	}
-	public synchronized void close() throws SQLException {
-		if(closedInd){
-			throw ConnectionClosedException;
+	public void close() throws SQLException {
+		if(setAsClosed()){
+		   pConn.returnToPoolBySelf();	
 		}else{
-			closedInd=true;
-			pConn.returnToPoolBySelf();
+		   throw ConnectionClosedException; 
 		}
 	}
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
