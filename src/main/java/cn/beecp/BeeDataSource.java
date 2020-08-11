@@ -111,17 +111,17 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 		if(inited)return pool.getConnection();
 
 		if(writeLock.tryLock()) {
-			if(!inited){
-				try {
+			try {
+				if (!inited) {
 					failedCause = null;
-					pool=createPool(this);
-					inited=true;
-				} catch (SQLException e) {
-					failedCause = e;
-					throw e;
-				} finally {
-					writeLock.unlock();
+					pool = createPool(this);
+					inited = true;
 				}
+			} catch (SQLException e) {
+				failedCause = e;
+				throw e;
+			} finally {
+				writeLock.unlock();
 			}
 		}else{
 			try{
@@ -154,22 +154,15 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	}
 
 	public void close()throws SQLException {
-		checkClosed();
 		if(pool!=null) {
 			pool.shutdown();
+		}else{
+			throw new SQLException("DataSource not initialized");
 		}
 	}
 	public boolean isClosed()throws SQLException {
 		if(pool!=null) {
 			return pool.isShutdown();
-		}else{
-			throw new SQLException("DataSource not initialized");
-		}
-	}
-	private void checkClosed()throws SQLException {
-		if(pool!=null) {
-			if(pool.isShutdown())
-				throw new SQLException("DataSource has closed");
 		}else{
 			throw new SQLException("DataSource not initialized");
 		}
@@ -191,11 +184,9 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 		throw new SQLException("Not supported");
 	}
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-		checkClosed();
 		return iface.isInstance(this);
 	}
 	public <T> T unwrap(Class<T> iface) throws SQLException{
-		checkClosed();
 		String message="Wrapped object is not an instance of "+iface;
 		if(iface.isInstance(this))
 			return (T)this;
