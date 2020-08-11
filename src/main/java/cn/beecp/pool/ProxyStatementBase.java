@@ -60,10 +60,9 @@ class ProxyStatementBase{
 	}
 	public <T> T unwrap(Class<T> iface) throws SQLException{
 		checkClosed();
-		String message="Wrapped object is not an instance of "+iface;
 		if(iface.isInstance(this))
 			return (T)this;
 		else
-			throw new SQLException(message);
+			throw new SQLException("Wrapped object is not an instance of "+iface);
 	}
 }
