@@ -82,7 +82,7 @@ class PooledConnection extends StatementCache{
 				proxyConn.setAsClosed();
 				proxyConn = null;
 			}
-			if(stmCacheValid)this.clearStatement();
+			if(stmCacheValid)this.clear();
 			resetRawConnOnReturn();
 		}catch(SQLException e) {
 			log.error("Connection close error", e);
