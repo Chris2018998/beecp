@@ -277,6 +277,8 @@ public final class ProxyClassGenerator {
 		CtClass ctCallableStatementClass = classPool.get(CallableStatement.class.getName());
 		CtClass ctDatabaseMetaDataIntf = classPool.get(DatabaseMetaData.class.getName());
 
+		int preparedStatementMethodIndex=1;
+		int callableStatementMethodIndex=1;
 		StringBuilder methodBuffer = new StringBuilder();
 		for(CtMethod ctMethod:linkedList){
 			String methodName = ctMethod.getName();
@@ -290,7 +292,7 @@ public final class ProxyClassGenerator {
 				methodBuffer.append("return new ProxyStatement(delegate."+methodName+"($$),this,pConn);");
 			}else if(ctMethod.getReturnType() == ctPreparedStatementClass){
 				methodBuffer.append("if(pConn.stmCacheValid){");
-				String cacheType="1"+ctMethod.getParameterTypes().length;
+				String cacheType="1"+preparedStatementMethodIndex++;
 				methodBuffer.append("  CacheKey key=new CacheKey("+cacheType+",$$);");
 				methodBuffer.append("  PreparedStatement stm=pConn.get(key);");
 				methodBuffer.append("  if(stm==null){");
@@ -302,7 +304,7 @@ public final class ProxyClassGenerator {
 				methodBuffer.append("return new ProxyPsStatement(delegate."+methodName+"($$),this,pConn,false);");
 			}else if(ctMethod.getReturnType() == ctCallableStatementClass){
 				methodBuffer.append("if(pConn.stmCacheValid){");
-				String cacheType="2"+ctMethod.getParameterTypes().length;
+				String cacheType="2"+callableStatementMethodIndex++;
 				methodBuffer.append("  CacheKey key=new CacheKey("+cacheType+",$$);");
 				methodBuffer.append("  CallableStatement stm=(CallableStatement)pConn.get(key);");
 				methodBuffer.append("  if(stm==null){");
