@@ -30,32 +30,32 @@ import java.sql.Statement;
 public final class BeecpUtil {
 	private static Logger log = LoggerFactory.getLogger(BeecpUtil.class);
 
-	public static void oclose(ResultSet resultSet) {
+	public static void oclose(ResultSet r) {
 		try {
-			resultSet.close();
+			r.close();
 		} catch (Throwable e) {
 			log.warn("Error at closing resultSet:", e);
 		}
 	}
 
-	public static void oclose(Statement statement) {
+	public static void oclose(Statement s) {
 		try {
-			statement.close();
+			s.close();
 		} catch (Throwable e) {
 			log.warn("Error at closing statement:", e);
 		}
 	}
 
-	public static void oclose(Connection connection) {
+	public static void oclose(Connection c) {
 		try {
-			connection.close();
+			c.close();
 		} catch (Throwable e) {
 			log.warn("Error at closing connection:", e);
 		}
 	}
 
-	public static boolean isNullText(String value) {
-		return (value == null || value.trim().length() == 0);
+	public static boolean isNullText(String s) {
+		return (s == null || s.trim().length() == 0);
 	}
 	public static boolean equalsText(String a, String b) {
 		return (a != null && a.equals(b) || (a == null && b == null));
