@@ -17,13 +17,9 @@ package cn.beecp.pool;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Savepoint;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import static cn.beecp.pool.PoolExceptionList.*;
-import static java.lang.Boolean.TRUE;
-import static java.lang.Boolean.FALSE;
 import static cn.beecp.util.BeecpUtil.equalsText;
 import static java.lang.System.currentTimeMillis;
 

@@ -28,20 +28,17 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
-import java.util.concurrent.locks.LockSupport;
 
 import static cn.beecp.pool.PoolExceptionList.*;
 import static cn.beecp.pool.PoolObjectsState.*;
 import static cn.beecp.util.BeecpUtil.isNullText;
 import static cn.beecp.util.BeecpUtil.oclose;
-import static java.lang.System.currentTimeMillis;
-import static java.lang.System.nanoTime;
+import static java.lang.System.*;
 import static java.util.concurrent.TimeUnit.*;
 import static java.util.concurrent.locks.LockSupport.*;
 
@@ -224,7 +221,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				setDefaultOnRawConn(con);
 				PooledConnection pConn = new PooledConnection(con,connState,this,poolConfig);// add
 				PooledConnection[] arrayNew = new PooledConnection[connArray.length + 1];
-				System.arraycopy(connArray, 0, arrayNew, 0, connArray.length);
+				arraycopy(connArray, 0, arrayNew, 0, connArray.length);
 				arrayNew[connArray.length] = pConn;// tail
 				connArray = arrayNew;
 				return pConn;
@@ -243,7 +240,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			PooledConnection[] arrayNew = new PooledConnection[oldLen - 1];
 			for (int i = 0; i < oldLen; i++) {
 				if (connArray[i] == pConn) {
-					System.arraycopy(connArray, i + 1, arrayNew, i, oldLen- i - 1);
+					arraycopy(connArray, i + 1, arrayNew, i, oldLen- i - 1);
 					break;
 				} else {
 					arrayNew[i] = connArray[i];
@@ -405,8 +402,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					long timeout;
                     boolean isFailed=false;
                     SQLException failedCause=null;
-                    Thread borrowThread = borrower.thread;
-                    borrower.state = PoolObjectsState.BORROWER_NORMAL;
+                    Thread bThread = borrower.thread;
+                    borrower.state = BORROWER_NORMAL;
 
                     try {
                         waitQueue.offer(borrower);
@@ -416,10 +413,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 							Object state = borrower.state;
 							if (state instanceof PooledConnection) {
 								pConn = (PooledConnection) state;
-								if (this.transferPolicy.tryCatch(pConn) && this.testOnBorrow(pConn))
+								if (transferPolicy.tryCatch(pConn) && this.testOnBorrow(pConn))
 									return createProxyConnection(pConn, borrower);
 
-								borrower.state = PoolObjectsState.BORROWER_NORMAL;
+								borrower.state = BORROWER_NORMAL;
 								yield();
 							} else if (state instanceof SQLException){
 								throw (SQLException) state;
@@ -429,8 +426,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 								if (spinSize > 0) {
 									--spinSize;
 								} else if (timeout>spinForTimeoutThreshold && BorrowerStateUpdater.compareAndSet(borrower,state,BORROWER_WAITING)) {
-									LockSupport.parkNanos(this,timeout);
-									if(borrowThread.isInterrupted()){
+									parkNanos(this,timeout);
+									if(bThread.isInterrupted()){
 										isFailed=true;
 										failedCause=RequestInterruptException;
 									}
@@ -441,7 +438,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 							}
                         }//while
                     } finally {
-                        this.waitQueue.remove(borrower);
+                        waitQueue.remove(borrower);
                     }
 				}finally { semaphore.release();}
 			}
@@ -480,7 +477,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	public void recycle(PooledConnection pConn) {
 		transferPolicy.beforeTransfer(pConn);
 		for(Borrower borrower:waitQueue) {
-			for(Object state = borrower.state; state == PoolObjectsState.BORROWER_NORMAL || state == PoolObjectsState.BORROWER_WAITING; state = borrower.state) {
+			for(Object state = borrower.state; state ==BORROWER_NORMAL || state == BORROWER_WAITING; state = borrower.state) {
 				if (pConn.state != ConUnCatchStateCode) return;
 				if (BorrowerStateUpdater.compareAndSet(borrower, state, pConn)) {//transfer successful
 					if (state == BORROWER_WAITING) unpark(borrower.thread);
@@ -496,7 +493,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 */
 	private void transferException(SQLException exception) {
 		for(Borrower borrower:waitQueue) {
-			for(Object state = borrower.state; state == PoolObjectsState.BORROWER_NORMAL || state == PoolObjectsState.BORROWER_WAITING; state = borrower.state) {
+			for(Object state = borrower.state; state == BORROWER_NORMAL || state == BORROWER_WAITING; state = borrower.state) {
 				if (BorrowerStateUpdater.compareAndSet(borrower, state, exception)) {//transfer successful
 					if (state == BORROWER_WAITING) unpark(borrower.thread);
 					return;

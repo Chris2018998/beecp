@@ -15,10 +15,12 @@
  */
 package cn.beecp.pool;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 
-import static cn.beecp.util.BeecpUtil.oclose;
 import static cn.beecp.pool.PoolExceptionList.StatementClosedException;
+import static cn.beecp.util.BeecpUtil.oclose;
 
 /**
  * ProxyBaseStatement
