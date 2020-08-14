@@ -391,15 +391,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			if (semaphore.tryAcquire(DefaultMaxWaitNanos,NANOSECONDS)) {//concurrent gateway
 				try {
 					//1:try to search one from array
-					PooledConnection pConn;
-					PooledConnection[]array=connArray;
-					for (int i=0,len=array.length;i<len;i++) {
-						pConn=array[i];
+					for(PooledConnection pConn:connArray){
 						if (ConnStateUpdater.compareAndSet(pConn,CONNECTION_IDLE,CONNECTION_USING) && testOnBorrow(pConn))
 							return createProxyConnection(pConn,borrower);
 					}
 
 					//2:try to create one directly
+					PooledConnection pConn;
 					if(connArray.length<PoolMaxSize && (pConn=createPooledConn(CONNECTION_USING))!=null)
 						return createProxyConnection(pConn,borrower);
 
@@ -481,9 +479,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 */
 	public void recycle(PooledConnection pConn) {
 		transferPolicy.beforeTransfer(pConn);
-		Iterator<Borrower>iterator=waitQueue.iterator();
-		while(iterator.hasNext()) {
-			Borrower borrower=iterator.next();
+		for(Borrower borrower:waitQueue) {
 			for(Object state = borrower.state; state == PoolObjectsState.BORROWER_NORMAL || state == PoolObjectsState.BORROWER_WAITING; state = borrower.state) {
 				if (pConn.state != ConUnCatchStateCode) return;
 				if (BorrowerStateUpdater.compareAndSet(borrower, state, pConn)) {//transfer successful
@@ -499,9 +495,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *            transfer Exception to waiter
 	 */
 	private void transferException(SQLException exception) {
-		Iterator<Borrower>iterator=waitQueue.iterator();
-		while(iterator.hasNext()) {
-			Borrower borrower=iterator.next();
+		for(Borrower borrower:waitQueue) {
 			for(Object state = borrower.state; state == PoolObjectsState.BORROWER_NORMAL || state == PoolObjectsState.BORROWER_WAITING; state = borrower.state) {
 				if (BorrowerStateUpdater.compareAndSet(borrower, state, exception)) {//transfer successful
 					if (state == BORROWER_WAITING) unpark(borrower.thread);
