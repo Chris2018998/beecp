@@ -15,8 +15,10 @@
  */
 package cn.beecp;
 
-import static cn.beecp.util.BeecpUtil.isNullText;
-
+import javax.naming.*;
+import javax.naming.spi.NamingManager;
+import javax.naming.spi.ObjectFactory;
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -24,15 +26,7 @@ import java.util.Hashtable;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.Name;
-import javax.naming.NamingException;
-import javax.naming.RefAddr;
-import javax.naming.Reference;
-import javax.naming.spi.NamingManager;
-import javax.naming.spi.ObjectFactory;
-import javax.sql.DataSource;
+import static cn.beecp.util.BeecpUtil.isNullText;
 
 /**
  * BeeDataSource factory
