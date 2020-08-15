@@ -28,6 +28,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -383,69 +384,71 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			threadLocal.set(new WeakReference<Borrower>(borrower));
 		}
 
-		try{
-			long deadline=nanoTime()+DefaultMaxWaitNanos;
-			if (semaphore.tryAcquire(DefaultMaxWaitNanos,NANOSECONDS)) {//concurrent gateway
-				try {
-					//1:try to search one from array
-					for(PooledConnection pConn:connArray){
-						if (ConnStateUpdater.compareAndSet(pConn,CONNECTION_IDLE,CONNECTION_USING) && testOnBorrow(pConn))
-							return createProxyConnection(pConn,borrower);
-					}
 
-					//2:try to create one directly
-					PooledConnection pConn;
-					if(connArray.length<PoolMaxSize && (pConn=createPooledConn(CONNECTION_USING))!=null)
-						return createProxyConnection(pConn,borrower);
+		long deadline = nanoTime() + DefaultMaxWaitNanos;
+		try {
+			if (!this.semaphore.tryAcquire(this.DefaultMaxWaitNanos, TimeUnit.NANOSECONDS))
+				throw RequestTimeoutException;
+	 	} catch (InterruptedException e) {
+			throw RequestInterruptException;
+		}
 
-					//3:try to get one transferred connection
-					long timeout;
-                    boolean isFailed=false;
-                    SQLException failedCause=null;
-                    Thread bThread = borrower.thread;
-                    borrower.state = BORROWER_NORMAL;
-
-                    try {
-                        waitQueue.offer(borrower);
-						int spinSize =(waitQueue.peek()==borrower)?maxTimedSpins:0;
-			    
-         				while(true) {
-							Object state = borrower.state;
-							if (state instanceof PooledConnection) {
-								pConn = (PooledConnection) state;
-								if (transferPolicy.tryCatch(pConn) && this.testOnBorrow(pConn))
-									return createProxyConnection(pConn, borrower);
-
-								borrower.state = BORROWER_NORMAL;
-								yield();
-							} else if (state instanceof SQLException){
-								throw (SQLException) state;
-							} else if (isFailed){
-								BorrowerStateUpdater.compareAndSet(borrower,state,failedCause);
-							}else if((timeout = deadline - nanoTime())>0L){
-								if (spinSize > 0) {
-									--spinSize;
-								} else if (timeout>spinForTimeoutThreshold && BorrowerStateUpdater.compareAndSet(borrower,state,BORROWER_WAITING)) {
-									parkNanos(this,timeout);
-									if(bThread.isInterrupted()){
-										isFailed=true;
-										failedCause=RequestInterruptException;
-									}
-								}
-							}else{//timeout
-								isFailed=true;
-								failedCause=RequestTimeoutException;
-							}
-                        }//while
-                    } finally {
-                        waitQueue.remove(borrower);
-                    }
-				}finally { semaphore.release();}
+		try{//semaphore acquired
+			//1:try to search one from array
+			PooledConnection[] connections=connArray;
+			for (int i=0,l=connections.length;i<l;i++) {
+				PooledConnection pConn = connections[i];
+				if (ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn))
+					return createProxyConnection(pConn, borrower);
 			}
 
-			throw RequestTimeoutException;
-		}catch(InterruptedException e){
-			throw RequestInterruptException;
+			//2:try to create one directly
+			PooledConnection pConn;
+			if (connArray.length < PoolMaxSize && (pConn = createPooledConn(CONNECTION_USING)) != null)
+				return createProxyConnection(pConn, borrower);
+
+			//3:try to get one transferred connection
+			long timeout;
+			boolean isFailed = false;
+			SQLException failedCause = null;
+			Thread bThread = borrower.thread;
+			borrower.state = BORROWER_NORMAL;
+
+			waitQueue.offer(borrower);
+			int spinSize = (waitQueue.peek() == borrower) ? maxTimedSpins : 0;
+			while (true) {
+				Object state = borrower.state;
+				if (state instanceof PooledConnection) {
+					pConn = (PooledConnection) state;
+					if (transferPolicy.tryCatch(pConn) && this.testOnBorrow(pConn)) {
+						waitQueue.remove(borrower);
+						return createProxyConnection(pConn, borrower);
+					}
+
+					borrower.state = BORROWER_NORMAL;
+					yield();
+				} else if (state instanceof SQLException) {
+					waitQueue.remove(borrower);
+					throw (SQLException) state;
+				} else if (isFailed) {
+					BorrowerStateUpdater.compareAndSet(borrower, state, failedCause);
+				} else if ((timeout = deadline - nanoTime()) > 0L) {
+					if (spinSize > 0) {
+						--spinSize;
+					} else if (timeout > spinForTimeoutThreshold && BorrowerStateUpdater.compareAndSet(borrower, state, BORROWER_WAITING)) {
+						parkNanos(this, timeout);
+						if (bThread.isInterrupted()) {
+							isFailed = true;
+							failedCause = RequestInterruptException;
+						}
+					}
+				} else {//timeout
+					isFailed = true;
+					failedCause = RequestTimeoutException;
+				}
+			}//while
+		} finally {
+			 semaphore.release();
 		}
 	}
 
@@ -476,7 +479,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 */
 	public void recycle(PooledConnection pConn) {
 		transferPolicy.beforeTransfer(pConn);
-		for(Borrower borrower:waitQueue) {
+		Iterator<Borrower>itor= waitQueue.iterator();
+	    while(itor.hasNext()){
+			Borrower borrower=itor.next();
 			for(Object state = borrower.state; state ==BORROWER_NORMAL || state == BORROWER_WAITING; state = borrower.state) {
 				if (pConn.state != ConUnCatchStateCode) return;
 				if (BorrowerStateUpdater.compareAndSet(borrower, state, pConn)) {//transfer successful
@@ -492,7 +497,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 *            transfer Exception to waiter
 	 */
 	private void transferException(SQLException exception) {
-		for(Borrower borrower:waitQueue) {
+		Iterator<Borrower>itor= waitQueue.iterator();
+		while(itor.hasNext()){
+			Borrower borrower=itor.next();
 			for(Object state = borrower.state; state == BORROWER_NORMAL || state == BORROWER_WAITING; state = borrower.state) {
 				if (BorrowerStateUpdater.compareAndSet(borrower, state, exception)) {//transfer successful
 					if (state == BORROWER_WAITING) unpark(borrower.thread);
