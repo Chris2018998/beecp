@@ -145,7 +145,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	/** 
 	 * max hold time in Unused(milliseconds),pool will release it by forced 
 	 */
-	private long holdTimeout=MINUTES.toMillis(5);
+	private long holdIdleTimeout=MINUTES.toMillis(5);
 
 	/**
 	 * a test SQL to check connection active state
@@ -371,12 +371,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	  if(!this.checked && idleTimeout>0) 
 		this.idleTimeout = idleTimeout;
 	}
-	public long getHoldTimeout() {
-		return holdTimeout;
+	public long getHoldIdleTimeout() {
+		return holdIdleTimeout;
 	}
-	public void setHoldIdleTimeout(long holdTimeout) {
-		if(!this.checked && holdTimeout>0)
-		this.holdTimeout = holdTimeout;
+	public void setHoldIdleTimeout(long holdIdleTimeout) {
+		if(!this.checked && holdIdleTimeout>0)
+		this.holdIdleTimeout = holdIdleTimeout;
 	}
 	public String getConnectionTestSQL() {
 		return connectionTestSQL;
@@ -556,8 +556,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 			throw new BeeDataSourceConfigException("Pool 'borrowConcurrentSize' must not be greater than pool max size");
 		if (this.idleTimeout <= 0)
 			throw new BeeDataSourceConfigException("Connection 'idleTimeout' must be greater than zero");
-		if (this.holdTimeout <= 0)
-			throw new BeeDataSourceConfigException("Connection 'holdTimeout' must be greater than zero");
+		if (this.holdIdleTimeout <= 0)
+			throw new BeeDataSourceConfigException("Connection 'holdIdleTimeout' must be greater than zero");
 		if (this.maxWait <= 0)
 			throw new BeeDataSourceConfigException("Borrower 'maxWait' must be greater than zero");
 		if (this.preparedStatementCacheSize < 0)

@@ -58,7 +58,7 @@ public interface BeeDataSourceConfigJMXBean {
 
 	long getIdleTimeout();
 
-	long getHoldTimeout();
+	long getHoldIdleTimeout();
 
 	String getConnectionTestSQL();
 
