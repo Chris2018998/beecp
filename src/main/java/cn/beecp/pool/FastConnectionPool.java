@@ -527,7 +527,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					}
 				} else if (state == CONNECTION_USING) {
 					ProxyConnectionBase proxyConn=pConn.proxyConn;
-					boolean isHolTimeoutInNotUsing = currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldTimeout()>= 0;
+					boolean isHolTimeoutInNotUsing = currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldIdleTimeout()>= 0;
 					if(isHolTimeoutInNotUsing &&proxyConn!=null && proxyConn.setAsClosed()){//recycle connection
 						try{
 							pConn.resetRawConnOnReturn();
@@ -603,7 +603,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 								removePooledConn(pConn,source);
 						}
 					} else {
-						boolean isTimeout = (currentTimeMillis()-pConn.lastAccessTime-poolConfig.getHoldTimeout()>= 0);
+						boolean isTimeout = (currentTimeMillis()-pConn.lastAccessTime-poolConfig.getHoldIdleTimeout()>= 0);
 						if (isTimeout &&proxyConn!=null &&proxyConn.setAsClosed()){
 							if(ConnStateUpdater.compareAndSet(pConn, CONNECTION_USING, CONNECTION_CLOSED))
 								removePooledConn(pConn,source);
