@@ -222,7 +222,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		this.driverClassName = driver;
 		defaultTransactionIsolation=TransactionIsolationLevel.LEVEL_READ_COMMITTED;
 		defaultTransactionIsolationCode=TransactionIsolationLevel.CODE_READ_COMMITTED;
-
         //fix issue:#19 Chris-2020-08-16 begin
         borrowConcurrentSize =Math.min(maxActive/2,Runtime.getRuntime().availableProcessors());
         //fix issue:#19 Chris-2020-08-16 end
