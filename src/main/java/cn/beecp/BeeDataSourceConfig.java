@@ -220,9 +220,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		this.username = user;
 		this.password = password;
 		this.driverClassName = driver;
-		borrowConcurrentSize =Runtime.getRuntime().availableProcessors();
 		defaultTransactionIsolation=TransactionIsolationLevel.LEVEL_READ_COMMITTED;
 		defaultTransactionIsolationCode=TransactionIsolationLevel.CODE_READ_COMMITTED;
+
+        //fix issue:#19 Chris-2020-08-16 begin
+        borrowConcurrentSize =Math.min(maxActive/2,Runtime.getRuntime().availableProcessors());
+        //fix issue:#19 Chris-2020-08-16 end
 	}
 
 	void setAsChecked() {
@@ -299,8 +302,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		return maxActive;
 	}
 	public void setMaxActive(int maxActive) {
-		if(!this.checked && maxActive>0)
-		this.maxActive = maxActive;
+		if(!this.checked && maxActive>0) {
+            this.maxActive = maxActive;
+            //fix issue:#19 Chris-2020-08-16 begin
+            this.borrowConcurrentSize=Math.min(maxActive/2,Runtime.getRuntime().availableProcessors());
+            //fix issue:#19 Chris-2020-08-16 end
+        }
 	}
 	public int getBorrowConcurrentSize() {
 		return borrowConcurrentSize;
