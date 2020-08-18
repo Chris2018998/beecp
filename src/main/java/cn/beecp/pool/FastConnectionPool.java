@@ -29,6 +29,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -702,17 +703,17 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		}
 	}
 
-	public Map printPoolInfo(){
-		 Map<String,Object> mapInfo=new HashMap<String,Object>(7);
+	public Map getPoolInfo(){
+		 Map<String,Object> mapInfo=new LinkedHashMap<String,Object>(7);
 		 int totSize=getConnTotalSize();
 		 int idleSize=getConnIdleSize();
 		 mapInfo.put("poolName",poolName);
 		 mapInfo.put("poolMode",poolMode);
-		 mapInfo.put("ConnTotalSize",totSize);
-		 mapInfo.put("ConnIdleSize",idleSize);
-		 mapInfo.put("ConnUsingSize",totSize-idleSize);
-		 mapInfo.put("SemaphoreWaiterSize",getSemaphoreWaitingSize());
-		 mapInfo.put("TransferWaiterSize",getSemaphoreWaitingSize());
+		 mapInfo.put("connTotalSize",totSize);
+		 mapInfo.put("connIdleSize",idleSize);
+		 mapInfo.put("connUsingSize",totSize-idleSize);
+		 mapInfo.put("semaphoreWaiterSize",getSemaphoreWaitingSize());
+		 mapInfo.put("transferWaiterSize",getSemaphoreWaitingSize());
 		log.info("Pool info:"+mapInfo);
 		 return mapInfo;
 	}
