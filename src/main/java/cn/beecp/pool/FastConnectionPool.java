@@ -92,7 +92,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		}
 	}
 
-	private String poolName;
+	private String poolName="";
+	private String poolMode="";
 	private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
 	private AtomicInteger createConnThreadState =new AtomicInteger(THREAD_WORKING);
 	private AtomicInteger needAddConnSize = new AtomicInteger(0);
@@ -141,11 +142,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 			String mode;
 			if (poolConfig.isFairMode()) {
-				mode = "fair";
+				poolMode = "fair";
 				transferPolicy = new FairTransferPolicy();
 				ConUnCatchStateCode = transferPolicy.getCheckStateCode();
 			} else {
-				mode = "compete";
+				poolMode = "compete";
 				transferPolicy =new CompeteTransferPolicy();
 				ConUnCatchStateCode = transferPolicy.getCheckStateCode();
 			}
@@ -163,7 +164,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			registerJMX();
 			log.info("BeeCP({})has startup{mode:{},init size:{},max size:{},concurrent size:{},max wait:{}ms,driver:{}}",
 					poolName,
-					mode,
+					poolMode,
 					connArray.length,
 					config.getMaxActive(),
 					poolConfig.getBorrowConcurrentSize(),
@@ -702,9 +703,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 
 	public Map printPoolInfo(){
-		 Map<String,Integer> mapInfo=new HashMap<String,Integer>(5);
+		 Map<String,Object> mapInfo=new HashMap<String,Object>(7);
 		 int totSize=getConnTotalSize();
 		 int idleSize=getConnIdleSize();
+		 mapInfo.put("poolName",poolName);
+		 mapInfo.put("poolMode",poolMode);
 		 mapInfo.put("ConnTotalSize",totSize);
 		 mapInfo.put("ConnIdleSize",idleSize);
 		 mapInfo.put("ConnUsingSize",totSize-idleSize);
