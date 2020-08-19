@@ -141,7 +141,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			ConnectionTestInterval=poolConfig.getConnectionTestInterval();
 			createInitConnections(poolConfig.getInitialSize());
 
-			String mode;
 			if (poolConfig.isFairMode()) {
 				poolMode = "fair";
 				transferPolicy = new FairTransferPolicy();
@@ -709,9 +708,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		 int idleSize=getConnIdleSize();
 		 mapInfo.put("poolName",poolName);
 		 mapInfo.put("poolMode",poolMode);
-		 mapInfo.put("connTotalSize",totSize);
-		 mapInfo.put("connIdleSize",idleSize);
-		 mapInfo.put("connUsingSize",totSize-idleSize);
+		 mapInfo.put("activeSize",totSize);
+		 mapInfo.put("idleSize",idleSize);
+		 mapInfo.put("usingSize",totSize-idleSize);
 		 mapInfo.put("semaphoreWaiterSize",getSemaphoreWaitingSize());
 		 mapInfo.put("transferWaiterSize",getSemaphoreWaitingSize());
 		log.info("Pool info:"+mapInfo);
