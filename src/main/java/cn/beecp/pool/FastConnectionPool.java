@@ -399,8 +399,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 			PooledConnection[] connections=connArray;
 			for (int i=0,l=connections.length;i<l;i++) {
 				PooledConnection pConn = connections[i];
-				if (ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn))
+				if (ConnStateUpdater.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn)) {
 					return createProxyConnection(pConn, borrower);
+				}
 			}
 
 			//2:try to create one directly
@@ -409,7 +410,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				return createProxyConnection(pConn, borrower);
 
 			//3:try to get one transferred connection
-			long timeout;
 			boolean isFailed = false;
 			SQLException failedCause = null;
 			Thread bThread = borrower.thread;
@@ -431,21 +431,26 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				} else if (state instanceof SQLException) {
 					waitQueue.remove(borrower);
 					throw (SQLException) state;
-				} else if (isFailed) {
+				}
+
+				if (isFailed){
 					BorrowerStateUpdater.compareAndSet(borrower, state, failedCause);
-				} else if ((timeout = deadline - nanoTime()) > 0L) {
-					if (spinSize > 0) {
-						--spinSize;
-					} else if (timeout > spinForTimeoutThreshold && BorrowerStateUpdater.compareAndSet(borrower, state, BORROWER_WAITING)) {
-						parkNanos(this, timeout);
-						if (bThread.isInterrupted()) {
-							isFailed = true;
-							failedCause = RequestInterruptException;
+				}else{
+					long timeout;
+					if ((timeout = deadline - nanoTime()) > 0L) {
+						if (spinSize > 0) {
+							--spinSize;
+						} else if (timeout > spinForTimeoutThreshold && BorrowerStateUpdater.compareAndSet(borrower, state, BORROWER_WAITING)) {
+							parkNanos(this, timeout);
+							if (bThread.isInterrupted()) {
+								isFailed = true;
+								failedCause = RequestInterruptException;
+							}
 						}
+					} else {//timeout
+						isFailed = true;
+						failedCause = RequestTimeoutException;
 					}
-				} else {//timeout
-					isFailed = true;
-					failedCause = RequestTimeoutException;
 				}
 			}//while
 		} finally {
