@@ -27,10 +27,7 @@ import java.lang.ref.WeakReference;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
@@ -41,7 +38,8 @@ import static cn.beecp.pool.PoolObjectsState.*;
 import static cn.beecp.util.BeecpUtil.isNullText;
 import static cn.beecp.util.BeecpUtil.oclose;
 import static java.lang.System.*;
-import static java.util.concurrent.TimeUnit.*;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.concurrent.locks.LockSupport.*;
 
 /**
@@ -707,20 +705,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		}
 	}
 
-	public Map getPoolInfo(){
-		 Map<String,Object> mapInfo=new LinkedHashMap<String,Object>(7);
-		 int totSize=getConnTotalSize();
-		 int idleSize=getConnIdleSize();
-		 mapInfo.put("poolName",poolName);
-		 mapInfo.put("poolMode",poolMode);
-		 mapInfo.put("activeSize",totSize);
-		 mapInfo.put("idleSize",idleSize);
-		 mapInfo.put("usingSize",totSize-idleSize);
-		 mapInfo.put("semaphoreWaiterSize",getSemaphoreWaitingSize());
-		 mapInfo.put("transferWaiterSize",getSemaphoreWaitingSize());
-		log.info("Pool info:"+mapInfo);
-		 return mapInfo;
-	}
 	public int getConnTotalSize(){
 		return connArray.length;
 	}
@@ -745,6 +729,21 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	public int getTransferWaitingSize(){
 		return waitQueue.size();
 	}
+	private final ConnectionPoolMonitorVo monitorVo=new ConnectionPoolMonitorVo();
+	public ConnectionPoolMonitorVo getMonitorVo(){
+		int totSize=getConnTotalSize();
+		int idleSize=getConnIdleSize();
+		monitorVo.setPoolName(poolName);
+		monitorVo.setPoolMode(poolMode);
+		monitorVo.setPoolState(poolState.get());
+		monitorVo.setMaxActive(PoolMaxSize);
+		monitorVo.setIdleSize(idleSize);
+		monitorVo.setUsingSize(totSize-idleSize);
+		monitorVo.setSemaphoreWaiterSize(getSemaphoreWaitingSize());
+		monitorVo.setTransferWaiterSize(getTransferWaitingSize());
+		return monitorVo;
+	}
+
 	// register JMX
 	private void registerJMX() {
 		if (poolConfig.isEnableJMX()) {

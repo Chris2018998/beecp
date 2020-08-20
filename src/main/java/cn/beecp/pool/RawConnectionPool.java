@@ -28,6 +28,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static cn.beecp.pool.PoolExceptionList.*;
+import static cn.beecp.pool.PoolObjectsState.POOL_NORMAL;
 import static cn.beecp.util.BeecpUtil.isNullText;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
@@ -45,7 +46,9 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 	private Semaphore poolSemaphore;
 	private long DefaultMaxWait;
 	private BeeDataSourceConfig poolConfig;
-	private String poolName;
+
+	private String poolName="";
+	private String poolMode="";
 	private static Logger log = LoggerFactory.getLogger(RawConnectionPool.class);
 	private static AtomicInteger PoolNameIndex = new AtomicInteger(1);
 
@@ -61,11 +64,11 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 		poolSemaphore = new Semaphore(poolConfig.getBorrowConcurrentSize(), poolConfig.isFairMode());
 		poolName = !isNullText(config.getPoolName()) ? config.getPoolName(): "RawPool-" + PoolNameIndex.getAndIncrement();
 
-		String mode;
+
 		if (poolConfig.isFairMode()) {
-			mode = "fair";
+			poolMode = "fair";
 		} else {
-			mode = "compete";
+			poolMode = "compete";
 		}
 
 		registerJMX();
@@ -74,7 +77,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 				0,
 				0,
 				poolConfig.getBorrowConcurrentSize(),
-				mode,
+				poolMode,
 				poolConfig.getDriverClassName());
 	}
 
@@ -125,6 +128,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 		return isShutdown;
 	}
 
+
 	//******************************** JMX **************************************//
 	// close all connections
 	public void reset() {}
@@ -147,6 +151,22 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 	public int getTransferWaitingSize(){
 		return 0;
 	}
+
+	private final ConnectionPoolMonitorVo monitorVo=new ConnectionPoolMonitorVo();
+	public ConnectionPoolMonitorVo getMonitorVo(){
+		int totSize=getConnTotalSize();
+		int idleSize=getConnIdleSize();
+		monitorVo.setPoolName(poolName);
+		monitorVo.setPoolMode(poolMode);
+		monitorVo.setPoolState(POOL_NORMAL);
+		monitorVo.setMaxActive(poolConfig.getBorrowConcurrentSize());
+		monitorVo.setIdleSize(idleSize);
+		monitorVo.setUsingSize(totSize-idleSize);
+		monitorVo.setSemaphoreWaiterSize(getSemaphoreWaitingSize());
+		monitorVo.setTransferWaiterSize(getTransferWaitingSize());
+		return monitorVo;
+	}
+
 	// register JMX
 	private void registerJMX() {
 		if (poolConfig.isEnableJMX()) {

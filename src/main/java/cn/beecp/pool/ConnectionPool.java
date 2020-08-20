@@ -21,7 +21,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * Connection pool
+ * Connection pool interface
  * 
  * @author Chris.Liao
  * @version 1.0
@@ -59,6 +59,11 @@ public interface ConnectionPool {
 	 * @return true,has shutdown,false active
 	 */
 	boolean isShutdown();
+
+	/**
+	 * @return Pool Monitor Vo
+	 */
+	ConnectionPoolMonitorVo getMonitorVo();
 
 }
 	
