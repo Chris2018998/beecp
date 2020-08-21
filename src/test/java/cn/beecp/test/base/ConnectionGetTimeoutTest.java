@@ -37,7 +37,7 @@ public class ConnectionGetTimeoutTest extends TestCase {
 		config.setPassword(Config.JDBC_PASSWORD);
 		config.setMaxWait(3000);
 		config.setMaxActive(1);
-		config.setBorrowConcurrentSize(1);
+		config.setBorrowSemaphoreSize(1);
 		ds = new BeeDataSource(config);
 	}
 

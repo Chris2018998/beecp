@@ -35,7 +35,7 @@ public class ConnectionReadonlyRestTest extends TestCase {
         config.setPassword(Config.JDBC_PASSWORD);
         config.setInitialSize(1);
         config.setMaxActive(1);
-        config.setBorrowConcurrentSize(1);
+        config.setBorrowSemaphoreSize(1);
         config.setConnectionTestSQL("SELECT 1 from dual");
         config.setIdleTimeout(3000);
         config.setIdleCheckTimeInitDelay(10);
