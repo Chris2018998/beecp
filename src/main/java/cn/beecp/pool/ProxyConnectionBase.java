@@ -18,6 +18,7 @@ package cn.beecp.pool;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import static cn.beecp.pool.PoolExceptionList.*;
 import static cn.beecp.util.BeecpUtil.equalsText;
@@ -32,7 +33,7 @@ import static java.lang.System.currentTimeMillis;
 abstract class ProxyConnectionBase implements Connection{
     protected Connection delegate;
     protected PooledConnection pConn;//called by subclass to update time
-    private boolean closedInd;
+    private volatile boolean closedInd;
 
     private final static int Pos_AutoCommitInd=0;
     private final static int Pos_TransactionIsolationInd=1;

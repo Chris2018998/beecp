@@ -58,7 +58,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	private ConnectionPoolHook exitHook;
 	private BeeDataSourceConfig poolConfig;
 
-	private Semaphore semaphore;
+	private Semaphore borrowSemaphore;
 	private TransferPolicy transferPolicy;
 	private ConnectionTestPolicy testPolicy;
 	private ConnectionFactory connFactory;
@@ -151,7 +151,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 			exitHook = new ConnectionPoolHook();
 			Runtime.getRuntime().addShutdownHook(exitHook);
-			semaphore = new Semaphore(poolConfig.getBorrowConcurrentSize(), poolConfig.isFairMode());
+			borrowSemaphore = new Semaphore(poolConfig.getBorrowSemaphoreSize(), poolConfig.isFairMode());
 			networkTimeoutExecutor.allowCoreThreadTimeOut(true);
 			idleCheckSchFuture = idleSchExecutor.scheduleAtFixedRate(new Runnable() {
 				public void run() {// check idle connection
@@ -165,7 +165,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 					poolMode,
 					connArray.length,
 					config.getMaxActive(),
-					poolConfig.getBorrowConcurrentSize(),
+					poolConfig.getBorrowSemaphoreSize(),
 					poolConfig.getMaxWait(),
 					poolConfig.getDriverClassName());
 
@@ -211,7 +211,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		return networkTimeoutExecutor;
 	}
 	private boolean existBorrower() {
-		return poolConfig.getBorrowConcurrentSize()>semaphore.availablePermits()||semaphore.hasQueuedThreads();
+		return poolConfig.getBorrowSemaphoreSize()>borrowSemaphore.availablePermits()||borrowSemaphore.hasQueuedThreads();
 	}
 	//create Pooled connection
 	private PooledConnection createPooledConn(int connState) throws SQLException {
@@ -386,13 +386,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 		long deadline = nanoTime() + DefaultMaxWaitNanos;
 		try {
-			if (!this.semaphore.tryAcquire(this.DefaultMaxWaitNanos, TimeUnit.NANOSECONDS))
+			if (!this.borrowSemaphore.tryAcquire(this.DefaultMaxWaitNanos, TimeUnit.NANOSECONDS))
 				throw RequestTimeoutException;
 	 	} catch (InterruptedException e) {
 			throw RequestInterruptException;
 		}
 
-		try{//semaphore acquired
+		try{//borrowSemaphore acquired
 			//1:try to search one from array
 			PooledConnection[] connections=connArray;
 			for (int i=0,l=connections.length;i<l;i++) {
@@ -452,7 +452,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 				}
 			}//while
 		} finally {
-			 semaphore.release();
+			 borrowSemaphore.release();
 		}
 	}
 
@@ -721,10 +721,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		return(active>0)?active:0;
 	}
 	public int getSemaphoreAcquiredSize(){
-		return poolConfig.getBorrowConcurrentSize()-semaphore.availablePermits();
+		return poolConfig.getBorrowSemaphoreSize()-borrowSemaphore.availablePermits();
 	}
 	public int getSemaphoreWaitingSize(){
-		return semaphore.getQueueLength();
+		return borrowSemaphore.getQueueLength();
 	}
 	public int getTransferWaitingSize(){
 		return waitQueue.size();

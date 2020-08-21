@@ -92,9 +92,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 	private int maxActive=10;
 	
 	/**
-	 * pool borrow concurrent Size
+	 * borrow Semaphore Size
 	 */
-	private int borrowConcurrentSize;
+	private int borrowSemaphoreSize;
 	
 	/**
 	 * 'PreparedStatement' cache size
@@ -223,7 +223,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		defaultTransactionIsolation=TransactionIsolationLevel.LEVEL_READ_COMMITTED;
 		defaultTransactionIsolationCode=TransactionIsolationLevel.CODE_READ_COMMITTED;
         //fix issue:#19 Chris-2020-08-16 begin
-        borrowConcurrentSize =Math.min(maxActive/2,Runtime.getRuntime().availableProcessors());
+		borrowSemaphoreSize =Math.min(maxActive/2,Runtime.getRuntime().availableProcessors());
         //fix issue:#19 Chris-2020-08-16 end
 	}
 
@@ -304,16 +304,16 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 		if(!this.checked && maxActive>0) {
             this.maxActive = maxActive;
             //fix issue:#19 Chris-2020-08-16 begin
-            this.borrowConcurrentSize=Math.min(maxActive/2,Runtime.getRuntime().availableProcessors());
+            this.borrowSemaphoreSize=Math.min(maxActive/2,Runtime.getRuntime().availableProcessors());
             //fix issue:#19 Chris-2020-08-16 end
         }
 	}
-	public int getBorrowConcurrentSize() {
-		return borrowConcurrentSize;
+	public int getBorrowSemaphoreSize() {
+		return borrowSemaphoreSize;
 	}
-	public void setBorrowConcurrentSize(int borrowConcurrentSize) {
-		if(!this.checked && borrowConcurrentSize>0)
-		this.borrowConcurrentSize = borrowConcurrentSize;
+	public void setBorrowSemaphoreSize(int borrowSemaphoreSize) {
+		if(!this.checked && borrowSemaphoreSize>0)
+		this.borrowSemaphoreSize = borrowSemaphoreSize;
 	}
 	public int getPreparedStatementCacheSize() {
 		return preparedStatementCacheSize;
@@ -550,10 +550,13 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean{
 			throw new BeeDataSourceConfigException("Pool 'initialSize' must be greater than zero");
 		if (this.initialSize > maxActive)
 			throw new BeeDataSourceConfigException("Pool 'initialSize' must not be greater than 'maxActive'");
-		if (this.borrowConcurrentSize <=0)
-			throw new BeeDataSourceConfigException("Pool 'borrowConcurrentSize' must be greater than zero");
-		if (this.borrowConcurrentSize > maxActive)
-			throw new BeeDataSourceConfigException("Pool 'borrowConcurrentSize' must not be greater than pool max size");
+		if (this.borrowSemaphoreSize <=0)
+			throw new BeeDataSourceConfigException("Pool 'borrowSemaphoreSize' must be greater than zero");
+		//fix issue:#19 Chris-2020-08-16 begin
+		//if (this.borrowConcurrentSize > maxActive)
+			//throw new BeeDataSourceConfigException("Pool 'borrowConcurrentSize' must not be greater than pool max size");
+		//fix issue:#19 Chris-2020-08-16 end
+
 		if (this.idleTimeout <= 0)
 			throw new BeeDataSourceConfigException("Connection 'idleTimeout' must be greater than zero");
 		if (this.holdIdleTimeout <= 0)

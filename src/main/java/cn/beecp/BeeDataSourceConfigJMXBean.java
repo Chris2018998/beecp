@@ -40,7 +40,7 @@ public interface BeeDataSourceConfigJMXBean {
 
 	int getMaxActive();
 
-	int getBorrowConcurrentSize();
+	int getBorrowSemaphoreSize();
 
 	int getPreparedStatementCacheSize();
 

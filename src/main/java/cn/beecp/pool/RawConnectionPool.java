@@ -43,8 +43,8 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
  */
 public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJMXBean {
 	private volatile boolean isShutdown;
-	private Semaphore poolSemaphore;
 	private long DefaultMaxWait;
+	private Semaphore borrowSemaphore;
 	private BeeDataSourceConfig poolConfig;
 
 	private String poolName="";
@@ -61,7 +61,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 	public void init(BeeDataSourceConfig config){
 		poolConfig = config;
 		DefaultMaxWait = MILLISECONDS.toNanos(poolConfig.getMaxWait());
-		poolSemaphore = new Semaphore(poolConfig.getBorrowConcurrentSize(), poolConfig.isFairMode());
+		borrowSemaphore = new Semaphore(poolConfig.getBorrowSemaphoreSize(), poolConfig.isFairMode());
 		poolName = !isNullText(config.getPoolName()) ? config.getPoolName(): "RawPool-" + PoolNameIndex.getAndIncrement();
 
 
@@ -76,7 +76,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 				poolName,
 				0,
 				0,
-				poolConfig.getBorrowConcurrentSize(),
+				poolConfig.getBorrowSemaphoreSize(),
 				poolMode,
 				poolConfig.getDriverClassName());
 	}
@@ -93,7 +93,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 		try {
 			if(isShutdown)throw PoolCloseException;
 
-			if (poolSemaphore.tryAcquire(DefaultMaxWait,NANOSECONDS)) {
+			if (borrowSemaphore.tryAcquire(DefaultMaxWait,NANOSECONDS)) {
 				return poolConfig.getConnectionFactory().create();
 			} else {
 				throw RequestTimeoutException;
@@ -101,7 +101,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 		} catch (InterruptedException e) {
 			throw RequestInterruptException;
 		} finally {
-			poolSemaphore.release();
+			borrowSemaphore.release();
 		}
 	}
 
@@ -143,10 +143,10 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 		return 0;
 	}
 	public int getSemaphoreAcquiredSize(){
-		return poolConfig.getBorrowConcurrentSize()-poolSemaphore.availablePermits();
+		return poolConfig.getBorrowSemaphoreSize()-borrowSemaphore.availablePermits();
 	}
 	public int getSemaphoreWaitingSize(){
-		return poolSemaphore.getQueueLength();
+		return borrowSemaphore.getQueueLength();
 	}
 	public int getTransferWaitingSize(){
 		return 0;
@@ -159,7 +159,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 		monitorVo.setPoolName(poolName);
 		monitorVo.setPoolMode(poolMode);
 		monitorVo.setPoolState(POOL_NORMAL);
-		monitorVo.setMaxActive(poolConfig.getBorrowConcurrentSize());
+		monitorVo.setMaxActive(poolConfig.getBorrowSemaphoreSize());
 		monitorVo.setIdleSize(idleSize);
 		monitorVo.setUsingSize(totSize-idleSize);
 		monitorVo.setSemaphoreWaiterSize(getSemaphoreWaitingSize());
