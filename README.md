@@ -123,7 +123,7 @@ Java7
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>BeeCP</artifactId>
-   <version>2.5.3</version>
+   <version>2.5.4</version>
 </dependency>
 ```
 
@@ -182,7 +182,7 @@ Configuration
 | defaultReadOnly    |                                  | default is false                     |
 | maxWait            |max wait time to borrow a connection(mills)| default is 8 seconds       |
 | idleTimeout        |max idle time in pool(mills)      | default is 3 minutes                |  
-| holdTimeout        |max hold time in not using        | default is 5 minutes              |  
+| holdIdleTimeout    |max hold time in not using        | default is 5 minutes              |  
 | connectionTestSQL  |Connection valid test sql          | a 'select' statment               |  
 | connectionTestTimeout |Connection valid test timeout(seconds)  | default 5 seconds         |  
 | connectionTestInterval |connection valid test interval time(mills)| default 500ms          |  
