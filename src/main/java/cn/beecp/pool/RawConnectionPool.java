@@ -28,7 +28,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static cn.beecp.pool.PoolExceptionList.*;
-import static cn.beecp.pool.PoolObjectsState.POOL_NORMAL;
+import static cn.beecp.pool.PoolObjectsState.*;
 import static cn.beecp.util.BeecpUtil.isNullText;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
@@ -42,10 +42,10 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
  * @version 1.0
  */
 public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJMXBean {
-	private volatile boolean isShutdown;
 	private long DefaultMaxWait;
 	private Semaphore borrowSemaphore;
 	private BeeDataSourceConfig poolConfig;
+	private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
 
 	private String poolName="";
 	private String poolMode="";
@@ -64,7 +64,6 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 		borrowSemaphore = new Semaphore(poolConfig.getBorrowSemaphoreSize(), poolConfig.isFairMode());
 		poolName = !isNullText(config.getPoolName()) ? config.getPoolName(): "RawPool-" + PoolNameIndex.getAndIncrement();
 
-
 		if (poolConfig.isFairMode()) {
 			poolMode = "fair";
 		} else {
@@ -79,6 +78,8 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 				poolConfig.getBorrowSemaphoreSize(),
 				poolMode,
 				poolConfig.getDriverClassName());
+
+		poolState.set(POOL_NORMAL);
 	}
 
 	/**
@@ -91,7 +92,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 	 */
 	public Connection getConnection() throws SQLException {
 		try {
-			if(isShutdown)throw PoolCloseException;
+			if (poolState.get() != POOL_NORMAL)throw PoolCloseException;
 
 			if (borrowSemaphore.tryAcquire(DefaultMaxWait,NANOSECONDS)) {
 				return poolConfig.getConnectionFactory().create();
@@ -116,18 +117,22 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 	/**
 	 * close pool
 	 */
-	public void shutdown() {
-		isShutdown=true;
-		unregisterJMX();
+	public void close()throws SQLException {
+		if(poolState.get()==POOL_CLOSED)throw PoolCloseException;
+		while (true) {
+			if (poolState.compareAndSet(POOL_NORMAL, POOL_CLOSED)) {
+				unregisterJMX();
+				break;
+			} else if (poolState.get() == POOL_CLOSED) {
+				break;
+			}
+		}
 	}
 
 	/**
 	 * is pool shutdown
 	 */
-	public boolean isShutdown(){
-		return isShutdown;
-	}
-
+	public boolean isClosed(){return poolState.get()==POOL_CLOSED;}
 
 	//******************************** JMX **************************************//
 	// close all connections

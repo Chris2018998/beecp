@@ -549,7 +549,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	}
 
 	// shutdown pool
-	public void shutdown() {
+	public void close()throws SQLException{
+		if(poolState.get()==POOL_CLOSED)throw PoolCloseException;
+
 		long parkNanoSeconds = SECONDS.toNanos(poolConfig.getWaitTimeToClearPool());
 		while (true) {
 			if (poolState.compareAndSet(POOL_NORMAL,POOL_CLOSED)) {
@@ -580,7 +582,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 		}
 	}
 
-	public boolean isShutdown() {
+	public boolean isClosed() {
 		return poolState.get()==POOL_CLOSED;
 	}
 
@@ -626,7 +628,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 	 */
 	private class ConnectionPoolHook extends Thread {
 		public void run() {
-			FastConnectionPool.this.shutdown();
+			try {
+				FastConnectionPool.this.close();
+			}catch(SQLException e){
+				log.error("Error on closing connection pool,cause:",e);
+			}
+
 		}
 	}
 	// notify to create connections to pool

@@ -52,13 +52,13 @@ public interface ConnectionPool {
 	/**
 	 * close pool
 	 */
-	void shutdown();
+	void close()throws SQLException;
 
 	/**
-	 * is pool shutdown
-	 * @return true,has shutdown,false active
+	 * check pool is closed
+	 * @return true,closed,false active
 	 */
-	boolean isShutdown();
+	boolean isClosed();
 
 	/**
 	 * @return Pool Monitor Vo
