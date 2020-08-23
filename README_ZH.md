@@ -119,7 +119,7 @@ public class DataSourceConfig {
 ```java
 <dependency>
    <groupId>com.github.chris2018998</groupId>
-   <artifactId>BeeCP</artifactId>
+   <artifactId>beecp</artifactId>
    <version>2.5.4</version>
 </dependency>
 ```
