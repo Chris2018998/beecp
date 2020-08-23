@@ -19,6 +19,7 @@ BeeCP-2.5.2,BeeCP-2.5.3
 3：优化getConnection处代码,降低代码嵌套层数(性能少量提升)
 
  BeeCP-2.5.4 
- 1:增加ConnectionPoolMonitorVo
- 2:调整ConnectionPool接口并增加方法getMonitorVo
- 3:解决CPU核心数大于默认最大连数导致检查失败
+ 1:增加MonitorVo以及连接池增加MonitorVo的get方法
+ 2:解决CPU核心数大于默认最大连数导致检查失败
+ 3:配置属性项borrowConcurrentSize名称调整为borrowSemaphoreSize 
+ 
