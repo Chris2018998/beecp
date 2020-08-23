@@ -16,6 +16,7 @@
 package cn.beecp;
 
 import cn.beecp.pool.ConnectionPool;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
@@ -67,6 +68,11 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 	 *  write Locker
 	 */
 	private ReentrantReadWriteLock.WriteLock writeLock=lock.writeLock();
+
+	/**
+	 * logger
+	 */
+	private final org.slf4j.Logger log = LoggerFactory.getLogger(this.getClass());
 
 	/**
 	 * constructor
@@ -153,19 +159,17 @@ public final class BeeDataSource extends BeeDataSourceConfig implements DataSour
 		throw new SQLException("Not support");
 	}
 
-	public void close()throws SQLException {
+	public void close(){
 		if(pool!=null) {
-			pool.shutdown();
-		}else{
-			throw new SQLException("DataSource not initialized");
+			try {
+				pool.close();
+			}catch(SQLException e){
+				log.error("Error on closing connection pool,cause:",e);
+			}
 		}
 	}
-	public boolean isClosed()throws SQLException {
-		if(pool!=null) {
-			return pool.isShutdown();
-		}else{
-			throw new SQLException("DataSource not initialized");
-		}
+	public boolean isClosed() {
+		return (pool!=null)?pool.isClosed():false;
 	}
 
 	public PrintWriter getLogWriter() throws SQLException {
