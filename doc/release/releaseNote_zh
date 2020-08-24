@@ -23,3 +23,5 @@ BeeCP-2.5.2,BeeCP-2.5.3
  2:解决CPU核心数大于默认最大连数导致检查失败
  3:配置属性项borrowConcurrentSize名称调整为borrowSemaphoreSize 
  
+ BeeCP-2.5.4.1
+ 1:修复spring cloud 启动时会加载两次上下文，在切换上下文时产生的关闭异常(#20)
