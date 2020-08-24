@@ -29,7 +29,7 @@ import static java.util.concurrent.locks.LockSupport.parkNanos;
 
 /**
  * TransferQueue Implementation with class:{@link ConcurrentLinkedQueue}
- *
+ * <p>
  * The logic of queue is from BeeCP(https://github.com/Chris2018998/BeeCP)
  *
  * @author Chris.Liao
@@ -62,7 +62,7 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
     /**
      * Thread Interrupted Exception
      */
-    private static final InterruptedException RequestInterruptException=new InterruptedException();
+    private static final InterruptedException RequestInterruptException = new InterruptedException();
 
     /**
      * CAS updater on waiter's state field
@@ -118,7 +118,7 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
      * @return boolean ,true:successful to transfer or add into queue
      */
     public boolean offer(E e) {
-        return tryTransfer(e)?true:elementQueue.offer(e);
+        return tryTransfer(e) ? true : elementQueue.offer(e);
     }
 
     /**
@@ -155,25 +155,25 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
      * if not exists,then waiting for a transferred element by method:<tt>offer</tt>
      *
      * @param timeout how long to wait before giving up, in units of
-     *        {@code unit}
-     * @param unit a {@code TimeUnit} determining how to interpret the
-     *        {@code timeout} parameter
+     *                {@code unit}
+     * @param unit    a {@code TimeUnit} determining how to interpret the
+     *                {@code timeout} parameter
      * @return the head of this queue, or {@code null} if the
-     *         specified waiting time elapses before an element is available
+     * specified waiting time elapses before an element is available
      * @throws InterruptedException if interrupted while waiting
      */
     public E poll(long timeout, TimeUnit unit) throws InterruptedException {
         E e = elementQueue.poll();
-        if(e != null)return e;
+        if (e != null) return e;
 
-        boolean isFailed=false;
-        boolean isInterrupted=false;
+        boolean isFailed = false;
+        boolean isInterrupted = false;
 
         Waiter waiter = new Waiter();
         Thread thread = waiter.thread;
         waiterQueue.offer(waiter);
 
-        int spinSize =(waiterQueue.peek()==waiter)?maxTimedSpins:0;
+        int spinSize = (waiterQueue.peek() == waiter) ? maxTimedSpins : 0;
         final long deadline = nanoTime() + unit.toNanos(timeout);
 
         while (true) {
@@ -183,7 +183,7 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
             }
 
             if (isFailed) {
-                if (TransferUpdater.compareAndSet(waiter, state,STS_FAILED)) {
+                if (TransferUpdater.compareAndSet(waiter, state, STS_FAILED)) {
                     waiterQueue.remove(waiter);
                     if (isInterrupted)
                         throw RequestInterruptException;
@@ -197,12 +197,12 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
                     } else if (timeout > spinForTimeoutThreshold && TransferUpdater.compareAndSet(waiter, state, STS_WAITING)) {
                         parkNanos(this, timeout);
                         if (thread.isInterrupted()) {
-                            isFailed=true;
-                            isInterrupted=true;
+                            isFailed = true;
+                            isInterrupted = true;
                         }
                     }
                 } else {//timeout
-                    isFailed=true;
+                    isFailed = true;
                 }
             }
         }//while
@@ -232,16 +232,18 @@ public final class FastTransferQueue<E> extends AbstractQueue<E> {
      * @return the collection of threads
      */
     public Collection<Thread> getConsumerQueuedThreads() {
-        LinkedList<Thread> threadList=new LinkedList<Thread>();
-        Iterator<Waiter> itor= waiterQueue.iterator();
-        while(itor.hasNext()){
-            Waiter waiter=itor.next();
+        LinkedList<Thread> threadList = new LinkedList<Thread>();
+        Iterator<Waiter> itor = waiterQueue.iterator();
+        while (itor.hasNext()) {
+            Waiter waiter = itor.next();
             threadList.add(waiter.thread);
         }
         return threadList;
     }
 
-    private static final class State { }
+    private static final class State {
+    }
+
     private static final class Waiter {
         //poll thread
         Thread thread = Thread.currentThread();

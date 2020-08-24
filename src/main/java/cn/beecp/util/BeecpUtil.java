@@ -28,36 +28,37 @@ import java.sql.Statement;
  * @author Chris.Liao
  */
 public final class BeecpUtil {
-	private static Logger log = LoggerFactory.getLogger(BeecpUtil.class);
+    private static Logger log = LoggerFactory.getLogger(BeecpUtil.class);
 
-	public static void oclose(ResultSet r) {
-		try {
-			r.close();
-		} catch (Throwable e) {
-			log.warn("Error at closing resultSet:", e);
-		}
-	}
+    public static void oclose(ResultSet r) {
+        try {
+            r.close();
+        } catch (Throwable e) {
+            log.warn("Error at closing resultSet:", e);
+        }
+    }
 
-	public static void oclose(Statement s) {
-		try {
-			s.close();
-		} catch (Throwable e) {
-			log.warn("Error at closing statement:", e);
-		}
-	}
+    public static void oclose(Statement s) {
+        try {
+            s.close();
+        } catch (Throwable e) {
+            log.warn("Error at closing statement:", e);
+        }
+    }
 
-	public static void oclose(Connection c) {
-		try {
-			c.close();
-		} catch (Throwable e) {
-			log.warn("Error at closing connection:", e);
-		}
-	}
+    public static void oclose(Connection c) {
+        try {
+            c.close();
+        } catch (Throwable e) {
+            log.warn("Error at closing connection:", e);
+        }
+    }
 
-	public static boolean isNullText(String s) {
-		return (s == null || s.trim().length() == 0);
-	}
-	public static boolean equalsText(String a, String b) {
-		return (a != null && a.equals(b) || (a == null && b == null));
-	}
+    public static boolean isNullText(String s) {
+        return (s == null || s.trim().length() == 0);
+    }
+
+    public static boolean equalsText(String a, String b) {
+        return (a != null && a.equals(b) || (a == null && b == null));
+    }
 }
