@@ -35,24 +35,31 @@ public class ConnectionPoolMonitorVo {
     void setPoolName(String poolName) {
         this.poolName = poolName;
     }
+
     void setPoolMode(String poolMode) {
         this.poolMode = poolMode;
     }
+
     void setPoolState(int poolState) {
         this.poolState = poolState;
     }
+
     void setMaxActive(int maxActive) {
         this.maxActive = maxActive;
     }
+
     void setIdleSize(int idleSize) {
         this.idleSize = idleSize;
     }
+
     void setUsingSize(int usingSize) {
         this.usingSize = usingSize;
     }
+
     void setSemaphoreWaiterSize(int semaphoreWaiterSize) {
         this.semaphoreWaiterSize = semaphoreWaiterSize;
     }
+
     void setTransferWaiterSize(int transferWaiterSize) {
         this.transferWaiterSize = transferWaiterSize;
     }

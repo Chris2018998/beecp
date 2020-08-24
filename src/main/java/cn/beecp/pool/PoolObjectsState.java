@@ -6,7 +6,7 @@
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,23 +23,23 @@ package cn.beecp.pool;
  */
 
 class PoolObjectsState {
-	//POOL STATE
-	static final int POOL_UNINIT            = 1;
-	static final int POOL_NORMAL            = 2;
-	static final int POOL_CLOSED            = 3;
-	static final int POOL_RESTING           = 4;
-	
-	//POOLED CONNECTION STATE
-	static final int CONNECTION_IDLE        = 1;
-	static final int CONNECTION_USING       = 2;
-	static final int CONNECTION_CLOSED      = 3;
-	
-	//ADD CONNECTION THREAD STATE
-	static final int THREAD_WORKING         = 1;
-	static final int THREAD_WAITING         = 2;
-	static final int THREAD_DEAD            = 3;
+    //POOL STATE
+    static final int POOL_UNINIT = 1;
+    static final int POOL_NORMAL = 2;
+    static final int POOL_CLOSED = 3;
+    static final int POOL_RESTING = 4;
 
-	//BORROWER STATE
-	static final Object BORROWER_NORMAL      = new Object();
-	static final Object BORROWER_WAITING     = new Object();
+    //POOLED CONNECTION STATE
+    static final int CONNECTION_IDLE = 1;
+    static final int CONNECTION_USING = 2;
+    static final int CONNECTION_CLOSED = 3;
+
+    //ADD CONNECTION THREAD STATE
+    static final int THREAD_WORKING = 1;
+    static final int THREAD_WAITING = 2;
+    static final int THREAD_DEAD = 3;
+
+    //BORROWER STATE
+    static final Object BORROWER_NORMAL = new Object();
+    static final Object BORROWER_WAITING = new Object();
 }

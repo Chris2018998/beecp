@@ -6,7 +6,7 @@
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,46 +24,54 @@ import static cn.beecp.util.BeecpUtil.oclose;
 
 /**
  * ResultSet proxy base class
- * 
+ *
  * @author Chris.Liao
  * @version 1.0
  */
 abstract class ProxyResultSetBase implements ResultSet {
-	private boolean isClosed;
-	protected ResultSet delegate;
-	protected PooledConnection pConn;//called by subclass to update time
-	private ProxyStatementBase proxyStatement;//called by subclass to check close state
-	private boolean proxyStatementIsNotNull;//called by subclass to check close state
+    private boolean isClosed;
+    protected ResultSet delegate;
+    protected PooledConnection pConn;//called by subclass to update time
+    private ProxyStatementBase proxyStatement;//called by subclass to check close state
+    private boolean proxyStatementIsNotNull;//called by subclass to check close state
 
-	public ProxyResultSetBase(ResultSet delegate,ProxyStatementBase proxyStatement,PooledConnection pConn) {
-		this.pConn=pConn;
-		this.delegate = delegate;
-		this.proxyStatement = proxyStatement;
-		proxyStatementIsNotNull=proxyStatement!=null;
-	}
-	public Statement getStatement() throws SQLException{
-		checkClosed();
-		return (Statement)proxyStatement;
-	}
-	public boolean isClosed()throws SQLException{return isClosed;}
-	protected void checkClosed() throws SQLException {
-		if(isClosed)throw ResultSetClosedException;
-		if(proxyStatementIsNotNull)proxyStatement.checkClosed();
-	}
-	public void close() throws SQLException {
-		checkClosed();
-		isClosed=true;
-		oclose(delegate);
-	}
-	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-		checkClosed();
-		return iface.isInstance(this);
-	}
-	public <T> T unwrap(Class<T> iface) throws SQLException{
-		checkClosed();
-		if(iface.isInstance(this))
-			return (T)this;
-		else
-			throw new SQLException("Wrapped object is not an instance of "+iface);
-	}
+    public ProxyResultSetBase(ResultSet delegate, ProxyStatementBase proxyStatement, PooledConnection pConn) {
+        this.pConn = pConn;
+        this.delegate = delegate;
+        this.proxyStatement = proxyStatement;
+        proxyStatementIsNotNull = proxyStatement != null;
+    }
+
+    public Statement getStatement() throws SQLException {
+        checkClosed();
+        return (Statement) proxyStatement;
+    }
+
+    public boolean isClosed() throws SQLException {
+        return isClosed;
+    }
+
+    protected void checkClosed() throws SQLException {
+        if (isClosed) throw ResultSetClosedException;
+        if (proxyStatementIsNotNull) proxyStatement.checkClosed();
+    }
+
+    public void close() throws SQLException {
+        checkClosed();
+        isClosed = true;
+        oclose(delegate);
+    }
+
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        checkClosed();
+        return iface.isInstance(this);
+    }
+
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        checkClosed();
+        if (iface.isInstance(this))
+            return (T) this;
+        else
+            throw new SQLException("Wrapped object is not an instance of " + iface);
+    }
 }

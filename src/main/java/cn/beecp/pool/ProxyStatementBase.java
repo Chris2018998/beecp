@@ -28,43 +28,50 @@ import static cn.beecp.util.BeecpUtil.oclose;
  * @author Chris.Liao
  * @version 1.0
  */
-class ProxyStatementBase{
-	private boolean isClosed;
-	private boolean cacheInd;
-	protected Statement delegate;
-	protected PooledConnection pConn;//called by subclass to update time
-	protected ProxyConnectionBase proxyConn;//called by subclass to check close state
+class ProxyStatementBase {
+    private boolean isClosed;
+    private boolean cacheInd;
+    protected Statement delegate;
+    protected PooledConnection pConn;//called by subclass to update time
+    protected ProxyConnectionBase proxyConn;//called by subclass to check close state
 
-	public ProxyStatementBase(Statement delegate,ProxyConnectionBase proxyConn,PooledConnection pConn,boolean cacheInd){
-		this.pConn=pConn;
-		this.proxyConn=proxyConn;
-		this.delegate=delegate;
-		this.cacheInd=cacheInd;
-	}
-	public Connection getConnection() throws SQLException{
-		checkClosed();
-		return proxyConn;
-	}
-	public boolean isClosed()throws SQLException{return isClosed;}
-	protected void checkClosed() throws SQLException {
-		if(isClosed)throw StatementClosedException;
-		proxyConn.checkClosed();
-	}
-	public void close() throws SQLException {
-		checkClosed();
-		isClosed=true;
-		if(!cacheInd)oclose(delegate);
-	}
+    public ProxyStatementBase(Statement delegate, ProxyConnectionBase proxyConn, PooledConnection pConn, boolean cacheInd) {
+        this.pConn = pConn;
+        this.proxyConn = proxyConn;
+        this.delegate = delegate;
+        this.cacheInd = cacheInd;
+    }
 
-	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-		checkClosed();
-		return iface.isInstance(this);
-	}
-	public <T> T unwrap(Class<T> iface) throws SQLException{
-		checkClosed();
-		if(iface.isInstance(this))
-			return (T)this;
-		else
-			throw new SQLException("Wrapped object is not an instance of "+iface);
-	}
+    public Connection getConnection() throws SQLException {
+        checkClosed();
+        return proxyConn;
+    }
+
+    public boolean isClosed() throws SQLException {
+        return isClosed;
+    }
+
+    protected void checkClosed() throws SQLException {
+        if (isClosed) throw StatementClosedException;
+        proxyConn.checkClosed();
+    }
+
+    public void close() throws SQLException {
+        checkClosed();
+        isClosed = true;
+        if (!cacheInd) oclose(delegate);
+    }
+
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        checkClosed();
+        return iface.isInstance(this);
+    }
+
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        checkClosed();
+        if (iface.isInstance(this))
+            return (T) this;
+        else
+            throw new SQLException("Wrapped object is not an instance of " + iface);
+    }
 }

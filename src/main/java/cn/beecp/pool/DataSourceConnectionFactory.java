@@ -54,14 +54,15 @@ public class DataSourceConnectionFactory implements ConnectionFactory {
         this.driverDataSource = driverDataSource;
         this.username = username;
         this.password = password;
-        if(username!=null && username.trim().length()>0)
-            usernameIsNotNull=true;
+        if (username != null && username.trim().length() > 0)
+            usernameIsNotNull = true;
     }
+
     //create one connection
     public Connection create() throws SQLException {
         if (usernameIsNotNull) {
             return driverDataSource.getConnection(username, password);
-        }else {
+        } else {
             return driverDataSource.getConnection();
         }
     }

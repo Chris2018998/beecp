@@ -6,7 +6,7 @@
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,20 +26,20 @@ import java.sql.SQLTimeoutException;
  */
 class PoolExceptionList {
 
-	static final SQLTimeoutException RequestTimeoutException = new SQLTimeoutException("Request timeout");
+    static final SQLTimeoutException RequestTimeoutException = new SQLTimeoutException("Request timeout");
 
-	static final SQLException RequestInterruptException = new SQLException("Request interrupt");
-	
-	static final SQLException PoolCloseException = new SQLException("Pool has been closed or in resting");
+    static final SQLException RequestInterruptException = new SQLException("Request interrupt");
+
+    static final SQLException PoolCloseException = new SQLException("Pool has been closed or in resting");
 
     static final SQLException ConnectionClosedException = new SQLException("Connection has been closed");
-	
-	static final SQLException StatementClosedException = new SQLException("Statement has been closed");
-	
-	static final SQLException ResultSetClosedException = new SQLException("ResultSet has been closed");
 
-	static final SQLException AutoCommitChangeForbiddenException = new SQLException("Execute 'commit' or 'rollback' before this operation");
+    static final SQLException StatementClosedException = new SQLException("Statement has been closed");
 
-	static final SQLException DriverNotSupportNetworkTimeoutException= new SQLException("Driver not support 'networkTimeout'");
+    static final SQLException ResultSetClosedException = new SQLException("ResultSet has been closed");
+
+    static final SQLException AutoCommitChangeForbiddenException = new SQLException("Execute 'commit' or 'rollback' before this operation");
+
+    static final SQLException DriverNotSupportNetworkTimeoutException = new SQLException("Driver not support 'networkTimeout'");
 
 }	

@@ -6,7 +6,7 @@
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,37 +24,37 @@ import java.util.Properties;
 
 /**
  * Driver ConnectionFactory
- * 
+ *
  * @author Chris.liao
  * @version 1.0
  */
 
-public final class DriverConnectionFactory implements ConnectionFactory{
-	
-	/**
-	 * url link
-	 */
-	private String connectURL;
-	
-	/**
-	 * connection driver
-	 */
-	private Driver connectDriver;
+public final class DriverConnectionFactory implements ConnectionFactory {
 
-	/**
-	 * connection extra properties
-	 */
-	private Properties connectProperties;
-	
-	//Constructor
-	public DriverConnectionFactory(String connectURL, Driver connectDriver, Properties connectProperties){
-		this.connectURL = connectURL;
-		this.connectDriver = connectDriver;
-		this.connectProperties = connectProperties;
-	}
+    /**
+     * url link
+     */
+    private String connectURL;
 
-	//create one connection
-	public Connection create()throws SQLException{
-		return connectDriver.connect(connectURL,connectProperties);
-	}
+    /**
+     * connection driver
+     */
+    private Driver connectDriver;
+
+    /**
+     * connection extra properties
+     */
+    private Properties connectProperties;
+
+    //Constructor
+    public DriverConnectionFactory(String connectURL, Driver connectDriver, Properties connectProperties) {
+        this.connectURL = connectURL;
+        this.connectDriver = connectDriver;
+        this.connectProperties = connectProperties;
+    }
+
+    //create one connection
+    public Connection create() throws SQLException {
+        return connectDriver.connect(connectURL, connectProperties);
+    }
 }
