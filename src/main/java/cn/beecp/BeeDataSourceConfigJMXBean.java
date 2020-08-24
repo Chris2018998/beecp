@@ -6,7 +6,7 @@
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,64 +17,64 @@ package cn.beecp;
 
 /**
  * Bee DataSourceConfig JMX Bean interface
- * 
+ *
  * @author Chris.Liao
  * @version 1.0
  */
 
 public interface BeeDataSourceConfigJMXBean {
 
-	String getUsername();
+    String getUsername();
 
-	String getUrl();
+    String getUrl();
 
-	String getDriverClassName();
+    String getDriverClassName();
 
-	String getConnectionFactoryClassName();
+    String getConnectionFactoryClassName();
 
-	String getPoolName();
+    String getPoolName();
 
-	boolean isFairMode();
+    boolean isFairMode();
 
-	int getInitialSize();
+    int getInitialSize();
 
-	int getMaxActive();
+    int getMaxActive();
 
-	int getBorrowSemaphoreSize();
+    int getBorrowSemaphoreSize();
 
-	int getPreparedStatementCacheSize();
+    int getPreparedStatementCacheSize();
 
-	boolean isDefaultAutoCommit();
+    boolean isDefaultAutoCommit();
 
-	String getDefaultTransactionIsolation();
+    String getDefaultTransactionIsolation();
 
-	int getDefaultTransactionIsolationCode();
+    int getDefaultTransactionIsolationCode();
 
-	String getDefaultCatalog();
+    String getDefaultCatalog();
 
-	boolean isDefaultReadOnly();
+    boolean isDefaultReadOnly();
 
-	long getMaxWait();
+    long getMaxWait();
 
-	long getIdleTimeout();
+    long getIdleTimeout();
 
-	long getHoldIdleTimeout();
+    long getHoldIdleTimeout();
 
-	String getConnectionTestSQL();
+    String getConnectionTestSQL();
 
-	int getConnectionTestTimeout();
+    int getConnectionTestTimeout();
 
-	long getConnectionTestInterval();
+    long getConnectionTestInterval();
 
-	boolean isForceCloseConnection();
+    boolean isForceCloseConnection();
 
-	long getWaitTimeToClearPool();
+    long getWaitTimeToClearPool();
 
-	long getIdleCheckTimeInterval();
+    long getIdleCheckTimeInterval();
 
-	long getIdleCheckTimeInitDelay();
+    long getIdleCheckTimeInitDelay();
 
-	String getPoolImplementClassName();
+    String getPoolImplementClassName();
 
-	boolean isEnableJMX();
+    boolean isEnableJMX();
 }
