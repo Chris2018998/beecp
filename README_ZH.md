@@ -128,8 +128,8 @@ public class DataSourceConfig {
 ```java
 <dependency>
    <groupId>com.github.chris2018998</groupId>
-   <artifactId>BeeCP</artifactId>
-   <version>1.6.7</version>
+   <artifactId>beecp</artifactId>
+   <version>1.6.8</version>
 </dependency>
 
 ```
