@@ -59,7 +59,7 @@ class PooledConnection extends LinkedHashMap<Object, PreparedStatement> {
     private short changedCount;
     //changed indicator
     private boolean[] changedInd = new boolean[6];
-    private static final boolean[] DEFAULT_IND = new boolean[]{false, false, false, false, false, false};
+    private static final boolean[] DEFAULT_IND = new boolean[6];
     private static Logger log = LoggerFactory.getLogger(PooledConnection.class);
 
     public PooledConnection(Connection rawConn, int connState, FastConnectionPool connPool, BeeDataSourceConfig config) throws SQLException {
