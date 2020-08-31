@@ -15,18 +15,20 @@
  */
 package cn.beecp;
 
+import cn.beecp.util.BeecpUtil;
+
 import javax.naming.*;
 import javax.naming.spi.NamingManager;
 import javax.naming.spi.ObjectFactory;
 import javax.sql.DataSource;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.Hashtable;
 import java.util.Properties;
 import java.util.logging.Logger;
-
-import static cn.beecp.util.BeecpUtil.isNullText;
 
 /**
  * BeeDataSource factory
@@ -35,27 +37,6 @@ import static cn.beecp.util.BeecpUtil.isNullText;
  * @version 1.0
  */
 public final class BeeDataSourceFactory implements ObjectFactory {
-    public final static String PROP_INITIALSIZE = "initialSize";
-    public final static String PROP_MAXACTIVE = "maxActive";
-    public final static String PROP_MAXWAIT = "maxWait";
-
-    public final static String PROP_URL = "url";
-    public final static String PROP_USERNAME = "username";
-    public final static String PROP_PASSWORD = "password";
-    public final static String PROP_DRIVERCLASSNAME = "driverClassName";
-    public final static String PROP_VALIDATIONQUERY = "validationQuery";
-
-    public final static String PROP_VALIDATIONQUERY_TIMEOUT = "validationQueryTimeout";
-    public final static String PROP_POOLPREPAREDSTATEMENTS = "poolPreparedStatements";
-    public final static String PROP_MAXOPENPREPAREDSTATEMENTS = "maxOpenPreparedStatements";
-    public final static String PROP_DEFAULTTRANSACTIONISOLATION = "defaultTransactionIsolation";
-    public final static String PROP_MINEVICTABLEIDLETIMEMILLIS = "minEvictableIdleTimeMillis";
-
-    public final static String PROVIDER_URL = "java.naming.provider.url";
-    public final static String INITIAL_CONTEXT_FACTORY = "java.naming.factory.initial";
-    public final static String SECURITY_PRINCIPAL = "java.naming.security.principal";
-    public final static String SECURITY_CREDENTIALS = "java.naming.security.credentials";
-
     private Properties initProperties = new Properties();
 
     public BeeDataSourceFactory() {
@@ -89,7 +70,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
     }
 
     public DataSource create(BeeDataSourceConfig config) {
-        return new BeeDataSource((BeeDataSourceConfig) config);
+        return new BeeDataSource(config);
     }
 
     /**
@@ -112,65 +93,53 @@ public final class BeeDataSourceFactory implements ObjectFactory {
     public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment)
             throws Exception {
 
-        Reference ref = (Reference) obj;
-        String driverClass = null, jdbcURL = null, jdbcUser = null, password = null;
-        String initSize = null, maxSize = null, maxWait = null;
-        String connectionIdleTimeout = null;
-        String validationQuerySQL = null, validationQueryTimeout = null;
-        String needStatementCache = null, statementCacheSize = null;
-
-        RefAddr ra = ref.get(PROP_DRIVERCLASSNAME);
-        if (ra != null) driverClass = ra.getContent().toString();
-        ra = ref.get(PROP_URL);
-        if (ra != null) jdbcURL = ra.getContent().toString();
-        ra = ref.get(PROP_USERNAME);
-        if (ra != null) jdbcUser = ra.getContent().toString();
-        ra = ref.get(PROP_PASSWORD);
-        if (ra != null) password = ra.getContent().toString();
+        Class configClass = BeeDataSourceConfig.class;
+        Field[] fields = configClass.getDeclaredFields();
         BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setDriverClassName(driverClass);
-        config.setUrl(jdbcURL);
-        config.setUsername(jdbcUser);
-        config.setPassword(password);
 
-        ra = ref.get(PROP_INITIALSIZE);
-        if (ra != null) initSize = ra.getContent().toString();
-        ra = ref.get(PROP_MAXACTIVE);
-        if (ra != null) maxSize = ra.getContent().toString();
-        ra = ref.get(PROP_MAXWAIT);
-        if (ra != null) maxWait = ra.getContent().toString();
+        Reference ref = (Reference) obj;
+        for (Field field : fields) {
+            String fieldName = field.getName();
+            if ("checked".equals(fieldName) || "connectionFactory".equals(fieldName))
+                continue;
+            RefAddr ra = ref.get(fieldName);
+            if (ra == null) continue;
+            String configVal = ra.getContent().toString();
 
-        ra = ref.get(PROP_VALIDATIONQUERY);
-        if (ra != null) validationQuerySQL = ra.getContent().toString();
-        ra = ref.get(PROP_VALIDATIONQUERY_TIMEOUT);
-        if (ra != null) validationQueryTimeout = ra.getContent().toString();
+            if (!BeecpUtil.isNullText(configVal)) {
+                configVal = configVal.trim();
 
-        ra = ref.get(PROP_MINEVICTABLEIDLETIMEMILLIS);
-        if (ra != null) connectionIdleTimeout = ra.getContent().toString();
+                Class fieldType = field.getType();
+                boolean ChangedAccessible = false;
+                try {
+                    if (Modifier.isPrivate(field.getModifiers()) || Modifier.isProtected(field.getModifiers())) {
+                        field.setAccessible(true);
+                        ChangedAccessible = true;
+                    }
 
-        if (!isNullText(maxSize))
-            config.setMaxActive(Integer.parseInt(maxSize));
-        if (!isNullText(initSize))
-            config.setInitialSize(Integer.parseInt(initSize));
-        if (!isNullText(maxWait))
-            config.setMaxWait(Integer.parseInt(maxWait));
-        if (!isNullText(validationQuerySQL))
-            config.setConnectionTestSQL(validationQuerySQL);
-        if (!isNullText(validationQueryTimeout))
-            config.setConnectionTestTimeout(Integer.parseInt(validationQueryTimeout));
-        if (!isNullText(connectionIdleTimeout))
-            config.setIdleTimeout(Integer.parseInt(connectionIdleTimeout));
-
-        ra = ref.get(PROP_POOLPREPAREDSTATEMENTS);
-        if (ra != null) needStatementCache = ra.getContent().toString();
-        ra = ref.get(PROP_MAXOPENPREPAREDSTATEMENTS);
-        if (ra != null) statementCacheSize = ra.getContent().toString();
-
-        if ("true".equals(needStatementCache) || "Y".equals(needStatementCache)) {
-            if (!isNullText(statementCacheSize))
-                config.setPreparedStatementCacheSize(Integer.parseInt(statementCacheSize));
-        } else {
-            config.setPreparedStatementCacheSize(0);
+                    if (fieldType.equals(String.class)) {
+                        field.set(config, configVal);
+                    } else if (fieldType.equals(Boolean.class) || fieldType.equals(Boolean.TYPE)) {
+                        field.set(config, Boolean.valueOf(configVal));
+                    } else if (fieldType.equals(Integer.class) || fieldType.equals(Integer.TYPE)) {
+                        field.set(config, Integer.valueOf(configVal));
+                    } else if (fieldType.equals(Long.class) || fieldType.equals(Long.TYPE)) {
+                        field.set(config, Long.valueOf(configVal));
+                    } else if ("connectProperties".equals(field.getName())) {
+                        Properties connectProperties = new Properties();
+                        configVal = configVal.trim();
+                        String[] attributeArray = configVal.split(";");
+                        for (String attribute : attributeArray) {
+                            String[] pairs = attribute.split("=");
+                            if (pairs.length == 2)
+                                connectProperties.put(pairs[0].trim(), pairs[1].trim());
+                        }
+                        field.set(config, new Object[]{connectProperties});
+                    }
+                } finally {
+                    if (ChangedAccessible) field.setAccessible(false);//reset
+                }
+            }
         }
         return new BeeDataSource(config);
     }
@@ -198,12 +167,12 @@ public final class BeeDataSourceFactory implements ObjectFactory {
             delegete.setLogWriter(out);
         }
 
-        public void setLoginTimeout(int seconds) throws SQLException {
-            delegete.setLoginTimeout(seconds);
-        }
-
         public int getLoginTimeout() throws SQLException {
             return delegete.getLoginTimeout();
+        }
+
+        public void setLoginTimeout(int seconds) throws SQLException {
+            delegete.setLoginTimeout(seconds);
         }
 
         public Logger getParentLogger() throws SQLFeatureNotSupportedException {
