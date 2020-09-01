@@ -38,8 +38,10 @@ import java.util.logging.Logger;
  * @author Chris.Liao
  * @version 1.0
  */
+//fix BeeCP-Starter-#6 Chris-2020-09-01 start
+//public final class BeeDataSource extends BeeDataSourceConfig implements DataSource {
 public class BeeDataSource extends BeeDataSourceConfig implements DataSource {
-
+//fix BeeCP-Starter-#6 Chris-2020-09-01 end
     /**
      * pool initialized
      */
