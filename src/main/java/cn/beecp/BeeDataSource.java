@@ -38,7 +38,7 @@ import java.util.logging.Logger;
  * @author Chris.Liao
  * @version 1.0
  */
-public final class BeeDataSource extends BeeDataSourceConfig implements DataSource {
+public class BeeDataSource extends BeeDataSourceConfig implements DataSource {
 
     /**
      * pool initialized
