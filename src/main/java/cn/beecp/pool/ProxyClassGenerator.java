@@ -201,7 +201,8 @@ public final class ProxyClassGenerator {
             CtClass[] resultSetCreateParam = new CtClass[]{
                     classPool.get("java.sql.ResultSet"),
                     classPool.get("cn.beecp.pool.ProxyStatementBase"),
-                    classPool.get("cn.beecp.pool.PooledConnection")};
+                    classPool.get("cn.beecp.pool.PooledConnection"),
+                    classPool.get("boolean")};
             ctConstructor = new CtConstructor(resultSetCreateParam, ctProxyResultSetClass);
             ctConstructor.setModifiers(Modifier.PUBLIC);
             body.delete(0, body.length());
@@ -374,13 +375,13 @@ public final class ProxyClassGenerator {
                     methodBuffer.append(ctMethod.getReturnType().getName() + " re=" + delegateName + methodName + "($$);");
                     methodBuffer.append("pConn.updateAccessTimeWithCommitDirty();");
                     if (ctMethod.getReturnType() == ctResultSetClass) {
-                        methodBuffer.append(" return new ProxyResultSet(re,this,pConn);");
+                        methodBuffer.append(" return new ProxyResultSet(re,this,pConn,true);");
                     } else {
                         methodBuffer.append("return re;");
                     }
                 } else {
                     if (ctMethod.getReturnType() == ctResultSetClass)
-                        methodBuffer.append(" return new ProxyResultSet(" + delegateName + methodName + "($$),this,pConn);");
+                        methodBuffer.append(" return new ProxyResultSet(" + delegateName + methodName + "($$),this,pConn,true);");
                     else
                         methodBuffer.append("return " + delegateName + methodName + "($$);");
                 }
@@ -419,7 +420,7 @@ public final class ProxyClassGenerator {
             methodBuffer.append("checkClosed();");
 
             if (ctMethod.getReturnType() == ctResultSetClass) {
-                methodBuffer.append("return new ProxyResultSet(delegate." + methodName + "($$),null,pConn);");
+                methodBuffer.append("return new ProxyResultSet(delegate." + methodName + "($$),null,pConn,false);");
             } else if (ctMethod.getReturnType() == CtClass.voidType) {
                 methodBuffer.append("delegate." + methodName + "($$);");
             } else {
