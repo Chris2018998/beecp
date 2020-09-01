@@ -53,6 +53,7 @@ public interface ConnectionPool {
 
     /**
      * close pool
+     * @throws SQLException if fail to close
      */
     void close() throws SQLException;
 

@@ -117,7 +117,7 @@ public final class ProxyClassGenerator {
             ctConstructor.setModifiers(Modifier.PUBLIC);
             body.delete(0, body.length());
             body.append("{");
-            body.append("super($$,false);");
+            body.append("super($$,true);");
             body.append("}");
             ctConstructor.setBody(body.toString());
             ctProxyStatementClass.addConstructor(ctConstructor);
@@ -300,9 +300,9 @@ public final class ProxyClassGenerator {
                 methodBuffer.append("     s=delegate." + methodName + "($$);");
                 methodBuffer.append("     pConn.put(k,s);");
                 methodBuffer.append("   }");
-                methodBuffer.append("   return new ProxyPsStatement(s,this,pConn,true);");
+                methodBuffer.append("   return new ProxyPsStatement(s,this,pConn,false);");
                 methodBuffer.append("}");
-                methodBuffer.append("return new ProxyPsStatement(delegate." + methodName + "($$),this,pConn,false);");
+                methodBuffer.append("return new ProxyPsStatement(delegate." + methodName + "($$),this,pConn,true);");
             } else if (ctMethod.getReturnType() == ctCallableStatementClass) {
                 methodBuffer.append("if(pConn.stmCacheValid){");
                 String cacheType = "2" + callableStatementMethodIndex++;
@@ -312,9 +312,9 @@ public final class ProxyClassGenerator {
                 methodBuffer.append("    s=delegate." + methodName + "($$);");
                 methodBuffer.append("    pConn.put(k,s);");
                 methodBuffer.append("  }");
-                methodBuffer.append("   return new ProxyCsStatement(s,this,pConn,true);");
+                methodBuffer.append("   return new ProxyCsStatement(s,this,pConn,false);");
                 methodBuffer.append("}");
-                methodBuffer.append("return new ProxyCsStatement(delegate." + methodName + "($$),this,pConn,false);");
+                methodBuffer.append("return new ProxyCsStatement(delegate." + methodName + "($$),this,pConn,true);");
             } else if (ctMethod.getReturnType() == ctDatabaseMetaDataIntf) {
                 methodBuffer.append("return new ProxyDatabaseMetaData(delegate." + methodName + "($$),this,pConn);");
             } else if (methodName.equals("close")) {

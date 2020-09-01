@@ -29,17 +29,17 @@ import static cn.beecp.util.BeecpUtil.oclose;
  * @version 1.0
  */
 class ProxyStatementBase {
-    private boolean isClosed;
-    private boolean cacheInd;
     protected Statement delegate;
     protected PooledConnection pConn;//called by subclass to update time
     protected ProxyConnectionBase proxyConn;//called by subclass to check close state
+    private boolean isClosed;
+    private boolean closeDlg;
 
-    public ProxyStatementBase(Statement delegate, ProxyConnectionBase proxyConn, PooledConnection pConn, boolean cacheInd) {
+    public ProxyStatementBase(Statement delegate, ProxyConnectionBase proxyConn, PooledConnection pConn, boolean closeDlg) {
         this.pConn = pConn;
         this.proxyConn = proxyConn;
         this.delegate = delegate;
-        this.cacheInd = cacheInd;
+        this.closeDlg = closeDlg;
     }
 
     public Connection getConnection() throws SQLException {
@@ -59,7 +59,7 @@ class ProxyStatementBase {
     public void close() throws SQLException {
         checkClosed();
         isClosed = true;
-        if (!cacheInd) oclose(delegate);
+        if (closeDlg) oclose(delegate);
     }
 
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
