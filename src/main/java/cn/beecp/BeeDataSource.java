@@ -43,6 +43,10 @@ import java.util.logging.Logger;
 public class BeeDataSource extends BeeDataSourceConfig implements DataSource {
 //fix BeeCP-Starter-#6 Chris-2020-09-01 end
     /**
+     * logger
+     */
+    private final org.slf4j.Logger log = LoggerFactory.getLogger(this.getClass());
+    /**
      * pool initialized
      */
     private boolean inited;
@@ -50,31 +54,22 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource {
      * connection pool
      */
     private ConnectionPool pool;
-
     /**
      * failed cause to creating pool
      */
     private SQLException failedCause;
-
     /**
      * read Write Locker
      */
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-
     /**
      * read Locker
      */
     private ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
-
     /**
      * write Locker
      */
     private ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-
-    /**
-     * logger
-     */
-    private final org.slf4j.Logger log = LoggerFactory.getLogger(this.getClass());
 
     /**
      * constructor
@@ -188,11 +183,11 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource {
         throw new SQLFeatureNotSupportedException("Not supported");
     }
 
-    public void setLoginTimeout(int seconds) throws SQLException {
+    public int getLoginTimeout() throws SQLException {
         throw new SQLException("Not supported");
     }
 
-    public int getLoginTimeout() throws SQLException {
+    public void setLoginTimeout(int seconds) throws SQLException {
         throw new SQLException("Not supported");
     }
 

@@ -46,171 +46,139 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
 
     /**
+     * Default implementation class name
+     */
+    static final String DefaultImplementClassName = "cn.beecp.pool.FastConnectionPool";
+    /**
+     * borrower request timeout(milliseconds)
+     */
+    protected long maxWait = SECONDS.toMillis(8);
+    /**
      * indicator to not allow to modify configuration after initialization
      */
     private boolean checked;
-
     /**
      * User
      */
     private String username;
-
     /**
      * Password
      */
     private String password;
-
     /**
      * URL
      */
     private String jdbcUrl;
-
     /**
      * driver class name
      */
     private String driverClassName;
-
     /**
      * pool name
      */
     private String poolName;
-
     /**
      * if true,first arrival,first taking if false,competition for all borrower
      * to take idle connection
      */
     private boolean fairMode;
-
     /**
      * pool initialization size
      */
     private int initialSize;
-
     /**
      * pool allow max size
      */
     private int maxActive = 10;
-
     /**
      * borrow Semaphore Size
      */
     private int borrowSemaphoreSize;
-
     /**
      * 'PreparedStatement' cache size
      */
     private int preparedStatementCacheSize;
-
     /**
      * connection.setAutoCommit(boolean);
      */
     private boolean defaultAutoCommit = true;
-
     /**
      * default Transaction Isolation
      */
     private String defaultTransactionIsolation;
-
     /**
      * default Transaction Isolation code
      */
     private int defaultTransactionIsolationCode;
-
     /**
      * connection.setCatalog
      */
     private String defaultCatalog;
-
     /**
      * connection.setSchema
      */
     private String defaultSchema;
-
     /**
      * connection.setReadOnly
      */
     private boolean defaultReadOnly;
-
-    /**
-     * borrower request timeout(milliseconds)
-     */
-    protected long maxWait = SECONDS.toMillis(8);
-
     /**
      * max idle time for pooledConnection(milliseconds),default value: three minutes
      * minutes
      */
     private long idleTimeout = MINUTES.toMillis(3);
-
     /**
      * max hold time in Unused(milliseconds),pool will release it by forced
      */
     private long holdIdleTimeout = MINUTES.toMillis(5);
-
     /**
      * a test SQL to check connection active state
      */
     private String connectionTestSQL = "select 1 from dual";
-
     /**
      * connection validate timeout:3 seconds
      */
     private int connectionTestTimeout = 3;
-
     /**
      * milliseconds,max inactive time to check active for borrower
      */
     private long connectionTestInterval = 500L;
-
     /**
      * close all connections in force when shutdown
      */
     private boolean forceCloseConnection;
-
     /**
      * seconds,wait for retry to clear all connections
      */
     private long waitTimeToClearPool = 3;
-
     /**
      * milliseconds,idle Check Time Period
      */
     private long idleCheckTimeInterval = MINUTES.toMillis(3);
-
     /**
      * milliseconds,idle Check Time initialize delay
      */
     private long idleCheckTimeInitDelay = SECONDS.toMillis(1);
-
     /**
      * BeeCP implementation class name
      */
     private String poolImplementClassName = DefaultImplementClassName;
-
     /**
      * Physical JDBC Connection factory class name
      */
     private String connectionFactoryClassName;
-
     /**
      * Physical JDBC Connection factory
      */
     private ConnectionFactory connectionFactory;
-
     /**
      * connection extra properties
      */
     private Properties connectProperties = new Properties();
-
     /**
      * enableJMX
      */
     private boolean enableJMX;
-
-    /**
-     * Default implementation class name
-     */
-    static final String DefaultImplementClassName = "cn.beecp.pool.FastConnectionPool";
 
     public BeeDataSourceConfig() {
         this(null, null, null, null);
