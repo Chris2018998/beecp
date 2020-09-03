@@ -42,15 +42,15 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
  * @version 1.0
  */
 public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJMXBean {
+    private static Logger log = LoggerFactory.getLogger(RawConnectionPool.class);
+    private static AtomicInteger PoolNameIndex = new AtomicInteger(1);
+    private final ConnectionPoolMonitorVo monitorVo = new ConnectionPoolMonitorVo();
     private long DefaultMaxWait;
     private Semaphore borrowSemaphore;
     private BeeDataSourceConfig poolConfig;
     private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
-
     private String poolName = "";
     private String poolMode = "";
-    private static Logger log = LoggerFactory.getLogger(RawConnectionPool.class);
-    private static AtomicInteger PoolNameIndex = new AtomicInteger(1);
 
     /**
      * initialize pool with configuration
@@ -165,8 +165,6 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
     public int getTransferWaitingSize() {
         return 0;
     }
-
-    private final ConnectionPoolMonitorVo monitorVo = new ConnectionPoolMonitorVo();
 
     public ConnectionPoolMonitorVo getMonitorVo() {
         int totSize = getConnTotalSize();

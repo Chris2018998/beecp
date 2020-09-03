@@ -32,68 +32,67 @@ public class ConnectionPoolMonitorVo {
     private int semaphoreWaiterSize;
     private int transferWaiterSize;
 
-    void setPoolName(String poolName) {
-        this.poolName = poolName;
-    }
-
-    void setPoolMode(String poolMode) {
-        this.poolMode = poolMode;
-    }
-
-    void setPoolState(int poolState) {
-        this.poolState = poolState;
-    }
-
-    void setMaxActive(int maxActive) {
-        this.maxActive = maxActive;
-    }
-
-    void setIdleSize(int idleSize) {
-        this.idleSize = idleSize;
-    }
-
-    void setUsingSize(int usingSize) {
-        this.usingSize = usingSize;
-    }
-
-    void setSemaphoreWaiterSize(int semaphoreWaiterSize) {
-        this.semaphoreWaiterSize = semaphoreWaiterSize;
-    }
-
-    void setTransferWaiterSize(int transferWaiterSize) {
-        this.transferWaiterSize = transferWaiterSize;
-    }
-
-
     public String getPoolName() {
         return poolName;
+    }
+
+    void setPoolName(String poolName) {
+        this.poolName = poolName;
     }
 
     public String getPoolMode() {
         return poolMode;
     }
 
+    void setPoolMode(String poolMode) {
+        this.poolMode = poolMode;
+    }
+
     public int getPoolState() {
         return poolState;
+    }
+
+    void setPoolState(int poolState) {
+        this.poolState = poolState;
     }
 
     public int getMaxActive() {
         return maxActive;
     }
 
+    void setMaxActive(int maxActive) {
+        this.maxActive = maxActive;
+    }
+
     public int getIdleSize() {
         return idleSize;
+    }
+
+    void setIdleSize(int idleSize) {
+        this.idleSize = idleSize;
     }
 
     public int getUsingSize() {
         return usingSize;
     }
 
+    void setUsingSize(int usingSize) {
+        this.usingSize = usingSize;
+    }
+
     public int getSemaphoreWaiterSize() {
         return semaphoreWaiterSize;
     }
 
+    void setSemaphoreWaiterSize(int semaphoreWaiterSize) {
+        this.semaphoreWaiterSize = semaphoreWaiterSize;
+    }
+
     public int getTransferWaiterSize() {
         return transferWaiterSize;
+    }
+
+    void setTransferWaiterSize(int transferWaiterSize) {
+        this.transferWaiterSize = transferWaiterSize;
     }
 }

@@ -223,11 +223,15 @@ public final class ProxyClassGenerator {
 
             //............... FastConnectionPool Begin..................
             CtClass ctFastConnectionPoolClass = classPool.get(FastConnectionPool.class.getName());
-            CtClass[] ctcreateProxyConnectionParamTypes = new CtClass[]{
-                    classPool.get("cn.beecp.pool.PooledConnection"),
-                    classPool.get("cn.beecp.pool.Borrower"),
-            };
-            CtMethod createProxyConnectionMethod = ctFastConnectionPoolClass.getDeclaredMethod("createProxyConnection", ctcreateProxyConnectionParamTypes);
+            CtMethod createProxyConnectionMethod = null;
+            CtMethod[] ctMethods = ctFastConnectionPoolClass.getDeclaredMethods();
+            for (CtMethod method : ctMethods) {
+                if ("createProxyConnection".equals(method.getName())) {
+                    createProxyConnectionMethod = method;
+                    break;
+                }
+            }
+
             body.delete(0, body.length());
             body.append("{");
             body.append(" $2.lastUsedConn=$1;");
