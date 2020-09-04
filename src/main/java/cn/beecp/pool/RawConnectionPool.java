@@ -42,10 +42,10 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
  * @version 1.0
  */
 public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJMXBean {
-    private static Logger log = LoggerFactory.getLogger(RawConnectionPool.class);
     private static AtomicInteger PoolNameIndex = new AtomicInteger(1);
+    private final Logger log = LoggerFactory.getLogger(RawConnectionPool.class);
     private final ConnectionPoolMonitorVo monitorVo = new ConnectionPoolMonitorVo();
-    private long DefaultMaxWait;
+    private long defaultMaxWait;
     private Semaphore borrowSemaphore;
     private BeeDataSourceConfig poolConfig;
     private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
@@ -59,7 +59,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
      */
     public void init(BeeDataSourceConfig config) {
         poolConfig = config;
-        DefaultMaxWait = MILLISECONDS.toNanos(poolConfig.getMaxWait());
+        defaultMaxWait = MILLISECONDS.toNanos(poolConfig.getMaxWait());
         borrowSemaphore = new Semaphore(poolConfig.getBorrowSemaphoreSize(), poolConfig.isFairMode());
         poolName = !isNullText(config.getPoolName()) ? config.getPoolName() : "RawPool-" + PoolNameIndex.getAndIncrement();
 
@@ -92,7 +92,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
         try {
             if (poolState.get() != POOL_NORMAL) throw PoolCloseException;
 
-            if (borrowSemaphore.tryAcquire(DefaultMaxWait, NANOSECONDS)) {
+            if (borrowSemaphore.tryAcquire(defaultMaxWait, NANOSECONDS)) {
                 return poolConfig.getConnectionFactory().create();
             } else {
                 throw RequestTimeoutException;

@@ -38,12 +38,13 @@ import static java.lang.System.currentTimeMillis;
  * @version 1.0
  */
 class PooledConnection extends LinkedHashMap<Object, PreparedStatement> {
+    private static final boolean[] DEFAULT_IND = new boolean[6];
+    private static Logger log = LoggerFactory.getLogger(PooledConnection.class);
+
     volatile int state;
     boolean stmCacheValid;
     Connection rawConn;
     ProxyConnectionBase proxyConn;
-    private int stmCacheSize;
-
     volatile long lastAccessTime;
     boolean commitDirtyInd;
     boolean curAutoCommit;
@@ -53,14 +54,12 @@ class PooledConnection extends LinkedHashMap<Object, PreparedStatement> {
     String defaultCatalog;
     String defaultSchema;
     int defaultNetworkTimeout;
+    private int stmCacheSize;
     private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
-
     private FastConnectionPool pool;
     private short changedCount;
     //changed indicator
     private boolean[] changedInd = new boolean[6];
-    private static final boolean[] DEFAULT_IND = new boolean[6];
-    private static Logger log = LoggerFactory.getLogger(PooledConnection.class);
 
     public PooledConnection(Connection rawConn, int connState, FastConnectionPool connPool, BeeDataSourceConfig config) throws SQLException {
         super(config.getPreparedStatementCacheSize() * 2, 0.75f, true);
@@ -85,11 +84,7 @@ class PooledConnection extends LinkedHashMap<Object, PreparedStatement> {
 
     void closeRawConn() {//called by pool
         try {
-            if (proxyConn != null) {
-                proxyConn.setAsClosed();
-                proxyConn = null;
-            }
-            if (stmCacheValid) this.clear();
+            this.clear();
             resetRawConnOnReturn();
         } catch (SQLException e) {
             log.error("Connection close error", e);
@@ -219,6 +214,13 @@ final class CacheKey {
         h = hashCode(v);
     }
 
+    private static final int hashCode(Object a[]) {
+        int h = 1;
+        for (Object e : a)
+            h = 31 * h + e.hashCode();
+        return h;
+    }
+
     public int hashCode() {
         return h;
     }
@@ -230,13 +232,6 @@ final class CacheKey {
                 return false;
         }
         return true;
-    }
-
-    private static final int hashCode(Object a[]) {
-        int h = 1;
-        for (Object e : a)
-            h = 31 * h + e.hashCode();
-        return h;
     }
 }
 
