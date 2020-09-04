@@ -38,7 +38,7 @@ public class ConnectionHoldTimeoutTest extends TestCase {
 		config.setInitialSize(0);
 		config.setConnectionTestSQL("SELECT 1 from dual");
 
-		config.setHoldIdleTimeout(1000);// hold and not using connection;
+		config.setHoldTimeout(1000);// hold and not using connection;
 		config.setIdleCheckTimeInterval(1000L);// two seconds interval
 		config.setIdleCheckTimeInitDelay(0);
 		config.setWaitTimeToClearPool(0);
