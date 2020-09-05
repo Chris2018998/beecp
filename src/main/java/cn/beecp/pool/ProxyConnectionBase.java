@@ -38,7 +38,7 @@ abstract class ProxyConnectionBase implements Connection {
     private final static int Pos_NetworkTimeoutInd = 5;
     protected Connection delegate;
     protected PooledConnection pConn;//called by subclass to update time
-    private boolean closedInd;
+    private volatile boolean closedInd;
 
     public ProxyConnectionBase(PooledConnection pConn) {
         this.pConn = pConn;
@@ -46,11 +46,11 @@ abstract class ProxyConnectionBase implements Connection {
         delegate = pConn.rawConn;
     }
 
-    public synchronized boolean isClosed() throws SQLException {
+    public boolean isClosed() throws SQLException {
         return closedInd;
     }
 
-    protected synchronized void checkClosed() throws SQLException {
+    protected void checkClosed() throws SQLException {
         if (closedInd) throw ConnectionClosedException;
     }
 
