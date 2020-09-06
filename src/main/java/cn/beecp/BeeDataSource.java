@@ -210,6 +210,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource {
      * @return a initialized pool for data source
      */
     private final ConnectionPool createPool(BeeDataSourceConfig config) throws SQLException {
+        config.check();
         String poolImplementClassName = config.getPoolImplementClassName();
 
         try {
@@ -220,7 +221,6 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource {
             if (!ConnectionPool.class.isAssignableFrom(poolClass))
                 throw new IllegalArgumentException("Connection pool class must be implemented 'ConnectionPool' interface");
 
-            config.check();
             config.setAsChecked();
             ConnectionPool pool = (ConnectionPool) poolClass.newInstance();
             pool.init(config);

@@ -68,7 +68,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
     /**
      * URL
      */
-    private String jdbcUrl;
+    private String url;
     /**
      * driver class name
      */
@@ -185,7 +185,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
     }
 
     public BeeDataSourceConfig(String driver, String url, String user, String password) {
-        this.jdbcUrl = url;
+        this.url = url;
         this.username = user;
         this.password = password;
         this.driverClassName = driver;
@@ -216,17 +216,17 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
     }
 
     public String getUrl() {
-        return jdbcUrl;
+        return url;
     }
 
     public void setUrl(String jdbcUrl) {
         if (!this.checked && !isNullText(jdbcUrl))
-            this.jdbcUrl = jdbcUrl;
+            this.url = jdbcUrl;
     }
 
     public void setJdbcUrl(String jdbcUrl) {
         if (!this.checked && !isNullText(jdbcUrl))
-            this.jdbcUrl = jdbcUrl;
+            this.url = jdbcUrl;
     }
 
     public String getDriverClassName() {
@@ -508,7 +508,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
         try {
             Class<?> driverClass = Class.forName(driverClassName, true, this.getClass().getClassLoader());
             Driver driver = (Driver) driverClass.newInstance();
-            if (!driver.acceptsURL(this.jdbcUrl)) throw new InstantiationException();
+            if (!driver.acceptsURL(this.url)) throw new InstantiationException();
             return driver;
         } catch (ClassNotFoundException e) {
             throw new BeeDataSourceConfigException("Driver class[" + driverClassName + "]not found");
@@ -527,11 +527,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
             Driver connectDriver = null;
             if (!isNullText(driverClassName)) {
                 connectDriver = loadJdbcDriver(driverClassName);
-            } else if (!isNullText(jdbcUrl)) {
-                connectDriver = DriverManager.getDriver(this.jdbcUrl);
+            } else if (!isNullText(url)) {
+                connectDriver = DriverManager.getDriver(this.url);
             }
 
-            if (isNullText(jdbcUrl))
+            if (isNullText(url))
                 throw new BeeDataSourceConfigException("Connect url can't be null");
             if (connectDriver == null)
                 throw new BeeDataSourceConfigException("Failed to load jdbc Driver");
@@ -541,7 +541,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
             if (!isNullText(this.password))
                 this.connectProperties.put("password", this.password);
 
-            connectionFactory = new DriverConnectionFactory(jdbcUrl, connectDriver, connectProperties);
+            connectionFactory = new DriverConnectionFactory(url, connectDriver, connectProperties);
         } else if (connectionFactory == null && !isNullText(this.connectionFactoryClassName)) {
             try {
                 Class<?> conFactClass = Class.forName(connectionFactoryClassName, true, BeeDataSourceConfig.class.getClassLoader());
