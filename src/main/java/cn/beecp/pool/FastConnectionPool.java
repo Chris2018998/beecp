@@ -214,13 +214,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     //create Pooled connection
     private PooledConnection createPooledConn(int connState) throws SQLException {
         synchronized (connArrayLock) {
-            if (connArray.length < poolMaxSize) {
+            int arrayLen = connArray.length;
+            if (arrayLen < poolMaxSize) {
                 Connection con = connFactory.create();
                 setDefaultOnRawConn(con);
                 PooledConnection pConn = new PooledConnection(con, connState, this, poolConfig);// add
-                PooledConnection[] arrayNew = new PooledConnection[connArray.length + 1];
-                arraycopy(connArray, 0, arrayNew, 0, connArray.length);
-                arrayNew[connArray.length] = pConn;// tail
+                PooledConnection[] arrayNew = new PooledConnection[arrayLen + 1];
+                arraycopy(connArray, 0, arrayNew, 0, arrayLen);
+                arrayNew[arrayLen] = pConn;// tail
                 connArray = arrayNew;
                 return pConn;
             } else {
