@@ -29,9 +29,9 @@ import static cn.beecp.util.BeecpUtil.oclose;
  * @version 1.0
  */
 abstract class ProxyResultSetBase implements ResultSet {
+    private boolean isClosed;
     protected ResultSet delegate;
     protected PooledConnection pConn;//called by subclass to update time
-    private boolean isClosed;
     private ProxyStatementBase proxyStatement;//called by subclass to check close state
     private boolean needCheckProxyStatement;//called by subclass to check close state
 
