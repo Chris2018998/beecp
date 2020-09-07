@@ -28,9 +28,9 @@ import java.sql.Statement;
  * @author Chris.Liao
  */
 public final class BeecpUtil {
-    private static Logger log = LoggerFactory.getLogger(BeecpUtil.class);
+    private final static Logger log = LoggerFactory.getLogger(BeecpUtil.class);
 
-    public static void oclose(ResultSet r) {
+    public final static void oclose(ResultSet r) {
         try {
             r.close();
         } catch (Throwable e) {
@@ -38,7 +38,7 @@ public final class BeecpUtil {
         }
     }
 
-    public static void oclose(Statement s) {
+    public final static void oclose(Statement s) {
         try {
             s.close();
         } catch (Throwable e) {
@@ -46,7 +46,7 @@ public final class BeecpUtil {
         }
     }
 
-    public static void oclose(Connection c) {
+    public final static void oclose(Connection c) {
         try {
             c.close();
         } catch (Throwable e) {
@@ -58,7 +58,7 @@ public final class BeecpUtil {
         return (s == null || s.trim().length() == 0);
     }
 
-    public static boolean equalsText(String a, String b) {
+    public final static boolean equalsText(String a, String b) {
         return (a != null && a.equals(b) || (a == null && b == null));
     }
 }
