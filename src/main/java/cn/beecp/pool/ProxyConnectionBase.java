@@ -75,14 +75,12 @@ abstract class ProxyConnectionBase implements Connection {
         pConn.curAutoCommit = autoCommit;
         if (autoCommit) pConn.commitDirtyInd = false;
         pConn.setChangedInd(Pos_AutoCommitInd, autoCommit != pConn.defaultAutoCommit);
-        pConn.lastAccessTime = currentTimeMillis();
     }
 
     public void setTransactionIsolation(int level) throws SQLException {
         checkClosed();
         delegate.setTransactionIsolation(level);
         pConn.setChangedInd(Pos_TransactionIsolationInd, level != pConn.defaultTransactionIsolationCode);
-        pConn.lastAccessTime = currentTimeMillis();
     }
 
     public void setReadOnly(boolean readOnly) throws SQLException {
