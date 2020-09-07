@@ -33,13 +33,13 @@ abstract class ProxyResultSetBase implements ResultSet {
     protected ResultSet delegate;
     protected PooledConnection pConn;//called by subclass to update time
     private ProxyStatementBase proxyStatement;//called by subclass to check close state
-    private boolean needCheckProxyStatement;//called by subclass to check close state
+    private boolean needCheckStatement;//called by subclass to check close state
 
-    public ProxyResultSetBase(ResultSet delegate, ProxyStatementBase proxyStatement, PooledConnection pConn, boolean needCheckProxyStatement) {
+    public ProxyResultSetBase(ResultSet delegate, ProxyStatementBase proxyStatement, PooledConnection pConn, boolean needCheckStatement) {
         this.pConn = pConn;
         this.delegate = delegate;
         this.proxyStatement = proxyStatement;
-        this.needCheckProxyStatement = needCheckProxyStatement;
+        this.needCheckStatement = needCheckStatement;
     }
 
     public Statement getStatement() throws SQLException {
@@ -53,7 +53,7 @@ abstract class ProxyResultSetBase implements ResultSet {
 
     protected void checkClosed() throws SQLException {
         if (isClosed) throw ResultSetClosedException;
-        if (needCheckProxyStatement) proxyStatement.checkClosed();
+        if (needCheckStatement) proxyStatement.checkClosed();
     }
 
     public void close() throws SQLException {
