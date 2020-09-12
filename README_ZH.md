@@ -30,13 +30,6 @@ Bee_F:公平模式池，Bee_C:竞争模式池
 
 测试电脑: Win7 I3-7100 8G mysql5.6.46_64  连接池设置: init size10 max size:10
 
-每次测试重新启动数据库,日志文件下载：<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200417_JDBCPool_I37100.log">20200417_JDBCPool_I37100.log</a>
- 
-性能测试代码请访问项目：https://github.com/Chris2018998/PoolPerformance
-
-**2：** 采用光连接池的性能基准测试结果(I3-7100,8G)
-
-<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/PoolPerformaceCompare.png"></img> 下载性能测试源码：<a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
 
 四：参考Demo
 ---
