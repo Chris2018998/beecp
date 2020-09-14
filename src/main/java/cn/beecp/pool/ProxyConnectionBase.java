@@ -19,7 +19,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.Executor;
 
-import static cn.beecp.pool.PoolExceptionList.*;
+import static cn.beecp.pool.PoolConstants.*;
 import static cn.beecp.util.BeecpUtil.equalsText;
 import static java.lang.System.currentTimeMillis;
 
@@ -38,7 +38,7 @@ abstract class ProxyConnectionBase implements Connection {
     private final static int Pos_NetworkTimeoutInd = 5;
     protected Connection delegate;
     protected PooledConnection pConn;//called by subclass to update time
-    private volatile boolean closedInd;
+    private boolean isClosed;
 
     public ProxyConnectionBase(PooledConnection pConn) {
         this.pConn = pConn;
@@ -47,15 +47,11 @@ abstract class ProxyConnectionBase implements Connection {
     }
 
     public boolean isClosed() throws SQLException {
-        return closedInd;
+        return isClosed;
     }
 
     protected void checkClosed() throws SQLException {
-        if (closedInd) throw ConnectionClosedException;
-    }
-
-    synchronized boolean setAsClosed() {
-        return closedInd ? false : (closedInd = true);
+        if (isClosed) throw ConnectionClosedException;
     }
 
     public void close() throws SQLException {
@@ -63,6 +59,19 @@ abstract class ProxyConnectionBase implements Connection {
             pConn.returnToPoolBySelf();
         } else {
             throw ConnectionClosedException;
+        }
+    }
+
+    boolean setAsClosed() {//called by FastConnectionPool.
+        synchronized (pConn) {
+            if (isClosed) {
+                return false;
+            } else {
+                delegate = DUMMY_CON;
+                if (pConn.needCleanOpenStatements())
+                    pConn.cleanOpenStatements();
+                return isClosed = true;
+            }
         }
     }
 
@@ -78,31 +87,26 @@ abstract class ProxyConnectionBase implements Connection {
     }
 
     public void setTransactionIsolation(int level) throws SQLException {
-        checkClosed();
         delegate.setTransactionIsolation(level);
         pConn.setChangedInd(Pos_TransactionIsolationInd, level != pConn.defaultTransactionIsolationCode);
     }
 
     public void setReadOnly(boolean readOnly) throws SQLException {
-        checkClosed();
         delegate.setReadOnly(readOnly);
         pConn.setChangedInd(Pos_ReadOnlyInd, readOnly != pConn.defaultReadOnly);
     }
 
     public void setCatalog(String catalog) throws SQLException {
-        checkClosed();
         delegate.setCatalog(catalog);
         pConn.setChangedInd(Pos_CatalogInd, !equalsText(catalog, pConn.defaultCatalog));
     }
 
     public boolean isValid(int timeout) throws SQLException {
-        checkClosed();
         return delegate.isValid(timeout);
     }
 
     //for JDK1.7 begin
     public void setSchema(String schema) throws SQLException {
-        checkClosed();
         delegate.setSchema(schema);
         pConn.setChangedInd(Pos_SchemaInd, !equalsText(schema, pConn.defaultSchema));
     }
@@ -122,7 +126,6 @@ abstract class ProxyConnectionBase implements Connection {
     }
 
     public int getNetworkTimeout() throws SQLException {
-        checkClosed();
         return delegate.getNetworkTimeout();
     }
 
@@ -138,26 +141,22 @@ abstract class ProxyConnectionBase implements Connection {
     //for JDK1.7 end
 
     public void commit() throws SQLException {
-        checkClosed();
         delegate.commit();
         pConn.lastAccessTime = currentTimeMillis();
         pConn.commitDirtyInd = false;
     }
 
     public void rollback() throws SQLException {
-        checkClosed();
         delegate.rollback();
         pConn.lastAccessTime = currentTimeMillis();
         pConn.commitDirtyInd = false;
     }
 
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        checkClosed();
         return iface.isInstance(this);
     }
 
     public <T> T unwrap(Class<T> iface) throws SQLException {
-        checkClosed();
         if (iface.isInstance(this))
             return (T) this;
         else

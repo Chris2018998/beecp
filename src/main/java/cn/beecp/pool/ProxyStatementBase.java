@@ -16,10 +16,11 @@
 package cn.beecp.pool;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static cn.beecp.pool.PoolExceptionList.StatementClosedException;
+import static cn.beecp.pool.PoolConstants.StatementClosedException;
 import static cn.beecp.util.BeecpUtil.oclose;
 
 /**
@@ -28,38 +29,52 @@ import static cn.beecp.util.BeecpUtil.oclose;
  * @author Chris.Liao
  * @version 1.0
  */
-class ProxyStatementBase {
+abstract class ProxyStatementBase implements Statement {
     protected Statement delegate;
     protected PooledConnection pConn;//called by subclass to update time
-    protected ProxyConnectionBase proxyConn;//called by subclass to check close state
+    protected ProxyConnectionBase owner;//called by subclass to check close state
+    ProxyResultSetBase openResultSet;
     private boolean isClosed;
-    private boolean closeDlg;
 
-    public ProxyStatementBase(Statement delegate, ProxyConnectionBase proxyConn, PooledConnection pConn, boolean closeDlg) {
+    public ProxyStatementBase(Statement delegate, ProxyConnectionBase proxyConn, PooledConnection pConn) {
         this.pConn = pConn;
-        this.proxyConn = proxyConn;
+        this.owner = proxyConn;
         this.delegate = delegate;
-        this.closeDlg = closeDlg;
+        if (pConn.traceStatement)
+            pConn.registerStatement(this);
+    }
+
+    private final void checkClosed() throws SQLException {
+        if (isClosed) throw StatementClosedException;
     }
 
     public Connection getConnection() throws SQLException {
         checkClosed();
-        return proxyConn;
-    }
-
-    public boolean isClosed() throws SQLException {
-        return isClosed;
-    }
-
-    protected void checkClosed() throws SQLException {
-        if (isClosed) throw StatementClosedException;
-        proxyConn.checkClosed();
+        return owner;
     }
 
     public void close() throws SQLException {
+        if (setAsClosed()) {
+            if (pConn.traceStatement)
+                pConn.unregisterStatement(this);
+        } else {
+            throw StatementClosedException;
+        }
+    }
+
+    final boolean setAsClosed() {//call by PooledConnection.cleanOpenStatements
+        if (!isClosed) {
+            if (openResultSet != null) openResultSet.setAsClosed();
+            oclose(delegate);
+            return isClosed = true;
+        } else {
+            return false;
+        }
+    }
+
+    public ResultSet getResultSet() throws SQLException {
         checkClosed();
-        isClosed = true;
-        if (closeDlg) oclose(delegate);
+        return openResultSet;
     }
 
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
@@ -68,10 +83,14 @@ class ProxyStatementBase {
     }
 
     public <T> T unwrap(Class<T> iface) throws SQLException {
-        checkClosed();
         if (iface.isInstance(this))
             return (T) this;
         else
             throw new SQLException("Wrapped object is not an instance of " + iface);
+    }
+
+    void setOpenResultSet(ProxyResultSetBase resultSetNew) {//call by ProxyResultSetBase.constructor
+        if (openResultSet != null) openResultSet.setAsClosed();
+        this.openResultSet = resultSetNew;
     }
 }

@@ -108,16 +108,16 @@ public final class ProxyClassGenerator {
             String ctProxyStatementClassName = "cn.beecp.pool.ProxyStatement";
             CtClass ctProxyStatementClass = classPool.makeClass(ctProxyStatementClassName, ctProxyStatementBaseClass);
             ctProxyStatementClass.setInterfaces(new CtClass[]{ctStatementClass});
-            ctProxyStatementClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
+            ctProxyStatementClass.setModifiers(Modifier.PUBLIC);
             CtClass[] statementCreateParam = new CtClass[]{
                     classPool.get("java.sql.Statement"),
-                    classPool.get("cn.beecp.pool.ProxyConnection"),
+                    classPool.get("cn.beecp.pool.ProxyConnectionBase"),
                     classPool.get("cn.beecp.pool.PooledConnection")};
             ctConstructor = new CtConstructor(statementCreateParam, ctProxyStatementClass);
             ctConstructor.setModifiers(Modifier.PUBLIC);
             body.delete(0, body.length());
             body.append("{");
-            body.append("super($$,true);");
+            body.append("super($$);");
             body.append("}");
             ctConstructor.setBody(body.toString());
             ctProxyStatementClass.addConstructor(ctConstructor);
@@ -126,15 +126,14 @@ public final class ProxyClassGenerator {
             //............PreparedStatement Begin...............
             CtClass ctPreparedStatementClass = classPool.get(PreparedStatement.class.getName());
             String ctProxyPsStatementClassName = "cn.beecp.pool.ProxyPsStatement";
-            CtClass ctProxyPsStatementClass = classPool.makeClass(ctProxyPsStatementClassName, ctProxyStatementBaseClass);
+            CtClass ctProxyPsStatementClass = classPool.makeClass(ctProxyPsStatementClassName, ctProxyStatementClass);
             ctProxyPsStatementClass.setInterfaces(new CtClass[]{ctPreparedStatementClass});
-            ctProxyPsStatementClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
+            ctProxyPsStatementClass.setModifiers(Modifier.PUBLIC);
 
             CtClass[] statementPsCreateParam = new CtClass[]{
                     classPool.get("java.sql.PreparedStatement"),
-                    classPool.get("cn.beecp.pool.ProxyConnection"),
-                    classPool.get("cn.beecp.pool.PooledConnection"),
-                    classPool.get("boolean")};
+                    classPool.get("cn.beecp.pool.ProxyConnectionBase"),
+                    classPool.get("cn.beecp.pool.PooledConnection")};
             ctConstructor = new CtConstructor(statementPsCreateParam, ctProxyPsStatementClass);
             ctConstructor.setModifiers(Modifier.PUBLIC);
             body.delete(0, body.length());
@@ -148,15 +147,14 @@ public final class ProxyClassGenerator {
             //..............CallableStatement Begin.............
             CtClass ctCallableStatementClass = classPool.get(CallableStatement.class.getName());
             String ctProxyCsStatementClassName = "cn.beecp.pool.ProxyCsStatement";
-            CtClass ctProxyCsStatementClass = classPool.makeClass(ctProxyCsStatementClassName, ctProxyStatementBaseClass);
+            CtClass ctProxyCsStatementClass = classPool.makeClass(ctProxyCsStatementClassName, ctProxyPsStatementClass);
             ctProxyCsStatementClass.setInterfaces(new CtClass[]{ctCallableStatementClass});
-            ctProxyCsStatementClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
+            ctProxyCsStatementClass.setModifiers(Modifier.PUBLIC);
 
             CtClass[] statementCsCreateParam = new CtClass[]{
                     classPool.get("java.sql.CallableStatement"),
-                    classPool.get("cn.beecp.pool.ProxyConnection"),
-                    classPool.get("cn.beecp.pool.PooledConnection"),
-                    classPool.get("boolean")};
+                    classPool.get("cn.beecp.pool.ProxyConnectionBase"),
+                    classPool.get("cn.beecp.pool.PooledConnection")};
             ctConstructor = new CtConstructor(statementCsCreateParam, ctProxyCsStatementClass);
             ctConstructor.setModifiers(Modifier.PUBLIC);
 
@@ -178,7 +176,7 @@ public final class ProxyClassGenerator {
 
             CtClass[] databaseMetaData = new CtClass[]{
                     classPool.get("java.sql.DatabaseMetaData"),
-                    classPool.get("cn.beecp.pool.ProxyConnection"),
+                    classPool.get("cn.beecp.pool.ProxyConnectionBase"),
                     classPool.get("cn.beecp.pool.PooledConnection")};
             ctConstructor = new CtConstructor(databaseMetaData, ctProxyDatabaseMetaDataClass);
             ctConstructor.setModifiers(Modifier.PUBLIC);
@@ -198,26 +196,39 @@ public final class ProxyClassGenerator {
             ctProxyResultSetClass.setInterfaces(new CtClass[]{ctResultSetClass});
             ctProxyResultSetClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
 
-            CtClass[] resultSetCreateParam = new CtClass[]{
+            CtClass[] resultSetCreateParam1 = new CtClass[]{
                     classPool.get("java.sql.ResultSet"),
-                    classPool.get("cn.beecp.pool.ProxyStatementBase"),
-                    classPool.get("cn.beecp.pool.PooledConnection"),
-                    classPool.get("boolean")};
-            ctConstructor = new CtConstructor(resultSetCreateParam, ctProxyResultSetClass);
-            ctConstructor.setModifiers(Modifier.PUBLIC);
+                    classPool.get("cn.beecp.pool.PooledConnection")};
+            CtConstructor ctConstructor1 = new CtConstructor(resultSetCreateParam1, ctProxyResultSetClass);
+            ctConstructor1.setModifiers(Modifier.PUBLIC);
             body.delete(0, body.length());
             body.append("{");
             body.append("super($$);");
             body.append("}");
-            ctConstructor.setBody(body.toString());
-            ctProxyResultSetClass.addConstructor(ctConstructor);
+            ctConstructor1.setBody(body.toString());
+            ctProxyResultSetClass.addConstructor(ctConstructor1);
+
+            CtClass[] resultSetCreateParam2 = new CtClass[]{
+                    classPool.get("java.sql.ResultSet"),
+                    classPool.get("cn.beecp.pool.ProxyStatementBase"),
+                    classPool.get("cn.beecp.pool.PooledConnection")};
+            CtConstructor ctConstructor2 = new CtConstructor(resultSetCreateParam2, ctProxyResultSetClass);
+            ctConstructor2.setModifiers(Modifier.PUBLIC);
+            body.delete(0, body.length());
+            body.append("{");
+            body.append("super($$);");
+            body.append("}");
+            ctConstructor2.setBody(body.toString());
+            ctProxyResultSetClass.addConstructor(ctConstructor2);
+
+
             //............Result End...............
 
             this.createProxyConnectionClass(classPool, ctProxyConnectionClass, ctConnectionClass, ctProxyConnectionBaseClass);
 
             this.createProxyStatementClass(classPool, ctProxyStatementClass, ctStatementClass, ctProxyStatementBaseClass);
-            this.createProxyStatementClass(classPool, ctProxyPsStatementClass, ctPreparedStatementClass, ctProxyStatementBaseClass);
-            this.createProxyStatementClass(classPool, ctProxyCsStatementClass, ctCallableStatementClass, ctProxyStatementBaseClass);
+            this.createProxyStatementClass(classPool, ctProxyPsStatementClass, ctPreparedStatementClass, ctProxyStatementClass);
+            this.createProxyStatementClass(classPool, ctProxyCsStatementClass, ctCallableStatementClass, ctProxyPsStatementClass);
             this.createProxyDatabaseMetaDataClass(classPool, ctProxyDatabaseMetaDataClass, ctDatabaseMetaDataClass, ctProxyDatabaseMetaDataBaseClass);
             this.createProxyResultSetClass(classPool, ctProxyResultSetClass, ctResultSetClass, ctProxyResultSetBaseClass);
 
@@ -283,8 +294,6 @@ public final class ProxyClassGenerator {
         CtClass ctCallableStatementClass = classPool.get(CallableStatement.class.getName());
         CtClass ctDatabaseMetaDataIntf = classPool.get(DatabaseMetaData.class.getName());
 
-        int preparedStatementMethodIndex = 1;
-        int callableStatementMethodIndex = 1;
         StringBuilder methodBuffer = new StringBuilder();
         for (CtMethod ctMethod : linkedList) {
             String methodName = ctMethod.getName();
@@ -293,33 +302,12 @@ public final class ProxyClassGenerator {
 
             methodBuffer.delete(0, methodBuffer.length());
             methodBuffer.append("{");
-            methodBuffer.append("checkClosed();");
             if (ctMethod.getReturnType() == ctStatementClass) {
                 methodBuffer.append("return new ProxyStatement(delegate." + methodName + "($$),this,pConn);");
             } else if (ctMethod.getReturnType() == ctPreparedStatementClass) {
-                methodBuffer.append("if(pConn.stmCacheValid){");
-                String cacheType = "1" + preparedStatementMethodIndex++;
-                methodBuffer.append("  CacheKey k=new CacheKey(" + cacheType + ",$$);");
-                methodBuffer.append("  PreparedStatement s=(PreparedStatement)pConn.get(k);");
-                methodBuffer.append("  if(s==null){");
-                methodBuffer.append("     s=delegate." + methodName + "($$);");
-                methodBuffer.append("     pConn.put(k,s);");
-                methodBuffer.append("   }");
-                methodBuffer.append("   return new ProxyPsStatement(s,this,pConn,false);");
-                methodBuffer.append("}");
-                methodBuffer.append("return new ProxyPsStatement(delegate." + methodName + "($$),this,pConn,true);");
+                methodBuffer.append("return new ProxyPsStatement(delegate." + methodName + "($$),this,pConn);");
             } else if (ctMethod.getReturnType() == ctCallableStatementClass) {
-                methodBuffer.append("if(pConn.stmCacheValid){");
-                String cacheType = "2" + callableStatementMethodIndex++;
-                methodBuffer.append("  CacheKey k=new CacheKey(" + cacheType + ",$$);");
-                methodBuffer.append("  CallableStatement s=(CallableStatement)pConn.get(k);");
-                methodBuffer.append("  if(s==null){");
-                methodBuffer.append("    s=delegate." + methodName + "($$);");
-                methodBuffer.append("    pConn.put(k,s);");
-                methodBuffer.append("  }");
-                methodBuffer.append("   return new ProxyCsStatement(s,this,pConn,false);");
-                methodBuffer.append("}");
-                methodBuffer.append("return new ProxyCsStatement(delegate." + methodName + "($$),this,pConn,true);");
+                methodBuffer.append("return new ProxyCsStatement(delegate." + methodName + "($$),this,pConn);");
             } else if (ctMethod.getReturnType() == ctDatabaseMetaDataIntf) {
                 methodBuffer.append("return new ProxyDatabaseMetaData(delegate." + methodName + "($$),this,pConn);");
             } else if (methodName.equals("close")) {
@@ -368,7 +356,6 @@ public final class ProxyClassGenerator {
 
             methodBuffer.delete(0, methodBuffer.length());
             methodBuffer.append("{");
-            methodBuffer.append("checkClosed();");
 
             if (ctMethod.getReturnType() == CtClass.voidType) {
                 methodBuffer.append(delegateName + methodName + "($$);");
@@ -379,14 +366,14 @@ public final class ProxyClassGenerator {
                     methodBuffer.append(ctMethod.getReturnType().getName() + " re=" + delegateName + methodName + "($$);");
                     methodBuffer.append("pConn.updateAccessTimeWithCommitDirty();");
                     if (ctMethod.getReturnType() == ctResultSetClass) {
-                        methodBuffer.append(" return new ProxyResultSet(re,this,pConn,true);");
+                        methodBuffer.append("return new ProxyResultSet(re,this,pConn);");
                     } else {
                         methodBuffer.append("return re;");
                     }
                 } else {
-                    if (ctMethod.getReturnType() == ctResultSetClass)
-                        methodBuffer.append(" return new ProxyResultSet(" + delegateName + methodName + "($$),this,pConn,true);");
-                    else
+                    if (ctMethod.getReturnType() == ctResultSetClass) {
+                        methodBuffer.append("return new ProxyResultSet(delegate." + methodName + "($$),this,pConn);");
+                    } else
                         methodBuffer.append("return " + delegateName + methodName + "($$);");
                 }
             }
@@ -422,9 +409,8 @@ public final class ProxyClassGenerator {
             methodBuffer.delete(0, methodBuffer.length());
             methodBuffer.append("{");
             methodBuffer.append("checkClosed();");
-
             if (ctMethod.getReturnType() == ctResultSetClass) {
-                methodBuffer.append("return new ProxyResultSet(delegate." + methodName + "($$),null,pConn,false);");
+                methodBuffer.append("return new ProxyResultSet(delegate." + methodName + "($$),pConn);");
             } else if (ctMethod.getReturnType() == CtClass.voidType) {
                 methodBuffer.append("delegate." + methodName + "($$);");
             } else {
@@ -460,7 +446,6 @@ public final class ProxyClassGenerator {
 
             methodBuffer.delete(0, methodBuffer.length());
             methodBuffer.append("{");
-            methodBuffer.append("checkClosed();");
 
             if (methodName.equals("close")) {
                 //methodBuffer.append("super." + methodName + "($$);");

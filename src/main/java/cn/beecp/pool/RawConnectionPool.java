@@ -27,8 +27,7 @@ import java.sql.SQLException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static cn.beecp.pool.PoolExceptionList.*;
-import static cn.beecp.pool.PoolObjectsState.*;
+import static cn.beecp.pool.PoolConstants.*;
 import static cn.beecp.util.BeecpUtil.isNullText;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;

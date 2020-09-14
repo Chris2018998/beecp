@@ -33,8 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-import static cn.beecp.pool.PoolExceptionList.*;
-import static cn.beecp.pool.PoolObjectsState.*;
+import static cn.beecp.pool.PoolConstants.*;
 import static cn.beecp.util.BeecpUtil.isNullText;
 import static cn.beecp.util.BeecpUtil.oclose;
 import static java.lang.System.*;

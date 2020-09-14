@@ -28,7 +28,7 @@ import java.sql.SQLException;
 abstract class ProxyDatabaseMetaDataBase implements DatabaseMetaData {
     protected DatabaseMetaData delegate;
     protected PooledConnection pConn;//called by subclass to update time
-    protected ProxyConnectionBase proxyConn;//called by subclass to check close state
+    private ProxyConnectionBase proxyConn;//called by subclass to check close state
 
     public ProxyDatabaseMetaDataBase(DatabaseMetaData metaData, ProxyConnectionBase proxyConn, PooledConnection pConn) {
         this.pConn = pConn;
