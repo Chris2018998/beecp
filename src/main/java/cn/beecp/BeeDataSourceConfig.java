@@ -90,14 +90,16 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
      * pool allow max size
      */
     private int maxActive = 10;
+
+    /**
+     * true:trance statement
+     */
+    private boolean traceStatement;
     /**
      * borrow Semaphore Size
      */
     private int borrowSemaphoreSize;
-    /**
-     * 'PreparedStatement' cache size
-     */
-    private int preparedStatementCacheSize;
+
     /**
      * connection.setAutoCommit(boolean);
      */
@@ -163,6 +165,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
      * BeeCP implementation class name
      */
     private String poolImplementClassName = DefaultImplementClassName;
+
     /**
      * Physical JDBC Connection factory class name
      */
@@ -296,6 +299,15 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
         }
     }
 
+    public boolean isTraceStatement() {
+        return traceStatement;
+    }
+
+    public void setTraceStatement(boolean traceStatement) {
+        if (!this.checked)
+            this.traceStatement = traceStatement;
+    }
+
     public int getBorrowSemaphoreSize() {
         return borrowSemaphoreSize;
     }
@@ -303,15 +315,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
     public void setBorrowSemaphoreSize(int borrowSemaphoreSize) {
         if (!this.checked && borrowSemaphoreSize > 0)
             this.borrowSemaphoreSize = borrowSemaphoreSize;
-    }
-
-    public int getPreparedStatementCacheSize() {
-        return preparedStatementCacheSize;
-    }
-
-    public void setPreparedStatementCacheSize(int preparedStatementCacheSize) {
-        if (!this.checked && preparedStatementCacheSize >= 0)
-            this.preparedStatementCacheSize = preparedStatementCacheSize;
     }
 
     public boolean isDefaultAutoCommit() {
@@ -592,8 +595,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
             throw new BeeDataSourceConfigException("Connection 'holdTimeout' must be greater than zero");
         if (this.maxWait <= 0)
             throw new BeeDataSourceConfigException("Borrower 'maxWait' must be greater than zero");
-        if (this.preparedStatementCacheSize < 0)
-            throw new BeeDataSourceConfigException("Connection 'preparedStatementCacheSize' must not be lesser than zero");
 
         defaultTransactionIsolationCode = TransactionIsolationLevel.nameToCode(defaultTransactionIsolation);
         if (defaultTransactionIsolationCode == -999) {

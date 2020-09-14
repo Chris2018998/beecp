@@ -42,8 +42,6 @@ public interface BeeDataSourceConfigJMXBean {
 
     int getBorrowSemaphoreSize();
 
-    int getPreparedStatementCacheSize();
-
     boolean isDefaultAutoCommit();
 
     String getDefaultTransactionIsolation();
