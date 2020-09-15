@@ -66,16 +66,14 @@ class PoolConstants {
     static final SQLException AutoCommitChangeForbiddenException = new SQLException("Execute 'commit' or 'rollback' before this operation");
 
     static final SQLException DriverNotSupportNetworkTimeoutException = new SQLException("Driver not support 'networkTimeout'");
-
+    
     final static Connection DUMMY_CON = (Connection) Proxy.newProxyInstance(
             PoolConstants.class.getClassLoader(),
             new Class[]{Connection.class},
             new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                     String methodName = method.getName();
-                    if (methodName == "close") {
-                        return null;
-                    } else if (methodName == "isClosed") {
+                    if (methodName == "isClosed") {
                         return true;
                     } else {
                         throw ConnectionClosedException;
