@@ -69,23 +69,23 @@ public class ConnectionWrapperTest extends TestCase {
 				TestUtil.assertError("Raw conneciton exposed(dbs)");	
 			
 			ResultSet re1=st.executeQuery("select 1 from dual");
-			if (re1.getStatement() != st)
+			if (re1!=null && re1.getStatement() != st)
 				TestUtil.assertError("Raw Statement exposed(st)");	
 			ResultSet re2=ps.executeQuery();
-			if (re2.getStatement() != ps)
+			if (re2!=null && re2.getStatement() != ps)
 				TestUtil.assertError("Raw Statement exposed(ps)");	
 			ResultSet re3=cs.getResultSet();
-			if (re3.getStatement() != cs)
+			if (re3!=null && re3.getStatement() != cs)
 				TestUtil.assertError("Raw Statement exposed(cs)");
 			ResultSet re4=dbs.getTableTypes();
-			if (re4.getStatement() != null)
+			if (re4!=null && re4.getStatement() != null)
 				TestUtil.assertError("Raw Statement exposed(dbs)");
 			
-			if (re1.getStatement()!=st)
+			if (re1!=null && re1.getStatement()!=st)
 				TestUtil.assertError("Raw Result exposed(st)");	
-			if (re2.getStatement()!=ps)
+			if (re2!=null && re2.getStatement()!=ps)
 				TestUtil.assertError("Raw Result exposed(ps)");	
-			if (re3.getStatement()!=cs)
+			if (re3!=null && re3.getStatement()!=cs)
 				TestUtil.assertError("Raw Result exposed(cs)");
 		}finally{
 			if(st!=null)

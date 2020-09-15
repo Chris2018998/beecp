@@ -39,6 +39,7 @@ public class OperationAfterOwnerCloseTest extends TestCase {
 		config.setDriverClassName(Config.JDBC_DRIVER);
 		config.setUsername(Config.JDBC_USER);
 		config.setPassword(Config.JDBC_PASSWORD);
+		config.setTraceStatement(true);
 		ds = new BeeDataSource(config);
 	}
 
@@ -107,8 +108,10 @@ public class OperationAfterOwnerCloseTest extends TestCase {
 			try {
 				rs1 = st.getResultSet();
 				st.close();
-				rs1.getStatement();
-				TestUtil.assertError("result operation after statememnt close(st)");
+				if(rs1!=null){
+					rs1.getStatement();
+					TestUtil.assertError("result operation after statememnt close(st)");
+				}
 			} catch (SQLException e) {
 			} finally {
 				if (rs1 != null)
@@ -119,8 +122,10 @@ public class OperationAfterOwnerCloseTest extends TestCase {
 			try {
 				rs2 = ps.getResultSet();
 				ps.close();
-				rs2.getStatement();
-				TestUtil.assertError("result operation after preparedStatement close(ps)");
+				if(rs2!=null) {
+					rs2.getStatement();
+					TestUtil.assertError("result operation after preparedStatement close(ps)");
+				}
 			} catch (SQLException e) {
 			} finally {
 				if (rs2 != null)
@@ -131,8 +136,10 @@ public class OperationAfterOwnerCloseTest extends TestCase {
 			try {
 				rs3 = cs.getResultSet();
 				cs.close();
-				rs3.getStatement();
-				TestUtil.assertError("result operation after callableStatement close(cs)");
+				if(rs3!=null) {
+					rs3.getStatement();
+					TestUtil.assertError("result operation after callableStatement close(cs)");
+				}
 			} catch (SQLException e) {
 			} finally {
 				if (rs3 != null)

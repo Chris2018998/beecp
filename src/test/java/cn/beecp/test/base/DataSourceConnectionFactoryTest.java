@@ -44,10 +44,13 @@ public class DataSourceConnectionFactoryTest extends TestCase {
     }
     public void test() throws InterruptedException, Exception {
         Connection con=null;
-        try{
+        try {
             con = ds.getConnection();
-            if(con==null)TestUtil.assertError("DataSourceConnectionFactoryTest failed");
+            if (con == null) TestUtil.assertError("DataSourceConnectionFactoryTest failed");
             System.out.println(con);
+        }catch(Exception e){
+            e.printStackTrace();
+            throw e;
         }finally{
         	if(con!=null)
               BeecpUtil.oclose(con);

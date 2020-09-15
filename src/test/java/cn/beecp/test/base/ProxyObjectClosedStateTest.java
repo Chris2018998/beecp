@@ -73,7 +73,8 @@ public class ProxyObjectClosedStateTest extends TestCase {
             if (!con.isClosed())
                 TestUtil.assertError("Connection is not closed");
             con = null;
-        } finally {
+        }
+        finally {
             if (st != null)
                 BeecpUtil.oclose(st);
             if (cs != null)
