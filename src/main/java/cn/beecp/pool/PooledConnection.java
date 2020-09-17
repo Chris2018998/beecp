@@ -71,7 +71,7 @@ class PooledConnection {
         defaultNetworkTimeout = pool.getNetworkTimeout();
         defaultNetworkTimeoutExecutor = pool.getNetworkTimeoutExecutor();
         traceStatement = config.isTraceStatement();
-        openStatements = new ArrayList<ProxyStatementBase>(traceStatement?16:0);
+        openStatements = new ArrayList<ProxyStatementBase>(traceStatement ? 16 : 0);
 
         curAutoCommit = defaultAutoCommit;
         lastAccessTime = currentTimeMillis();
@@ -86,7 +86,7 @@ class PooledConnection {
     }
 
     void cleanOpenStatements() {
-        if(traceStatement && openStatements.size() > 0) {
+        if (traceStatement && openStatements.size() > 0) {
             for (ProxyStatementBase st : openStatements)
                 st.setAsClosed();
             openStatements.clear();
@@ -173,4 +173,51 @@ class PooledConnection {
         //clear warnings
         rawConn.clearWarnings();
     }
+
+    class StatementArray {
+        private int size;
+        private int initSize;
+        private ProxyStatementBase[] elements;
+
+        public StatementArray(int initSize) {
+            elements = new ProxyStatementBase[this.initSize = initSize];
+        }
+
+        public int size() {
+            return size;
+        }
+
+        public void add(ProxyStatementBase e) {
+            if (size >= elements.length) {
+                ProxyStatementBase[] newArray = new ProxyStatementBase[elements.length + initSize];
+                System.arraycopy(elements, 0, newArray, 0, elements.length);
+                elements = newArray;
+            }
+            elements[size++] = e;
+        }
+
+        public void remove(ProxyStatementBase o) {
+            for (int i = 0; i < size; i++)
+                if (o == elements[i]) {
+                    int m = size - i - 1;
+                    if (m > 0) System.arraycopy(elements, i + 1, elements, i, m);
+                    elements[--size] = null; // clear to let GC do its work
+                    return;
+                }
+        }
+
+        public void clear() {
+            for (int i = 0; i < size; i++) {
+                if (elements[i] != null) {
+                    elements[i].setAsClosed();
+                    elements[i] = null;
+                }
+            }
+
+            if (size > initSize) elements = new ProxyStatementBase[initSize];
+            size = 0;
+        }
+    }
 }
+
+
