@@ -68,8 +68,7 @@ abstract class ProxyConnectionBase implements Connection {
                 return false;
             } else {
                 delegate = DUMMY_CON;
-                if (pConn.needCleanOpenStatements())
-                    pConn.cleanOpenStatements();
+                pConn.cleanOpenStatements();
                 return isClosed = true;
             }
         }

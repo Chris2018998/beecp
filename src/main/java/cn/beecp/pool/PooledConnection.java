@@ -50,7 +50,7 @@ class PooledConnection {
     String defaultSchema;
     int defaultNetworkTimeout;
     boolean traceStatement;
-    private StatementArray openStatements;
+    private ArrayList<ProxyStatementBase> openStatements;
     private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
     private FastConnectionPool pool;
     private short changedCount;
@@ -71,14 +71,10 @@ class PooledConnection {
         defaultNetworkTimeout = pool.getNetworkTimeout();
         defaultNetworkTimeoutExecutor = pool.getNetworkTimeoutExecutor();
         traceStatement = config.isTraceStatement();
-        openStatements = new StatementArray(traceStatement ? 16 : 0);
+        openStatements = new ArrayList<ProxyStatementBase>(traceStatement?16:0);
 
         curAutoCommit = defaultAutoCommit;
         lastAccessTime = currentTimeMillis();
-    }
-
-    boolean needCleanOpenStatements() {
-        return traceStatement && openStatements.size() > 0;
     }
 
     synchronized void registerStatement(ProxyStatementBase st) {
@@ -89,8 +85,12 @@ class PooledConnection {
         openStatements.remove(st);
     }
 
-    synchronized void cleanOpenStatements() {
-        openStatements.clear();
+    void cleanOpenStatements() {
+        if(traceStatement && openStatements.size() > 0) {
+            for (ProxyStatementBase st : openStatements)
+                st.setAsClosed();
+            openStatements.clear();
+        }
     }
 
     void closeRawConn() {//called by pool
