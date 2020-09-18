@@ -86,7 +86,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private boolean supportSchema = true;
     private boolean supportNetworkTimeout = true;
     private boolean supportQueryTimeout = true;
-    private boolean supportIsValidTested = false;
+    private boolean supportIsValidTested = true;
     private ThreadPoolExecutor networkTimeoutExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
             Runtime.getRuntime().availableProcessors(), 15, SECONDS, new LinkedBlockingQueue<Runnable>(), new PoolThreadThreadFactory("networkTimeout"));
     private String poolName = "";
@@ -301,11 +301,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             }
         }
 
-        if (!this.supportIsValidTested) {//test isValid
+        if (this.supportIsValidTested) {//test isValid
             try {//test Connection.isValid
-                if (!rawConn.isValid(connectionTestTimeout))
-                    throw new SQLException();
-                this.testPolicy = new ConnValidTestPolicy();
+                if(rawConn.isValid(connectionTestTimeout)) {
+                    this.testPolicy = new ConnValidTestPolicy();
+                }else{
+                    supportValidTest = false;
+                    log.warn("BeeCP({})driver not support 'isValid'", poolName);
+                }
             } catch (Throwable e) {
                 supportValidTest = false;
                 log.warn("BeeCP({})driver not support 'isValid'", poolName);
@@ -319,8 +322,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 } finally {
                     if (st != null) oclose(st);
                 }
-            } finally {
-                supportIsValidTested = true;
             }
         }
         //for JDK1.7 end
