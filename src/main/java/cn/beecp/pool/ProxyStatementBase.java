@@ -78,7 +78,6 @@ abstract class ProxyStatementBase implements Statement {
     }
 
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        checkClosed();
         return iface.isInstance(this);
     }
 

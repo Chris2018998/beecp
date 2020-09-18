@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import static cn.beecp.util.BeecpUtil.oclose;
@@ -50,7 +49,8 @@ class PooledConnection {
     String defaultSchema;
     int defaultNetworkTimeout;
     boolean traceStatement;
-    private ArrayList<ProxyStatementBase> openStatements;
+    //private ArrayList<ProxyStatementBase> openStatements;
+    private StatementArray openStatements;
     private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
     private FastConnectionPool pool;
     private short changedCount;
@@ -71,7 +71,8 @@ class PooledConnection {
         defaultNetworkTimeout = pool.getNetworkTimeout();
         defaultNetworkTimeoutExecutor = pool.getNetworkTimeoutExecutor();
         traceStatement = config.isTraceStatement();
-        openStatements = new ArrayList<ProxyStatementBase>(traceStatement ? 16 : 0);
+        // openStatements = new StatementArray<ProxyStatementBase>(traceStatement ? 16 : 0);
+        openStatements = new StatementArray(traceStatement ? 32 : 0);
 
         curAutoCommit = defaultAutoCommit;
         lastAccessTime = currentTimeMillis();
@@ -86,11 +87,8 @@ class PooledConnection {
     }
 
     void cleanOpenStatements() {
-        if (traceStatement && openStatements.size() > 0) {
-            for (ProxyStatementBase st : openStatements)
-                st.setAsClosed();
+        if (traceStatement && openStatements.size() > 0)
             openStatements.clear();
-        }
     }
 
     void closeRawConn() {//called by pool
@@ -174,8 +172,10 @@ class PooledConnection {
         rawConn.clearWarnings();
     }
 
-    class StatementArray {
-        private int size;
+
+    //copy from java.util.ArrayList
+    static final class StatementArray {
+        private int pos;
         private int initSize;
         private ProxyStatementBase[] elements;
 
@@ -184,40 +184,38 @@ class PooledConnection {
         }
 
         public int size() {
-            return size;
+            return pos;
         }
 
         public void add(ProxyStatementBase e) {
-            if (size >= elements.length) {
-                ProxyStatementBase[] newArray = new ProxyStatementBase[elements.length + initSize];
+            if (pos == elements.length) {
+                ProxyStatementBase[] newArray = new ProxyStatementBase[elements.length << 1];
                 System.arraycopy(elements, 0, newArray, 0, elements.length);
                 elements = newArray;
             }
-            elements[size++] = e;
+            elements[pos++] = e;
         }
 
         public void remove(ProxyStatementBase o) {
-            for (int i = 0; i < size; i++)
+            for (int i = 0; i < pos; i++)
                 if (o == elements[i]) {
-                    int m = size - i - 1;
-                    if (m > 0) System.arraycopy(elements, i + 1, elements, i, m);
-                    elements[--size] = null; // clear to let GC do its work
+                    int m = pos - i - 1;
+                    if (m > 0) System.arraycopy(elements, i + 1, elements, i, m);//move to head
+                    elements[--pos] = null; // clear to let GC do its work
                     return;
                 }
         }
 
         public void clear() {
-            for (int i = 0; i < size; i++) {
+            for (int i = 0; i < pos; i++) {
                 if (elements[i] != null) {
                     elements[i].setAsClosed();
                     elements[i] = null;
                 }
             }
 
-            if (size > initSize) elements = new ProxyStatementBase[initSize];
-            size = 0;
+            pos = 0;
+            if (elements.length > initSize) elements = new ProxyStatementBase[initSize];
         }
     }
 }
-
-

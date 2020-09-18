@@ -44,10 +44,10 @@ abstract class ProxyResultSetBase implements ResultSet {
         this.delegate = delegate;
         this.owner = owner;
         owner.setOpenResultSet(this);
-    }
+}
 
     private final void checkClosed() throws SQLException {
-        if (delegate.isClosed()) throw ResultSetClosedException;
+        if (isClosed) throw ResultSetClosedException;
     }
 
     public Statement getStatement() throws SQLException {
