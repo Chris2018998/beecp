@@ -24,7 +24,7 @@ import static cn.beecp.pool.PoolConstants.StatementClosedException;
 import static cn.beecp.util.BeecpUtil.oclose;
 
 /**
- * ProxyBaseStatement
+ * ProxyStatementBase
  *
  * @author Chris.Liao
  * @version 1.0
@@ -35,13 +35,14 @@ abstract class ProxyStatementBase implements Statement {
     protected ProxyConnectionBase owner;//called by subclass to check close state
     ProxyResultSetBase openResultSet;
     private boolean isClosed;
+    //private Object cacheKey;
 
     public ProxyStatementBase(Statement delegate, ProxyConnectionBase proxyConn, PooledConnection pConn) {
+        // this(delegate, proxyConn, pConn, null);
         this.pConn = pConn;
         this.owner = proxyConn;
         this.delegate = delegate;
-        if (pConn.traceStatement)
-            pConn.registerStatement(this);
+        pConn.registerStatement(this);
     }
 
     private final void checkClosed() throws SQLException {
@@ -55,14 +56,13 @@ abstract class ProxyStatementBase implements Statement {
 
     public void close() throws SQLException {
         if (setAsClosed()) {
-            if (pConn.traceStatement)
-                pConn.unregisterStatement(this);
+            pConn.unregisterStatement(this);//remove trace
         } else {
             throw StatementClosedException;
         }
     }
 
-    final boolean setAsClosed() {//call by PooledConnection.cleanOpenStatements
+    boolean setAsClosed() {//call by PooledConnection.cleanOpenStatements
         if (!isClosed) {
             if (openResultSet != null) openResultSet.setAsClosed();
             oclose(delegate);

@@ -20,7 +20,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import static cn.beecp.util.BeecpUtil.oclose;
@@ -33,7 +37,7 @@ import static java.lang.System.currentTimeMillis;
  * @author Chris.Liao
  * @version 1.0
  */
-class PooledConnection {
+class PooledConnection extends LinkedHashMap<Object, PreparedStatement> {
     private static final boolean[] DEFAULT_IND = new boolean[6];
     private static Logger log = LoggerFactory.getLogger(PooledConnection.class);
     volatile int state;
@@ -48,16 +52,18 @@ class PooledConnection {
     String defaultCatalog;
     String defaultSchema;
     int defaultNetworkTimeout;
-    boolean traceStatement;
-    //private ArrayList<ProxyStatementBase> openStatements;
+    boolean stmCacheValid;
+    private boolean traceStatement;
     private StatementArray openStatements;
     private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
     private FastConnectionPool pool;
     private short changedCount;
     //changed indicator
     private boolean[] changedInd = new boolean[DEFAULT_IND.length];
+    private int stmCacheSize;
 
     public PooledConnection(Connection rawConn, int connState, FastConnectionPool connPool, BeeDataSourceConfig config) throws SQLException {
+        super(config.getPreparedStatementCacheSize() * 2, 0.75f, true);
         pool = connPool;
         state = connState;
         this.rawConn = rawConn;
@@ -71,25 +77,53 @@ class PooledConnection {
         defaultNetworkTimeout = pool.getNetworkTimeout();
         defaultNetworkTimeoutExecutor = pool.getNetworkTimeoutExecutor();
         traceStatement = config.isTraceStatement();
-        // openStatements = new StatementArray<ProxyStatementBase>(traceStatement ? 16 : 0);
-        openStatements = new StatementArray(traceStatement ? 32 : 0);
+        openStatements = new StatementArray(traceStatement ? 16 : 0);
 
+        stmCacheSize = config.getPreparedStatementCacheSize();
+        stmCacheValid = stmCacheSize > 0;
         curAutoCommit = defaultAutoCommit;
         lastAccessTime = currentTimeMillis();
     }
 
-    synchronized void registerStatement(ProxyStatementBase st) {
-        openStatements.add(st);
+    /************* statement Operation ******************************/
+    void registerStatement(ProxyStatementBase st) {
+        if (traceStatement) openStatements.add(st);
     }
 
-    synchronized void unregisterStatement(ProxyStatementBase st) {
-        openStatements.remove(st);
+    void unregisterStatement(ProxyStatementBase st) {
+        if (traceStatement) openStatements.remove(st);
     }
 
     void cleanOpenStatements() {
         if (traceStatement && openStatements.size() > 0)
             openStatements.clear();
     }
+
+    public PreparedStatement put(Object cacheKey, PreparedStatement pst) {
+        return super.put(cacheKey, pst);
+    }
+
+    public PreparedStatement remove(Object cacheKey) {
+        return super.remove(cacheKey);
+    }
+
+    public boolean removeEldestEntry(Map.Entry<Object, PreparedStatement> eldest) {
+        if (size() > stmCacheSize) {
+            oclose(eldest.getValue());
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public synchronized void clear() {//clean cached preparedStatement and close them
+        Iterator<PreparedStatement> itor = this.values().iterator();
+        while (itor.hasNext()) oclose(itor.next());
+        super.clear();
+    }
+
+    /************* statement Operation ******************************/
+
 
     void closeRawConn() {//called by pool
         try {
@@ -172,7 +206,6 @@ class PooledConnection {
         rawConn.clearWarnings();
     }
 
-
     //copy from java.util.ArrayList
     static final class StatementArray {
         private int pos;
@@ -187,7 +220,7 @@ class PooledConnection {
             return pos;
         }
 
-        public void add(ProxyStatementBase e) {
+        public synchronized void add(ProxyStatementBase e) {
             if (pos == elements.length) {
                 ProxyStatementBase[] newArray = new ProxyStatementBase[elements.length << 1];
                 System.arraycopy(elements, 0, newArray, 0, elements.length);
@@ -196,7 +229,7 @@ class PooledConnection {
             elements[pos++] = e;
         }
 
-        public void remove(ProxyStatementBase o) {
+        public synchronized void remove(ProxyStatementBase o) {
             for (int i = 0; i < pos; i++)
                 if (o == elements[i]) {
                     int m = pos - i - 1;
@@ -206,7 +239,7 @@ class PooledConnection {
                 }
         }
 
-        public void clear() {
+        public synchronized void clear() {
             for (int i = 0; i < pos; i++) {
                 if (elements[i] != null) {
                     elements[i].setAsClosed();

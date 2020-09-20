@@ -303,9 +303,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
         if (this.supportIsValidTested) {//test isValid
             try {//test Connection.isValid
-                if(rawConn.isValid(connectionTestTimeout)) {
+                if (rawConn.isValid(connectionTestTimeout)) {
                     this.testPolicy = new ConnValidTestPolicy();
-                }else{
+                } else {
                     supportValidTest = false;
                     log.warn("BeeCP({})driver not support 'isValid'", poolName);
                 }

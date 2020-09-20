@@ -62,15 +62,14 @@ abstract class ProxyConnectionBase implements Connection {
         }
     }
 
-    boolean setAsClosed() {//called by FastConnectionPool.
-        synchronized (pConn) {
-            if (isClosed) {
-                return false;
-            } else {
-                delegate = DUMMY_CON;
-                pConn.cleanOpenStatements();
-                return isClosed = true;
-            }
+    synchronized boolean setAsClosed() {//called by FastConnectionPool.
+        if (isClosed) {
+            return false;
+        } else {
+            isClosed = true;
+            delegate = DUMMY_CON;
+            pConn.cleanOpenStatements();
+            return isClosed;
         }
     }
 
