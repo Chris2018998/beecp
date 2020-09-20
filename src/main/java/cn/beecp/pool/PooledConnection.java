@@ -53,7 +53,7 @@ class PooledConnection extends LinkedHashMap<Object, PreparedStatement> {
     String defaultSchema;
     int defaultNetworkTimeout;
     boolean stmCacheValid;
-    private boolean traceStatement;
+    boolean traceStatement;
     private StatementArray openStatements;
     private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
     private FastConnectionPool pool;
@@ -86,17 +86,16 @@ class PooledConnection extends LinkedHashMap<Object, PreparedStatement> {
     }
 
     /************* statement Operation ******************************/
-    void registerStatement(ProxyStatementBase st) {
-        if (traceStatement) openStatements.add(st);
+    synchronized void registerStatement(ProxyStatementBase st) {
+        openStatements.add(st);
     }
 
-    void unregisterStatement(ProxyStatementBase st) {
-        if (traceStatement) openStatements.remove(st);
+    synchronized void unregisterStatement(ProxyStatementBase st) {
+        openStatements.remove(st);
     }
 
-    void cleanOpenStatements() {
-        if (traceStatement && openStatements.size() > 0)
-            openStatements.clear();
+    synchronized void cleanOpenStatements() {
+        openStatements.clear();
     }
 
     public PreparedStatement put(Object cacheKey, PreparedStatement pst) {
@@ -116,7 +115,7 @@ class PooledConnection extends LinkedHashMap<Object, PreparedStatement> {
         }
     }
 
-    public synchronized void clear() {//clean cached preparedStatement and close them
+    public void clear() {//clean cached preparedStatement and close them
         Iterator<PreparedStatement> itor = this.values().iterator();
         while (itor.hasNext()) oclose(itor.next());
         super.clear();
@@ -220,7 +219,7 @@ class PooledConnection extends LinkedHashMap<Object, PreparedStatement> {
             return pos;
         }
 
-        public synchronized void add(ProxyStatementBase e) {
+        public void add(ProxyStatementBase e) {
             if (pos == elements.length) {
                 ProxyStatementBase[] newArray = new ProxyStatementBase[elements.length << 1];
                 System.arraycopy(elements, 0, newArray, 0, elements.length);
@@ -229,7 +228,7 @@ class PooledConnection extends LinkedHashMap<Object, PreparedStatement> {
             elements[pos++] = e;
         }
 
-        public synchronized void remove(ProxyStatementBase o) {
+        public void remove(ProxyStatementBase o) {
             for (int i = 0; i < pos; i++)
                 if (o == elements[i]) {
                     int m = pos - i - 1;
@@ -239,7 +238,9 @@ class PooledConnection extends LinkedHashMap<Object, PreparedStatement> {
                 }
         }
 
-        public synchronized void clear() {
+        public void clear() {
+            if (pos == 0) return;
+
             for (int i = 0; i < pos; i++) {
                 if (elements[i] != null) {
                     elements[i].setAsClosed();

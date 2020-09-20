@@ -42,7 +42,8 @@ abstract class ProxyStatementBase implements Statement {
         this.pConn = pConn;
         this.owner = proxyConn;
         this.delegate = delegate;
-        pConn.registerStatement(this);
+        if (pConn.traceStatement)
+            pConn.registerStatement(this);
     }
 
     private final void checkClosed() throws SQLException {
@@ -56,7 +57,8 @@ abstract class ProxyStatementBase implements Statement {
 
     public void close() throws SQLException {
         if (setAsClosed()) {
-            pConn.unregisterStatement(this);//remove trace
+            if (pConn.traceStatement)
+                pConn.unregisterStatement(this);//remove trace
         } else {
             throw StatementClosedException;
         }
