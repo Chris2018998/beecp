@@ -101,6 +101,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
     private int borrowSemaphoreSize;
 
     /**
+     * PreparedStatement' cache size
+     */
+    private int preparedStatementCacheSize;
+
+    /**
      * connection.setAutoCommit(boolean);
      */
     private boolean defaultAutoCommit = true;
@@ -315,6 +320,15 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
     public void setBorrowSemaphoreSize(int borrowSemaphoreSize) {
         if (!this.checked && borrowSemaphoreSize > 0)
             this.borrowSemaphoreSize = borrowSemaphoreSize;
+    }
+
+    public int getPreparedStatementCacheSize() {
+        return preparedStatementCacheSize;
+    }
+
+    public void setPreparedStatementCacheSize(int preparedStatementCacheSize) {
+        if (!this.checked && preparedStatementCacheSize >= 0)
+            this.preparedStatementCacheSize = preparedStatementCacheSize;
     }
 
     public boolean isDefaultAutoCommit() {
@@ -595,6 +609,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
             throw new BeeDataSourceConfigException("Connection 'holdTimeout' must be greater than zero");
         if (this.maxWait <= 0)
             throw new BeeDataSourceConfigException("Borrower 'maxWait' must be greater than zero");
+        if (this.preparedStatementCacheSize < 0)
+            throw new BeeDataSourceConfigException("Connection 'preparedStatementCacheSize' must not be lesser than zero");
 
         defaultTransactionIsolationCode = TransactionIsolationLevel.nameToCode(defaultTransactionIsolation);
         if (defaultTransactionIsolationCode == -999) {
