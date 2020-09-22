@@ -18,6 +18,7 @@ package cn.beecp.pool;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
@@ -67,18 +68,36 @@ class PoolConstants {
 
     static final SQLException DriverNotSupportNetworkTimeoutException = new SQLException("Driver not support 'networkTimeout'");
 
-    final static Connection DUMMY_CON = (Connection) Proxy.newProxyInstance(
+    final static Connection CLOSED_CON = (Connection) Proxy.newProxyInstance(
             PoolConstants.class.getClassLoader(),
             new Class[]{Connection.class},
             new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    String methodName = method.getName();
-                    if (methodName == "isClosed") {
-                        return true;
-                    } else {
-                        throw ConnectionClosedException;
-                    }
+                    return call(method.getName(), 1);
                 }
             }
     );
+
+    final static CallableStatement CLOSED_CSTM = (CallableStatement) Proxy.newProxyInstance(
+            PoolConstants.class.getClassLoader(),
+            new Class[]{CallableStatement.class},
+            new InvocationHandler() {
+                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                    return call(method.getName(), 2);
+                }
+            }
+    );
+
+    static Object call(String methodName, int type) throws SQLException {
+        switch (type) {
+            case 1:
+                throw ConnectionClosedException;
+            case 2:
+                throw StatementClosedException;
+            case 3:
+                throw ResultSetClosedException;
+            default:
+                throw ConnectionClosedException;
+        }
+    }
 }

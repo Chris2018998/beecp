@@ -15,12 +15,14 @@
  */
 package cn.beecp.pool;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 import static cn.beecp.pool.PoolConstants.ResultSetClosedException;
-import static cn.beecp.util.BeecpUtil.oclose;
 
 /**
  * ResultSet proxy base class
@@ -29,10 +31,11 @@ import static cn.beecp.util.BeecpUtil.oclose;
  * @version 1.0
  */
 abstract class ProxyResultSetBase implements ResultSet {
+    private static Logger log = LoggerFactory.getLogger(ProxyResultSetBase.class);
     protected ResultSet delegate;
     protected PooledConnection pConn;//called by subclass to update tim
+    boolean isClosed;
     private ProxyStatementBase owner;//called by subclass to check close state
-    private boolean isClosed;
 
     public ProxyResultSetBase(ResultSet delegate, PooledConnection pConn) {
         this.pConn = pConn;
@@ -46,30 +49,31 @@ abstract class ProxyResultSetBase implements ResultSet {
         owner.setOpenResultSet(this);
     }
 
-    private final void checkClosed() throws SQLException {
-        if (isClosed) throw ResultSetClosedException;
-    }
-
     public Statement getStatement() throws SQLException {
         checkClosed();
         return owner;
     }
 
+    public boolean isClosed() throws SQLException {
+        return isClosed;
+    }
+
+    private final void checkClosed() throws SQLException {
+        if (isClosed) throw ResultSetClosedException;
+    }
+
     public void close() throws SQLException {
-        if (setAsClosed()) {
-            if (owner != null)
-                owner.openResultSet = null;
-        } else {
-            throw ResultSetClosedException;
+        if (!isClosed) {
+            isClosed = true;
+            delegate.close();
         }
     }
 
-    final boolean setAsClosed() {//call by ProxyStatementBase.close
-        if (!isClosed) {
-            oclose(delegate);
-            return isClosed = true;
-        } else {
-            return false;
+    final void setAsClosed() {//call by ProxyStatementBase.close
+        try {
+            close();
+        } catch (SQLException e) {
+            log.error("Warning:error at closing resultSet:", e);
         }
     }
 

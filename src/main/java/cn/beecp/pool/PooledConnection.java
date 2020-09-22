@@ -20,11 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import static cn.beecp.util.BeecpUtil.oclose;
@@ -37,7 +33,7 @@ import static java.lang.System.currentTimeMillis;
  * @author Chris.Liao
  * @version 1.0
  */
-class PooledConnection extends LinkedHashMap<Object, PreparedStatement> {
+class PooledConnection {
     private static final boolean[] DEFAULT_IND = new boolean[6];
     private static Logger log = LoggerFactory.getLogger(PooledConnection.class);
     volatile int state;
@@ -63,7 +59,6 @@ class PooledConnection extends LinkedHashMap<Object, PreparedStatement> {
     private int stmCacheSize;
 
     public PooledConnection(Connection rawConn, int connState, FastConnectionPool connPool, BeeDataSourceConfig config) throws SQLException {
-        super(config.getPreparedStatementCacheSize() * 2, 0.75f, true);
         pool = connPool;
         state = connState;
         this.rawConn = rawConn;
@@ -79,8 +74,6 @@ class PooledConnection extends LinkedHashMap<Object, PreparedStatement> {
         traceStatement = config.isTraceStatement();
         openStatements = new StatementArray(traceStatement ? 16 : 0);
 
-        stmCacheSize = config.getPreparedStatementCacheSize();
-        stmCacheValid = stmCacheSize > 0;
         curAutoCommit = defaultAutoCommit;
         lastAccessTime = currentTimeMillis();
     }
@@ -94,31 +87,9 @@ class PooledConnection extends LinkedHashMap<Object, PreparedStatement> {
         openStatements.remove(st);
     }
 
-    synchronized void cleanOpenStatements() {
-        openStatements.clear();
-    }
-
-    public PreparedStatement put(Object cacheKey, PreparedStatement pst) {
-        return super.put(cacheKey, pst);
-    }
-
-    public PreparedStatement remove(Object cacheKey) {
-        return super.remove(cacheKey);
-    }
-
-    public boolean removeEldestEntry(Map.Entry<Object, PreparedStatement> eldest) {
-        if (size() > stmCacheSize) {
-            oclose(eldest.getValue());
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public void clear() {//clean cached preparedStatement and close them
-        Iterator<PreparedStatement> itor = this.values().iterator();
-        while (itor.hasNext()) oclose(itor.next());
-        super.clear();
+    void cleanOpenStatements() {
+        if (openStatements.size() > 0)
+            openStatements.clear();
     }
 
     /************* statement Operation ******************************/
@@ -146,7 +117,7 @@ class PooledConnection extends LinkedHashMap<Object, PreparedStatement> {
         }
     }
 
-    void updateAccessTimeWithCommitDirty() {
+    void updateAccessTime() {
         commitDirtyInd = !curAutoCommit;
         lastAccessTime = currentTimeMillis();
     }
@@ -239,8 +210,6 @@ class PooledConnection extends LinkedHashMap<Object, PreparedStatement> {
         }
 
         public void clear() {
-            if (pos == 0) return;
-
             for (int i = 0; i < pos; i++) {
                 if (elements[i] != null) {
                     elements[i].setAsClosed();
