@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import static cn.beecp.pool.PoolConstants.*;
+import static cn.beecp.pool.ProxyObjectFactory.createProxyConnection;
 import static cn.beecp.util.BeecpUtil.isNullText;
 import static cn.beecp.util.BeecpUtil.oclose;
 import static java.lang.System.*;
@@ -94,14 +95,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
     private AtomicInteger createConnThreadState = new AtomicInteger(THREAD_WORKING);
     private AtomicInteger needAddConnSize = new AtomicInteger(0);
-
-    // create proxy to wrap connection as result
-    private static final Connection createProxyConnection(PooledConnection pConn, Borrower borrower)
-            throws SQLException {
-        // borrower.setBorrowedConnection(pConn);
-        // return pConn.proxyConnCurInstance=new ProxyConnection(pConn);
-        throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
-    }
 
     /**
      * initialize pool with configuration
@@ -232,7 +225,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     //remove Pooled connection
     private void removePooledConn(PooledConnection pConn, String removeType) {
         pConn.state = CONNECTION_CLOSED;
-        pConn.closeRawConn();
+        pConn.close();
         synchronized (connArrayLock) {
             int oldLen = connArray.length;
             PooledConnection[] arrayNew = new PooledConnection[oldLen - 1];

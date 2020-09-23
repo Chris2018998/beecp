@@ -94,8 +94,8 @@ class PooledConnection {
 
     /************* statement Operation ******************************/
 
-
-    void closeRawConn() {//called by pool
+    //close raw connection
+    void close() {//called by pool
         try {
             resetRawConnOnReturn();
         } catch (SQLException e) {

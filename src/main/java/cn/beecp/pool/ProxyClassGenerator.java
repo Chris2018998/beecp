@@ -231,14 +231,17 @@ public final class ProxyClassGenerator {
             this.createProxyDatabaseMetaDataClass(classPool, ctProxyDatabaseMetaDataClass, ctDatabaseMetaDataClass, ctProxyDatabaseMetaDataBaseClass);
             this.createProxyResultSetClass(classPool, ctProxyResultSetClass, ctResultSetClass, ctProxyResultSetBaseClass);
 
-            //............... FastConnectionPool Begin..................
-            CtClass ctFastConnectionPoolClass = classPool.get(FastConnectionPool.class.getName());
+            //............... ProxyObjectFactory Begin..................
+            CtClass ctProxyObjectFactoryClass = classPool.get(ProxyObjectFactory.class.getName());
             CtMethod createProxyConnectionMethod = null;
-            CtMethod[] ctMethods = ctFastConnectionPoolClass.getDeclaredMethods();
+            CtMethod createProxyResultSetMethod = null;
+
+            CtMethod[] ctMethods = ctProxyObjectFactoryClass.getDeclaredMethods();
             for (CtMethod method : ctMethods) {
                 if ("createProxyConnection".equals(method.getName())) {
                     createProxyConnectionMethod = method;
-                    break;
+                }else if ("createProxyResultSet".equals(method.getName())) {
+                    createProxyResultSetMethod = method;
                 }
             }
 
@@ -248,7 +251,13 @@ public final class ProxyClassGenerator {
             body.append(" return new ProxyConnection($1);");
             body.append("}");
             createProxyConnectionMethod.setBody(body.toString());
-            //............... FastConnectionPool end..................
+
+            body.delete(0, body.length());
+            body.append("{");
+            body.append(" return new ProxyResultSet($$);");
+            body.append("}");
+            createProxyResultSetMethod.setBody(body.toString());
+            //............... ProxyObjectFactory end..................
 
             return new CtClass[]{
                     ctProxyConnectionClass,
@@ -257,7 +266,7 @@ public final class ProxyClassGenerator {
                     ctProxyCsStatementClass,
                     ctProxyDatabaseMetaDataClass,
                     ctProxyResultSetClass,
-                    ctFastConnectionPoolClass};
+                    ctProxyObjectFactoryClass};
         } catch (Throwable e) {
             e.printStackTrace();
             throw new Exception(e);

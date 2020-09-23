@@ -49,6 +49,10 @@ abstract class ProxyResultSetBase implements ResultSet {
         owner.setOpenResultSet(this);
     }
 
+    boolean isDelegate(ResultSet delegate) {
+        return this.delegate == delegate;
+    }
+
     public Statement getStatement() throws SQLException {
         checkClosed();
         return owner;

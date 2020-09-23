@@ -36,8 +36,12 @@ abstract class ProxyDatabaseMetaDataBase implements DatabaseMetaData {
         this.proxyConn = pConn.proxyConn;
     }
 
-    public Connection getConnection() throws SQLException {
+    protected final void checkClosed() throws SQLException {
         proxyConn.checkClosed();
+    }
+
+    public Connection getConnection() throws SQLException {
+        checkClosed();
         return proxyConn;
     }
 
