@@ -29,11 +29,6 @@ Total time=Thread1 time + Thread2 time + ...... + Thread1000 time,  Avg time  = 
 
 PC: Win7 I3-7100 8G mysql5.6.46_64,  Pool Setting: init size10, max size:10
  
-
-Total time=Thread1 time + Thread2 time + ...... + Thread1000 time,  Avg time  = Total time/1000000
-
-PC: Win7 I3-7100 8G mysql5.6.46_64,  Pool Setting: init size10, max size:10
-
 DB restart after every test,log file:<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200417_JDBCPool_I37100.log">20200417_JDBCPool_I37100.log</a>
 
 project for performance test code,please visit：https://github.com/Chris2018998/PoolPerformance
