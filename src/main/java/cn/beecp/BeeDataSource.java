@@ -17,8 +17,8 @@ package cn.beecp;
 
 import cn.beecp.pool.ConnectionPool;
 import cn.beecp.pool.ProxyConnectionBase;
-import cn.beecp.pool.XaConnectionFactory;
-import cn.beecp.pool.XaConnectionWrapper;
+import cn.beecp.xa.XaConnectionFactory;
+import cn.beecp.xa.XaConnectionWrapper;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
