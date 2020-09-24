@@ -17,6 +17,7 @@ package cn.beecp;
 
 import cn.beecp.pool.DataSourceConnectionFactory;
 import cn.beecp.pool.DriverConnectionFactory;
+import cn.beecp.xa.XaConnectionFactory;
 
 import javax.sql.DataSource;
 import java.io.File;
@@ -178,6 +179,16 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
      * connection extra properties
      */
     private Properties connectProperties = new Properties();
+
+    /**
+     * xaConnection Factory ClassName
+     */
+    private String xaConnectionFactoryClassName;
+    /**
+     * xaConnectionFactory
+     */
+    private XaConnectionFactory xaConnectionFactory;
+
     /**
      * enableJMX
      */
@@ -257,6 +268,24 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
     public void setConnectionFactory(ConnectionFactory connectionFactory) {
         if (!this.checked)
             this.connectionFactory = connectionFactory;
+    }
+
+    public String getXaConnectionFactoryClassName() {
+        return xaConnectionFactoryClassName;
+    }
+
+    public void setXaConnectionFactoryClassName(String xaConnectionFactoryClassName) {
+        if (!this.checked && !isNullText(xaConnectionFactoryClassName))
+            this.xaConnectionFactoryClassName = xaConnectionFactoryClassName;
+    }
+
+    public XaConnectionFactory getXaConnectionFactory() {
+        return xaConnectionFactory;
+    }
+
+    public void setXaConnectionFactory(XaConnectionFactory xaConnectionFactory) {
+        if (!this.checked)
+            this.xaConnectionFactory = xaConnectionFactory;
     }
 
     public String getPoolName() {
@@ -573,6 +602,21 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
                 throw new BeeDataSourceConfigException("Failed to instantiate connection factory class:" + connectionFactoryClassName, e);
             } catch (IllegalAccessException e) {
                 throw new BeeDataSourceConfigException("Failed to instantiate connection factory class:" + connectionFactoryClassName, e);
+            }
+        }
+
+        if (!isNullText(xaConnectionFactoryClassName) && xaConnectionFactory==null) {
+            try {
+                Class<?> xaConnectionFactoryClass = Class.forName(xaConnectionFactoryClassName, true, BeeDataSourceConfig.class.getClassLoader());
+                if (XaConnectionFactory.class.isAssignableFrom(xaConnectionFactoryClass)) {
+                    xaConnectionFactory = (XaConnectionFactory) xaConnectionFactoryClass.newInstance();
+                }
+            } catch (ClassNotFoundException e) {
+                throw new BeeDataSourceConfigException("Class(" + connectionFactoryClassName + ")not found ");
+            } catch (InstantiationException e) {
+                throw new BeeDataSourceConfigException("Failed to instantiate XAconnection factory class:" + xaConnectionFactoryClassName, e);
+            } catch (IllegalAccessException e) {
+                throw new BeeDataSourceConfigException("Failed to instantiate XAconnection factory class:" + xaConnectionFactoryClassName, e);
             }
         }
 
