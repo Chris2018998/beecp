@@ -17,6 +17,7 @@ package cn.beecp;
 
 import cn.beecp.pool.ConnectionPool;
 import cn.beecp.pool.ProxyConnectionBase;
+import cn.beecp.util.BeecpUtil;
 import cn.beecp.xa.*;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +49,19 @@ import java.util.logging.Logger;
 public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XADataSource {
 //fix BeeCP-Starter-#6 Chris-2020-09-01 end
     /**
+     * store XaConnectionFactory
+     */
+    private final static HashMap<String, XaConnectionFactory> XaConnectionFactoryMap = new HashMap();
+    private static final SQLException XaConnectionFactoryNotFound = new SQLException("Can't find matched XaConnectionFactory for driver,please config it");
+
+    static {
+        XaConnectionFactoryMap.put("oracle", new OracleXaConnectionFactory());
+        XaConnectionFactoryMap.put("mariadb", new MariadbXaConnectionFactory());
+        XaConnectionFactoryMap.put("mysql", new MysqlXaConnectionFactory());
+        XaConnectionFactoryMap.put("postgresql", new PostgresXaConnectionFactory());
+    }
+
+    /**
      * logger
      */
     private final org.slf4j.Logger log = LoggerFactory.getLogger(this.getClass());
@@ -75,21 +89,17 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
      * write Locker
      */
     private ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-
     /**
-     * store XaConnectionFactory
+     * @return a XAConnection
+     * @throws SQLException
      */
-    private final static HashMap<String,XaConnectionFactory> xaConnectionFactoryMap=new HashMap();
-    static{
-        xaConnectionFactoryMap.put("Oracle",new OracleXaConnectionFactory());
-        xaConnectionFactoryMap.put("Mariadb",new MariadbXaConnectionFactory());
-        xaConnectionFactoryMap.put("Mysql",new MysqlXaConnectionFactory());
-    }
+    private XaConnectionFactory xaConnectionFactory;
 
     /**
      * constructor
      */
-    public BeeDataSource() { }
+    public BeeDataSource() {
+    }
 
     /**
      * constructor
@@ -153,12 +163,8 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         return pool.getConnection();
     }
 
-    /**
-     * @return a XAConnection
-     * @throws SQLException
-     */
-    private XaConnectionFactory xaConnectionFactory;
     public XAConnection getXAConnection() throws SQLException {
+        if (xaConnectionFactory == null) throw XaConnectionFactoryNotFound;
         ProxyConnectionBase proxyCon = (ProxyConnectionBase) this.getConnection();
         Connection rawCon = proxyCon.getDelegate();
         return new XaConnectionWrapper(xaConnectionFactory.create(rawCon), proxyCon);
@@ -167,6 +173,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     public Connection getConnection(String username, String password) throws SQLException {
         throw new SQLException("Not support");
     }
+
     public XAConnection getXAConnection(String user, String password) throws SQLException {
         throw new SQLException("Not support");
     }
@@ -239,9 +246,12 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             ConnectionPool pool = (ConnectionPool) poolClass.newInstance();
             pool.init(config);
 
-            xaConnectionFactory=config.getXaConnectionFactory();
-            if(xaConnectionFactory==null){
-
+            xaConnectionFactory = config.getXaConnectionFactory();
+            if (xaConnectionFactory == null) {
+                String driverType = getDriverType(config.getUrl());
+                if (!BeecpUtil.isNullText(driverType)) {
+                    xaConnectionFactory = XaConnectionFactoryMap.get(driverType);
+                }
             }
 
             return pool;
@@ -249,6 +259,19 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             throw new SQLException("Not found connection pool implementation class:" + poolImplementClassName);
         } catch (Throwable e) {
             throw new SQLException(e);
+        }
+    }
+    private String getDriverType(String url) {
+        if (url.indexOf("oracle") > 0) {
+            return "oracle";
+        } else if (url.indexOf("mysql") > 0) {
+            return "mysql";
+        } else if (url.indexOf("mariadb") > 0) {
+            return "mariadb";
+        } else if (url.indexOf("postgresql") > 0) {
+            return "postgresql";
+        } else {
+            return null;
         }
     }
 }
