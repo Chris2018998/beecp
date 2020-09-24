@@ -17,8 +17,7 @@ package cn.beecp;
 
 import cn.beecp.pool.ConnectionPool;
 import cn.beecp.pool.ProxyConnectionBase;
-import cn.beecp.xa.XaConnectionFactory;
-import cn.beecp.xa.XaConnectionWrapper;
+import cn.beecp.xa.*;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
@@ -28,6 +27,7 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
@@ -77,10 +77,19 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     private ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
 
     /**
+     * store XaConnectionFactory
+     */
+    private final static HashMap<String,XaConnectionFactory> xaConnectionFactoryMap=new HashMap();
+    static{
+        xaConnectionFactoryMap.put("Oracle",new OracleXaConnectionFactory());
+        xaConnectionFactoryMap.put("Mariadb",new MariadbXaConnectionFactory());
+        xaConnectionFactoryMap.put("Mysql",new MysqlXaConnectionFactory());
+    }
+
+    /**
      * constructor
      */
-    public BeeDataSource() {
-    }
+    public BeeDataSource() { }
 
     /**
      * constructor
@@ -229,6 +238,12 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             config.setAsChecked();
             ConnectionPool pool = (ConnectionPool) poolClass.newInstance();
             pool.init(config);
+
+            xaConnectionFactory=config.getXaConnectionFactory();
+            if(xaConnectionFactory==null){
+
+            }
+
             return pool;
         } catch (ClassNotFoundException e) {
             throw new SQLException("Not found connection pool implementation class:" + poolImplementClassName);
