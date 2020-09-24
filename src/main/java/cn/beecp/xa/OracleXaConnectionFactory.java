@@ -25,7 +25,7 @@ import java.sql.SQLException;
  *  @author Chris Liao
  *  @version 1.0
  */
-public class OracleXaConnection implements XaConnectionFactory{
+public class OracleXaConnectionFactory implements XaConnectionFactory{
 
     /**
      * Create XAConnection instance
