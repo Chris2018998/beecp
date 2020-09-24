@@ -15,6 +15,9 @@
  */
 package cn.beecp.xa;
 
+import org.mariadb.jdbc.MariaDbConnection;
+import org.mariadb.jdbc.MariaXaConnection;
+
 import javax.sql.XAConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -35,6 +38,6 @@ public class MariadbXaConnectionFactory implements XaConnectionFactory{
      * @throws SQLException if failed then throw SQLException
      */
     public XAConnection create(Connection rawCon) throws SQLException{
-        return null;
+        return new MariaXaConnection((MariaDbConnection)rawCon);
     }
 }

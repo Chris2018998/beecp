@@ -15,7 +15,10 @@
  */
 package cn.beecp.xa;
 
+import oracle.jdbc.xa.client.OracleXAConnection;
+
 import javax.sql.XAConnection;
+import javax.transaction.xa.XAException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -35,6 +38,10 @@ public class OracleXaConnectionFactory implements XaConnectionFactory{
      * @throws SQLException if failed then throw SQLException
      */
     public XAConnection create(Connection rawCon) throws SQLException{
-        return null;
+        try {
+            return new OracleXAConnection(rawCon);
+        }catch(XAException e){
+             throw new SQLException(e);
+        }
     }
 }

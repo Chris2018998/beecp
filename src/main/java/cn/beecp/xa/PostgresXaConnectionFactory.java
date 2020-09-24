@@ -15,6 +15,8 @@
  */
 package cn.beecp.xa;
 
+import org.postgresql.xa.PGXAConnection;
+
 import javax.sql.XAConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -35,6 +37,6 @@ public class PostgresXaConnectionFactory implements XaConnectionFactory{
      * @throws SQLException if failed then throw SQLException
      */
     public XAConnection create(Connection rawCon) throws SQLException{
-        return null;
+        return new PGXAConnection((org.postgresql.core.BaseConnection)rawCon);
     }
 }

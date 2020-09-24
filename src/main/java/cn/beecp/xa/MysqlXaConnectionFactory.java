@@ -35,6 +35,13 @@ public class MysqlXaConnectionFactory implements XaConnectionFactory{
      * @throws SQLException if failed then throw SQLException
      */
     public XAConnection create(Connection rawCon) throws SQLException{
+        //return (XAConnection)(!this.getPinGlobalTxToPhysicalConnection()
+        // && !((com.mysql.jdbc.Connection)conn).getPinGlobalTxToPhysicalConnection() ?
+        // MysqlXAConnection.getInstance((com.mysql.jdbc.Connection)conn, this.getLogXaCommands()) :
+        // SuspendableXAConnection.getInstance((com.mysql.jdbc.Connection)conn));
+        /**
+         * @todo how to get?
+         */
         return null;
     }
 }
