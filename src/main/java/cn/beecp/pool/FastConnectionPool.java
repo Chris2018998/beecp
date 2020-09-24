@@ -225,7 +225,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     //remove Pooled connection
     private void removePooledConn(PooledConnection pConn, String removeType) {
         pConn.state = CONNECTION_CLOSED;
-        pConn.close();
+        pConn.closeRawConn();
         synchronized (connArrayLock) {
             int oldLen = connArray.length;
             PooledConnection[] arrayNew = new PooledConnection[oldLen - 1];

@@ -128,6 +128,7 @@ abstract class ProxyStatementBase implements Statement {
     public ResultSet getResultSet() throws SQLException {
         ResultSet re = delegate.getResultSet();
         if (re == null) {
+            setOpenResultSet(null);
             return null;
         } else {
             if (currentResult != null && currentResult.isDelegate(re))

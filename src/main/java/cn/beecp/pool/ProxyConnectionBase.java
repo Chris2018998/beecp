@@ -29,7 +29,7 @@ import static java.lang.System.currentTimeMillis;
  * @author Chris.Liao
  * @version 1.0
  */
-abstract class ProxyConnectionBase implements Connection {
+public abstract class ProxyConnectionBase implements Connection {
     private final static int Pos_AutoCommitInd = 0;
     private final static int Pos_TransactionIsolationInd = 1;
     private final static int Pos_ReadOnlyInd = 2;
@@ -44,6 +44,11 @@ abstract class ProxyConnectionBase implements Connection {
         pConn.proxyConn = this;
         this.pConn = pConn;
         this.delegate = pConn.rawConn;
+    }
+
+    public Connection getDelegate() throws SQLException {
+        checkClosed();
+        return delegate;
     }
 
     public boolean isClosed() throws SQLException {
