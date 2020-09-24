@@ -16,9 +16,14 @@
 package cn.beecp;
 
 import cn.beecp.pool.ConnectionPool;
+import cn.beecp.pool.ProxyConnectionBase;
+import cn.beecp.pool.XaConnectionFactory;
+import cn.beecp.pool.XaConnectionWrapper;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
+import javax.sql.XAConnection;
+import javax.sql.XADataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -40,7 +45,7 @@ import java.util.logging.Logger;
  */
 //fix BeeCP-Starter-#6 Chris-2020-09-01 start
 //public final class BeeDataSource extends BeeDataSourceConfig implements DataSource {
-public class BeeDataSource extends BeeDataSourceConfig implements DataSource {
+public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XADataSource {
 //fix BeeCP-Starter-#6 Chris-2020-09-01 end
     /**
      * logger
@@ -140,20 +145,20 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource {
     }
 
     /**
-     * <p>Attempts to establish a connection with the data source that
-     * this {@code DataSource} object represents.
-     *
-     * @param username the database user on whose behalf the connection is
-     *                 being made
-     * @param password the user's password
-     * @return a connection to the data source
-     * @throws SQLException                 if a database access error occurs
-     * @throws java.sql.SQLTimeoutException when the driver has determined that the
-     *                                      timeout value specified by the {@code setLoginTimeout} method
-     *                                      has been exceeded and has at least tried to cancel the
-     *                                      current database connection attempt
+     * @return a XAConnection
+     * @throws SQLException
      */
+    private XaConnectionFactory xaConnectionFactory;
+    public XAConnection getXAConnection() throws SQLException {
+        ProxyConnectionBase proxyCon = (ProxyConnectionBase) this.getConnection();
+        Connection rawCon = proxyCon.getDelegate();
+        return new XaConnectionWrapper(xaConnectionFactory.create(rawCon), proxyCon);
+    }
+
     public Connection getConnection(String username, String password) throws SQLException {
+        throw new SQLException("Not support");
+    }
+    public XAConnection getXAConnection(String user, String password) throws SQLException {
         throw new SQLException("Not support");
     }
 
