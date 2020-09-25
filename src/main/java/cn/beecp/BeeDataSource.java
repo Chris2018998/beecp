@@ -245,6 +245,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             ConnectionPool pool = (ConnectionPool) poolClass.newInstance();
             pool.init(config);
 
+            //Create XAConnection Factory begin
             xaConnectionFactory = config.getXaConnectionFactory();
             if (xaConnectionFactory == null && !BeecpUtil.isNullText(config.getUrl())) {
                 String driverType = getDriverType(config.getUrl());
@@ -266,6 +267,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
                     }
                 }
             }
+            //Create XAConnection Factory end
 
             return pool;
         } catch (ClassNotFoundException e) {
