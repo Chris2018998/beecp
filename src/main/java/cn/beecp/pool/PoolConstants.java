@@ -15,6 +15,7 @@
  */
 package cn.beecp.pool;
 
+import javax.transaction.xa.XAException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -30,7 +31,7 @@ import java.sql.SQLTimeoutException;
  * @version 1.0
  */
 
-class PoolConstants {
+public class PoolConstants {
     //POOL STATE
     static final int POOL_UNINIT = 1;
     static final int POOL_NORMAL = 2;
@@ -52,21 +53,23 @@ class PoolConstants {
     static final Object BORROWER_WAITING = new Object();
 
 
-    static final SQLTimeoutException RequestTimeoutException = new SQLTimeoutException("Request timeout");
+    public static final SQLTimeoutException RequestTimeoutException = new SQLTimeoutException("Request timeout");
 
-    static final SQLException RequestInterruptException = new SQLException("Request interrupt");
+    public static final SQLException RequestInterruptException = new SQLException("Request interrupt");
 
-    static final SQLException PoolCloseException = new SQLException("Pool has been closed or in resting");
+    public static final SQLException PoolCloseException = new SQLException("Pool has been closed or in resting");
 
-    static final SQLException ConnectionClosedException = new SQLException("No operations allowed after connection closed.");
+    public static final XAException XaConnectionClosedException = new XAException("No operations allowed after connection closed.");
 
-    static final SQLException StatementClosedException = new SQLException("No operations allowed after statement closed.");
+    public static final SQLException ConnectionClosedException = new SQLException("No operations allowed after connection closed.");
 
-    static final SQLException ResultSetClosedException = new SQLException("No operations allowed after resultSet closed.");
+    public static final SQLException StatementClosedException = new SQLException("No operations allowed after statement closed.");
 
-    static final SQLException AutoCommitChangeForbiddenException = new SQLException("Execute 'commit' or 'rollback' before this operation");
+    public static final SQLException ResultSetClosedException = new SQLException("No operations allowed after resultSet closed.");
 
-    static final SQLException DriverNotSupportNetworkTimeoutException = new SQLException("Driver not support 'networkTimeout'");
+    public static final SQLException AutoCommitChangeForbiddenException = new SQLException("Execute 'commit' or 'rollback' before this operation");
+
+    public static final SQLException DriverNotSupportNetworkTimeoutException = new SQLException("Driver not support 'networkTimeout'");
 
     final static Connection CLOSED_CON = (Connection) Proxy.newProxyInstance(
             PoolConstants.class.getClassLoader(),

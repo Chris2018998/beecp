@@ -55,10 +55,10 @@ public abstract class ProxyConnectionBase implements Connection {
         return isClosed;
     }
 
+
     protected void checkClosed() throws SQLException {
         if (isClosed) throw ConnectionClosedException;
     }
-
     public void close() throws SQLException {
         if (setAsClosed()) pConn.returnToPoolBySelf();
     }
