@@ -55,7 +55,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
 
     static {
         XaConnectionFactoryMap.put("oracle", "cn.beecp.xa.OracleXaConnectionFactory");
-        XaConnectionFactoryMap.put("mariadb", "cn.beecp.xa MariadbXaConnectionFactory");
+        XaConnectionFactoryMap.put("mariadb", "cn.beecp.xa.MariadbXaConnectionFactory");
         XaConnectionFactoryMap.put("mysql5", "cn.beecp.xa.Mysql5XaConnectionFactory");
         XaConnectionFactoryMap.put("mysql8", "cn.beecp.xa.Mysql8XaConnectionFactory");
         XaConnectionFactoryMap.put("postgresql", "cn.beecp.xa.PostgresXaConnectionFactory");
