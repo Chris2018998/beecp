@@ -86,7 +86,6 @@ public final class ProxyClassGenerator {
             CtClass ctProxyConnectionBaseClass = classPool.get(ProxyConnectionBase.class.getName());
             String ctProxyConnectionClassName = "cn.beecp.pool.ProxyConnection";
             CtClass ctProxyConnectionClass = classPool.makeClass(ctProxyConnectionClassName, ctProxyConnectionBaseClass);
-            ctProxyConnectionClass.setInterfaces(new CtClass[]{ctConnectionClass});
             ctProxyConnectionClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
 
             CtClass[] conCreateParam = new CtClass[]{
@@ -107,7 +106,6 @@ public final class ProxyClassGenerator {
             CtClass ctProxyStatementBaseClass = classPool.get(ProxyStatementBase.class.getName());
             String ctProxyStatementClassName = "cn.beecp.pool.ProxyStatement";
             CtClass ctProxyStatementClass = classPool.makeClass(ctProxyStatementClassName, ctProxyStatementBaseClass);
-            ctProxyStatementClass.setInterfaces(new CtClass[]{ctStatementClass});
             ctProxyStatementClass.setModifiers(Modifier.PUBLIC);
             CtClass[] statementCreateParam = new CtClass[]{
                     classPool.get("java.sql.Statement"),
@@ -171,7 +169,6 @@ public final class ProxyClassGenerator {
             CtClass ctProxyDatabaseMetaDataBaseClass = classPool.get(ProxyDatabaseMetaDataBase.class.getName());
             String ctProxyDatabaseMetaDataClassName = "cn.beecp.pool.ProxyDatabaseMetaData";
             CtClass ctProxyDatabaseMetaDataClass = classPool.makeClass(ctProxyDatabaseMetaDataClassName, ctProxyDatabaseMetaDataBaseClass);
-            ctProxyDatabaseMetaDataClass.setInterfaces(new CtClass[]{ctDatabaseMetaDataClass});
             ctProxyDatabaseMetaDataClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
 
             CtClass[] databaseMetaData = new CtClass[]{
@@ -192,7 +189,6 @@ public final class ProxyClassGenerator {
             CtClass ctProxyResultSetBaseClass = classPool.get(ProxyResultSetBase.class.getName());
             String ctProxyResultSetClassName = "cn.beecp.pool.ProxyResultSet";
             CtClass ctProxyResultSetClass = classPool.makeClass(ctProxyResultSetClassName, ctProxyResultSetBaseClass);
-            ctProxyResultSetClass.setInterfaces(new CtClass[]{ctResultSetClass});
             ctProxyResultSetClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
 
             CtClass[] resultSetCreateParam1 = new CtClass[]{

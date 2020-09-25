@@ -111,6 +111,7 @@ abstract class ProxyStatementBase implements Statement {
                 keepResults.clear();
                 break;
             }
+            default:break;
         }
         this.currentResult = resultSetNew;
     }
