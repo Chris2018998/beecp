@@ -18,8 +18,13 @@ package cn.beecp.xa;
 import javax.sql.ConnectionEventListener;
 import javax.sql.StatementEventListener;
 import javax.sql.XAConnection;
+import javax.transaction.xa.XAException;
 import java.sql.Connection;
 import java.sql.SQLException;
+
+import static cn.beecp.pool.PoolConstants.ConnectionClosedException;
+import static cn.beecp.pool.PoolConstants.XaConnectionClosedException;
+
 
 /**
  * XaConnection Wrapper
@@ -28,25 +33,39 @@ import java.sql.SQLException;
  * @version 1.0
  */
 public class XaConnectionWrapper implements XAConnection {
+    private boolean isClosed;
     private Connection proxyConn;
     private XAConnection delegate;
+    private XaResourceWrapper xaResource;
 
-    public XaConnectionWrapper(XAConnection delegate,Connection proxyConn) {
+    public XaConnectionWrapper(XAConnection delegate, Connection proxyConn) {
         this.proxyConn = proxyConn;
         this.delegate = delegate;
+    }
 
+    private void checkClosed() throws SQLException {
+        if (isClosed) throw ConnectionClosedException;
+    }
+
+    void checkClosedForXa() throws XAException {
+        if (isClosed) throw XaConnectionClosedException;
     }
 
     public void close() throws SQLException {
+        isClosed = true;
         proxyConn.close();
     }
 
     public Connection getConnection() throws SQLException {
+        checkClosed();
         return proxyConn;
     }
 
     public javax.transaction.xa.XAResource getXAResource() throws SQLException {
-        return delegate.getXAResource();
+        checkClosed();
+        if (xaResource == null)
+            xaResource = new XaResourceWrapper(delegate.getXAResource(), this);
+        return xaResource;
     }
 
     public void addConnectionEventListener(ConnectionEventListener listener) {
