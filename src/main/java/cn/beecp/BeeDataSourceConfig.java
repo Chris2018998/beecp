@@ -612,11 +612,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
                     xaConnectionFactory = (XaConnectionFactory) xaConnectionFactoryClass.newInstance();
                 }
             } catch (ClassNotFoundException e) {
-                throw new BeeDataSourceConfigException("Class(" + connectionFactoryClassName + ")not found ");
+                throw new BeeDataSourceConfigException("Class(" + xaConnectionFactoryClassName + ")not found ");
             } catch (InstantiationException e) {
-                throw new BeeDataSourceConfigException("Failed to instantiate XAconnection factory class:" + xaConnectionFactoryClassName, e);
+                throw new BeeDataSourceConfigException("Failed to instantiate XAConnection factory class:" + xaConnectionFactoryClassName, e);
             } catch (IllegalAccessException e) {
-                throw new BeeDataSourceConfigException("Failed to instantiate XAconnection factory class:" + xaConnectionFactoryClassName, e);
+                throw new BeeDataSourceConfigException("Failed to instantiate XAConnection factory class:" + xaConnectionFactoryClassName, e);
             }
         }
 

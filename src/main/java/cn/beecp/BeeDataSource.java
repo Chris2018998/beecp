@@ -18,16 +18,15 @@ package cn.beecp;
 import cn.beecp.pool.ConnectionPool;
 import cn.beecp.pool.ProxyConnectionBase;
 import cn.beecp.util.BeecpUtil;
-import cn.beecp.xa.*;
+import cn.beecp.xa.XaConnectionFactory;
+import cn.beecp.xa.XaConnectionWrapper;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
@@ -51,14 +50,15 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     /**
      * store XaConnectionFactory
      */
-    private final static HashMap<String, XaConnectionFactory> XaConnectionFactoryMap = new HashMap();
-    private static final SQLException XaConnectionFactoryNotFound = new SQLException("Can't find matched XaConnectionFactory for driver,please config it");
+    private final static HashMap<String, String> XaConnectionFactoryMap = new HashMap();
+    private static final SQLException XaConnectionFactoryNotFound = new SQLException("Can't found matched XaConnectionFactory for driver,please config it");
 
     static {
-        XaConnectionFactoryMap.put("oracle", new OracleXaConnectionFactory());
-        XaConnectionFactoryMap.put("mariadb", new MariadbXaConnectionFactory());
-        XaConnectionFactoryMap.put("mysql", new MysqlXaConnectionFactory());
-        XaConnectionFactoryMap.put("postgresql", new PostgresXaConnectionFactory());
+        XaConnectionFactoryMap.put("oracle", "cn.beecp.xa.OracleXaConnectionFactory");
+        XaConnectionFactoryMap.put("mariadb", "cn.beecp.xa MariadbXaConnectionFactory");
+        XaConnectionFactoryMap.put("mysql5", "cn.beecp.xa.Mysql5XaConnectionFactory");
+        XaConnectionFactoryMap.put("mysql8", "cn.beecp.xa.Mysql8XaConnectionFactory");
+        XaConnectionFactoryMap.put("postgresql", "cn.beecp.xa.PostgresXaConnectionFactory");
     }
 
     /**
@@ -166,8 +166,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     public XAConnection getXAConnection() throws SQLException {
         if (xaConnectionFactory == null) throw XaConnectionFactoryNotFound;
         ProxyConnectionBase proxyCon = (ProxyConnectionBase) this.getConnection();
-        Connection rawCon = proxyCon.getDelegate();
-        return new XaConnectionWrapper(xaConnectionFactory.create(rawCon), proxyCon);
+        return new XaConnectionWrapper(xaConnectionFactory.create(proxyCon.getDelegate()), proxyCon);
     }
 
     public Connection getConnection(String username, String password) throws SQLException {
@@ -247,10 +246,24 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             pool.init(config);
 
             xaConnectionFactory = config.getXaConnectionFactory();
-            if (xaConnectionFactory == null) {
+            if (xaConnectionFactory == null && !BeecpUtil.isNullText(config.getUrl())) {
                 String driverType = getDriverType(config.getUrl());
                 if (!BeecpUtil.isNullText(driverType)) {
-                    xaConnectionFactory = XaConnectionFactoryMap.get(driverType);
+                    String xaConnectionFactoryClassName=XaConnectionFactoryMap.get(driverType);
+                    if (!BeecpUtil.isNullText(xaConnectionFactoryClassName)) {
+                        try {
+                            Class<?> xaConnectionFactoryClass = Class.forName(xaConnectionFactoryClassName, true, BeeDataSourceConfig.class.getClassLoader());
+                            if (XaConnectionFactory.class.isAssignableFrom(xaConnectionFactoryClass)) {
+                                xaConnectionFactory = (XaConnectionFactory) xaConnectionFactoryClass.newInstance();
+                            }
+                        } catch (ClassNotFoundException e) {
+                            throw new BeeDataSourceConfigException("Class(" + xaConnectionFactoryClassName + ")not found ");
+                        } catch (InstantiationException e) {
+                            throw new BeeDataSourceConfigException("Failed to instantiate XAConnection factory class:" + xaConnectionFactoryClassName, e);
+                        } catch (IllegalAccessException e) {
+                            throw new BeeDataSourceConfigException("Failed to instantiate XAConnection factory class:" + xaConnectionFactoryClassName, e);
+                        }
+                    }
                 }
             }
 
@@ -261,16 +274,23 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             throw new SQLException(e);
         }
     }
+
     private String getDriverType(String url) {
-        if (url.indexOf("oracle") > 0) {
-            return "oracle";
-        } else if (url.indexOf("mysql") > 0) {
-            return "mysql";
-        } else if (url.indexOf("mariadb") > 0) {
-            return "mariadb";
-        } else if (url.indexOf("postgresql") > 0) {
-            return "postgresql";
-        } else {
+        try {
+            Driver driver = DriverManager.getDriver(url);
+            if (url.indexOf("oracle") > 0) {
+                return "oracle";
+            } else if (url.indexOf("mysql") > 0) {
+                return "mysql" + driver.getMajorVersion();
+            } else if (url.indexOf("mariadb") > 0) {
+                return "mariadb";
+            } else if (url.indexOf("postgresql") > 0) {
+                return "postgresql";
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            log.warn("Can't get driver by url from driverManager", e);
             return null;
         }
     }
