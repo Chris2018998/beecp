@@ -38,5 +38,4 @@ class ProxyObjectFactory {
         // return new ProxyResultSet(delegate,pConn);
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
     }
-
 }

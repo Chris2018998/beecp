@@ -41,8 +41,8 @@ public abstract class ProxyConnectionBase implements Connection {
     private boolean isClosed;
 
     public ProxyConnectionBase(PooledConnection pConn) {
-        pConn.proxyConn = this;
         this.pConn = pConn;
+        pConn.proxyConn = this;
         this.delegate = pConn.rawConn;
     }
 
@@ -55,10 +55,10 @@ public abstract class ProxyConnectionBase implements Connection {
         return isClosed;
     }
 
-
     protected void checkClosed() throws SQLException {
         if (isClosed) throw ConnectionClosedException;
     }
+
     public void close() throws SQLException {
         if (setAsClosed()) pConn.returnToPoolBySelf();
     }
@@ -66,13 +66,14 @@ public abstract class ProxyConnectionBase implements Connection {
     boolean setAsClosed() {//called by FastConnectionPool.
         synchronized (pConn) {
             if (!isClosed) {
-                isClosed = true;
                 delegate = CLOSED_CON;
                 if (pConn.traceStatement)
                     pConn.cleanOpenStatements();
+                return isClosed = true;
+            } else {
+                return false;
             }
         }
-        return isClosed;
     }
 
     public void setAutoCommit(boolean autoCommit) throws SQLException {

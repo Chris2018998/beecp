@@ -231,10 +231,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             PooledConnection[] arrayNew = new PooledConnection[oldLen - 1];
             for (int i = 0; i < oldLen; i++) {
                 if (connArray[i] == pConn) {
-                    arraycopy(connArray, i + 1, arrayNew, i, oldLen - i - 1);
+                    arraycopy(connArray, 0, arrayNew, 0, i);
+                    int m=oldLen - i - 1;
+                    if(m>0)arraycopy(connArray, i + 1, arrayNew, i, m);
                     break;
-                } else {
-                    arrayNew[i] = connArray[i];
                 }
             }
             connArray = arrayNew;
@@ -390,9 +390,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             PooledConnection[] connections = connArray;
             for (int i = 0, l = connections.length; i < l; i++) {
                 PooledConnection pConn = connections[i];
-                if (ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn)) {
+                if (ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn))
                     return createProxyConnection(pConn, borrower);
-                }
             }
 
             //2:try to create one directly

@@ -44,8 +44,8 @@ abstract class ProxyStatementBase implements Statement {
     private ArrayList<ProxyResultSetBase> keepResults = new ArrayList<>();
 
     public ProxyStatementBase(Statement delegate, PooledConnection pConn) {
-        this.pConn = pConn;
         this.delegate = delegate;
+        this.pConn = pConn;
         if (registered = pConn.traceStatement)
             pConn.registerStatement(this);
     }
@@ -111,7 +111,8 @@ abstract class ProxyStatementBase implements Statement {
                 keepResults.clear();
                 break;
             }
-            default:break;
+            default:
+                break;
         }
         this.currentResult = resultSetNew;
     }

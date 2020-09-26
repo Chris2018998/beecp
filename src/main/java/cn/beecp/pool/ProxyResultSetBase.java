@@ -38,14 +38,14 @@ abstract class ProxyResultSetBase implements ResultSet {
     private ProxyStatementBase owner;//called by subclass to check close state
 
     public ProxyResultSetBase(ResultSet delegate, PooledConnection pConn) {
-        this.pConn = pConn;
         this.delegate = delegate;
+        this.pConn = pConn;
     }
 
     public ProxyResultSetBase(ResultSet delegate, ProxyStatementBase owner, PooledConnection pConn) {
-        this.pConn = pConn;
         this.delegate = delegate;
         this.owner = owner;
+        this.pConn = pConn;
         owner.setOpenResultSet(this);
     }
 

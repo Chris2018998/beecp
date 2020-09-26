@@ -71,8 +71,7 @@ class PooledConnection {
         defaultSchema = config.getDefaultSchema();
         defaultNetworkTimeout = pool.getNetworkTimeout();
         defaultNetworkTimeoutExecutor = pool.getNetworkTimeoutExecutor();
-        traceStatement = config.isTraceStatement();
-        openStatements = new StatementArray(traceStatement ? 16 : 0);
+        openStatements = new StatementArray((traceStatement = config.isTraceStatement()) ? 16 : 0);
 
         curAutoCommit = defaultAutoCommit;
         lastAccessTime = currentTimeMillis();
@@ -88,8 +87,8 @@ class PooledConnection {
     }
 
     void cleanOpenStatements() {
-        if (openStatements.size() > 0)
-            openStatements.clear();
+        if(openStatements.size() > 0)
+        openStatements.clear();
     }
 
     /************* statement Operation ******************************/
@@ -203,7 +202,7 @@ class PooledConnection {
             for (int i = 0; i < pos; i++)
                 if (o == elements[i]) {
                     int m = pos - i - 1;
-                    if (m > 0) System.arraycopy(elements, i + 1, elements, i, m);//move to head
+                    if (m > 0) System.arraycopy(elements, i + 1, elements, i, m);//move to ahead
                     elements[--pos] = null; // clear to let GC do its work
                     return;
                 }
