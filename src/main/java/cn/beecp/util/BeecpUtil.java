@@ -54,8 +54,15 @@ public final class BeecpUtil {
         }
     }
 
-    public static boolean isNullText(String s) {
-        return (s == null || s.trim().length() == 0);
+    public final static boolean isBlank(String str) {
+        if (str == null) return true;
+        int strLen = str.length();
+        for (int i = 0; i < strLen; ++i) {
+            if (!Character.isWhitespace(str.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public final static boolean equalsText(String a, String b) {
