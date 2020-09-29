@@ -96,6 +96,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         Class configClass = BeeDataSourceConfig.class;
         Field[] fields = configClass.getDeclaredFields();
         BeeDataSourceConfig config = new BeeDataSourceConfig();
+        Properties connectProperties = new Properties();
 
         Reference ref = (Reference) obj;
         for (Field field : fields) {
@@ -106,7 +107,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
             if (ra == null) continue;
             String configVal = ra.getContent().toString();
 
-            if (!BeecpUtil.isNullText(configVal)) {
+            if (!BeecpUtil.isBlank(configVal)) {
                 configVal = configVal.trim();
 
                 Class fieldType = field.getType();
@@ -126,7 +127,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
                     } else if (fieldType.equals(Long.class) || fieldType.equals(Long.TYPE)) {
                         field.set(config, Long.valueOf(configVal));
                     } else if ("connectProperties".equals(field.getName())) {
-                        Properties connectProperties = new Properties();
+                        connectProperties.clear();
                         configVal = configVal.trim();
                         String[] attributeArray = configVal.split(";");
                         for (String attribute : attributeArray) {
@@ -134,7 +135,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
                             if (pairs.length == 2)
                                 connectProperties.put(pairs[0].trim(), pairs[1].trim());
                         }
-                        field.set(config, new Object[]{connectProperties});
+                        field.set(config,connectProperties);
                     }
                 } finally {
                     if (ChangedAccessible) field.setAccessible(false);//reset

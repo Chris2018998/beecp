@@ -16,8 +16,8 @@
 package cn.beecp;
 
 import cn.beecp.pool.ConnectionPool;
+import cn.beecp.pool.FastConnectionPool;
 import cn.beecp.pool.ProxyConnectionBase;
-import cn.beecp.util.BeecpUtil;
 import cn.beecp.xa.XaConnectionFactory;
 import cn.beecp.xa.XaConnectionWrapper;
 import org.slf4j.LoggerFactory;
@@ -30,6 +30,8 @@ import java.sql.*;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
+
+import static cn.beecp.util.BeecpUtil.isBlank;
 
 /**
  * Bee DataSource,there are two pool implementation for it.
@@ -47,9 +49,6 @@ import java.util.logging.Logger;
 //public final class BeeDataSource extends BeeDataSourceConfig implements DataSource {
 public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XADataSource {
 //fix BeeCP-Starter-#6 Chris-2020-09-01 end
-    /**
-     * store XaConnectionFactory
-     */
     private final static HashMap<String, String> XaConnectionFactoryMap = new HashMap();
     private static final SQLException XaConnectionFactoryNotFound = new SQLException("Can't found matched XaConnectionFactory for driver,please config it");
 
@@ -98,8 +97,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     /**
      * constructor
      */
-    public BeeDataSource() {
-    }
+    public BeeDataSource() { }
 
     /**
      * constructor
@@ -232,12 +230,11 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     private final ConnectionPool createPool(BeeDataSourceConfig config) throws SQLException {
         config.check();
         String poolImplementClassName = config.getPoolImplementClassName();
+        if (isBlank(poolImplementClassName))
+            poolImplementClassName = BeeDataSourceConfig.DefaultImplementClassName;
 
         try {
-            if (poolImplementClassName == null || poolImplementClassName.trim().length() == 0)
-                poolImplementClassName = BeeDataSourceConfig.DefaultImplementClassName;
-
-            Class<?> poolClass = Class.forName(poolImplementClassName, true, BeeDataSource.class.getClassLoader());
+            Class<?> poolClass = Class.forName(poolImplementClassName, true, getClass().getClassLoader());
             if (!ConnectionPool.class.isAssignableFrom(poolClass))
                 throw new IllegalArgumentException("Connection pool class must be implemented 'ConnectionPool' interface");
 
@@ -247,13 +244,13 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
 
             //Create XAConnection Factory begin
             xaConnectionFactory = config.getXaConnectionFactory();
-            if (xaConnectionFactory == null && !BeecpUtil.isNullText(config.getUrl())) {
+            if (xaConnectionFactory == null && !isBlank(config.getUrl())) {
                 String driverType = getDriverType(config.getUrl());
-                if (!BeecpUtil.isNullText(driverType)) {
+                if (!isBlank(driverType)) {
                     String xaConnectionFactoryClassName=XaConnectionFactoryMap.get(driverType);
-                    if (!BeecpUtil.isNullText(xaConnectionFactoryClassName)) {
+                    if (!isBlank(xaConnectionFactoryClassName)) {
                         try {
-                            Class<?> xaConnectionFactoryClass = Class.forName(xaConnectionFactoryClassName, true, BeeDataSourceConfig.class.getClassLoader());
+                            Class<?> xaConnectionFactoryClass = Class.forName(xaConnectionFactoryClassName,true, getClass().getClassLoader());
                             if (XaConnectionFactory.class.isAssignableFrom(xaConnectionFactoryClass)) {
                                 xaConnectionFactory = (XaConnectionFactory) xaConnectionFactoryClass.newInstance();
                             }
