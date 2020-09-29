@@ -34,7 +34,7 @@ class ProxyObjectFactory {
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
     }
 
-    public final static ResultSet createProxyResultSet(ResultSet delegate,ProxyStatementBase proxyStatement,PooledConnection pConn) throws SQLException {
+    public static final ResultSet createProxyResultSet(ResultSet delegate,ProxyStatementBase proxyStatement,PooledConnection pConn) throws SQLException {
         // return new ProxyResultSet(delegate,pConn);
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
     }

@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import static cn.beecp.util.BeecpUtil.oclose;
@@ -40,6 +41,7 @@ class PooledConnection {
     Connection rawConn;
     ProxyConnectionBase proxyConn;
     volatile long lastAccessTime;
+
     boolean commitDirtyInd;
     boolean curAutoCommit;
     boolean defaultAutoCommit;
@@ -48,12 +50,11 @@ class PooledConnection {
     String defaultCatalog;
     String defaultSchema;
     int defaultNetworkTimeout;
-    boolean stmCacheValid;
     boolean traceStatement;
     private StatementArray openStatements;
     private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
     private FastConnectionPool pool;
-    private short changedCount;
+    private int changedCount;
     //changed indicator
     private boolean[] changedInd = new boolean[DEFAULT_IND.length];
     private int stmCacheSize;
@@ -71,8 +72,8 @@ class PooledConnection {
         defaultSchema = config.getDefaultSchema();
         defaultNetworkTimeout = pool.getNetworkTimeout();
         defaultNetworkTimeoutExecutor = pool.getNetworkTimeoutExecutor();
-        openStatements = new StatementArray((traceStatement = config.isTraceStatement()) ? 16 : 0);
 
+        openStatements =new StatementArray((traceStatement = config.isTraceStatement()) ? 16:0);
         curAutoCommit = defaultAutoCommit;
         lastAccessTime = currentTimeMillis();
     }
@@ -87,8 +88,9 @@ class PooledConnection {
     }
 
     void cleanOpenStatements() {
-        if(openStatements.size() > 0)
-        openStatements.clear();
+        if(openStatements.size() > 0){
+            openStatements.clear();
+        }
     }
 
     /************* statement Operation ******************************/
@@ -105,7 +107,7 @@ class PooledConnection {
     }
 
     //***************called by connection proxy ********//
-    void returnToPoolBySelf() throws SQLException {
+     void returnToPoolBySelf() throws SQLException {
         try {
             proxyConn = null;
             resetRawConnOnReturn();
@@ -190,10 +192,10 @@ class PooledConnection {
         }
 
         public void add(ProxyStatementBase e) {
-            if (pos == elements.length) {
+            if (pos == elements.length){
                 ProxyStatementBase[] newArray = new ProxyStatementBase[elements.length << 1];
                 System.arraycopy(elements, 0, newArray, 0, elements.length);
-                elements = newArray;
+                elements=newArray;
             }
             elements[pos++] = e;
         }
@@ -212,12 +214,10 @@ class PooledConnection {
             for (int i = 0; i < pos; i++) {
                 if (elements[i] != null) {
                     elements[i].setAsClosed();
-                    elements[i] = null;
+                    elements[i] = null;// clear to let GC do its work
                 }
             }
-
             pos = 0;
-            if (elements.length > initSize) elements = new ProxyStatementBase[initSize];
         }
     }
 }

@@ -46,11 +46,11 @@ abstract class ProxyStatementBase implements Statement {
     public ProxyStatementBase(Statement delegate, PooledConnection pConn) {
         this.delegate = delegate;
         this.pConn = pConn;
-        if (registered = pConn.traceStatement)
+       if (registered = pConn.traceStatement)
             pConn.registerStatement(this);
     }
 
-    private final void checkClosed() throws SQLException {
+    private void checkClosed() throws SQLException {
         if (isClosed) throw StatementClosedException;
     }
 
@@ -74,8 +74,8 @@ abstract class ProxyStatementBase implements Statement {
                 keepResults.clear();
             }
 
-            if (registered) pConn.unregisterStatement(this);
-
+            if (registered)
+                pConn.unregisterStatement(this);
             try {
                 delegate.close();
             } finally {
@@ -84,7 +84,7 @@ abstract class ProxyStatementBase implements Statement {
         }
     }
 
-    void setAsClosed() {//call by PooledConnection.cleanOpenStatements
+     void setAsClosed() {//call by PooledConnection.cleanOpenStatements
         try {
             registered = false;
             close();

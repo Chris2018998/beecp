@@ -57,7 +57,7 @@ public class PoolConstants {
 
     public static final SQLException RequestInterruptException = new SQLException("Request interrupt");
 
-    public static final SQLException PoolCloseException = new SQLException("Pool has been closed or in resting");
+    public static final SQLException PoolCloseException = new SQLException("Pool has been closed or in resetting");
 
     public static final XAException XaConnectionClosedException = new XAException("No operations allowed after connection closed.");
 

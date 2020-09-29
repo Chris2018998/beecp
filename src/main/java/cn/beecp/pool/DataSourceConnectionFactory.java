@@ -21,6 +21,8 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import static cn.beecp.util.BeecpUtil.isBlank;
+
 /**
  * Datasource ConnectionFactory
  *
@@ -54,7 +56,7 @@ public class DataSourceConnectionFactory implements ConnectionFactory {
         this.driverDataSource = driverDataSource;
         this.username = username;
         this.password = password;
-        if (username != null && username.trim().length() > 0)
+        if(!isBlank(username))
             usernameIsNotNull = true;
     }
 

@@ -28,7 +28,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static cn.beecp.pool.PoolConstants.*;
-import static cn.beecp.util.BeecpUtil.isNullText;
+import static cn.beecp.util.BeecpUtil.isBlank;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
@@ -60,7 +60,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
         poolConfig = config;
         defaultMaxWait = MILLISECONDS.toNanos(poolConfig.getMaxWait());
         borrowSemaphore = new Semaphore(poolConfig.getBorrowSemaphoreSize(), poolConfig.isFairMode());
-        poolName = !isNullText(config.getPoolName()) ? config.getPoolName() : "RawPool-" + PoolNameIndex.getAndIncrement();
+        poolName = !isBlank(config.getPoolName()) ? config.getPoolName() : "RawPool-" + PoolNameIndex.getAndIncrement();
 
         if (poolConfig.isFairMode()) {
             poolMode = "fair";

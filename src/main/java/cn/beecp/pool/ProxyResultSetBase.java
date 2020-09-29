@@ -62,7 +62,7 @@ abstract class ProxyResultSetBase implements ResultSet {
         return isClosed;
     }
 
-    private final void checkClosed() throws SQLException {
+    private void checkClosed() throws SQLException {
         if (isClosed) throw ResultSetClosedException;
     }
 
@@ -73,7 +73,7 @@ abstract class ProxyResultSetBase implements ResultSet {
         }
     }
 
-    final void setAsClosed() {//call by ProxyStatementBase.close
+     void setAsClosed() {//call by ProxyStatementBase.close
         try {
             close();
         } catch (SQLException e) {
