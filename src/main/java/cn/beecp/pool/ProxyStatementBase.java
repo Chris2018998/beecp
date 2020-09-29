@@ -63,7 +63,7 @@ abstract class ProxyStatementBase implements Statement {
         return isClosed;
     }
 
-    public void close() throws SQLException {
+    public final void close() throws SQLException {
         if (!isClosed) {
             isClosed = true;
             if (currentResult != null && !currentResult.isClosed)
@@ -76,6 +76,7 @@ abstract class ProxyStatementBase implements Statement {
 
             if (registered)
                 pConn.unregisterStatement(this);
+
             try {
                 delegate.close();
             } finally {
@@ -93,7 +94,7 @@ abstract class ProxyStatementBase implements Statement {
         }
     }
 
-    void setOpenResultSet(ProxyResultSetBase resultSetNew) {//call by ProxyResultSetBase.constructor
+    final void setOpenResultSet(ProxyResultSetBase resultSetNew) {//call by ProxyResultSetBase.constructor
         switch (resultOpenCode) {
             case CLOSE_CURRENT_RESULT: {
                 if (currentResult != null && !currentResult.isClosed) currentResult.setAsClosed();

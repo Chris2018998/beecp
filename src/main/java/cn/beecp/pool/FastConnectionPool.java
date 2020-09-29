@@ -326,7 +326,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @return if the checked connection is active then return true,otherwise
      * false if false then close it
      */
-    private boolean testOnBorrow(PooledConnection pConn) {
+    private final boolean testOnBorrow(PooledConnection pConn) {
         if (currentTimeMillis() - pConn.lastAccessTime - connectionTestInterval < 0 || testPolicy.isActive(pConn))
             return true;
 
@@ -461,7 +461,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *
      * @param pConn target connection need release
      */
-    public void recycle(PooledConnection pConn) {
+    public final void recycle(PooledConnection pConn) {
         transferPolicy.beforeTransfer(pConn);
         Iterator<Borrower> itor = waitQueue.iterator();
         while (itor.hasNext()) {
@@ -756,11 +756,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     // Transfer Policy
     static interface TransferPolicy {
         int getCheckStateCode();
-
         void beforeTransfer(PooledConnection pConn);
-
         boolean tryCatch(PooledConnection pConn);
-
         void onFailedTransfer(PooledConnection pConn);
     }
 
@@ -786,37 +783,34 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     static final class CompeteTransferPolicy implements TransferPolicy {
-        public int getCheckStateCode() {
+        public final int getCheckStateCode() {
             return CONNECTION_IDLE;
         }
 
-        public boolean tryCatch(PooledConnection pConn) {
+        public final boolean tryCatch(PooledConnection pConn) {
             return ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING);
         }
+        public final void onFailedTransfer(PooledConnection pConn) { }
 
-        public void onFailedTransfer(PooledConnection pConn) {
-        }
-
-        public void beforeTransfer(PooledConnection pConn) {
+        public final void beforeTransfer(PooledConnection pConn) {
             pConn.state = CONNECTION_IDLE;
         }
     }
 
     static final class FairTransferPolicy implements TransferPolicy {
-        public int getCheckStateCode() {
+        public final int getCheckStateCode() {
             return CONNECTION_USING;
         }
 
-        public boolean tryCatch(PooledConnection pConn) {
+        public final boolean tryCatch(PooledConnection pConn) {
             return pConn.state == CONNECTION_USING;
         }
 
-        public void onFailedTransfer(PooledConnection pConn) {
+        public final void onFailedTransfer(PooledConnection pConn) {
             pConn.state = CONNECTION_IDLE;
         }
 
-        public void beforeTransfer(PooledConnection pConn) {
-        }
+        public final void beforeTransfer(PooledConnection pConn) { }
     }
 
     /**

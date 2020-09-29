@@ -59,11 +59,11 @@ public abstract class ProxyConnectionBase implements Connection {
         if (isClosed) throw ConnectionClosedException;
     }
 
-    public void close() throws SQLException {
+    public final void close() throws SQLException {
         if (setAsClosed()) pConn.returnToPoolBySelf();
     }
 
-     boolean setAsClosed() {//called by FastConnectionPool
+    final boolean setAsClosed() {//called by FastConnectionPool
         synchronized (pConn) {
             if (!isClosed) {
                 delegate = CLOSED_CON;

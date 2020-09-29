@@ -66,7 +66,7 @@ abstract class ProxyResultSetBase implements ResultSet {
         if (isClosed) throw ResultSetClosedException;
     }
 
-    public void close() throws SQLException {
+    public final void close() throws SQLException {
         if (!isClosed) {
             isClosed = true;
             delegate.close();

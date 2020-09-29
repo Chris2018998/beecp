@@ -79,15 +79,15 @@ class PooledConnection {
     }
 
     /************* statement Operation ******************************/
-    synchronized void registerStatement(ProxyStatementBase st) {
+    synchronized final void registerStatement(ProxyStatementBase st) {
         openStatements.add(st);
     }
 
-    synchronized void unregisterStatement(ProxyStatementBase st) {
+    synchronized final void unregisterStatement(ProxyStatementBase st) {
         openStatements.remove(st);
     }
 
-    void cleanOpenStatements() {
+    final void cleanOpenStatements() {
         if(openStatements.size() > 0){
             openStatements.clear();
         }
@@ -107,7 +107,7 @@ class PooledConnection {
     }
 
     //***************called by connection proxy ********//
-     void returnToPoolBySelf() throws SQLException {
+    final void returnToPoolBySelf() throws SQLException {
         try {
             proxyConn = null;
             resetRawConnOnReturn();
@@ -118,7 +118,7 @@ class PooledConnection {
         }
     }
 
-    void updateAccessTime() {
+    final void updateAccessTime() {
         commitDirtyInd = !curAutoCommit;
         lastAccessTime = currentTimeMillis();
     }
@@ -144,7 +144,7 @@ class PooledConnection {
         return pool.isSupportNetworkTimeout();
     }
 
-    void resetRawConnOnReturn() throws SQLException {
+    final void resetRawConnOnReturn() throws SQLException {
         if (!curAutoCommit && commitDirtyInd) {//Roll back when commit dirty
             rawConn.rollback();
             commitDirtyInd = false;
