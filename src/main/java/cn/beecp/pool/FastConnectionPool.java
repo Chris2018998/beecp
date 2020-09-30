@@ -59,7 +59,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private static final String DESC_REMOVE_CLOSED = "closed";
     private static final String DESC_REMOVE_RESET = "reset";
     private static final String DESC_REMOVE_DESTROY = "destroy";
-    private static AtomicInteger PoolNameIndex = new AtomicInteger(1);
+    private static AtomicInteger poolNameIndex = new AtomicInteger(1);
     private final Object connArrayLock = new Object();
     private final Object connNotifyLock = new Object();
     private final ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
@@ -108,7 +108,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (config == null) throw new SQLException("DataSource configuration can't be null");
             poolConfig = config;
 
-            poolName = !isBlank(config.getPoolName()) ? config.getPoolName() : "FastPool-" + PoolNameIndex.getAndIncrement();
+            poolName = !isBlank(config.getPoolName()) ? config.getPoolName() : "FastPool-" + poolNameIndex.getAndIncrement();
             log.info("BeeCP({})starting....", poolName);
 
             poolMaxSize = poolConfig.getMaxActive();
@@ -389,8 +389,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             //1:try to search one from array
             PooledConnection[] connections = connArray;
             for (int i = 0, l = connections.length; i < l; i++) {
-                if (ConnStUpd.compareAndSet(connections[i], CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(connections[i]))
-                    return createProxyConnection(connections[i], borrower);
+                if (ConnStUpd.compareAndSet(connections[i],CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(connections[i]))
+                    return createProxyConnection(connections[i],borrower);
             }
 
             //2:try to create one directly
@@ -855,10 +855,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     // SQL check Policy
     class SQLQueryTestPolicy implements ConnectionTestPolicy {
-        private boolean AutoCommit;
+        private boolean autoCommit;
 
         public SQLQueryTestPolicy(boolean autoCommit) {
-            this.AutoCommit = autoCommit;
+            this.autoCommit = autoCommit;
         }
 
         public boolean isActive(PooledConnection pConn) {
@@ -868,7 +868,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             try {
                 //may be a store procedure or a function in this test sql,so need rollback finally
                 //for example: select xxx() from dual
-                if (AutoCommit) {
+                if (autoCommit) {
                     con.setAutoCommit(false);
                     autoCommitChged = true;
                 }
@@ -892,7 +892,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 return false;
             } finally {
                 if (st != null) oclose(st);
-                if (AutoCommit && autoCommitChged) {
+                if (autoCommit && autoCommitChged) {
                     try {
                         con.setAutoCommit(true);
                     } catch (Throwable e) {

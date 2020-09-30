@@ -348,8 +348,8 @@ public final class ProxyClassGenerator {
                     methodBuffer.append("pConn.updateAccessTime();");
             } else {
                 if (methodName.startsWith("execute")) {
-                    methodBuffer.append(ctMethod.getReturnType().getName() + " re=" + delegateName + methodName + "($$);");
-                    methodBuffer.append("pConn.updateAccessTime();");
+                    methodBuffer.append(ctMethod.getReturnType().getName() + " re=" + delegateName + methodName + "($$);")
+                            .append("pConn.updateAccessTime();");
                     if (ctMethod.getReturnType() == ctResultSetClass) {
                         methodBuffer.append("return new ProxyResultSet(re,this,pConn);");
                     } else {
@@ -392,8 +392,8 @@ public final class ProxyClassGenerator {
             newCtMethodm.setModifiers(Modifier.PUBLIC);
 
             methodBuffer.delete(0, methodBuffer.length());
-            methodBuffer.append("{");
-            methodBuffer.append("checkClosed();");
+            methodBuffer.append("{")
+            .append("checkClosed();");
             if (ctMethod.getReturnType() == ctResultSetClass) {
                 methodBuffer.append("return new ProxyResultSet(delegate." + methodName + "($$),pConn);");
             } else if (ctMethod.getReturnType() == CtClass.voidType) {
@@ -441,9 +441,9 @@ public final class ProxyClassGenerator {
                         methodBuffer.append(" pConn.updateAccessTime();");
                 } else {
                     if (methodName.startsWith("insertRow") || methodName.startsWith("updateRow") || methodName.startsWith("deleteRow")) {
-                        methodBuffer.append(ctMethod.getReturnType().getName() + " re=delegate." + methodName + "($$);");
-                        methodBuffer.append(" pConn.updateAccessTime();");
-                        methodBuffer.append(" return re;");
+                        methodBuffer.append(ctMethod.getReturnType().getName() + " re=delegate." + methodName + "($$);")
+                        .append(" pConn.updateAccessTime();")
+                        .append(" return re;");
                     } else {
                         methodBuffer.append("return delegate." + methodName + "($$);");
                     }

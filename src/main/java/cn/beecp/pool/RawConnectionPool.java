@@ -41,7 +41,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
  * @version 1.0
  */
 public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJMXBean {
-    private static AtomicInteger PoolNameIndex = new AtomicInteger(1);
+    private static AtomicInteger poolNameIndex = new AtomicInteger(1);
     private final Logger log = LoggerFactory.getLogger(RawConnectionPool.class);
     private final ConnectionPoolMonitorVo monitorVo = new ConnectionPoolMonitorVo();
     private long defaultMaxWait;
@@ -60,7 +60,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
         poolConfig = config;
         defaultMaxWait = MILLISECONDS.toNanos(poolConfig.getMaxWait());
         borrowSemaphore = new Semaphore(poolConfig.getBorrowSemaphoreSize(), poolConfig.isFairMode());
-        poolName = !isBlank(config.getPoolName()) ? config.getPoolName() : "RawPool-" + PoolNameIndex.getAndIncrement();
+        poolName = !isBlank(config.getPoolName()) ? config.getPoolName() : "RawPool-" + poolNameIndex.getAndIncrement();
 
         if (poolConfig.isFairMode()) {
             poolMode = "fair";

@@ -180,11 +180,10 @@ class PooledConnection {
     //copy from java.util.ArrayList
     static final class StatementArray {
         private int pos;
-        private int initSize;
         private ProxyStatementBase[] elements;
 
         public StatementArray(int initSize) {
-            elements = new ProxyStatementBase[this.initSize = initSize];
+            elements = new ProxyStatementBase[initSize];
         }
 
         public int size() {

@@ -141,6 +141,10 @@ abstract class ProxyStatementBase implements Statement {
         }
     }
 
+    public void setPoolable(boolean var1) throws SQLException {
+        checkClosed();
+    }
+
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return iface.isInstance(this);
     }
