@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import static cn.beecp.util.BeecpUtil.oclose;
@@ -51,7 +50,8 @@ class PooledConnection {
     String defaultSchema;
     int defaultNetworkTimeout;
     boolean traceStatement;
-    private StatementArray openStatements;
+    private int tracedPos;
+    private ProxyStatementBase[] tracedStatements;
     private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
     private FastConnectionPool pool;
     private int changedCount;
@@ -65,31 +65,49 @@ class PooledConnection {
         this.rawConn = rawConn;
 
         //default value
-        defaultAutoCommit = config.isDefaultAutoCommit();
         defaultTransactionIsolationCode = config.getDefaultTransactionIsolationCode();
         defaultReadOnly = config.isDefaultReadOnly();
         defaultCatalog = config.getDefaultCatalog();
         defaultSchema = config.getDefaultSchema();
         defaultNetworkTimeout = pool.getNetworkTimeout();
         defaultNetworkTimeoutExecutor = pool.getNetworkTimeoutExecutor();
-
-        openStatements =new StatementArray((traceStatement = config.isTraceStatement()) ? 16:0);
+        defaultAutoCommit = config.isDefaultAutoCommit();
         curAutoCommit = defaultAutoCommit;
+        //default value
+
+        tracedStatements = new ProxyStatementBase[(traceStatement = config.isTraceStatement()) ? 16 : 0];
         lastAccessTime = currentTimeMillis();
     }
 
     /************* statement Operation ******************************/
     synchronized final void registerStatement(ProxyStatementBase st) {
-        openStatements.add(st);
+        if (tracedPos == tracedStatements.length) {
+            ProxyStatementBase[] newArray = new ProxyStatementBase[tracedStatements.length << 1];
+            System.arraycopy(tracedStatements, 0, newArray, 0, tracedStatements.length);
+            tracedStatements = newArray;
+        }
+        tracedStatements[tracedPos++] = st;
     }
 
     synchronized final void unregisterStatement(ProxyStatementBase st) {
-        openStatements.remove(st);
+        for (int i = 0; i < tracedPos; i++)
+            if (st == tracedStatements[i]) {
+                int m = tracedPos - i - 1;
+                if (m > 0) System.arraycopy(tracedStatements, i + 1, tracedStatements, i, m);//move to ahead
+                tracedStatements[--tracedPos] = null; // clear to let GC do its work
+                return;
+            }
     }
 
     final void cleanOpenStatements() {
-        if(openStatements.size() > 0){
-            openStatements.clear();
+        if (tracedPos > 0) {
+            for (int i = 0; i < tracedPos; i++) {
+                if (tracedStatements[i] != null) {
+                    tracedStatements[i].setAsClosed();
+                    tracedStatements[i] = null;// clear to let GC do its work
+                }
+            }
+            tracedPos = 0;
         }
     }
 
@@ -175,48 +193,5 @@ class PooledConnection {
 
         //clear warnings
         rawConn.clearWarnings();
-    }
-
-    //copy from java.util.ArrayList
-    static final class StatementArray {
-        private int pos;
-        private ProxyStatementBase[] elements;
-
-        public StatementArray(int initSize) {
-            elements = new ProxyStatementBase[initSize];
-        }
-
-        public int size() {
-            return pos;
-        }
-
-        public void add(ProxyStatementBase e) {
-            if (pos == elements.length){
-                ProxyStatementBase[] newArray = new ProxyStatementBase[elements.length << 1];
-                System.arraycopy(elements, 0, newArray, 0, elements.length);
-                elements=newArray;
-            }
-            elements[pos++] = e;
-        }
-
-        public void remove(ProxyStatementBase o) {
-            for (int i = 0; i < pos; i++)
-                if (o == elements[i]) {
-                    int m = pos - i - 1;
-                    if (m > 0) System.arraycopy(elements, i + 1, elements, i, m);//move to ahead
-                    elements[--pos] = null; // clear to let GC do its work
-                    return;
-                }
-        }
-
-        public void clear() {
-            for (int i = 0; i < pos; i++) {
-                if (elements[i] != null) {
-                    elements[i].setAsClosed();
-                    elements[i] = null;// clear to let GC do its work
-                }
-            }
-            pos = 0;
-        }
     }
 }
