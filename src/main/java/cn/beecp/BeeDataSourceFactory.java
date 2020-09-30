@@ -111,34 +111,24 @@ public final class BeeDataSourceFactory implements ObjectFactory {
                 configVal = configVal.trim();
 
                 Class fieldType = field.getType();
-                boolean ChangedAccessible = false;
-                try {
-                    if (Modifier.isPrivate(field.getModifiers()) || Modifier.isProtected(field.getModifiers())) {
-                        field.setAccessible(true);
-                        ChangedAccessible = true;
+                if (fieldType.equals(String.class)) {
+                    field.set(config, configVal);
+                } else if (fieldType.equals(Boolean.class) || fieldType.equals(Boolean.TYPE)) {
+                    field.set(config, Boolean.valueOf(configVal));
+                } else if (fieldType.equals(Integer.class) || fieldType.equals(Integer.TYPE)) {
+                    field.set(config, Integer.valueOf(configVal));
+                } else if (fieldType.equals(Long.class) || fieldType.equals(Long.TYPE)) {
+                    field.set(config, Long.valueOf(configVal));
+                } else if ("connectProperties".equals(field.getName())) {
+                    connectProperties.clear();
+                    configVal = configVal.trim();
+                    String[] attributeArray = configVal.split(";");
+                    for (String attribute : attributeArray) {
+                        String[] pairs = attribute.split("=");
+                        if (pairs.length == 2)
+                            connectProperties.put(pairs[0].trim(), pairs[1].trim());
                     }
-
-                    if (fieldType.equals(String.class)) {
-                        field.set(config, configVal);
-                    } else if (fieldType.equals(Boolean.class) || fieldType.equals(Boolean.TYPE)) {
-                        field.set(config, Boolean.valueOf(configVal));
-                    } else if (fieldType.equals(Integer.class) || fieldType.equals(Integer.TYPE)) {
-                        field.set(config, Integer.valueOf(configVal));
-                    } else if (fieldType.equals(Long.class) || fieldType.equals(Long.TYPE)) {
-                        field.set(config, Long.valueOf(configVal));
-                    } else if ("connectProperties".equals(field.getName())) {
-                        connectProperties.clear();
-                        configVal = configVal.trim();
-                        String[] attributeArray = configVal.split(";");
-                        for (String attribute : attributeArray) {
-                            String[] pairs = attribute.split("=");
-                            if (pairs.length == 2)
-                                connectProperties.put(pairs[0].trim(), pairs[1].trim());
-                        }
-                        field.set(config,connectProperties);
-                    }
-                } finally {
-                    if (ChangedAccessible) field.setAccessible(false);//reset
+                    field.set(config,connectProperties);
                 }
             }
         }

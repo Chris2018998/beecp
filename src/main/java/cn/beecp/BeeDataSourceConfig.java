@@ -30,6 +30,7 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
@@ -522,15 +523,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
             modifiers = field.getModifiers();
             if (Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers))
                 continue;
-
-            boolean accessible = field.isAccessible();
             try {
-                if (!accessible) field.setAccessible(true);
                 field.set(config, field.get(this));
             } catch (Exception e) {
                 throw new BeeDataSourceConfigException("Failed to copy field[" + field.getName() + "]", e);
-            } finally {
-                if (!accessible) field.setAccessible(accessible);
             }
         }
     }
@@ -646,7 +642,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
 
         //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 begin
         //if (this.validationQuerySQL != null && validationQuerySQL.trim().length() == 0) {
-        if (!isBlank(this.connectionTestSQL) && !this.connectionTestSQL.trim().toLowerCase().startsWith("select "))
+        if (!isBlank(this.connectionTestSQL) && !this.connectionTestSQL.trim().toLowerCase(Locale.US).startsWith("select "))
             //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end
             throw new BeeDataSourceConfigException("Connection 'connectionTestSQL' must start with 'select '");
         //}
@@ -658,7 +654,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
         if (index >= 0) propName = propName.substring(index + 1);
 
         propName = propName.trim();
-        String methodName = "set" + propName.substring(0, 1).toUpperCase() + propName.substring(1);
+        String methodName = "set" + propName.substring(0, 1).toUpperCase(Locale.US) + propName.substring(1);
         Method[] methods = bean.getClass().getMethods();
         Method targetMethod = null;
         for (Method method : methods) {
@@ -695,7 +691,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
 
     public void loadPropertiesFile(File file) throws IOException {
         if (!file.isFile()) throw new IOException("Invalid properties file");
-        if (!file.getAbsolutePath().toLowerCase().endsWith(".properties"))
+        if (!file.getAbsolutePath().toLowerCase(Locale.US).endsWith(".properties"))
             throw new IOException("Invalid properties file");
 
         if (!checked) {

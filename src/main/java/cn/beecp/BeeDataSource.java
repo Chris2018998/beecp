@@ -277,13 +277,13 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     private String getDriverType(String url) {
         try {
             Driver driver = DriverManager.getDriver(url);
-            if (url.indexOf("oracle") > 0) {
+            if (url.indexOf("oracle") > 1) {
                 return "oracle";
-            } else if (url.indexOf("mysql") > 0) {
+            } else if (url.indexOf("mysql") > 1) {
                 return "mysql" + driver.getMajorVersion();
-            } else if (url.indexOf("mariadb") > 0) {
+            } else if (url.indexOf("mariadb") > 1) {
                 return "mariadb";
-            } else if (url.indexOf("postgresql") > 0) {
+            } else if (url.indexOf("postgresql") > 1) {
                 return "postgresql";
             } else {
                 return null;
