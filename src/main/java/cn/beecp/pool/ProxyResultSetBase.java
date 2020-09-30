@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import static cn.beecp.pool.PoolConstants.CLOSED_RSLT;
 import static cn.beecp.pool.PoolConstants.ResultSetClosedException;
 
 /**
@@ -68,8 +69,12 @@ abstract class ProxyResultSetBase implements ResultSet {
 
     public final void close() throws SQLException {
         if (!isClosed) {
-            isClosed = true;
-            delegate.close();
+            try {
+                isClosed = true;
+                delegate.close();
+            } finally{
+                delegate=CLOSED_RSLT;
+            }
         }
     }
 

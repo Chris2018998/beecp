@@ -19,10 +19,7 @@ import javax.transaction.xa.XAException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.SQLTimeoutException;
+import java.sql.*;
 
 /**
  * Pool Constants definition
@@ -90,6 +87,17 @@ public class PoolConstants {
                 }
             }
     );
+
+    final static ResultSet CLOSED_RSLT = (ResultSet) Proxy.newProxyInstance(
+            PoolConstants.class.getClassLoader(),
+            new Class[]{ResultSet.class},
+            new InvocationHandler() {
+                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                    return call(method.getName(), 3);
+                }
+            }
+    );
+
 
     static Object call(String methodName, int type) throws SQLException {
         switch (type) {
