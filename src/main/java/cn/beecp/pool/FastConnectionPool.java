@@ -399,7 +399,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
             //3:try to get one transferred connection
             boolean isFailed = false;
-            Thread bThread = borrower.thread;
             borrower.state = BORROWER_NORMAL;
             SQLException failedCause = RequestTimeoutException;
 
@@ -430,7 +429,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                             --spinSize;
                         } else if (timeout > spinForTimeoutThreshold && BwrStUpd.compareAndSet(borrower, state, BORROWER_WAITING)) {
                             parkNanos(this, timeout);
-                            if (bThread.isInterrupted()) {
+                            if (borrower.thread.isInterrupted()) {
                                 isFailed = true;
                                 failedCause = RequestInterruptException;
                             }
@@ -462,6 +461,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     public final void recycle(PooledConnection pConn) {
         transferPolicy.beforeTransfer(pConn);
+
         for (Borrower borrower : waitQueue)
             for (Object state = borrower.state; state == BORROWER_NORMAL || state == BORROWER_WAITING; state = borrower.state) {
                 if (pConn.state != conUnCatchStateCode) return;
