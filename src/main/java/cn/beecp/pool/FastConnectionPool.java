@@ -27,7 +27,6 @@ import java.lang.ref.WeakReference;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Iterator;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
@@ -144,7 +143,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             }, config.getIdleCheckTimeInitDelay(), config.getIdleCheckTimeInterval(), TimeUnit.MILLISECONDS);
 
             registerJMX();
-            log.info("BeeCP({})has startup{mode:{},init size:{},max size:{},concurrent size:{},max wait:{}ms,driver:{}}",
+            log.info("BeeCP({})has startup{mode:{},init size:{},max size:{},semaphore size:{},max wait:{}ms,driver:{}}",
                     poolName,
                     poolMode,
                     connArray.length,
@@ -388,9 +387,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         try {//borrowSemaphore acquired
             //1:try to search one from array
             PooledConnection[] connections = connArray;
-            for (int i = 0, l = connections.length; i < l; i++) {
-                if (ConnStUpd.compareAndSet(connections[i], CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(connections[i]))
-                    return createProxyConnection(connections[i], borrower);
+            for (PooledConnection pConn : connections) {
+                if (pConn.state == CONNECTION_IDLE && ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn))
+                    return createProxyConnection(pConn, borrower);
             }
 
             //2:try to create one directly
@@ -463,9 +462,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     public final void recycle(PooledConnection pConn) {
         transferPolicy.beforeTransfer(pConn);
-        Iterator<Borrower> itor = waitQueue.iterator();
-        while (itor.hasNext()) {
-            Borrower borrower = itor.next();
+        for (Borrower borrower : waitQueue)
             for (Object state = borrower.state; state == BORROWER_NORMAL || state == BORROWER_WAITING; state = borrower.state) {
                 if (pConn.state != conUnCatchStateCode) return;
                 if (BwrStUpd.compareAndSet(borrower, state, pConn)) {//transfer successful
@@ -473,7 +470,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     return;
                 }
             }
-        }
+
         transferPolicy.onFailedTransfer(pConn);
     }
 
@@ -481,16 +478,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @param exception: transfer Exception to waiter
      */
     private void transferException(SQLException exception) {
-        Iterator<Borrower> itor = waitQueue.iterator();
-        while (itor.hasNext()) {
-            Borrower borrower = itor.next();
+        for (Borrower borrower : waitQueue)
             for (Object state = borrower.state; state == BORROWER_NORMAL || state == BORROWER_WAITING; state = borrower.state) {
                 if (BwrStUpd.compareAndSet(borrower, state, exception)) {//transfer successful
                     if (state == BORROWER_WAITING) unpark(borrower.thread);
                     return;
                 }
             }
-        }
     }
 
     /**

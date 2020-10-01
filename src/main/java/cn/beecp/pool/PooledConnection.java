@@ -100,12 +100,11 @@ class PooledConnection {
     }
 
     final void cleanOpenStatements() {
-        for (int i = 0; i < tracedPos; i++) {
+        for (int i = 0; i < tracedPos; i++)
             if (tracedStatements[i] != null) {
                 tracedStatements[i].setAsClosed();
                 tracedStatements[i] = null;// clear to let GC do its work
             }
-        }
         tracedPos = 0;
     }
 
