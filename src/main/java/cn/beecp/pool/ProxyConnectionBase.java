@@ -15,12 +15,13 @@
  */
 package cn.beecp.pool;
 
+import cn.beecp.util.BeeJdbcUtil;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.Executor;
 
 import static cn.beecp.pool.PoolConstants.*;
-import static cn.beecp.util.BeecpUtil.equalsText;
 import static java.lang.System.currentTimeMillis;
 
 /**
@@ -67,7 +68,7 @@ public abstract class ProxyConnectionBase implements Connection {
         synchronized (pConn) {
             if (!isClosed) {
                 delegate = CLOSED_CON;
-                if(pConn.traceStatement)
+                if (pConn.traceStatement && pConn.tracedPos > 0)
                     pConn.cleanOpenStatements();
                 return isClosed = true;
             } else {
@@ -99,7 +100,7 @@ public abstract class ProxyConnectionBase implements Connection {
 
     public void setCatalog(String catalog) throws SQLException {
         delegate.setCatalog(catalog);
-        pConn.setChangedInd(Pos_CatalogInd, !equalsText(catalog, pConn.defaultCatalog));
+        pConn.setChangedInd(Pos_CatalogInd, !BeeJdbcUtil.equals(catalog, pConn.defaultCatalog));
     }
 
     public boolean isValid(int timeout) throws SQLException {
@@ -109,7 +110,7 @@ public abstract class ProxyConnectionBase implements Connection {
     //for JDK1.7 begin
     public void setSchema(String schema) throws SQLException {
         delegate.setSchema(schema);
-        pConn.setChangedInd(Pos_SchemaInd, !equalsText(schema, pConn.defaultSchema));
+        pConn.setChangedInd(Pos_SchemaInd, !BeeJdbcUtil.equals(schema, pConn.defaultSchema));
     }
 
     public void abort(Executor executor) throws SQLException {

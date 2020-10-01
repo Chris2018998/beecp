@@ -37,16 +37,16 @@ abstract class ProxyStatementBase implements Statement {
     private static Logger log = LoggerFactory.getLogger(ProxyStatementBase.class);
     protected Statement delegate;
     protected PooledConnection pConn;//called by subclass to update time
-    private ProxyResultSetBase currentResult;
+    private ProxyResultSetBase curRe;
     private boolean registered;
     private boolean isClosed;
     private int resultOpenCode = CLOSE_CURRENT_RESULT;
-    private ArrayList<ProxyResultSetBase> keepResults = new ArrayList<>();
+    private ArrayList<ProxyResultSetBase> results = new ArrayList<>();
 
     public ProxyStatementBase(Statement delegate, PooledConnection pConn) {
         this.delegate = delegate;
         this.pConn = pConn;
-       if (registered = pConn.traceStatement)
+        if (registered = pConn.traceStatement)
             pConn.registerStatement(this);
     }
 
@@ -66,17 +66,15 @@ abstract class ProxyStatementBase implements Statement {
     public final void close() throws SQLException {
         if (!isClosed) {
             isClosed = true;
-            if (currentResult != null && !currentResult.isClosed)
-                currentResult.setAsClosed();
-            if (keepResults.size() > 0) {
-                for (ProxyResultSetBase re : keepResults)
+            if (curRe != null && !curRe.isClosed)
+                curRe.setAsClosed();
+            if (results.size() > 0) {
+                for (ProxyResultSetBase re : results)
                     re.setAsClosed();
-                keepResults.clear();
+                results.clear();
             }
-
             if (registered)
                 pConn.unregisterStatement(this);
-
             try {
                 delegate.close();
             } finally {
@@ -85,7 +83,7 @@ abstract class ProxyStatementBase implements Statement {
         }
     }
 
-     void setAsClosed() {//call by PooledConnection.cleanOpenStatements
+    void setAsClosed() {//call by PooledConnection.cleanOpenStatements
         try {
             registered = false;
             close();
@@ -97,25 +95,25 @@ abstract class ProxyStatementBase implements Statement {
     final void setOpenResultSet(ProxyResultSetBase resultSetNew) {//call by ProxyResultSetBase.constructor
         switch (resultOpenCode) {
             case CLOSE_CURRENT_RESULT: {
-                if (currentResult != null && !currentResult.isClosed) currentResult.setAsClosed();
+                if (curRe != null && !curRe.isClosed) curRe.setAsClosed();
                 break;
             }
             case KEEP_CURRENT_RESULT: {
-                if (currentResult != null && !currentResult.isClosed) keepResults.add(currentResult);
+                if (curRe != null && !curRe.isClosed) results.add(curRe);
                 break;
             }
             case CLOSE_ALL_RESULTS: {
-                if (currentResult != null && !currentResult.isClosed)
-                    currentResult.setAsClosed();
-                for (ProxyResultSetBase openRe : keepResults)
+                if (curRe != null && !curRe.isClosed)
+                    curRe.setAsClosed();
+                for (ProxyResultSetBase openRe : results)
                     if (!openRe.isClosed) openRe.setAsClosed();
-                keepResults.clear();
+                results.clear();
                 break;
             }
             default:
                 break;
         }
-        this.currentResult = resultSetNew;
+        this.curRe = resultSetNew;
     }
 
     public boolean getMoreResults() throws SQLException {
@@ -134,8 +132,8 @@ abstract class ProxyStatementBase implements Statement {
             setOpenResultSet(null);
             return null;
         } else {
-            if (currentResult != null && currentResult.isDelegate(re))
-                return currentResult;
+            if (curRe != null && curRe.isDelegate(re))
+                return curRe;
 
             return ProxyObjectFactory.createProxyResultSet(re, this, pConn);
         }

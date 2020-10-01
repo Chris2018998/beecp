@@ -20,7 +20,7 @@ import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
-import cn.beecp.util.BeecpUtil;
+import cn.beecp.util.BeeJdbcUtil;
 
 import java.sql.*;
 
@@ -89,13 +89,13 @@ public class ConnectionWrapperTest extends TestCase {
 				TestUtil.assertError("Raw Result exposed(cs)");
 		}finally{
 			if(st!=null)
-			BeecpUtil.oclose(st);
+			BeeJdbcUtil.oclose(st);
 			if(cs!=null)
-			BeecpUtil.oclose(cs);
+			BeeJdbcUtil.oclose(cs);
 			if(ps!=null)
-			BeecpUtil.oclose(ps);
+			BeeJdbcUtil.oclose(ps);
 			if(con!=null)
-			BeecpUtil.oclose(con);
+			BeeJdbcUtil.oclose(con);
 		}
 	}
 }

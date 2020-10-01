@@ -15,14 +15,13 @@
  */
 package cn.beecp;
 
-import cn.beecp.util.BeecpUtil;
+import cn.beecp.util.BeeJdbcUtil;
 
 import javax.naming.*;
 import javax.naming.spi.NamingManager;
 import javax.naming.spi.ObjectFactory;
 import javax.sql.DataSource;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -107,7 +106,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
             if (ra == null) continue;
             String configVal = ra.getContent().toString();
 
-            if (!BeecpUtil.isBlank(configVal)) {
+            if (!BeeJdbcUtil.isBlank(configVal)) {
                 configVal = configVal.trim();
 
                 Class fieldType = field.getType();

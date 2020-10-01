@@ -35,8 +35,8 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import static cn.beecp.pool.PoolConstants.*;
 import static cn.beecp.pool.ProxyObjectFactory.createProxyConnection;
-import static cn.beecp.util.BeecpUtil.isBlank;
-import static cn.beecp.util.BeecpUtil.oclose;
+import static cn.beecp.util.BeeJdbcUtil.isBlank;
+import static cn.beecp.util.BeeJdbcUtil.oclose;
 import static java.lang.System.*;
 import static java.util.concurrent.TimeUnit.*;
 import static java.util.concurrent.locks.LockSupport.*;
@@ -389,8 +389,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             //1:try to search one from array
             PooledConnection[] connections = connArray;
             for (int i = 0, l = connections.length; i < l; i++) {
-                if (ConnStUpd.compareAndSet(connections[i],CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(connections[i]))
-                    return createProxyConnection(connections[i],borrower);
+                if (ConnStUpd.compareAndSet(connections[i], CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(connections[i]))
+                    return createProxyConnection(connections[i], borrower);
             }
 
             //2:try to create one directly
@@ -399,10 +399,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 return createProxyConnection(pConn, borrower);
 
             //3:try to get one transferred connection
-            boolean isFailed=false;
+            boolean isFailed = false;
             Thread bThread = borrower.thread;
             borrower.state = BORROWER_NORMAL;
-            SQLException failedCause=RequestTimeoutException;
+            SQLException failedCause = RequestTimeoutException;
 
             waitQueue.offer(borrower);
             int spinSize = (waitQueue.peek() == borrower) ? maxTimedSpins : 0;
@@ -451,10 +451,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *
      * @param pConn target connection need release
      */
-     void abandonOnReturn(PooledConnection pConn) {
+    void abandonOnReturn(PooledConnection pConn) {
         removePooledConn(pConn, DESC_REMOVE_BAD);
         tryToCreateNewConnByAsyn();
-     }
+    }
 
     /**
      * return connection to pool
@@ -756,8 +756,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     // Transfer Policy
     static interface TransferPolicy {
         int getCheckStateCode();
+
         void beforeTransfer(PooledConnection pConn);
+
         boolean tryCatch(PooledConnection pConn);
+
         void onFailedTransfer(PooledConnection pConn);
     }
 
@@ -790,7 +793,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         public final boolean tryCatch(PooledConnection pConn) {
             return ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING);
         }
-        public final void onFailedTransfer(PooledConnection pConn) { }
+
+        public final void onFailedTransfer(PooledConnection pConn) {
+        }
 
         public final void beforeTransfer(PooledConnection pConn) {
             pConn.state = CONNECTION_IDLE;
@@ -810,7 +815,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             pConn.state = CONNECTION_IDLE;
         }
 
-        public final void beforeTransfer(PooledConnection pConn) { }
+        public final void beforeTransfer(PooledConnection pConn) {
+        }
     }
 
     /**

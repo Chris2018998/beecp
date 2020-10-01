@@ -20,7 +20,7 @@ import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
-import cn.beecp.util.BeecpUtil;
+import cn.beecp.util.BeeJdbcUtil;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -61,7 +61,7 @@ public class ConnectionGetTimeoutTest extends TestCase {
 				this.e = e;
 			} finally {
 				if(con2!=null)
-				  BeecpUtil.oclose(con2);
+				  BeeJdbcUtil.oclose(con2);
 			}
 			lacth.countDown();
 		}
@@ -82,7 +82,7 @@ public class ConnectionGetTimeoutTest extends TestCase {
 				System.out.println(testTh.e);
 		} finally {
 			if(con!=null)
-			  BeecpUtil.oclose(con);
+			  BeeJdbcUtil.oclose(con);
 		}
 	}
 }

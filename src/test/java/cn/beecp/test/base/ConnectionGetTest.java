@@ -22,7 +22,7 @@ import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
-import cn.beecp.util.BeecpUtil;
+import cn.beecp.util.BeeJdbcUtil;
 
 public class ConnectionGetTest extends TestCase {
 	private BeeDataSource ds;
@@ -47,7 +47,7 @@ public class ConnectionGetTest extends TestCase {
 			if (con == null)
 				TestUtil.assertError("Failed to get Connection");
 		} finally {
-			BeecpUtil.oclose(con);
+			BeeJdbcUtil.oclose(con);
 		}
 	}
 }

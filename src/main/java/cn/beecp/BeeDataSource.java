@@ -16,7 +16,6 @@
 package cn.beecp;
 
 import cn.beecp.pool.ConnectionPool;
-import cn.beecp.pool.FastConnectionPool;
 import cn.beecp.pool.ProxyConnectionBase;
 import cn.beecp.xa.XaConnectionFactory;
 import cn.beecp.xa.XaConnectionWrapper;
@@ -31,7 +30,7 @@ import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
-import static cn.beecp.util.BeecpUtil.isBlank;
+import static cn.beecp.util.BeeJdbcUtil.isBlank;
 
 /**
  * Bee DataSource,there are two pool implementation for it.

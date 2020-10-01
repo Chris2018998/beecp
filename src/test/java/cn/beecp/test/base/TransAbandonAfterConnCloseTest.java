@@ -20,7 +20,7 @@ import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
-import cn.beecp.util.BeecpUtil;
+import cn.beecp.util.BeeJdbcUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -68,13 +68,13 @@ public class TransAbandonAfterConnCloseTest extends TestCase {
 				TestUtil.assertError("Failed to insert");
 		} finally {
 			if(re1!=null)
-			BeecpUtil.oclose(re1);
+			BeeJdbcUtil.oclose(re1);
 			if(ps1!=null)
-			BeecpUtil.oclose(ps1);
+			BeeJdbcUtil.oclose(ps1);
 			if(ps2!=null)
-			BeecpUtil.oclose(ps2);
+			BeeJdbcUtil.oclose(ps2);
 			if(con1!=null)
-			BeecpUtil.oclose(con1);
+			BeeJdbcUtil.oclose(con1);
 		}
 		
 		Connection con2 = null;
@@ -92,11 +92,11 @@ public class TransAbandonAfterConnCloseTest extends TestCase {
 			}
 		} finally {
 			if(re3!=null)
-			BeecpUtil.oclose(re3);
+			BeeJdbcUtil.oclose(re3);
 			if(ps3!=null)
-			BeecpUtil.oclose(ps3);
+			BeeJdbcUtil.oclose(ps3);
 			if(con2!=null)
-			BeecpUtil.oclose(con2);
+			BeeJdbcUtil.oclose(con2);
 		}
 	}
 }

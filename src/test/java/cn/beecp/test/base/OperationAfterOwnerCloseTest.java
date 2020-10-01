@@ -28,7 +28,7 @@ import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
-import cn.beecp.util.BeecpUtil;
+import cn.beecp.util.BeeJdbcUtil;
 
 public class OperationAfterOwnerCloseTest extends TestCase {
 	private BeeDataSource ds;
@@ -85,11 +85,11 @@ public class OperationAfterOwnerCloseTest extends TestCase {
 			}
 		} finally {
 			if (st != null)
-				BeecpUtil.oclose(st);
+				BeeJdbcUtil.oclose(st);
 			if (cs != null)
-				BeecpUtil.oclose(cs);
+				BeeJdbcUtil.oclose(cs);
 			if (ps != null)
-				BeecpUtil.oclose(ps);
+				BeeJdbcUtil.oclose(ps);
 		}
 	}
 
@@ -115,7 +115,7 @@ public class OperationAfterOwnerCloseTest extends TestCase {
 			} catch (SQLException e) {
 			} finally {
 				if (rs1 != null)
-					BeecpUtil.oclose(rs1);
+					BeeJdbcUtil.oclose(rs1);
 			}
 
 			ResultSet rs2 = null;
@@ -129,7 +129,7 @@ public class OperationAfterOwnerCloseTest extends TestCase {
 			} catch (SQLException e) {
 			} finally {
 				if (rs2 != null)
-					BeecpUtil.oclose(rs2);
+					BeeJdbcUtil.oclose(rs2);
 			}
 
 			ResultSet rs3 = null;
@@ -143,11 +143,11 @@ public class OperationAfterOwnerCloseTest extends TestCase {
 			} catch (SQLException e) {
 			} finally {
 				if (rs3 != null)
-					BeecpUtil.oclose(rs3);
+					BeeJdbcUtil.oclose(rs3);
 			}
 		} finally {
 			if (con != null)
-				BeecpUtil.oclose(con);
+				BeeJdbcUtil.oclose(con);
 		}
 	}
 }

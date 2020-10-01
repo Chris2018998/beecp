@@ -28,7 +28,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static cn.beecp.pool.PoolConstants.*;
-import static cn.beecp.util.BeecpUtil.isBlank;
+import static cn.beecp.util.BeeJdbcUtil.isBlank;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 

@@ -34,7 +34,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
-import static cn.beecp.util.BeecpUtil.isBlank;
+import static cn.beecp.util.BeeJdbcUtil.isBlank;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 

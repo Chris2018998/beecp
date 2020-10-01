@@ -23,7 +23,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static cn.beecp.util.BeecpUtil.oclose;
+import static cn.beecp.util.BeeJdbcUtil.oclose;
 import static java.lang.System.arraycopy;
 import static java.lang.System.currentTimeMillis;
 
@@ -49,15 +49,15 @@ class PooledConnection {
     String defaultCatalog;
     String defaultSchema;
     int defaultNetworkTimeout;
-    boolean traceStatement;
-    private int tracedPos;
-    private ProxyStatementBase[] tracedStatements;
     private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
-    private FastConnectionPool pool;
-    private int changedCount;
+
     //changed indicator
+    private int changedCount;
+    int tracedPos;
+    boolean traceStatement;
+    private ProxyStatementBase[] tracedStatements;
+    private FastConnectionPool pool;
     private boolean[] changedInd = new boolean[DEFAULT_IND.length];
-    private int stmCacheSize;
 
     public PooledConnection(Connection rawConn, int connState, FastConnectionPool connPool, BeeDataSourceConfig config) throws SQLException {
         pool = connPool;
@@ -100,15 +100,13 @@ class PooledConnection {
     }
 
     final void cleanOpenStatements() {
-        if (tracedPos > 0) {
-            for (int i = 0; i < tracedPos; i++) {
-                if (tracedStatements[i] != null) {
-                    tracedStatements[i].setAsClosed();
-                    tracedStatements[i] = null;// clear to let GC do its work
-                }
+        for (int i = 0; i < tracedPos; i++) {
+            if (tracedStatements[i] != null) {
+                tracedStatements[i].setAsClosed();
+                tracedStatements[i] = null;// clear to let GC do its work
             }
-            tracedPos = 0;
         }
+        tracedPos = 0;
     }
 
     /************* statement Operation ******************************/

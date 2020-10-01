@@ -5,7 +5,7 @@ import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
-import cn.beecp.util.BeecpUtil;
+import cn.beecp.util.BeeJdbcUtil;
 
 import java.sql.*;
 
@@ -60,15 +60,15 @@ public class ProxyObjectUnwrapTest extends TestCase {
                 TestUtil.assertError("ResultSet unwrap error");
         } finally {
             if (re != null)
-                BeecpUtil.oclose(re);
+                BeeJdbcUtil.oclose(re);
             if (st != null)
-                BeecpUtil.oclose(st);
+                BeeJdbcUtil.oclose(st);
             if (cs != null)
-                BeecpUtil.oclose(cs);
+                BeeJdbcUtil.oclose(cs);
             if (ps != null)
-                BeecpUtil.oclose(ps);
+                BeeJdbcUtil.oclose(ps);
             if (con != null)
-                BeecpUtil.oclose(con);
+                BeeJdbcUtil.oclose(con);
         }
     }
 }
