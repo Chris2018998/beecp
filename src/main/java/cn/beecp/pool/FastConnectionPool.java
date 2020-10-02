@@ -365,7 +365,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         Borrower borrower = (ref != null) ? ref.get() : null;
         if (borrower != null) {
             PooledConnection pConn = borrower.lastUsedConn;
-            if (pConn != null&& ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
+            if (pConn != null && ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
                 if (testOnBorrow(pConn)) return createProxyConnection(pConn, borrower);
 
                 borrower.lastUsedConn = null;
@@ -378,7 +378,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
         long deadline = nanoTime() + defaultMaxWaitNanos;
         try {
-            if (!this.borrowSemaphore.tryAcquire(this.defaultMaxWaitNanos, NANOSECONDS))
+            if (!borrowSemaphore.tryAcquire(this.defaultMaxWaitNanos, NANOSECONDS))
                 throw RequestTimeoutException;
         } catch (InterruptedException e) {
             throw RequestInterruptException;
@@ -397,7 +397,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 return createProxyConnection(pConn, borrower);
 
             //3:try to get one transferred connection
-            boolean isFailed = false;
+            boolean failed = false;
             borrower.state = BORROWER_NORMAL;
             SQLException failedCause = RequestTimeoutException;
 
@@ -407,7 +407,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 Object state = borrower.state;
                 if (state instanceof PooledConnection) {
                     pConn = (PooledConnection) state;
-                    if (transferPolicy.tryCatch(pConn) && this.testOnBorrow(pConn)) {
+                    if (transferPolicy.tryCatch(pConn) && testOnBorrow(pConn)) {
                         waitQueue.remove(borrower);
                         return createProxyConnection(pConn, borrower);
                     }
@@ -419,7 +419,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     throw (SQLException) state;
                 }
 
-                if (isFailed) {
+                if (failed) {
                     BwrStUpd.compareAndSet(borrower, state, failedCause);
                 } else {
                     long timeout;
@@ -429,12 +429,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         } else if (timeout > spinForTimeoutThreshold && BwrStUpd.compareAndSet(borrower, state, BORROWER_WAITING)) {
                             parkNanos(this, timeout);
                             if (borrower.thread.isInterrupted()) {
-                                isFailed = true;
+                                failed = true;
                                 failedCause = RequestInterruptException;
                             }
                         }
                     } else {//timeout
-                        isFailed = true;
+                        failed = true;
                     }
                 }
             }//while
@@ -460,16 +460,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     public final void recycle(PooledConnection pConn) {
         transferPolicy.beforeTransfer(pConn);
-
         for (Borrower borrower : waitQueue)
             for (Object state = borrower.state; state == BORROWER_NORMAL || state == BORROWER_WAITING; state = borrower.state) {
-                if (pConn.state != conUnCatchStateCode) return;
+                if (pConn.state -conUnCatchStateCode!=0) return;
                 if (BwrStUpd.compareAndSet(borrower, state, pConn)) {//transfer successful
                     if (state == BORROWER_WAITING) unpark(borrower.thread);
                     return;
                 }
             }
-
         transferPolicy.onFailedTransfer(pConn);
     }
 

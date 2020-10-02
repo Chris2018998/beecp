@@ -15,7 +15,6 @@
  */
 package cn.beecp.util;
 
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -50,33 +49,66 @@ public class BeeSemaphore {
     //Thread Interrupted Exception
     private static final InterruptedException RequestInterruptException = new InterruptedException();
 
+    /**
+     * Synchronization implementation for semaphore.
+     */
     private Sync sync;
 
     public BeeSemaphore(int size, boolean fair) {
         sync = fair ? new FairSync(size) : new NonfairSync(size);
     }
 
+    /**
+     * Acquires a permit from this semaphore, if one becomes available
+     * within the given waiting time and the current thread has not
+     * been {@linkplain Thread#interrupt interrupted}.
+     *
+     * @param timeout the maximum time to wait for a permit
+     * @param unit    the time unit of the {@code timeout} argument
+     * @return {@code true} if a permit was acquired and {@code false}
+     * if the waiting time elapsed before a permit was acquired
+     * @throws InterruptedException if the current thread is interrupted
+     */
     public boolean tryAcquire(long timeout, TimeUnit unit) throws InterruptedException {
         return sync.tryAcquire(timeout, unit);
     }
 
+    /**
+     * Releases a permit, returning it to the semaphore.
+     */
     public void release() {
         sync.release();
     }
+
+    /**
+     * Returns the current number of permits available in this semaphore.
+     *
+     * @return the number of permits available in this semaphore
+     */
 
     public int availablePermits() {
         return sync.availablePermits();
     }
 
+    /**
+     * Queries whether any threads are waiting to acquire.
+     *
+     * @return {@code true} if there may be other threads waiting to acquire the lock
+     */
     public boolean hasQueuedThreads() {
         return sync.hasQueuedThreads();
     }
 
+    /**
+     * Returns an estimate of the number of threads waiting to acquire.
+     *
+     * @return the estimated number of threads waiting for this lock
+     */
     public int getQueueLength() {
         return sync.getQueueLength();
     }
 
-
+    //base Sync
     private static abstract class Sync {
         protected int size;
         protected AtomicInteger usingSize = new AtomicInteger(0);
@@ -99,19 +131,23 @@ public class BeeSemaphore {
             return waiterQueue.size();
         }
 
-
-        private boolean acquirePermit() {
-            if (usingSize.get() < size) {
-                if (usingSize.incrementAndGet() <= size) {
-                    return true;
-                } else {
-                    usingSize.decrementAndGet();
-                }
+        private final boolean acquirePermit() {
+            while(true){
+                int expect = usingSize.get();
+                int update = expect + 1;
+                if (update >size )return false;
+                if(usingSize.compareAndSet(expect,update))return true;
             }
-            return false;
         }
 
-        protected boolean transferToWaiter(Waiter waiter, int stsCode) {
+        /**
+         * Transfer a permit to a waiter
+         *
+         * @param waiter
+         * @param stsCode
+         * @return true success,false failed
+         */
+        protected final boolean transferToWaiter(Waiter waiter, int stsCode) {
             for (int state = waiter.state; (state == STS_NORMAL || state == STS_WAITING); state = waiter.state) {
                 if (updater.compareAndSet(waiter, state, stsCode)) {
                     if (state == STS_WAITING) LockSupport.unpark(waiter.thread);
@@ -121,9 +157,14 @@ public class BeeSemaphore {
             return false;
         }
 
+        /**
+         * @param timeout
+         * @param unit
+         * @return
+         * @throws InterruptedException
+         */
         public boolean tryAcquire(long timeout, TimeUnit unit) throws InterruptedException {
             if (acquirePermit()) return true;
-            if (timeout <= 0) return false;
 
             boolean isFailed = false;
             boolean isInterrupted = false;
@@ -174,12 +215,10 @@ public class BeeSemaphore {
             super(size);
         }
 
-        public void release() {
-            //transfer permit
+        public final void release() { //transfer permit
             Waiter waiter;
-            while ((waiter = waiterQueue.poll()) != null) {
+            while ((waiter = waiterQueue.poll()) != null)
                 if (transferToWaiter(waiter, STS_ACQUIRED)) return;
-            }
             usingSize.decrementAndGet();//release permit
         }
     }
@@ -189,16 +228,16 @@ public class BeeSemaphore {
             super(size);
         }
 
-        public void release() {
-            usingSize.decrementAndGet();//release permit
-            Iterator<Waiter> itor = waiterQueue.iterator();
-            while (itor.hasNext()) {
-                Waiter waiter = itor.next();
+        public final void release() {//transfer permit
+            usingSize.decrementAndGet();
+            for (Waiter waiter : waiterQueue)
                 if (transferToWaiter(waiter, STS_TRY_ACQUIRE)) return;
-            }
         }
     }
 
+    /**
+     * permit waiter
+     */
     private static final class Waiter {
         volatile int state;
         Thread thread = Thread.currentThread();
