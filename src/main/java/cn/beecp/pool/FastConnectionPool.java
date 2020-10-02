@@ -365,7 +365,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         Borrower borrower = (ref != null) ? ref.get() : null;
         if (borrower != null) {
             PooledConnection pConn = borrower.lastUsedConn;
-            if (pConn != null && ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
+            if (pConn != null&& ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
                 if (testOnBorrow(pConn)) return createProxyConnection(pConn, borrower);
 
                 borrower.lastUsedConn = null;
@@ -386,9 +386,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
         try {//borrowSemaphore acquired
             //1:try to search one from array
-            PooledConnection[] connections = connArray;
-            for (PooledConnection pConn : connections) {
-                if (pConn.state == CONNECTION_IDLE && ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn))
+            for (PooledConnection pConn : connArray) {
+                if (ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn))
                     return createProxyConnection(pConn, borrower);
             }
 
