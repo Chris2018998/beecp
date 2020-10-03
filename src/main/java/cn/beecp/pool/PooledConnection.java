@@ -49,12 +49,11 @@ class PooledConnection {
     String defaultCatalog;
     String defaultSchema;
     int defaultNetworkTimeout;
-    private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
-
-    //changed indicator
-    private int changedCount;
     int tracedPos;
     boolean traceStatement;
+    private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
+    //changed indicator
+    private int changedCount;
     private ProxyStatementBase[] tracedStatements;
     private FastConnectionPool pool;
     private boolean[] changedInd = new boolean[DEFAULT_IND.length];
@@ -125,6 +124,8 @@ class PooledConnection {
     final void returnToPoolBySelf() throws SQLException {
         try {
             proxyConn = null;
+            if (traceStatement && tracedPos > 0)
+                cleanOpenStatements();
             resetRawConnOnReturn();
             pool.recycle(this);
         } catch (SQLException e) {

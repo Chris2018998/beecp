@@ -503,10 +503,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 } else if (state == CONNECTION_USING) {
                     ProxyConnectionBase proxyConn = pConn.proxyConn;
                     boolean isHoldTimeoutInNotUsing = currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldTimeout() >= 0;
-                    if (isHoldTimeoutInNotUsing && proxyConn != null && proxyConn.setAsClosed()) {//recycle connection
-                        pConn.proxyConn = null;
-                        removePooledConn(pConn, DESC_REMOVE_HOLDTIMEOUT);
-                        tryToCreateNewConnByAsyn();
+                    if (isHoldTimeoutInNotUsing && proxyConn != null) {//recycle connection
+                        proxyConn.trySetAsClosed();
                     }
                 } else if (state == CONNECTION_CLOSED) {
                     removePooledConn(pConn, DESC_REMOVE_CLOSED);
@@ -572,15 +570,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 } else if (pConn.state == CONNECTION_USING) {
                     ProxyConnectionBase proxyConn = pConn.proxyConn;
                     if (force) {
-                        if (proxyConn != null && proxyConn.setAsClosed()) {
-                            pConn.proxyConn = null;
-                            removePooledConn(pConn, source);
+                        if (proxyConn != null) {
+                            proxyConn.trySetAsClosed();
                         }
                     } else {
                         boolean isTimeout = (currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldTimeout() >= 0);
-                        if (isTimeout && proxyConn != null && proxyConn.setAsClosed()) {
-                            pConn.proxyConn = null;
-                            removePooledConn(pConn, source);
+                        if (isTimeout && proxyConn != null ) {
+                             proxyConn.trySetAsClosed();
                         }
                     }
                 }
