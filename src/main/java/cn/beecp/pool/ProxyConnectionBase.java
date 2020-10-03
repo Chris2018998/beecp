@@ -69,7 +69,7 @@ public abstract class ProxyConnectionBase implements Connection {
             isClosed = true;
         }
         delegate = CLOSED_CON;
-        pConn.returnToPoolBySelf();
+        pConn.recycleSelf();
     }
 
     final void trySetAsClosed() {//called from FastConnectionPool
@@ -87,22 +87,22 @@ public abstract class ProxyConnectionBase implements Connection {
         delegate.setAutoCommit(autoCommit);
         pConn.curAutoCommit = autoCommit;
         if (autoCommit) pConn.commitDirtyInd = false;
-        pConn.setChangedInd(Pos_AutoCommitInd, autoCommit != pConn.defaultAutoCommit);
+        pConn.setResetInd(Pos_AutoCommitInd, autoCommit != pConn.defaultAutoCommit);
     }
 
     public void setTransactionIsolation(int level) throws SQLException {
         delegate.setTransactionIsolation(level);
-        pConn.setChangedInd(Pos_TransactionIsolationInd, level != pConn.defaultTransactionIsolationCode);
+        pConn.setResetInd(Pos_TransactionIsolationInd, level != pConn.defaultTransactionIsolationCode);
     }
 
     public void setReadOnly(boolean readOnly) throws SQLException {
         delegate.setReadOnly(readOnly);
-        pConn.setChangedInd(Pos_ReadOnlyInd, readOnly != pConn.defaultReadOnly);
+        pConn.setResetInd(Pos_ReadOnlyInd, readOnly != pConn.defaultReadOnly);
     }
 
     public void setCatalog(String catalog) throws SQLException {
         delegate.setCatalog(catalog);
-        pConn.setChangedInd(Pos_CatalogInd, !BeeJdbcUtil.equals(catalog, pConn.defaultCatalog));
+        pConn.setResetInd(Pos_CatalogInd, !BeeJdbcUtil.equals(catalog, pConn.defaultCatalog));
     }
 
     public boolean isValid(int timeout) throws SQLException {
@@ -112,7 +112,7 @@ public abstract class ProxyConnectionBase implements Connection {
     //for JDK1.7 begin
     public void setSchema(String schema) throws SQLException {
         delegate.setSchema(schema);
-        pConn.setChangedInd(Pos_SchemaInd, !BeeJdbcUtil.equals(schema, pConn.defaultSchema));
+        pConn.setResetInd(Pos_SchemaInd, !BeeJdbcUtil.equals(schema, pConn.defaultSchema));
     }
 
     public void abort(Executor executor) throws SQLException {
@@ -137,7 +137,7 @@ public abstract class ProxyConnectionBase implements Connection {
         checkClosed();
         if (pConn.isSupportNetworkTimeout()) {
             delegate.setNetworkTimeout(executor, milliseconds);
-            pConn.setChangedInd(Pos_NetworkTimeoutInd, milliseconds != pConn.defaultNetworkTimeout);
+            pConn.setResetInd(Pos_NetworkTimeoutInd, milliseconds != pConn.defaultNetworkTimeout);
         } else {
             throw DriverNotSupportNetworkTimeoutException;
         }

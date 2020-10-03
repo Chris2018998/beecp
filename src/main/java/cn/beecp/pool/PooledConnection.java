@@ -40,7 +40,6 @@ class PooledConnection {
     Connection rawConn;
     ProxyConnectionBase proxyConn;
     volatile long lastAccessTime;
-
     boolean commitDirtyInd;
     boolean curAutoCommit;
     boolean defaultAutoCommit;
@@ -49,14 +48,14 @@ class PooledConnection {
     String defaultCatalog;
     String defaultSchema;
     int defaultNetworkTimeout;
+    private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
+    private FastConnectionPool pool;
+
     int tracedPos;
     boolean traceStatement;
-    private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
-    //changed indicator
-    private int changedCount;
     private ProxyStatementBase[] tracedStatements;
-    private FastConnectionPool pool;
-    private boolean[] changedInd = new boolean[DEFAULT_IND.length];
+    private int resetCnt;// reset count
+    private boolean[] resetInd = new boolean[DEFAULT_IND.length];
 
     public PooledConnection(Connection rawConn, int connState, FastConnectionPool connPool, BeeDataSourceConfig config) throws SQLException {
         pool = connPool;
@@ -74,16 +73,16 @@ class PooledConnection {
         curAutoCommit = defaultAutoCommit;
         //default value
 
-        tracedStatements = new ProxyStatementBase[(traceStatement = config.isTraceStatement()) ? 16 : 0];
-        lastAccessTime = currentTimeMillis();
+        tracedStatements = new ProxyStatementBase[(traceStatement = config.isTraceStatement()) ? 10 : 0];
+        lastAccessTime = currentTimeMillis();//start time
     }
 
     /************* statement Operation ******************************/
     synchronized final void registerStatement(ProxyStatementBase st) {
         if (tracedPos == tracedStatements.length) {
-            ProxyStatementBase[] newArray = new ProxyStatementBase[tracedStatements.length << 1];
-            System.arraycopy(tracedStatements, 0, newArray, 0, tracedStatements.length);
-            tracedStatements = newArray;
+            ProxyStatementBase[] stArray = new ProxyStatementBase[tracedPos << 1];
+            System.arraycopy(tracedStatements, 0, stArray, 0, tracedPos);
+            tracedStatements = stArray;
         }
         tracedStatements[tracedPos++] = st;
     }
@@ -98,7 +97,7 @@ class PooledConnection {
             }
     }
 
-    final void cleanOpenStatements() {
+    final void cleanTracedStatements() {
         for (int i = 0; i < tracedPos; i++)
             if (tracedStatements[i] != null) {
                 tracedStatements[i].setAsClosed();
@@ -121,11 +120,11 @@ class PooledConnection {
     }
 
     //***************called by connection proxy ********//
-    final void returnToPoolBySelf() throws SQLException {
+    final void recycleSelf() throws SQLException {
         try {
             proxyConn = null;
             if (traceStatement && tracedPos > 0)
-                cleanOpenStatements();
+                cleanTracedStatements();
             resetRawConnOnReturn();
             pool.recycle(this);
         } catch (SQLException e) {
@@ -134,17 +133,17 @@ class PooledConnection {
         }
     }
 
-    final void updateAccessTime() {//for DML(Data Manipulation Language)
+    final void updateAccessTime() {//for update,insert.select,select
         commitDirtyInd = !curAutoCommit;
         lastAccessTime = currentTimeMillis();
     }
 
-    final void setChangedInd(int pos, boolean changed) {
-        if (!changedInd[pos] && changed)//false ->true       +1
-            changedCount++;
-        else if (changedInd[pos] && !changed)//true-->false  -1
-            changedCount--;
-        changedInd[pos] = changed;
+    final void setResetInd(int p, boolean chgd) {
+        if (!resetInd[p] && chgd)//false ->true       +1
+            resetCnt++;
+        else if (resetInd[p] && !chgd)//true-->false  -1
+            resetCnt--;
+        resetInd[p] = chgd;
         //lastAccessTime=currentTimeMillis();
     }
 
@@ -161,31 +160,33 @@ class PooledConnection {
     }
 
     final void resetRawConnOnReturn() throws SQLException {
-        if (!curAutoCommit && commitDirtyInd) //Roll back when commit dirty
+        if (!curAutoCommit && commitDirtyInd) { //Roll back when commit dirty
             rawConn.rollback();
+            commitDirtyInd = false;
+        }
 
         //reset begin
-        if (changedCount > 0) {
-            if (changedInd[0]) {//reset autoCommit
+        if (resetCnt > 0) {
+            if (resetInd[0]) {//reset autoCommit
                 rawConn.setAutoCommit(defaultAutoCommit);
                 curAutoCommit = defaultAutoCommit;
             }
-            if (changedInd[1])
+            if (resetInd[1])
                 rawConn.setTransactionIsolation(defaultTransactionIsolationCode);
-            if (changedInd[2]) //reset readonly
+            if (resetInd[2]) //reset readonly
                 rawConn.setReadOnly(defaultReadOnly);
-            if (changedInd[3]) //reset catalog
+            if (resetInd[3]) //reset catalog
                 rawConn.setCatalog(defaultCatalog);
 
             //for JDK1.7 begin
-            if (changedInd[4]) //reset schema
+            if (resetInd[4]) //reset schema
                 rawConn.setSchema(defaultSchema);
-            if (changedInd[5]) //reset networkTimeout
+            if (resetInd[5]) //reset networkTimeout
                 rawConn.setNetworkTimeout(defaultNetworkTimeoutExecutor, defaultNetworkTimeout);
             //for JDK1.7 end
 
-            changedCount = 0;
-            arraycopy(DEFAULT_IND, 0, changedInd, 0, 6);
+            resetCnt = 0;
+            arraycopy(DEFAULT_IND, 0, resetInd, 0, DEFAULT_IND.length);
         }//reset end
 
         //clear warnings
