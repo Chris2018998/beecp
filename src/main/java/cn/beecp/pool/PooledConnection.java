@@ -134,12 +134,12 @@ class PooledConnection {
         }
     }
 
-    final void updateAccessTime() {
+    final void updateAccessTime() {//for DML(Data Manipulation Language)
         commitDirtyInd = !curAutoCommit;
         lastAccessTime = currentTimeMillis();
     }
 
-    void setChangedInd(int pos, boolean changed) {
+    final void setChangedInd(int pos, boolean changed) {
         if (!changedInd[pos] && changed)//false ->true       +1
             changedCount++;
         else if (changedInd[pos] && !changed)//true-->false  -1
@@ -161,10 +161,9 @@ class PooledConnection {
     }
 
     final void resetRawConnOnReturn() throws SQLException {
-        if (!curAutoCommit && commitDirtyInd) {//Roll back when commit dirty
+        if (!curAutoCommit && commitDirtyInd) //Roll back when commit dirty
             rawConn.rollback();
-            commitDirtyInd = false;
-        }
+
         //reset begin
         if (changedCount > 0) {
             if (changedInd[0]) {//reset autoCommit
