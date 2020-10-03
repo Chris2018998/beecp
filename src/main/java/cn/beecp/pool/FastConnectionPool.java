@@ -462,7 +462,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         transferPolicy.beforeTransfer(pConn);
         for (Borrower borrower : waitQueue)
             for (Object state = borrower.state; state == BORROWER_NORMAL || state == BORROWER_WAITING; state = borrower.state) {
-                if (pConn.state -conUnCatchStateCode!=0) return;
+                if (pConn.state - conUnCatchStateCode != 0) return;
                 if (BwrStUpd.compareAndSet(borrower, state, pConn)) {//transfer successful
                     if (state == BORROWER_WAITING) unpark(borrower.thread);
                     return;
@@ -575,8 +575,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         }
                     } else {
                         boolean isTimeout = (currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldTimeout() >= 0);
-                        if (isTimeout && proxyConn != null ) {
-                             proxyConn.trySetAsClosed();
+                        if (isTimeout && proxyConn != null) {
+                            proxyConn.trySetAsClosed();
                         }
                     }
                 }

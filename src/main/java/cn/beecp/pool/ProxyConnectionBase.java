@@ -39,10 +39,10 @@ public abstract class ProxyConnectionBase implements Connection {
     private final static int Pos_CatalogInd = 3;
     private final static int Pos_SchemaInd = 4;
     private final static int Pos_NetworkTimeoutInd = 5;
+    private static Logger log = LoggerFactory.getLogger(ProxyConnectionBase.class);
     protected Connection delegate;
     protected PooledConnection pConn;//called by subclass to update time
     private boolean isClosed;
-    private static Logger log = LoggerFactory.getLogger(ProxyConnectionBase.class);
 
     public ProxyConnectionBase(PooledConnection pConn) {
         this.pConn = pConn;
@@ -65,18 +65,18 @@ public abstract class ProxyConnectionBase implements Connection {
 
     public final void close() throws SQLException {
         synchronized (pConn) {
-            if (!isClosed) {
-                isClosed = true;
-                delegate = CLOSED_CON;
-                pConn.returnToPoolBySelf();
-            }
+            if (isClosed) return;
+            isClosed = true;
         }
+        delegate = CLOSED_CON;
+        pConn.returnToPoolBySelf();
     }
 
     final void trySetAsClosed() {//called from FastConnectionPool
         try {
             close();
-        } catch (SQLException e) { }
+        } catch (SQLException e) {
+        }
     }
 
     public void setAutoCommit(boolean autoCommit) throws SQLException {
