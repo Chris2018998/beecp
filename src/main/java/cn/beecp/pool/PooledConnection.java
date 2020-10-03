@@ -96,13 +96,11 @@ class PooledConnection {
                 return;
             }
     }
-
-    final void cleanTracedStatements() {
-        for (int i = 0; i < tracedPos; i++)
-            if (tracedStatements[i] != null) {
-                tracedStatements[i].setAsClosed();
-                tracedStatements[i] = null;// clear to let GC do its work
-            }
+     final void cleanTracedStatements() {
+        for (int i = 0; i < tracedPos; i++) {
+            tracedStatements[i].setAsClosed();
+            tracedStatements[i] = null;// clear to let GC do its work
+        }
         tracedPos = 0;
     }
 
@@ -123,8 +121,6 @@ class PooledConnection {
     final void recycleSelf() throws SQLException {
         try {
             proxyConn = null;
-            if (traceStatement && tracedPos > 0)
-                cleanTracedStatements();
             resetRawConnOnReturn();
             pool.recycle(this);
         } catch (SQLException e) {

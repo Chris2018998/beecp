@@ -67,6 +67,8 @@ public abstract class ProxyConnectionBase implements Connection {
         synchronized (pConn) {
             if (isClosed) return;
             isClosed = true;
+            if(pConn.tracedPos> 0)
+              pConn.cleanTracedStatements();
         }
         delegate = CLOSED_CON;
         pConn.recycleSelf();
