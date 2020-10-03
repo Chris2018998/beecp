@@ -41,7 +41,7 @@ abstract class ProxyStatementBase implements Statement {
     private boolean registered;
     private boolean isClosed;
     private int resultOpenCode = CLOSE_CURRENT_RESULT;
-    private ArrayList<ProxyResultSetBase> results = new ArrayList<>(0);
+    private ArrayList<ProxyResultSetBase> results = new ArrayList<>();
 
     public ProxyStatementBase(Statement delegate, PooledConnection pConn) {
         this.delegate = delegate;
@@ -75,6 +75,7 @@ abstract class ProxyStatementBase implements Statement {
             }
             if (registered)
                 pConn.unregisterStatement(this);
+
             try {
                 delegate.close();
             } finally {

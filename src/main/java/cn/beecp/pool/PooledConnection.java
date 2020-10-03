@@ -182,7 +182,7 @@ class PooledConnection {
             //for JDK1.7 end
 
             resetCnt = 0;
-            arraycopy(DEFAULT_IND, 0, resetInd, 0, DEFAULT_IND.length);
+            arraycopy(DEFAULT_IND, 0, resetInd, 0, 6);
         }//reset end
 
         //clear warnings
