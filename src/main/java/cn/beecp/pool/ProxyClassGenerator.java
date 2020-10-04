@@ -90,12 +90,13 @@ public final class ProxyClassGenerator {
 
             CtClass[] conCreateParam = new CtClass[]{
                     classPool.get("cn.beecp.pool.PooledConnection")};
-
             CtConstructor ctConstructor = new CtConstructor(conCreateParam, ctProxyConnectionClass);
             ctConstructor.setModifiers(Modifier.PUBLIC);
-            StringBuilder body = new StringBuilder(170);
-            body.append("{super($$);}");
-            ctConstructor.setBody(body.toString());
+            ctConstructor.setBody("{super($$);}");
+            ctProxyConnectionClass.addConstructor(ctConstructor);
+
+            ctConstructor = new CtConstructor(new CtClass[0],ctProxyConnectionClass);
+            ctConstructor.setBody("{super($$);}");
             ctProxyConnectionClass.addConstructor(ctConstructor);
             //...............Connection End................
 
@@ -111,9 +112,11 @@ public final class ProxyClassGenerator {
             };
             ctConstructor = new CtConstructor(statementCreateParam, ctProxyStatementClass);
             ctConstructor.setModifiers(Modifier.PUBLIC);
-            body.delete(0, body.length());
-            body.append("{super($$);}");
-            ctConstructor.setBody(body.toString());
+            ctConstructor.setBody("{super($$);}");
+            ctProxyStatementClass.addConstructor(ctConstructor);
+
+            ctConstructor = new CtConstructor(new CtClass[0],ctProxyStatementClass);
+            ctConstructor.setBody("{super($$);}");
             ctProxyStatementClass.addConstructor(ctConstructor);
             //.............Statement Begin...............
 
@@ -131,9 +134,11 @@ public final class ProxyClassGenerator {
             };
             ctConstructor = new CtConstructor(statementPsCreateParam, ctProxyPsStatementClass);
             ctConstructor.setModifiers(Modifier.PUBLIC);
-            body.delete(0, body.length());
-            body.append("{super($$);}");
-            ctConstructor.setBody(body.toString());
+            ctConstructor.setBody("{super($$);}");
+            ctProxyPsStatementClass.addConstructor(ctConstructor);
+
+            ctConstructor = new CtConstructor(new CtClass[0],ctProxyPsStatementClass);
+            ctConstructor.setBody("{super($$);}");
             ctProxyPsStatementClass.addConstructor(ctConstructor);
             //........PreparedStatement End..............
 
@@ -149,10 +154,11 @@ public final class ProxyClassGenerator {
                     classPool.get("cn.beecp.pool.PooledConnection")};
             ctConstructor = new CtConstructor(statementCsCreateParam, ctProxyCsStatementClass);
             ctConstructor.setModifiers(Modifier.PUBLIC);
+            ctConstructor.setBody("{super($$);}");
+            ctProxyCsStatementClass.addConstructor(ctConstructor);
 
-            body.delete(0, body.length());
-            body.append("{super($$);}");
-            ctConstructor.setBody(body.toString());
+            ctConstructor = new CtConstructor(new CtClass[0],ctProxyCsStatementClass);
+            ctConstructor.setBody("{super($$);}");
             ctProxyCsStatementClass.addConstructor(ctConstructor);
             //...........CallableStatement End...............
 
@@ -168,9 +174,11 @@ public final class ProxyClassGenerator {
                     classPool.get("cn.beecp.pool.PooledConnection")};
             ctConstructor = new CtConstructor(databaseMetaData, ctProxyDatabaseMetaDataClass);
             ctConstructor.setModifiers(Modifier.PUBLIC);
-            body.delete(0, body.length());
-            body.append("{super($$);}");
-            ctConstructor.setBody(body.toString());
+            ctConstructor.setBody("{super($$);}");
+            ctProxyDatabaseMetaDataClass.addConstructor(ctConstructor);
+
+            ctConstructor = new CtConstructor(new CtClass[0],ctProxyDatabaseMetaDataClass);
+            ctConstructor.setBody("{super($$);}");
             ctProxyDatabaseMetaDataClass.addConstructor(ctConstructor);
             //...........DatabaseMetaData End...............
 
@@ -186,27 +194,24 @@ public final class ProxyClassGenerator {
                     classPool.get("cn.beecp.pool.PooledConnection")};
             CtConstructor ctConstructor1 = new CtConstructor(resultSetCreateParam1, ctProxyResultSetClass);
             ctConstructor1.setModifiers(Modifier.PUBLIC);
-            body.delete(0, body.length());
-            body.append("{super($$);}");
-            ctConstructor1.setBody(body.toString());
+            ctConstructor1.setBody("{super($$);}");
             ctProxyResultSetClass.addConstructor(ctConstructor1);
 
             CtClass[] resultSetCreateParam2 = new CtClass[]{
                     classPool.get("java.sql.ResultSet"),
                     classPool.get("cn.beecp.pool.ProxyStatementBase"),
                     classPool.get("cn.beecp.pool.PooledConnection")};
-            CtConstructor ctConstructor2 = new CtConstructor(resultSetCreateParam2, ctProxyResultSetClass);
-            ctConstructor2.setModifiers(Modifier.PUBLIC);
-            body.delete(0, body.length());
-            body.append("{super($$);}");
-            ctConstructor2.setBody(body.toString());
-            ctProxyResultSetClass.addConstructor(ctConstructor2);
+            ctConstructor = new CtConstructor(resultSetCreateParam2, ctProxyResultSetClass);
+            ctConstructor.setModifiers(Modifier.PUBLIC);
+            ctConstructor.setBody("{super($$);}");
+            ctProxyResultSetClass.addConstructor(ctConstructor);
 
+            ctConstructor = new CtConstructor(new CtClass[0],ctProxyResultSetClass);
+            ctConstructor.setBody("{super($$);}");
+            ctProxyResultSetClass.addConstructor(ctConstructor);
 
             //............Result End...............
-
             this.createProxyConnectionClass(classPool, ctProxyConnectionClass, ctConnectionClass, ctProxyConnectionBaseClass);
-
             this.createProxyStatementClass(classPool, ctProxyStatementClass, ctStatementClass, ctProxyStatementBaseClass);
             this.createProxyStatementClass(classPool, ctProxyPsStatementClass, ctPreparedStatementClass, ctProxyStatementClass);
             this.createProxyStatementClass(classPool, ctProxyCsStatementClass, ctCallableStatementClass, ctProxyPsStatementClass);
@@ -217,23 +222,31 @@ public final class ProxyClassGenerator {
             CtClass ctProxyObjectFactoryClass = classPool.get(ProxyObjectFactory.class.getName());
             CtMethod createProxyConnectionMethod = null;
             CtMethod createProxyResultSetMethod = null;
+            CtMethod initProxyObjectsMethod = null;
+
 
             CtMethod[] ctMethods = ctProxyObjectFactoryClass.getDeclaredMethods();
-            for (CtMethod method : ctMethods) {
+                for (CtMethod method : ctMethods) {
                 if ("createProxyConnection".equals(method.getName())) {
                     createProxyConnectionMethod = method;
                 }else if ("createProxyResultSet".equals(method.getName())) {
                     createProxyResultSetMethod = method;
+                }else if ("initProxyObjects".equals(method.getName())) {
+                    initProxyObjectsMethod = method;
                 }
             }
 
-            body.delete(0, body.length());
-            body.append("{$2.lastUsedConn=$1; return new ProxyConnection($1);}");
-            createProxyConnectionMethod.setBody(body.toString());
+            createProxyConnectionMethod.setBody("{$2.lastUsedConn=$1; return new ProxyConnection($1);}");
+            createProxyResultSetMethod.setBody("{return new ProxyResultSet($$);}");
 
-            body.delete(0, body.length());
-            body.append("{return new ProxyResultSet($$);}");
-            createProxyResultSetMethod.setBody(body.toString());
+            StringBuilder body=new StringBuilder(100);
+            body.append("{ProxyConnection con=new ProxyConnection();")
+                .append("ProxyStatement st=new ProxyStatement();")
+                .append("ProxyPsStatement ps=new ProxyPsStatement();")
+                .append("ProxyCsStatement ps=new ProxyCsStatement();")
+                .append("ProxyResultSet re=new ProxyResultSet();")
+                .append("ProxyDatabaseMetaData meta=new ProxyDatabaseMetaData();}");
+            initProxyObjectsMethod.setBody(body.toString());
             //............... ProxyObjectFactory end..................
 
             return new CtClass[]{

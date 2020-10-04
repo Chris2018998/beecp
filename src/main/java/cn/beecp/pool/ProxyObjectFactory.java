@@ -26,6 +26,9 @@ import java.sql.SQLException;
  * @version 1.0
  */
 class ProxyObjectFactory {
+    public static final void initProxyObjects()throws SQLException {
+        throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
+    }
 
     public static final Connection createProxyConnection(PooledConnection pConn, FastConnectionPool.Borrower borrower)
             throws SQLException {
