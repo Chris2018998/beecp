@@ -136,7 +136,7 @@ public abstract class ProxyConnectionBase implements Connection {
 
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
         checkClosed();
-        if (pConn.isSupportNetworkTimeout()) {
+        if (pConn.supportNetworkTimeout()) {
             delegate.setNetworkTimeout(executor, milliseconds);
             pConn.setResetInd(Pos_NetworkTimeoutInd, milliseconds != pConn.defaultNetworkTimeout);
         } else {

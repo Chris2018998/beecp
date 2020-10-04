@@ -82,11 +82,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private ScheduledFuture<?> idleCheckSchFuture;
     private ScheduledThreadPoolExecutor idleSchExecutor = new ScheduledThreadPoolExecutor(1, new PoolThreadThreadFactory("IdleConnectionScan"));
     private int networkTimeout;
-    private boolean supportValidTest = true;
     private boolean supportSchema = true;
     private boolean supportNetworkTimeout = true;
     private boolean supportQueryTimeout = true;
-    private boolean supportIsValidTested = true;
+    private boolean supportIsValid= true;
     private ThreadPoolExecutor networkTimeoutExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
             Runtime.getRuntime().availableProcessors(), 15, SECONDS, new LinkedBlockingQueue<Runnable>(), new PoolThreadThreadFactory("networkTimeout"));
     private String poolName = "";
@@ -172,15 +171,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    boolean isSupportValidTest() {
-        return supportValidTest;
+    boolean supportIsValid() {
+        return supportIsValid;
     }
 
-    boolean isSupportSchema() {
+    boolean supportSchema() {
         return supportSchema;
     }
 
-    boolean isSupportNetworkTimeout() {
+    boolean supportNetworkTimeout() {
         return supportNetworkTimeout;
     }
 
@@ -287,16 +286,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             }
         }
 
-        if (this.supportIsValidTested) {//test isValid
+        if (this.supportIsValid) {//test isValid
             try {//test Connection.isValid
                 if (rawConn.isValid(connectionTestTimeout)) {
                     this.testPolicy = new ConnValidTestPolicy();
                 } else {
-                    supportValidTest = false;
+                    supportIsValid = false;
                     log.warn("BeeCP({})driver not support 'isValid'", poolName);
                 }
             } catch (Throwable e) {
-                supportValidTest = false;
+                supportIsValid = false;
                 log.warn("BeeCP({})driver not support 'isValid'", poolName);
                 Statement st = null;
                 try {

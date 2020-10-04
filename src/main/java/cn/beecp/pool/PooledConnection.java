@@ -143,16 +143,16 @@ class PooledConnection {
         //lastAccessTime=currentTimeMillis();
     }
 
-    boolean isSupportValidTest() {
-        return pool.isSupportValidTest();
+    boolean supportIsValid() {
+        return pool.supportIsValid();
     }
 
-    boolean isSupportSchema() {
-        return pool.isSupportSchema();
+    boolean supportSchema() {
+        return pool.supportSchema();
     }
 
-    boolean isSupportNetworkTimeout() {
-        return pool.isSupportNetworkTimeout();
+    boolean supportNetworkTimeout() {
+        return pool.supportNetworkTimeout();
     }
 
     final void resetRawConnOnReturn() throws SQLException {
