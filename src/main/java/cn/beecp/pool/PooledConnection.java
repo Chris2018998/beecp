@@ -129,7 +129,7 @@ class PooledConnection {
         }
     }
 
-    final void updateAccessTime() {//for update,insert.select,select
+    final void updateAccessTime() {//for update,insert.select,delete and so on DML
         commitDirtyInd = !curAutoCommit;
         lastAccessTime = currentTimeMillis();
     }
