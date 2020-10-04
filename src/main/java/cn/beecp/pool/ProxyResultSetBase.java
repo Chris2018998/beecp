@@ -15,9 +15,6 @@
  */
 package cn.beecp.pool;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -32,7 +29,6 @@ import static cn.beecp.pool.PoolConstants.ResultSetClosedException;
  * @version 1.0
  */
 abstract class ProxyResultSetBase implements ResultSet {
-    private static Logger log = LoggerFactory.getLogger(ProxyResultSetBase.class);
     protected ResultSet delegate;
     protected PooledConnection pConn;//called by subclass to update tim
     boolean isClosed;
@@ -82,7 +78,6 @@ abstract class ProxyResultSetBase implements ResultSet {
         try {
             close();
         } catch (SQLException e) {
-            log.error("Warning:error at closing resultSet:", e);
         }
     }
 

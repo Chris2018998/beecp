@@ -167,12 +167,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private void checkProxyClasses() throws SQLException {
         try {
             ClassLoader classLoader = getClass().getClassLoader();
-            Class.forName("cn.beecp.pool.ProxyConnection", false, classLoader);
-            Class.forName("cn.beecp.pool.ProxyStatement", false, classLoader);
-            Class.forName("cn.beecp.pool.ProxyPsStatement", false, classLoader);
-            Class.forName("cn.beecp.pool.ProxyCsStatement", false, classLoader);
-            Class.forName("cn.beecp.pool.ProxyDatabaseMetaData", false, classLoader);
-            Class.forName("cn.beecp.pool.ProxyResultSet", false, classLoader);
+            Class.forName("cn.beecp.pool.ProxyConnection", true, classLoader);
+            Class.forName("cn.beecp.pool.ProxyStatement", true, classLoader);
+            Class.forName("cn.beecp.pool.ProxyPsStatement", true, classLoader);
+            Class.forName("cn.beecp.pool.ProxyCsStatement", true, classLoader);
+            Class.forName("cn.beecp.pool.ProxyDatabaseMetaData", true, classLoader);
+            Class.forName("cn.beecp.pool.ProxyResultSet", true, classLoader);
         } catch (ClassNotFoundException e) {
             throw new SQLException("Jdbc proxy class missed", e);
         }

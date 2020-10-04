@@ -15,9 +15,6 @@
  */
 package cn.beecp.pool;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,7 +31,6 @@ import static cn.beecp.pool.PoolConstants.StatementClosedException;
  * @version 1.0
  */
 abstract class ProxyStatementBase implements Statement {
-    private static Logger log = LoggerFactory.getLogger(ProxyStatementBase.class);
     protected Statement delegate;
     protected PooledConnection pConn;//called by subclass to update time
     private ProxyResultSetBase curRe;
@@ -89,7 +85,6 @@ abstract class ProxyStatementBase implements Statement {
             registered = false;
             close();
         } catch (SQLException e) {
-            log.error("Warning:error at closing statement:", e);
         }
     }
 

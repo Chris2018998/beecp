@@ -16,8 +16,6 @@
 package cn.beecp.pool;
 
 import cn.beecp.util.BeeJdbcUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -39,7 +37,7 @@ public abstract class ProxyConnectionBase implements Connection {
     private final static int Pos_CatalogInd = 3;
     private final static int Pos_SchemaInd = 4;
     private final static int Pos_NetworkTimeoutInd = 5;
-    private static Logger log = LoggerFactory.getLogger(ProxyConnectionBase.class);
+
     protected Connection delegate;
     protected PooledConnection pConn;//called by subclass to update time
     private boolean isClosed;
@@ -67,8 +65,8 @@ public abstract class ProxyConnectionBase implements Connection {
         synchronized (pConn) {
             if (isClosed) return;
             isClosed = true;
-            if(pConn.tracedPos> 0)
-              pConn.cleanTracedStatements();
+            if (pConn.tracedPos > 0)
+                pConn.cleanTracedStatements();
         }
         delegate = CLOSED_CON;
         pConn.recycleSelf();
