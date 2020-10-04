@@ -528,7 +528,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 try {
                     Runtime.getRuntime().removeShutdownHook(exitHook);
                 } catch (Throwable e) {
-                    log.warn("BeeCP({})failed to remove pool hook", poolName);
+                    //log.warn("BeeCP({})failed to remove pool hook", poolName);
                 }
 
                 log.info("BeeCP({})has shutdown", poolName);
