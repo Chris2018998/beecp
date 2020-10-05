@@ -163,9 +163,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     private void checkProxyClasses() throws SQLException {
         try {
-            ProxyObjectFactory.initProxyObjects();
+            ProxyObjectFactory.testCreateProxyObjects();
         } catch (Throwable e) {
-            throw new SQLException("Jdbc proxy class missed", e);
+            throw new SQLException("JDBC proxy class missed", e);
         }
     }
 
@@ -518,13 +518,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     while (!idleCheckSchFuture.isCancelled() && !idleCheckSchFuture.isDone())
                         idleCheckSchFuture.cancel(true);
                     idleSchExecutor.shutdownNow();
-                     try {
-                       Runtime.getRuntime().removeShutdownHook(exitHook);
-                    } catch (Throwable e) {}
+                    try {
+                        Runtime.getRuntime().removeShutdownHook(exitHook);
+                    } catch (Throwable e) {
+                    }
 
-                     log.info("BeeCP({})has shutdown", poolName);
-                     break;
-                }catch(Throwable e){
+                    log.info("BeeCP({})has shutdown", poolName);
+                    break;
+                } catch (Throwable e) {
                     e.printStackTrace();
                     break;
                 }
@@ -752,14 +753,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             return th;
         }
     }
+
     //******************************** JMX **************************************/
-
-    static final class Borrower {
-        volatile Object state;
-        PooledConnection lastUsedConn;
-        Thread thread = Thread.currentThread();
-    }
-
     static final class CompeteTransferPolicy implements TransferPolicy {
         public final int getCheckStateCode() {
             return CONNECTION_IDLE;

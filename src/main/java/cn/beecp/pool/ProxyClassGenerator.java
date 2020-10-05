@@ -222,7 +222,7 @@ public final class ProxyClassGenerator {
             CtClass ctProxyObjectFactoryClass = classPool.get(ProxyObjectFactory.class.getName());
             CtMethod createProxyConnectionMethod = null;
             CtMethod createProxyResultSetMethod = null;
-            CtMethod initProxyObjectsMethod = null;
+            CtMethod testCreateProxyObjectsMethod = null;
 
 
             CtMethod[] ctMethods = ctProxyObjectFactoryClass.getDeclaredMethods();
@@ -231,8 +231,8 @@ public final class ProxyClassGenerator {
                     createProxyConnectionMethod = method;
                 } else if ("createProxyResultSet".equals(method.getName())) {
                     createProxyResultSetMethod = method;
-                } else if ("initProxyObjects".equals(method.getName())) {
-                    initProxyObjectsMethod = method;
+                } else if ("testCreateProxyObjects".equals(method.getName())) {
+                    testCreateProxyObjectsMethod = method;
                 }
             }
 
@@ -240,13 +240,15 @@ public final class ProxyClassGenerator {
             createProxyResultSetMethod.setBody("{return new ProxyResultSet($$);}");
 
             StringBuilder body = new StringBuilder(50)
-                    .append("{ProxyConnection con=new ProxyConnection();")
+                    .append("{Borrower borrower=new Borrower();")
+                    .append("ProxyConnection con=new ProxyConnection();")
                     .append("ProxyStatement st=new ProxyStatement();")
                     .append("ProxyPsStatement ps=new ProxyPsStatement();")
                     .append("ProxyCsStatement ps=new ProxyCsStatement();")
                     .append("ProxyResultSet re=new ProxyResultSet();")
                     .append("ProxyDatabaseMetaData meta=new ProxyDatabaseMetaData();}");
-            initProxyObjectsMethod.setBody(body.toString());
+
+            testCreateProxyObjectsMethod.setBody(body.toString());
             //............... ProxyObjectFactory end..................
 
             return new CtClass[]{
