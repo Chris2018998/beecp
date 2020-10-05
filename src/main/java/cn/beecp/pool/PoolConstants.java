@@ -34,38 +34,26 @@ public class PoolConstants {
     static final int POOL_NORMAL = 2;
     static final int POOL_CLOSED = 3;
     static final int POOL_RESTING = 4;
-
     //POOLED CONNECTION STATE
     static final int CONNECTION_IDLE = 1;
     static final int CONNECTION_USING = 2;
     static final int CONNECTION_CLOSED = 3;
-
     //ADD CONNECTION THREAD STATE
     static final int THREAD_WORKING = 1;
     static final int THREAD_WAITING = 2;
     static final int THREAD_DEAD = 3;
-
     //BORROWER STATE
     static final Object BORROWER_NORMAL = new Object();
     static final Object BORROWER_WAITING = new Object();
 
-
     public static final SQLTimeoutException RequestTimeoutException = new SQLTimeoutException("Request timeout");
-
     public static final SQLException RequestInterruptException = new SQLException("Request interrupt");
-
     public static final SQLException PoolCloseException = new SQLException("Pool has been closed or in resetting");
-
     public static final XAException XaConnectionClosedException = new XAException("No operations allowed after connection closed.");
-
     public static final SQLException ConnectionClosedException = new SQLException("No operations allowed after connection closed.");
-
     public static final SQLException StatementClosedException = new SQLException("No operations allowed after statement closed.");
-
     public static final SQLException ResultSetClosedException = new SQLException("No operations allowed after resultSet closed.");
-
     public static final SQLException AutoCommitChangeForbiddenException = new SQLException("Execute 'commit' or 'rollback' before this operation");
-
     public static final SQLException DriverNotSupportNetworkTimeoutException = new SQLException("Driver not support 'networkTimeout'");
 
     final static Connection CLOSED_CON = (Connection) Proxy.newProxyInstance(
@@ -97,7 +85,6 @@ public class PoolConstants {
                 }
             }
     );
-
 
     static Object call(String methodName, int type) throws SQLException {
         switch (type) {

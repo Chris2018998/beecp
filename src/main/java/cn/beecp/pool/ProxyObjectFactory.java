@@ -26,7 +26,7 @@ import java.sql.SQLException;
  * @version 1.0
  */
 class ProxyObjectFactory {
-    public static final void initProxyObjects()throws SQLException {
+    public static final void initProxyObjects() throws SQLException {
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
     }
 
@@ -37,7 +37,7 @@ class ProxyObjectFactory {
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
     }
 
-    public static final ResultSet createProxyResultSet(ResultSet delegate,ProxyStatementBase proxyStatement,PooledConnection pConn) throws SQLException {
+    public static final ResultSet createProxyResultSet(ResultSet delegate, ProxyStatementBase proxyStatement, PooledConnection pConn) throws SQLException {
         // return new ProxyResultSet(delegate,pConn);
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
     }

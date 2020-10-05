@@ -30,7 +30,9 @@ abstract class ProxyDatabaseMetaDataBase implements DatabaseMetaData {
     protected PooledConnection pConn;//called by subclass to update time
     private ProxyConnectionBase proxyConn;//called by subclass to check close state
 
-    protected ProxyDatabaseMetaDataBase(){}
+    protected ProxyDatabaseMetaDataBase() {
+    }
+
     public ProxyDatabaseMetaDataBase(DatabaseMetaData metaData, PooledConnection pConn) {
         this.pConn = pConn;
         this.delegate = metaData;

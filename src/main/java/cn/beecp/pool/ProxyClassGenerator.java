@@ -95,7 +95,7 @@ public final class ProxyClassGenerator {
             ctConstructor.setBody("{super($$);}");
             ctProxyConnectionClass.addConstructor(ctConstructor);
 
-            ctConstructor = new CtConstructor(new CtClass[0],ctProxyConnectionClass);
+            ctConstructor = new CtConstructor(new CtClass[0], ctProxyConnectionClass);
             ctConstructor.setBody("{super($$);}");
             ctProxyConnectionClass.addConstructor(ctConstructor);
             //...............Connection End................
@@ -115,7 +115,7 @@ public final class ProxyClassGenerator {
             ctConstructor.setBody("{super($$);}");
             ctProxyStatementClass.addConstructor(ctConstructor);
 
-            ctConstructor = new CtConstructor(new CtClass[0],ctProxyStatementClass);
+            ctConstructor = new CtConstructor(new CtClass[0], ctProxyStatementClass);
             ctConstructor.setBody("{super($$);}");
             ctProxyStatementClass.addConstructor(ctConstructor);
             //.............Statement Begin...............
@@ -137,7 +137,7 @@ public final class ProxyClassGenerator {
             ctConstructor.setBody("{super($$);}");
             ctProxyPsStatementClass.addConstructor(ctConstructor);
 
-            ctConstructor = new CtConstructor(new CtClass[0],ctProxyPsStatementClass);
+            ctConstructor = new CtConstructor(new CtClass[0], ctProxyPsStatementClass);
             ctConstructor.setBody("{super($$);}");
             ctProxyPsStatementClass.addConstructor(ctConstructor);
             //........PreparedStatement End..............
@@ -157,7 +157,7 @@ public final class ProxyClassGenerator {
             ctConstructor.setBody("{super($$);}");
             ctProxyCsStatementClass.addConstructor(ctConstructor);
 
-            ctConstructor = new CtConstructor(new CtClass[0],ctProxyCsStatementClass);
+            ctConstructor = new CtConstructor(new CtClass[0], ctProxyCsStatementClass);
             ctConstructor.setBody("{super($$);}");
             ctProxyCsStatementClass.addConstructor(ctConstructor);
             //...........CallableStatement End...............
@@ -177,7 +177,7 @@ public final class ProxyClassGenerator {
             ctConstructor.setBody("{super($$);}");
             ctProxyDatabaseMetaDataClass.addConstructor(ctConstructor);
 
-            ctConstructor = new CtConstructor(new CtClass[0],ctProxyDatabaseMetaDataClass);
+            ctConstructor = new CtConstructor(new CtClass[0], ctProxyDatabaseMetaDataClass);
             ctConstructor.setBody("{super($$);}");
             ctProxyDatabaseMetaDataClass.addConstructor(ctConstructor);
             //...........DatabaseMetaData End...............
@@ -206,7 +206,7 @@ public final class ProxyClassGenerator {
             ctConstructor.setBody("{super($$);}");
             ctProxyResultSetClass.addConstructor(ctConstructor);
 
-            ctConstructor = new CtConstructor(new CtClass[0],ctProxyResultSetClass);
+            ctConstructor = new CtConstructor(new CtClass[0], ctProxyResultSetClass);
             ctConstructor.setBody("{super($$);}");
             ctProxyResultSetClass.addConstructor(ctConstructor);
 
@@ -226,12 +226,12 @@ public final class ProxyClassGenerator {
 
 
             CtMethod[] ctMethods = ctProxyObjectFactoryClass.getDeclaredMethods();
-                for (CtMethod method : ctMethods) {
+            for (CtMethod method : ctMethods) {
                 if ("createProxyConnection".equals(method.getName())) {
                     createProxyConnectionMethod = method;
-                }else if ("createProxyResultSet".equals(method.getName())) {
+                } else if ("createProxyResultSet".equals(method.getName())) {
                     createProxyResultSetMethod = method;
-                }else if ("initProxyObjects".equals(method.getName())) {
+                } else if ("initProxyObjects".equals(method.getName())) {
                     initProxyObjectsMethod = method;
                 }
             }
@@ -239,13 +239,13 @@ public final class ProxyClassGenerator {
             createProxyConnectionMethod.setBody("{$2.lastUsedConn=$1; return new ProxyConnection($1);}");
             createProxyResultSetMethod.setBody("{return new ProxyResultSet($$);}");
 
-            StringBuilder body=new StringBuilder(100);
-            body.append("{ProxyConnection con=new ProxyConnection();")
-                .append("ProxyStatement st=new ProxyStatement();")
-                .append("ProxyPsStatement ps=new ProxyPsStatement();")
-                .append("ProxyCsStatement ps=new ProxyCsStatement();")
-                .append("ProxyResultSet re=new ProxyResultSet();")
-                .append("ProxyDatabaseMetaData meta=new ProxyDatabaseMetaData();}");
+            StringBuilder body = new StringBuilder(50)
+                    .append("{ProxyConnection con=new ProxyConnection();")
+                    .append("ProxyStatement st=new ProxyStatement();")
+                    .append("ProxyPsStatement ps=new ProxyPsStatement();")
+                    .append("ProxyCsStatement ps=new ProxyCsStatement();")
+                    .append("ProxyResultSet re=new ProxyResultSet();")
+                    .append("ProxyDatabaseMetaData meta=new ProxyDatabaseMetaData();}");
             initProxyObjectsMethod.setBody(body.toString());
             //............... ProxyObjectFactory end..................
 
@@ -406,7 +406,7 @@ public final class ProxyClassGenerator {
 
             methodBuffer.delete(0, methodBuffer.length());
             methodBuffer.append("{")
-            .append("checkClosed();");
+                    .append("checkClosed();");
             if (ctMethod.getReturnType() == ctResultSetClass) {
                 methodBuffer.append("return new ProxyResultSet(delegate." + methodName + "($$),pConn);");
             } else if (ctMethod.getReturnType() == CtClass.voidType) {
@@ -455,8 +455,8 @@ public final class ProxyClassGenerator {
                 } else {
                     if (methodName.startsWith("insertRow") || methodName.startsWith("updateRow") || methodName.startsWith("deleteRow")) {
                         methodBuffer.append(ctMethod.getReturnType().getName() + " re=delegate." + methodName + "($$);")
-                        .append(" pConn.updateAccessTime();")
-                        .append(" return re;");
+                                .append(" pConn.updateAccessTime();")
+                                .append(" return re;");
                     } else {
                         methodBuffer.append("return delegate." + methodName + "($$);");
                     }

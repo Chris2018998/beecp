@@ -54,7 +54,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private static final String DESC_REMOVE_INIT = "init";
     private static final String DESC_REMOVE_BAD = "bad";
     private static final String DESC_REMOVE_IDLE = "idle";
-    private static final String DESC_REMOVE_HOLDTIMEOUT = "holdTimeout";
     private static final String DESC_REMOVE_CLOSED = "closed";
     private static final String DESC_REMOVE_RESET = "reset";
     private static final String DESC_REMOVE_DESTROY = "destroy";
@@ -80,14 +79,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private ConnectionFactory connFactory;
     private volatile PooledConnection[] connArray = new PooledConnection[0];
     private ScheduledFuture<?> idleCheckSchFuture;
-    private ScheduledThreadPoolExecutor idleSchExecutor = new ScheduledThreadPoolExecutor(1, new PoolThreadThreadFactory("IdleConnectionScan"));
+    private ScheduledThreadPoolExecutor idleSchExecutor = new ScheduledThreadPoolExecutor(2, new PoolThreadThreadFactory("IdleConnectionScan"));
     private int networkTimeout;
     private boolean supportSchema = true;
     private boolean supportNetworkTimeout = true;
     private boolean supportQueryTimeout = true;
-    private boolean supportIsValid= true;
-    private ThreadPoolExecutor networkTimeoutExecutor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
-            Runtime.getRuntime().availableProcessors(), 15, SECONDS, new LinkedBlockingQueue<Runnable>(), new PoolThreadThreadFactory("networkTimeout"));
+    private boolean supportIsValid = true;
     private String poolName = "";
     private String poolMode = "";
     private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
@@ -134,7 +131,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             exitHook = new ConnectionPoolHook();
             Runtime.getRuntime().addShutdownHook(exitHook);
             borrowSemaphore = new Semaphore(poolConfig.getBorrowSemaphoreSize(), poolConfig.isFairMode());
-            networkTimeoutExecutor.allowCoreThreadTimeOut(true);
+            idleSchExecutor.setKeepAliveTime(15, SECONDS);
+            idleSchExecutor.allowCoreThreadTimeOut(true);
             idleCheckSchFuture = idleSchExecutor.scheduleAtFixedRate(new Runnable() {
                 public void run() {// check idle connection
                     closeIdleTimeoutConnection();
@@ -188,7 +186,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     ThreadPoolExecutor getNetworkTimeoutExecutor() {
-        return networkTimeoutExecutor;
+        return idleSchExecutor;
     }
 
     private boolean existBorrower() {
@@ -509,30 +507,27 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     // shutdown pool
     public void close() throws SQLException {
-        if (poolState.get() == POOL_CLOSED) throw PoolCloseException;
-
         long parkNanoSeconds = SECONDS.toNanos(poolConfig.getWaitTimeToClearPool());
         while (true) {
             if (poolState.compareAndSet(POOL_NORMAL, POOL_CLOSED)) {
-                log.info("BeeCP({})begin to shutdown", poolName);
-                removeAllConnections(poolConfig.isForceCloseConnection(), DESC_REMOVE_DESTROY);
-                while (!idleCheckSchFuture.isCancelled() && !idleCheckSchFuture.isDone()) {
-                    idleCheckSchFuture.cancel(true);
-                }
-
-                idleSchExecutor.shutdownNow();
-                networkTimeoutExecutor.shutdownNow();
-                shutdownCreateConnThread();
-                unregisterJMX();
-
                 try {
-                    Runtime.getRuntime().removeShutdownHook(exitHook);
-                } catch (Throwable e) {
-                    //log.warn("BeeCP({})failed to remove pool hook", poolName);
-                }
+                    log.info("BeeCP({})begin to shutdown", poolName);
+                    removeAllConnections(poolConfig.isForceCloseConnection(), DESC_REMOVE_DESTROY);
+                    unregisterJMX();
+                    shutdownCreateConnThread();
+                    while (!idleCheckSchFuture.isCancelled() && !idleCheckSchFuture.isDone())
+                        idleCheckSchFuture.cancel(true);
+                    idleSchExecutor.shutdownNow();
+                     try {
+                       Runtime.getRuntime().removeShutdownHook(exitHook);
+                    } catch (Throwable e) {}
 
-                log.info("BeeCP({})has shutdown", poolName);
-                break;
+                     log.info("BeeCP({})has shutdown", poolName);
+                     break;
+                }catch(Throwable e){
+                    e.printStackTrace();
+                    break;
+                }
             } else if (poolState.get() == POOL_CLOSED) {
                 break;
             } else {
@@ -805,9 +800,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private class ConnectionPoolHook extends Thread {
         public void run() {
             try {
-                if (poolState.get() != POOL_CLOSED) {
-                    FastConnectionPool.this.close();
-                }
+                FastConnectionPool.this.close();
             } catch (SQLException e) {
                 log.error("Error on closing connection pool,cause:", e);
             }

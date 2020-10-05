@@ -40,6 +40,7 @@ class PooledConnection {
     Connection rawConn;
     ProxyConnectionBase proxyConn;
     volatile long lastAccessTime;
+
     boolean commitDirtyInd;
     boolean curAutoCommit;
     boolean defaultAutoCommit;
@@ -96,7 +97,8 @@ class PooledConnection {
                 return;
             }
     }
-     final void cleanTracedStatements() {
+
+    final void cleanTracedStatements() {
         for (int i = 0; i < tracedPos; i++) {
             tracedStatements[i].setAsClosed();
             tracedStatements[i] = null;// clear to let GC do its work

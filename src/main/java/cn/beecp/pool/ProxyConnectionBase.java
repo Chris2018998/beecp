@@ -42,7 +42,9 @@ public abstract class ProxyConnectionBase implements Connection {
     protected PooledConnection pConn;//called by subclass to update time
     private boolean isClosed;
 
-    protected ProxyConnectionBase(){}
+    protected ProxyConnectionBase() {
+    }
+
     public ProxyConnectionBase(PooledConnection pConn) {
         this.pConn = pConn;
         pConn.proxyConn = this;

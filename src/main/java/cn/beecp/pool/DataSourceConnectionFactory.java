@@ -56,7 +56,7 @@ public class DataSourceConnectionFactory implements ConnectionFactory {
         this.driverDataSource = driverDataSource;
         this.username = username;
         this.password = password;
-        if(!isBlank(username))
+        if (!isBlank(username))
             usernameIsNotNull = true;
     }
 
