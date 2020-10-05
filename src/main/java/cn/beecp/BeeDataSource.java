@@ -48,7 +48,7 @@ import static cn.beecp.util.BeeJdbcUtil.isBlank;
 //public final class BeeDataSource extends BeeDataSourceConfig implements DataSource {
 public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XADataSource {
 //fix BeeCP-Starter-#6 Chris-2020-09-01 end
-    private final static HashMap<String, String> XaConnectionFactoryMap = new HashMap();
+    private final static HashMap<String, String> XaConnectionFactoryMap = new HashMap(5);
     private static final SQLException XaConnectionFactoryNotFound = new SQLException("Can't found matched XaConnectionFactory for driver,please config it");
 
     static {
