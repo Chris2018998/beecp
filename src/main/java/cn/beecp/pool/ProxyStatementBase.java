@@ -37,7 +37,7 @@ abstract class ProxyStatementBase implements Statement {
     private boolean registered;
     private boolean isClosed;
     private int resultOpenCode = CLOSE_CURRENT_RESULT;
-    private ArrayList<ProxyResultSetBase> results = new ArrayList<>();
+    private ArrayList<ProxyResultSetBase> results;
 
     public ProxyStatementBase(Statement delegate, PooledConnection pConn) {
         this.delegate = delegate;
@@ -64,7 +64,7 @@ abstract class ProxyStatementBase implements Statement {
             isClosed = true;
             if (curRe != null && !curRe.isClosed)
                 curRe.setAsClosed();
-            if (results.size() > 0) {
+            if (results!=null && results.size() > 0) {
                 for (ProxyResultSetBase re : results)
                     re.setAsClosed();
                 results.clear();
@@ -95,15 +95,20 @@ abstract class ProxyStatementBase implements Statement {
                 break;
             }
             case KEEP_CURRENT_RESULT: {
-                if (curRe != null && !curRe.isClosed) results.add(curRe);
+                if (curRe != null && !curRe.isClosed){
+                    if(results==null)results=new ArrayList<>(1);
+                    results.add(curRe);
+                }
                 break;
             }
             case CLOSE_ALL_RESULTS: {
                 if (curRe != null && !curRe.isClosed)
                     curRe.setAsClosed();
-                for (ProxyResultSetBase openRe : results)
-                    if (!openRe.isClosed) openRe.setAsClosed();
-                results.clear();
+                if(results!=null && results.size()>0) {
+                    for (ProxyResultSetBase openRe : results)
+                        if (!openRe.isClosed) openRe.setAsClosed();
+                    results.clear();
+                }
                 break;
             }
             default:
