@@ -111,8 +111,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             connectionTestSQL = poolConfig.getConnectionTestSQL();
             connectionTestTimeout = poolConfig.getConnectionTestTimeout();
             this.testPolicy = new SQLQueryTestPolicy(poolConfig.isDefaultAutoCommit());
-            if (isBlank(connectionTestSQL))
-                connectionTestSQL = "select 1 from dual";
 
             defaultMaxWaitNanos = MILLISECONDS.toNanos(poolConfig.getMaxWait());
             connectionTestInterval = poolConfig.getConnectionTestInterval();
