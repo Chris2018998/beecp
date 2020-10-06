@@ -68,7 +68,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private int poolMaxSize;
     private long defaultMaxWaitNanos;//nanoseconds
     private int conUnCatchStateCode;
-    private String connectionTestSQL;//select
     private int connectionTestTimeout;//seconds
     private long connectionTestInterval;//milliseconds
     private ConnectionPoolHook exitHook;
@@ -108,9 +107,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
             poolMaxSize = poolConfig.getMaxActive();
             connFactory = poolConfig.getConnectionFactory();
-            connectionTestSQL = poolConfig.getConnectionTestSQL();
             connectionTestTimeout = poolConfig.getConnectionTestTimeout();
-            this.testPolicy = new SQLQueryTestPolicy(poolConfig.isDefaultAutoCommit());
+            this.testPolicy = new SQLQueryTestPolicy(poolConfig.isDefaultAutoCommit(),poolConfig.getConnectionTestSQL());
 
             defaultMaxWaitNanos = MILLISECONDS.toNanos(poolConfig.getMaxWait());
             connectionTestInterval = poolConfig.getConnectionTestInterval();
@@ -161,9 +159,17 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     private void checkProxyClasses() throws SQLException {
         try {
-            ProxyObjectFactory.testCreateProxyObjects();
-        } catch (Throwable e) {
-            throw new SQLException("JDBC proxy class missed", e);
+            ClassLoader classLoader = getClass().getClassLoader();
+            Class.forName("cn.beecp.pool.Borrower", true, classLoader);
+            Class.forName("cn.beecp.pool.PooledConnection", true, classLoader);
+            Class.forName("cn.beecp.pool.ProxyConnection", true, classLoader);
+            Class.forName("cn.beecp.pool.ProxyStatement", true, classLoader);
+            Class.forName("cn.beecp.pool.ProxyPsStatement", true, classLoader);
+            Class.forName("cn.beecp.pool.ProxyCsStatement", true, classLoader);
+            Class.forName("cn.beecp.pool.ProxyDatabaseMetaData", true, classLoader);
+            Class.forName("cn.beecp.pool.ProxyResultSet", true, classLoader);
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("Jdbc proxy classes missed", e);
         }
     }
 
@@ -508,25 +514,19 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         long parkNanoSeconds = SECONDS.toNanos(poolConfig.getWaitTimeToClearPool());
         while (true) {
             if (poolState.compareAndSet(POOL_NORMAL, POOL_CLOSED)) {
+                log.info("BeeCP({})begin to shutdown", poolName);
+                removeAllConnections(poolConfig.isForceCloseConnection(), DESC_REMOVE_DESTROY);
+                unregisterJMX();
+                shutdownCreateConnThread();
+                while (!idleCheckSchFuture.isCancelled() && !idleCheckSchFuture.isDone())
+                    idleCheckSchFuture.cancel(true);
+                idleSchExecutor.shutdownNow();
                 try {
-                    log.info("BeeCP({})begin to shutdown", poolName);
-                    removeAllConnections(poolConfig.isForceCloseConnection(), DESC_REMOVE_DESTROY);
-                    unregisterJMX();
-                    shutdownCreateConnThread();
-                    while (!idleCheckSchFuture.isCancelled() && !idleCheckSchFuture.isDone())
-                        idleCheckSchFuture.cancel(true);
-                    idleSchExecutor.shutdownNow();
-                    try {
-                        Runtime.getRuntime().removeShutdownHook(exitHook);
-                    } catch (Throwable e) {
-                    }
+                    Runtime.getRuntime().removeShutdownHook(exitHook);
+                } catch (Throwable e) { }
 
-                    log.info("BeeCP({})has shutdown", poolName);
-                    break;
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                    break;
-                }
+                log.info("BeeCP({})has shutdown", poolName);
+                break;
             } else if (poolState.get() == POOL_CLOSED) {
                 break;
             } else {
@@ -800,37 +800,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    //new connection TransferThread
-//    class TransferThread extends Thread {
-//        private boolean isConn;
-//        private SQLException e;
-//        private PooledConnection pConn;
-//
-//        TransferThread(SQLException e) {
-//            this.e = e;
-//            isConn = false;
-//        }
-//
-//        TransferThread(PooledConnection pConn) {
-//            this.pConn = pConn;
-//            isConn = true;
-//        }
-//
-//        public void run() {
-//            if (isConn) {
-//                recycle(pConn);
-//            } else {
-//                transferException(e);
-//            }
-//        }
-//    }
-
     // SQL check Policy
     class SQLQueryTestPolicy implements ConnectionTestPolicy {
-        private boolean autoCommit;
+        private final boolean autoCommit;
+        private final String aliveTestSQL;
 
-        public SQLQueryTestPolicy(boolean autoCommit) {
+        public SQLQueryTestPolicy(boolean autoCommit,String aliveTestSQL) {
             this.autoCommit = autoCommit;
+            this.aliveTestSQL = aliveTestSQL;
         }
 
         public boolean isActive(PooledConnection pConn) {
@@ -855,7 +832,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     }
                 }
 
-                st.execute(connectionTestSQL);
+                st.execute(aliveTestSQL);
 
                 con.rollback();//why? maybe store procedure in test sql
                 return true;

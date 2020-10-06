@@ -94,10 +94,6 @@ public final class ProxyClassGenerator {
             ctConstructor.setModifiers(Modifier.PUBLIC);
             ctConstructor.setBody("{super($$);}");
             ctProxyConnectionClass.addConstructor(ctConstructor);
-
-            ctConstructor = new CtConstructor(new CtClass[0], ctProxyConnectionClass);
-            ctConstructor.setBody("{super($$);}");
-            ctProxyConnectionClass.addConstructor(ctConstructor);
             //...............Connection End................
 
             //.............statement Begin.............
@@ -112,10 +108,6 @@ public final class ProxyClassGenerator {
             };
             ctConstructor = new CtConstructor(statementCreateParam, ctProxyStatementClass);
             ctConstructor.setModifiers(Modifier.PUBLIC);
-            ctConstructor.setBody("{super($$);}");
-            ctProxyStatementClass.addConstructor(ctConstructor);
-
-            ctConstructor = new CtConstructor(new CtClass[0], ctProxyStatementClass);
             ctConstructor.setBody("{super($$);}");
             ctProxyStatementClass.addConstructor(ctConstructor);
             //.............Statement Begin...............
@@ -136,10 +128,6 @@ public final class ProxyClassGenerator {
             ctConstructor.setModifiers(Modifier.PUBLIC);
             ctConstructor.setBody("{super($$);}");
             ctProxyPsStatementClass.addConstructor(ctConstructor);
-
-            ctConstructor = new CtConstructor(new CtClass[0], ctProxyPsStatementClass);
-            ctConstructor.setBody("{super($$);}");
-            ctProxyPsStatementClass.addConstructor(ctConstructor);
             //........PreparedStatement End..............
 
             //..............CallableStatement Begin.............
@@ -156,10 +144,6 @@ public final class ProxyClassGenerator {
             ctConstructor.setModifiers(Modifier.PUBLIC);
             ctConstructor.setBody("{super($$);}");
             ctProxyCsStatementClass.addConstructor(ctConstructor);
-
-            ctConstructor = new CtConstructor(new CtClass[0], ctProxyCsStatementClass);
-            ctConstructor.setBody("{super($$);}");
-            ctProxyCsStatementClass.addConstructor(ctConstructor);
             //...........CallableStatement End...............
 
             //..............DatabaseMetaData Begin.............
@@ -174,10 +158,6 @@ public final class ProxyClassGenerator {
                     classPool.get("cn.beecp.pool.PooledConnection")};
             ctConstructor = new CtConstructor(databaseMetaData, ctProxyDatabaseMetaDataClass);
             ctConstructor.setModifiers(Modifier.PUBLIC);
-            ctConstructor.setBody("{super($$);}");
-            ctProxyDatabaseMetaDataClass.addConstructor(ctConstructor);
-
-            ctConstructor = new CtConstructor(new CtClass[0], ctProxyDatabaseMetaDataClass);
             ctConstructor.setBody("{super($$);}");
             ctProxyDatabaseMetaDataClass.addConstructor(ctConstructor);
             //...........DatabaseMetaData End...............
@@ -205,11 +185,6 @@ public final class ProxyClassGenerator {
             ctConstructor.setModifiers(Modifier.PUBLIC);
             ctConstructor.setBody("{super($$);}");
             ctProxyResultSetClass.addConstructor(ctConstructor);
-
-            ctConstructor = new CtConstructor(new CtClass[0], ctProxyResultSetClass);
-            ctConstructor.setBody("{super($$);}");
-            ctProxyResultSetClass.addConstructor(ctConstructor);
-
             //............Result End...............
             this.createProxyConnectionClass(classPool, ctProxyConnectionClass, ctConnectionClass, ctProxyConnectionBaseClass);
             this.createProxyStatementClass(classPool, ctProxyStatementClass, ctStatementClass, ctProxyStatementBaseClass);
@@ -222,8 +197,6 @@ public final class ProxyClassGenerator {
             CtClass ctProxyObjectFactoryClass = classPool.get(ProxyObjectFactory.class.getName());
             CtMethod createProxyConnectionMethod = null;
             CtMethod createProxyResultSetMethod = null;
-            CtMethod testCreateProxyObjectsMethod = null;
-
 
             CtMethod[] ctMethods = ctProxyObjectFactoryClass.getDeclaredMethods();
             for (CtMethod method : ctMethods) {
@@ -231,24 +204,11 @@ public final class ProxyClassGenerator {
                     createProxyConnectionMethod = method;
                 } else if ("createProxyResultSet".equals(method.getName())) {
                     createProxyResultSetMethod = method;
-                } else if ("testCreateProxyObjects".equals(method.getName())) {
-                    testCreateProxyObjectsMethod = method;
                 }
             }
 
             createProxyConnectionMethod.setBody("{$2.lastUsedConn=$1; return new ProxyConnection($1);}");
             createProxyResultSetMethod.setBody("{return new ProxyResultSet($$);}");
-
-            StringBuilder body = new StringBuilder(50)
-                    .append("{Borrower borrower=new Borrower();")
-                    .append("ProxyConnection con=new ProxyConnection();")
-                    .append("ProxyStatement st=new ProxyStatement();")
-                    .append("ProxyPsStatement ps=new ProxyPsStatement();")
-                    .append("ProxyCsStatement ps=new ProxyCsStatement();")
-                    .append("ProxyResultSet re=new ProxyResultSet();")
-                    .append("ProxyDatabaseMetaData meta=new ProxyDatabaseMetaData();}");
-
-            testCreateProxyObjectsMethod.setBody(body.toString());
             //............... ProxyObjectFactory end..................
 
             return new CtClass[]{
