@@ -27,24 +27,32 @@ import java.sql.*;
  * @author Chris.Liao
  * @version 1.0
  */
-
 public class PoolConstants {
     //POOL STATE
-    static final int POOL_UNINIT = 1;
-    static final int POOL_NORMAL = 2;
-    static final int POOL_CLOSED = 3;
-    static final int POOL_RESTING = 4;
+    public static final int POOL_UNINIT = 1;
+    public static final int POOL_NORMAL = 2;
+    public static final int POOL_CLOSED = 3;
+    public static final int POOL_RESTING = 4;
     //POOLED CONNECTION STATE
-    static final int CONNECTION_IDLE = 1;
-    static final int CONNECTION_USING = 2;
-    static final int CONNECTION_CLOSED = 3;
+    public static final int CONNECTION_IDLE = 1;
+    public static final int CONNECTION_USING = 2;
+    public static final int CONNECTION_CLOSED = 3;
     //ADD CONNECTION THREAD STATE
-    static final int THREAD_WORKING = 1;
-    static final int THREAD_WAITING = 2;
-    static final int THREAD_DEAD = 3;
+    public static final int THREAD_WORKING = 1;
+    public static final int THREAD_WAITING = 2;
+    public static final int THREAD_DEAD = 3;
     //BORROWER STATE
-    static final Object BORROWER_NORMAL = new Object();
-    static final Object BORROWER_WAITING = new Object();
+    public static final Object BORROWER_NORMAL = new Object();
+    public static final Object BORROWER_WAITING = new Object();
+
+    //Connection reset pos
+    public static final int Pos_AutoCommitInd = 0;
+    public static final int Pos_TransactionIsolationInd = 1;
+    public static final int Pos_ReadOnlyInd = 2;
+    public static final int Pos_CatalogInd = 3;
+    public static final int Pos_SchemaInd = 4;
+    public static final int Pos_NetworkTimeoutInd = 5;
+    public static final boolean[] DEFAULT_IND = new boolean[6];
 
     public static final SQLTimeoutException RequestTimeoutException = new SQLTimeoutException("Request timeout");
     public static final SQLException RequestInterruptException = new SQLException("Request interrupt");
@@ -56,7 +64,7 @@ public class PoolConstants {
     public static final SQLException AutoCommitChangeForbiddenException = new SQLException("Execute 'commit' or 'rollback' before this operation");
     public static final SQLException DriverNotSupportNetworkTimeoutException = new SQLException("Driver not support 'networkTimeout'");
 
-    final static Connection CLOSED_CON = (Connection) Proxy.newProxyInstance(
+    public static final Connection CLOSED_CON = (Connection) Proxy.newProxyInstance(
             PoolConstants.class.getClassLoader(),
             new Class[]{Connection.class},
             new InvocationHandler() {
@@ -66,7 +74,7 @@ public class PoolConstants {
             }
     );
 
-    final static CallableStatement CLOSED_CSTM = (CallableStatement) Proxy.newProxyInstance(
+    public static final CallableStatement CLOSED_CSTM = (CallableStatement) Proxy.newProxyInstance(
             PoolConstants.class.getClassLoader(),
             new Class[]{CallableStatement.class},
             new InvocationHandler() {
@@ -76,7 +84,7 @@ public class PoolConstants {
             }
     );
 
-    final static ResultSet CLOSED_RSLT = (ResultSet) Proxy.newProxyInstance(
+    public static final ResultSet CLOSED_RSLT = (ResultSet) Proxy.newProxyInstance(
             PoolConstants.class.getClassLoader(),
             new Class[]{ResultSet.class},
             new InvocationHandler() {
@@ -86,7 +94,7 @@ public class PoolConstants {
             }
     );
 
-    static Object call(String methodName, int type) throws SQLException {
+    private static final Object call(String methodName, int type) throws SQLException {
         switch (type) {
             case 1:
                 throw ConnectionClosedException;

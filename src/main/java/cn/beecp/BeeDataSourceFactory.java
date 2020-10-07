@@ -127,7 +127,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
                         if (pairs.length == 2)
                             connectProperties.put(pairs[0].trim(), pairs[1].trim());
                     }
-                    field.set(config,connectProperties);
+                    field.set(config, connectProperties);
                 }
             }
         }

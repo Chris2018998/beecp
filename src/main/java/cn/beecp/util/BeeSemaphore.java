@@ -132,11 +132,11 @@ public class BeeSemaphore {
         }
 
         private final boolean acquirePermit() {
-            while(true){
+            while (true) {
                 int expect = usingSize.get();
                 int update = expect + 1;
-                if (update >size )return false;
-                if(usingSize.compareAndSet(expect,update))return true;
+                if (update > size) return false;
+                if (usingSize.compareAndSet(expect, update)) return true;
             }
         }
 

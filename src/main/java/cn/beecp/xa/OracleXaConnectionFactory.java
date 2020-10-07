@@ -25,10 +25,10 @@ import java.sql.SQLException;
 /**
  * Oracle XaConnection Factory
  *
- *  @author Chris Liao
- *  @version 1.0
+ * @author Chris Liao
+ * @version 1.0
  */
-public class OracleXaConnectionFactory implements XaConnectionFactory{
+public class OracleXaConnectionFactory implements XaConnectionFactory {
 
     /**
      * Create XAConnection instance
@@ -37,11 +37,11 @@ public class OracleXaConnectionFactory implements XaConnectionFactory{
      * @return XAConnection
      * @throws SQLException if failed then throw SQLException
      */
-    public XAConnection create(Connection rawCon) throws SQLException{
+    public XAConnection create(Connection rawCon) throws SQLException {
         try {
             return new OracleXAConnection(rawCon);
-        }catch(XAException e){
-             throw new SQLException(e);
+        } catch (XAException e) {
+            throw new SQLException(e);
         }
     }
 }

@@ -57,6 +57,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private static final String DESC_REMOVE_CLOSED = "closed";
     private static final String DESC_REMOVE_RESET = "reset";
     private static final String DESC_REMOVE_DESTROY = "destroy";
+
     private static AtomicInteger poolNameIndex = new AtomicInteger(1);
     private final Object connArrayLock = new Object();
     private final Object connNotifyLock = new Object();
@@ -108,7 +109,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             poolMaxSize = poolConfig.getMaxActive();
             connFactory = poolConfig.getConnectionFactory();
             connectionTestTimeout = poolConfig.getConnectionTestTimeout();
-            this.testPolicy = new SQLQueryTestPolicy(poolConfig.isDefaultAutoCommit(),poolConfig.getConnectionTestSQL());
+            this.testPolicy = new SQLQueryTestPolicy(poolConfig.isDefaultAutoCommit(), poolConfig.getConnectionTestSQL());
 
             defaultMaxWaitNanos = MILLISECONDS.toNanos(poolConfig.getMaxWait());
             connectionTestInterval = poolConfig.getConnectionTestInterval();
@@ -523,7 +524,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 idleSchExecutor.shutdownNow();
                 try {
                     Runtime.getRuntime().removeShutdownHook(exitHook);
-                } catch (Throwable e) { }
+                } catch (Throwable e) {
+                }
 
                 log.info("BeeCP({})has shutdown", poolName);
                 break;
@@ -805,7 +807,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         private final boolean autoCommit;
         private final String aliveTestSQL;
 
-        public SQLQueryTestPolicy(boolean autoCommit,String aliveTestSQL) {
+        public SQLQueryTestPolicy(boolean autoCommit, String aliveTestSQL) {
             this.autoCommit = autoCommit;
             this.aliveTestSQL = aliveTestSQL;
         }

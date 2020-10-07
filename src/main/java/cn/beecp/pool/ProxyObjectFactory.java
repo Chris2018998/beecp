@@ -27,7 +27,7 @@ import java.sql.SQLException;
  */
 class ProxyObjectFactory {
 
-    public static final Connection createProxyConnection(PooledConnection pConn,Borrower borrower)
+    public static final Connection createProxyConnection(PooledConnection pConn, Borrower borrower)
             throws SQLException {
         // borrower.setBorrowedConnection(pConn);
         // return pConn.proxyConnCurInstance=new ProxyConnection(pConn);

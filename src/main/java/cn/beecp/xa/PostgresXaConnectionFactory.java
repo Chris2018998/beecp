@@ -24,10 +24,10 @@ import java.sql.SQLException;
 /**
  * Postgres XaConnectionFactory
  *
- *  @author Chris Liao
- *  @version 1.0
+ * @author Chris Liao
+ * @version 1.0
  */
-public class PostgresXaConnectionFactory implements XaConnectionFactory{
+public class PostgresXaConnectionFactory implements XaConnectionFactory {
 
     /**
      * Create XAConnection instance
@@ -36,7 +36,7 @@ public class PostgresXaConnectionFactory implements XaConnectionFactory{
      * @return XAConnection
      * @throws SQLException if failed then throw SQLException
      */
-    public XAConnection create(Connection rawCon) throws SQLException{
-        return new PGXAConnection((org.postgresql.core.BaseConnection)rawCon);
+    public XAConnection create(Connection rawCon) throws SQLException {
+        return new PGXAConnection((org.postgresql.core.BaseConnection) rawCon);
     }
 }

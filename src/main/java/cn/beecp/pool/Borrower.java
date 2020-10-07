@@ -16,7 +16,7 @@
 package cn.beecp.pool;
 
 /**
- *  Pool Connection borrower
+ * Pool Connection borrower
  *
  * @author Chris.Liao
  * @version 1.0

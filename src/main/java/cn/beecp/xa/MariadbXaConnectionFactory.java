@@ -28,7 +28,7 @@ import java.sql.SQLException;
  * @author Chris.Liao
  * @version 1.0
  */
-public class MariadbXaConnectionFactory implements XaConnectionFactory{
+public class MariadbXaConnectionFactory implements XaConnectionFactory {
 
     /**
      * Create XAConnection instance
@@ -37,7 +37,7 @@ public class MariadbXaConnectionFactory implements XaConnectionFactory{
      * @return XAConnection
      * @throws SQLException if failed then throw SQLException
      */
-    public XAConnection create(Connection rawCon) throws SQLException{
-        return new MariaXaConnection((MariaDbConnection)rawCon);
+    public XAConnection create(Connection rawCon) throws SQLException {
+        return new MariaXaConnection((MariaDbConnection) rawCon);
     }
 }

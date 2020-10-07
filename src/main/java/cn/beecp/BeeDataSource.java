@@ -47,7 +47,7 @@ import static cn.beecp.util.BeeJdbcUtil.isBlank;
 //fix BeeCP-Starter-#6 Chris-2020-09-01 start
 //public final class BeeDataSource extends BeeDataSourceConfig implements DataSource {
 public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XADataSource {
-//fix BeeCP-Starter-#6 Chris-2020-09-01 end
+    //fix BeeCP-Starter-#6 Chris-2020-09-01 end
     private final static HashMap<String, String> XaConnectionFactoryMap = new HashMap(5);
     private static final SQLException XaConnectionFactoryNotFound = new SQLException("Can't found matched XaConnectionFactory for driver,please config it");
 
@@ -96,7 +96,8 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     /**
      * constructor
      */
-    public BeeDataSource() { }
+    public BeeDataSource() {
+    }
 
     /**
      * constructor
@@ -246,10 +247,10 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             if (xaConnectionFactory == null && !isBlank(config.getUrl())) {
                 String driverType = getDriverType(config.getUrl());
                 if (!isBlank(driverType)) {
-                    String xaConnectionFactoryClassName=XaConnectionFactoryMap.get(driverType);
+                    String xaConnectionFactoryClassName = XaConnectionFactoryMap.get(driverType);
                     if (!isBlank(xaConnectionFactoryClassName)) {
                         try {
-                            Class<?> xaConnectionFactoryClass = Class.forName(xaConnectionFactoryClassName,true, getClass().getClassLoader());
+                            Class<?> xaConnectionFactoryClass = Class.forName(xaConnectionFactoryClassName, true, getClass().getClassLoader());
                             if (XaConnectionFactory.class.isAssignableFrom(xaConnectionFactoryClass)) {
                                 xaConnectionFactory = (XaConnectionFactory) xaConnectionFactoryClass.newInstance();
                             }

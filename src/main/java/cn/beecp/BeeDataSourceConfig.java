@@ -20,7 +20,10 @@ import cn.beecp.pool.DriverConnectionFactory;
 import cn.beecp.xa.XaConnectionFactory;
 
 import javax.sql.DataSource;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -600,7 +603,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
             }
         }
 
-        if (!isBlank(xaConnectionFactoryClassName) && xaConnectionFactory==null) {
+        if (!isBlank(xaConnectionFactoryClassName) && xaConnectionFactory == null) {
             try {
                 Class<?> xaConnectionFactoryClass = Class.forName(xaConnectionFactoryClassName, true, BeeDataSourceConfig.class.getClassLoader());
                 if (XaConnectionFactory.class.isAssignableFrom(xaConnectionFactoryClass)) {

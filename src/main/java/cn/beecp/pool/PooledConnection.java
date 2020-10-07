@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import static cn.beecp.pool.PoolConstants.DEFAULT_IND;
 import static cn.beecp.util.BeeJdbcUtil.oclose;
 import static java.lang.System.arraycopy;
 import static java.lang.System.currentTimeMillis;
@@ -34,7 +35,6 @@ import static java.lang.System.currentTimeMillis;
  * @version 1.0
  */
 class PooledConnection {
-    private static final boolean[] DEFAULT_IND = new boolean[6];
     private static Logger log = LoggerFactory.getLogger(PooledConnection.class);
     volatile int state;
     Connection rawConn;
@@ -56,6 +56,7 @@ class PooledConnection {
     private ProxyStatementBase[] tracedStatements;
     private int resetCnt;// reset count
     private boolean[] resetInd = new boolean[DEFAULT_IND.length];
+
 
     public PooledConnection(Connection rawConn, int connState, FastConnectionPool connPool, BeeDataSourceConfig config) throws SQLException {
         pool = connPool;
