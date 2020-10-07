@@ -49,11 +49,10 @@ class PooledConnection {
     String defaultCatalog;
     String defaultSchema;
     int defaultNetworkTimeout;
-    private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
-    private FastConnectionPool pool;
-
     int tracedPos;
     boolean traceStatement;
+    private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
+    private FastConnectionPool pool;
     private ProxyStatementBase[] tracedStatements;
     private int resetCnt;// reset count
     private boolean[] resetInd = new boolean[DEFAULT_IND.length];
@@ -74,7 +73,8 @@ class PooledConnection {
         curAutoCommit = defaultAutoCommit;
         //default value
 
-        tracedStatements = new ProxyStatementBase[(traceStatement = config.isTraceStatement()) ? 10 : 0];
+        if (traceStatement = config.isTraceStatement())
+            tracedStatements = new ProxyStatementBase[10];
         lastAccessTime = currentTimeMillis();//start time
     }
 
