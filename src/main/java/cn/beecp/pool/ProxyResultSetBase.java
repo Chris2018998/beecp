@@ -19,8 +19,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static cn.beecp.pool.PoolConstants.CLOSED_RSLT;
-import static cn.beecp.pool.PoolConstants.ResultSetClosedException;
+import static cn.beecp.pool.PoolStaticCenter.CLOSED_RSLT;
+import static cn.beecp.pool.PoolStaticCenter.ResultSetClosedException;
 
 /**
  * ResultSet proxy base class

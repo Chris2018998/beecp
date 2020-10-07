@@ -7,7 +7,6 @@ import cn.beecp.pool.FastConnectionPool;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
-import cn.beecp.util.BeeJdbcUtil;
 
 import java.sql.Connection;
 
@@ -43,7 +42,7 @@ public class ConnectionResetTest  extends TestCase {
             con.setCatalog("test");
         } finally {
         	if(con!=null)
-            BeeJdbcUtil.oclose(con);
+            TestUtil.oclose(con);
         }
         try {
             FastConnectionPool pool = (FastConnectionPool) TestUtil.getPool(ds);
@@ -56,7 +55,7 @@ public class ConnectionResetTest  extends TestCase {
             if(!catlog.equals(con.getCatalog()))TestUtil.assertError("catalog reset fail,excpect:s%,cuurent is s%",catlog,  con.getCatalog());
         } finally {
         	if(con!=null)
-             BeeJdbcUtil.oclose(con);
+             TestUtil.oclose(con);
         }
     }
 }

@@ -24,7 +24,6 @@ import cn.beecp.pool.FastConnectionPool;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
-import cn.beecp.util.BeeJdbcUtil;
 
 public class ConnectionHoldTimeoutTest extends TestCase {
 	private BeeDataSource ds;
@@ -74,7 +73,7 @@ public class ConnectionHoldTimeoutTest extends TestCase {
 			Thread.sleep(4000);
 		} finally {
 			if(con!=null)
-			  BeeJdbcUtil.oclose(con);
+				TestUtil.oclose(con);
 		}
 	}
 }

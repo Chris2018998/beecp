@@ -20,7 +20,6 @@ import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
-import cn.beecp.util.BeeJdbcUtil;
 
 import java.sql.Connection;
 
@@ -53,7 +52,7 @@ public class DataSourceConnectionFactoryTest extends TestCase {
             throw e;
         }finally{
         	if(con!=null)
-              BeeJdbcUtil.oclose(con);
+              TestUtil.oclose(con);
         }
     }
 }

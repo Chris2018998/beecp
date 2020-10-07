@@ -15,13 +15,11 @@
  */
 package cn.beecp.pool;
 
-import cn.beecp.util.BeeJdbcUtil;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.Executor;
 
-import static cn.beecp.pool.PoolConstants.*;
+import static cn.beecp.pool.PoolStaticCenter.*;
 import static java.lang.System.currentTimeMillis;
 
 /**
@@ -95,7 +93,7 @@ public abstract class ProxyConnectionBase implements Connection {
 
     public void setCatalog(String catalog) throws SQLException {
         delegate.setCatalog(catalog);
-        pConn.setResetInd(Pos_CatalogInd, !BeeJdbcUtil.equals(catalog, pConn.defaultCatalog));
+        pConn.setResetInd(Pos_CatalogInd, !PoolStaticCenter.equals(catalog, pConn.defaultCatalog));
     }
 
     public boolean isValid(int timeout) throws SQLException {
@@ -105,7 +103,7 @@ public abstract class ProxyConnectionBase implements Connection {
     //for JDK1.7 begin
     public void setSchema(String schema) throws SQLException {
         delegate.setSchema(schema);
-        pConn.setResetInd(Pos_SchemaInd, !BeeJdbcUtil.equals(schema, pConn.defaultSchema));
+        pConn.setResetInd(Pos_SchemaInd, !PoolStaticCenter.equals(schema, pConn.defaultSchema));
     }
 
     public void abort(Executor executor) throws SQLException {

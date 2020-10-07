@@ -15,7 +15,6 @@
  */
 package cn.beecp;
 
-import cn.beecp.util.BeeJdbcUtil;
 
 import javax.naming.*;
 import javax.naming.spi.NamingManager;
@@ -28,6 +27,8 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.Hashtable;
 import java.util.Properties;
 import java.util.logging.Logger;
+
+import static cn.beecp.pool.PoolStaticCenter.isBlank;
 
 /**
  * BeeDataSource factory
@@ -106,7 +107,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
             if (ra == null) continue;
             String configVal = ra.getContent().toString();
 
-            if (!BeeJdbcUtil.isBlank(configVal)) {
+            if (!isBlank(configVal)) {
                 configVal = configVal.trim();
 
                 Class fieldType = field.getType();

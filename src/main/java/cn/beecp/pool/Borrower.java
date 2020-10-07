@@ -21,7 +21,7 @@ package cn.beecp.pool;
  * @author Chris.Liao
  * @version 1.0
  */
-final class Borrower {
+public final class Borrower {
     volatile Object state;
     PooledConnection lastUsedConn;
     Thread thread = Thread.currentThread();

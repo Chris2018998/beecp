@@ -194,7 +194,7 @@ public final class ProxyClassGenerator {
             this.createProxyResultSetClass(classPool, ctProxyResultSetClass, ctResultSetClass, ctProxyResultSetBaseClass);
 
             //............... ProxyObjectFactory Begin..................
-            CtClass ctProxyObjectFactoryClass = classPool.get(ProxyObjectFactory.class.getName());
+            CtClass ctProxyObjectFactoryClass = classPool.get(PoolStaticCenter.class.getName());
             CtMethod createProxyConnectionMethod = null;
             CtMethod createProxyResultSetMethod = null;
 

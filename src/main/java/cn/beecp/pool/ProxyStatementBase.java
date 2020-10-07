@@ -21,8 +21,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-import static cn.beecp.pool.PoolConstants.CLOSED_CSTM;
-import static cn.beecp.pool.PoolConstants.StatementClosedException;
+import static cn.beecp.pool.PoolStaticCenter.*;
 
 /**
  * ProxyStatementBase
@@ -137,7 +136,7 @@ abstract class ProxyStatementBase implements Statement {
             if (curRe != null && curRe.isDelegate(re))
                 return curRe;
 
-            return ProxyObjectFactory.createProxyResultSet(re, this, pConn);
+            return createProxyResultSet(re, this, pConn);
         }
     }
 

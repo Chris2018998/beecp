@@ -20,7 +20,6 @@ import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
-import cn.beecp.util.BeeJdbcUtil;
 
 import java.sql.*;
 
@@ -76,13 +75,13 @@ public class ProxyObjectClosedStateTest extends TestCase {
         }
         finally {
             if (st != null)
-                BeeJdbcUtil.oclose(st);
+                TestUtil.oclose(st);
             if (cs != null)
-                BeeJdbcUtil.oclose(cs);
+                TestUtil.oclose(cs);
             if (ps != null)
-                BeeJdbcUtil.oclose(ps);
+                TestUtil.oclose(ps);
             if (con != null)
-                BeeJdbcUtil.oclose(con);
+                TestUtil.oclose(con);
         }
     }
 }

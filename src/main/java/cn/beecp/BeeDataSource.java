@@ -19,7 +19,6 @@ import cn.beecp.pool.ConnectionPool;
 import cn.beecp.pool.ProxyConnectionBase;
 import cn.beecp.xa.XaConnectionFactory;
 import cn.beecp.xa.XaConnectionWrapper;
-import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import javax.sql.XAConnection;
@@ -30,7 +29,8 @@ import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
-import static cn.beecp.util.BeeJdbcUtil.isBlank;
+import static cn.beecp.pool.PoolStaticCenter.commonLog;
+import static cn.beecp.pool.PoolStaticCenter.isBlank;
 
 /**
  * Bee DataSource,there are two pool implementation for it.
@@ -59,10 +59,6 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         XaConnectionFactoryMap.put("postgresql", "cn.beecp.xa.PostgresXaConnectionFactory");
     }
 
-    /**
-     * logger
-     */
-    private final org.slf4j.Logger log = LoggerFactory.getLogger(this.getClass());
     /**
      * pool initialized
      */
@@ -180,7 +176,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             try {
                 pool.close();
             } catch (SQLException e) {
-                log.error("Error on closing connection pool,cause:", e);
+                commonLog.error("Error on closing connection pool,cause:", e);
             }
         }
     }
@@ -289,7 +285,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
                 return null;
             }
         } catch (SQLException e) {
-            log.warn("Can't get driver by url from driverManager", e);
+            commonLog.warn("Can't get driver by url from driverManager", e);
             return null;
         }
     }

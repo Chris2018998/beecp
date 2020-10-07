@@ -20,7 +20,6 @@ import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
-import cn.beecp.util.BeeJdbcUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -62,11 +61,11 @@ public class TransactionAutoCommitResetTest extends TestCase {
 			}
 		} finally {
 			if (re1 != null)
-				BeeJdbcUtil.oclose(re1);
+				TestUtil.oclose(re1);
 			if (ps1 != null)
-				BeeJdbcUtil.oclose(ps1);
+				TestUtil.oclose(ps1);
 			if (con1 != null)
-				BeeJdbcUtil.oclose(con1);
+				TestUtil.oclose(con1);
 		}
 	}
 }

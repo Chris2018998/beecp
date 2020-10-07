@@ -22,8 +22,8 @@ import javax.transaction.xa.XAException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import static cn.beecp.pool.PoolConstants.ConnectionClosedException;
-import static cn.beecp.pool.PoolConstants.XaConnectionClosedException;
+import static cn.beecp.pool.PoolStaticCenter.ConnectionClosedException;
+import static cn.beecp.pool.PoolStaticCenter.XaConnectionClosedException;
 
 
 /**

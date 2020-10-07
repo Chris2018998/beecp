@@ -16,15 +16,13 @@
 package cn.beecp.pool;
 
 import cn.beecp.BeeDataSourceConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static cn.beecp.pool.PoolConstants.DEFAULT_IND;
-import static cn.beecp.util.BeeJdbcUtil.oclose;
+import static cn.beecp.pool.PoolStaticCenter.commonLog;
+import static cn.beecp.pool.PoolStaticCenter.oclose;
 import static java.lang.System.arraycopy;
 import static java.lang.System.currentTimeMillis;
 
@@ -35,12 +33,11 @@ import static java.lang.System.currentTimeMillis;
  * @version 1.0
  */
 class PooledConnection {
-    private static Logger log = LoggerFactory.getLogger(PooledConnection.class);
+    private static final boolean[] ResetInd = new boolean[6];
     volatile int state;
     Connection rawConn;
     ProxyConnectionBase proxyConn;
     volatile long lastAccessTime;
-
     boolean commitDirtyInd;
     boolean curAutoCommit;
     boolean defaultAutoCommit;
@@ -55,8 +52,7 @@ class PooledConnection {
     private FastConnectionPool pool;
     private ProxyStatementBase[] tracedStatements;
     private int resetCnt;// reset count
-    private boolean[] resetInd = new boolean[DEFAULT_IND.length];
-
+    private boolean[] resetInd = new boolean[ResetInd.length];
 
     public PooledConnection(Connection rawConn, int connState, FastConnectionPool connPool, BeeDataSourceConfig config) throws SQLException {
         pool = connPool;
@@ -114,7 +110,7 @@ class PooledConnection {
         try {
             resetRawConnOnReturn();
         } catch (SQLException e) {
-            log.error("Connection close error", e);
+            commonLog.error("Connection close error", e);
         } finally {
             oclose(rawConn);
         }
@@ -185,7 +181,7 @@ class PooledConnection {
             //for JDK1.7 end
 
             resetCnt = 0;
-            arraycopy(DEFAULT_IND, 0, resetInd, 0, 6);
+            arraycopy(ResetInd, 0, resetInd, 0, 6);
         }//reset end
 
         //clear warnings
