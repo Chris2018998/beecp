@@ -53,7 +53,7 @@ public abstract class ProxyConnectionBase implements Connection {
     }
 
     public final void close() throws SQLException {
-        synchronized (pConn) {
+        synchronized (this) {
             if (isClosed) return;
             isClosed = true;
             if (pConn.tracedPos > 0)

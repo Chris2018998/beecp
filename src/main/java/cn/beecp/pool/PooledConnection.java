@@ -76,26 +76,30 @@ class PooledConnection {
     }
 
     /************* statement Operation ******************************/
-    synchronized final void registerStatement(ProxyStatementBase st) {
-        if (tracedPos == tracedStatements.length) {
-            ProxyStatementBase[] stArray = new ProxyStatementBase[tracedPos << 1];
-            System.arraycopy(tracedStatements, 0, stArray, 0, tracedPos);
-            tracedStatements = stArray;
-        }
-        tracedStatements[tracedPos++] = st;
-    }
-
-    synchronized final void unregisterStatement(ProxyStatementBase st) {
-        for (int i = 0; i < tracedPos; i++)
-            if (st == tracedStatements[i]) {
-                int m = tracedPos - i - 1;
-                if (m > 0) System.arraycopy(tracedStatements, i + 1, tracedStatements, i, m);//move to ahead
-                tracedStatements[--tracedPos] = null; // clear to let GC do its work
-                return;
+    final void registerStatement(ProxyStatementBase st) {
+        synchronized (proxyConn) {
+            if (tracedPos == tracedStatements.length) {
+                ProxyStatementBase[] stArray = new ProxyStatementBase[tracedPos << 1];
+                System.arraycopy(tracedStatements, 0, stArray, 0, tracedPos);
+                tracedStatements = stArray;
             }
+            tracedStatements[tracedPos++] = st;
+        }
     }
 
-    final void cleanTracedStatements() {
+    final void unregisterStatement(ProxyStatementBase st) {
+        synchronized (proxyConn) {
+            for (int i = 0; i < tracedPos; i++)
+                if (st == tracedStatements[i]) {
+                    int m = tracedPos - i - 1;
+                    if (m > 0) System.arraycopy(tracedStatements, i + 1, tracedStatements, i, m);//move to ahead
+                    tracedStatements[--tracedPos] = null; // clear to let GC do its work
+                    return;
+                }
+        }
+    }
+
+    final void cleanTracedStatements() {//not add synchronized here,because it has been in synchronized scope
         for (int i = 0; i < tracedPos; i++) {
             tracedStatements[i].setAsClosed();
             tracedStatements[i] = null;// clear to let GC do its work
