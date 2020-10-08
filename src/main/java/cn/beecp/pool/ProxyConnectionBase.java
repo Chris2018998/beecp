@@ -55,11 +55,13 @@ public abstract class ProxyConnectionBase implements Connection {
     public final void close() throws SQLException {
         synchronized (this) {
             if (isClosed) return;
+
+            delegate = CLOSED_CON;
             isClosed = true;
-            if (pConn.tracedPos > 0)
-                pConn.cleanTracedStatements();
+            if(pConn.tracedPos>0)
+             pConn.cleanTracedStatements();
         }
-        delegate = CLOSED_CON;
+
         pConn.recycleSelf();
     }
 
