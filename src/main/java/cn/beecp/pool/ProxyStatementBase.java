@@ -37,12 +37,14 @@ abstract class ProxyStatementBase implements Statement {
     private boolean isClosed;
     private int resultOpenCode = CLOSE_CURRENT_RESULT;
     private ArrayList<ProxyResultSetBase> results;
+    private ProxyConnectionBase proxyConn;
 
     public ProxyStatementBase(Statement delegate, PooledConnection pConn) {
         this.delegate = delegate;
         this.pConn = pConn;
+        proxyConn = pConn.proxyConn;
         if (registered = pConn.traceStatement)
-            pConn.registerStatement(this);
+            proxyConn.registerStatement(this);
     }
 
     private void checkClosed() throws SQLException {
@@ -51,7 +53,7 @@ abstract class ProxyStatementBase implements Statement {
 
     public Connection getConnection() throws SQLException {
         checkClosed();
-        return pConn.proxyConn;
+        return proxyConn;
     }
 
     public boolean isClosed() throws SQLException {
@@ -69,7 +71,7 @@ abstract class ProxyStatementBase implements Statement {
                 results.clear();
             }
             if (registered)
-                pConn.unregisterStatement(this);
+                proxyConn.unregisterStatement(this);
 
             try {
                 delegate.close();

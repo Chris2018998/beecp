@@ -32,11 +32,14 @@ public abstract class ProxyConnectionBase implements Connection {
     protected Connection delegate;
     protected PooledConnection pConn;//called by subclass to update time
     private boolean isClosed;
+    private StatementArray statements;
 
     public ProxyConnectionBase(PooledConnection pConn) {
         this.pConn = pConn;
         pConn.proxyConn = this;
         this.delegate = pConn.rawConn;
+        this.statements = pConn.tracedStatements;
+        //this.tracedStatements = new StatementArray(pConn.traceStatement ? 10 : 0);1 or 2 ?
     }
 
     public Connection getDelegate() throws SQLException {
@@ -55,13 +58,11 @@ public abstract class ProxyConnectionBase implements Connection {
     public final void close() throws SQLException {
         synchronized (this) {
             if (isClosed) return;
-
-            delegate = CLOSED_CON;
             isClosed = true;
-            if(pConn.tracedPos>0)
-             pConn.cleanTracedStatements();
+            delegate = CLOSED_CON;
+            if (statements.size() > 0)
+                statements.clear();
         }
-
         pConn.recycleSelf();
     }
 
@@ -71,6 +72,15 @@ public abstract class ProxyConnectionBase implements Connection {
         } catch (SQLException e) {
         }
     }
+
+    /************* statement trace ******************************/
+    synchronized final void registerStatement(ProxyStatementBase st) {
+        statements.add(st);
+    }
+    synchronized final void unregisterStatement(ProxyStatementBase st) {
+        statements.remove(st);
+    }
+    /************* statement trace ******************************/
 
     public void setAutoCommit(boolean autoCommit) throws SQLException {
         checkClosed();

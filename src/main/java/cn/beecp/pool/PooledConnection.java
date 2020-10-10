@@ -46,11 +46,11 @@ class PooledConnection {
     String defaultCatalog;
     String defaultSchema;
     int defaultNetworkTimeout;
-    int tracedPos;
+
     boolean traceStatement;
+    StatementArray tracedStatements;
     private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
     private FastConnectionPool pool;
-    private ProxyStatementBase[] tracedStatements;
     private int resetCnt;// reset count
     private boolean[] resetInd = new boolean[ResetInd.length];
 
@@ -70,44 +70,10 @@ class PooledConnection {
         curAutoCommit = defaultAutoCommit;
         //default value
 
-        if (traceStatement = config.isTraceStatement())
-            tracedStatements = new ProxyStatementBase[10];
+        traceStatement = config.isTraceStatement();
+        tracedStatements = new StatementArray(traceStatement ? 10 : 0);
         lastAccessTime = currentTimeMillis();//start time
     }
-
-    /************* statement Operation ******************************/
-    final void registerStatement(ProxyStatementBase st) {
-        synchronized (proxyConn) {
-            if (tracedPos == tracedStatements.length) {
-                ProxyStatementBase[] stArray = new ProxyStatementBase[tracedPos << 1];
-                System.arraycopy(tracedStatements, 0, stArray, 0, tracedPos);
-                tracedStatements = stArray;
-            }
-            tracedStatements[tracedPos++] = st;
-        }
-    }
-
-    final void unregisterStatement(ProxyStatementBase st) {
-        synchronized (proxyConn) {
-            for (int i = 0; i < tracedPos; i++)
-                if (st == tracedStatements[i]) {
-                    int m = tracedPos - i - 1;
-                    if (m > 0) System.arraycopy(tracedStatements, i + 1, tracedStatements, i, m);//move to ahead
-                    tracedStatements[--tracedPos] = null; // clear to let GC do its work
-                    return;
-                }
-        }
-    }
-
-    final void cleanTracedStatements() {//not add synchronized here,because it has been in synchronized scope
-        for (int i = 0; i < tracedPos; i++) {
-            tracedStatements[i].setAsClosed();
-            tracedStatements[i] = null;// clear to let GC do its work
-        }
-        tracedPos = 0;
-    }
-
-    /************* statement Operation ******************************/
 
     //close raw connection
     void closeRawConn() {//called by pool
@@ -190,5 +156,48 @@ class PooledConnection {
 
         //clear warnings
         rawConn.clearWarnings();
+    }
+}
+
+//copy from java.util.ArrayList
+final class StatementArray {
+    private int pos;
+    private ProxyStatementBase[] elements;
+
+    public StatementArray(int initSize) {
+        elements = new ProxyStatementBase[initSize];
+    }
+
+    public int size() {
+        return pos;
+    }
+
+    public void add(ProxyStatementBase e) {
+        if (pos == elements.length) {
+            ProxyStatementBase[] newArray = new ProxyStatementBase[elements.length << 1];
+            System.arraycopy(elements, 0, newArray, 0, elements.length);
+            elements = newArray;
+        }
+        elements[pos++] = e;
+    }
+
+    public void remove(ProxyStatementBase e) {
+        for (int i = 0; i < pos; i++)
+            if (e == elements[i]) {
+                int m = pos - i - 1;
+                if (m > 0) System.arraycopy(elements, i + 1, elements, i, m);//move to ahead
+                elements[--pos] = null; // clear to let GC do its work
+                return;
+            }
+    }
+
+    public void clear() {
+        for (int i = 0; i < pos; i++) {
+            if (elements[i] != null) {
+                elements[i].setAsClosed();
+                elements[i] = null;// clear to let GC do its work
+            }
+        }
+        pos = 0;
     }
 }
