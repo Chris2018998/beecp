@@ -48,13 +48,13 @@ public class PoolStaticCenter {
     public static final Object BORROWER_NORMAL = new Object();
     public static final Object BORROWER_WAITING = new Object();
 
-    //Connection reset pos
-    public static final int Pos_AutoCommitInd = 0;
-    public static final int Pos_TransactionIsolationInd = 1;
-    public static final int Pos_ReadOnlyInd = 2;
-    public static final int Pos_CatalogInd = 3;
-    public static final int Pos_SchemaInd = 4;
-    public static final int Pos_NetworkTimeoutInd = 5;
+    //Connection reset pos in array
+    public static final int POS_AUTO = 0;
+    public static final int POS_TRANS= 1;
+    public static final int POS_READONLY = 2;
+    public static final int POS_CATALOG = 3;
+    public static final int POS_SCHEMA = 4;
+    public static final int POS_NETWORK = 5;
 
     public static final SQLTimeoutException RequestTimeoutException = new SQLTimeoutException("Request timeout");
     public static final SQLException RequestInterruptException = new SQLException("Request interrupt");

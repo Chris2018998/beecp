@@ -33,7 +33,7 @@ import static java.lang.System.currentTimeMillis;
  * @version 1.0
  */
 class PooledConnection {
-    private static final boolean[] ResetInd = new boolean[6];
+    private static final boolean[] FALSE_ARRAY = new boolean[6];
     volatile int state;
     Connection rawConn;
     ProxyConnectionBase proxyConn;
@@ -52,7 +52,7 @@ class PooledConnection {
     private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
     private FastConnectionPool pool;
     private int resetCnt;// reset count
-    private boolean[] resetInd = new boolean[ResetInd.length];
+    private boolean[] resetInd = new boolean[FALSE_ARRAY.length];
 
     public PooledConnection(Connection rawConn, int connState, FastConnectionPool connPool, BeeDataSourceConfig config) throws SQLException {
         pool = connPool;
@@ -72,7 +72,7 @@ class PooledConnection {
 
         traceStatement = config.isTraceStatement();
         tracedStatements = new StatementArray(traceStatement ? 10 : 0);
-        lastAccessTime = currentTimeMillis();//start time
+        lastAccessTime = currentTimeMillis();//first time
     }
 
     //close raw connection
@@ -151,7 +151,7 @@ class PooledConnection {
             //for JDK1.7 end
 
             resetCnt = 0;
-            arraycopy(ResetInd, 0, resetInd, 0, 6);
+            arraycopy(FALSE_ARRAY, 0, resetInd, 0, 6);
         }//reset end
 
         //clear warnings

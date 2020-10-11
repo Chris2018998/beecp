@@ -39,7 +39,7 @@ public abstract class ProxyConnectionBase implements Connection {
         pConn.proxyConn = this;
         this.delegate = pConn.rawConn;
         this.statements = pConn.tracedStatements;//safe?
-        //this.tracedStatements = new StatementArray(pConn.traceStatement ? 10 : 0);1 or 2 ?
+        //this.tracedStatements = new StatementArray(pConn.traceStatement ? 10 : 0);
     }
 
     public Connection getDelegate() throws SQLException {
@@ -56,7 +56,7 @@ public abstract class ProxyConnectionBase implements Connection {
     }
 
     public final void close() throws SQLException {
-        synchronized (this) {
+        synchronized (this) {//safe close
             if (isClosed) return;
             isClosed = true;
             delegate = CLOSED_CON;
@@ -73,7 +73,7 @@ public abstract class ProxyConnectionBase implements Connection {
         }
     }
 
-    /************* statement trace ******************************/
+    /************* statement trace :logic from mysql driver******************************/
     synchronized final void registerStatement(ProxyStatementBase st) {
         statements.add(st);
     }
@@ -90,22 +90,22 @@ public abstract class ProxyConnectionBase implements Connection {
         delegate.setAutoCommit(autoCommit);
         pConn.curAutoCommit = autoCommit;
         if (autoCommit) pConn.commitDirtyInd = false;
-        pConn.setResetInd(Pos_AutoCommitInd, autoCommit != pConn.defaultAutoCommit);
+        pConn.setResetInd(POS_AUTO, autoCommit != pConn.defaultAutoCommit);
     }
 
     public void setTransactionIsolation(int level) throws SQLException {
         delegate.setTransactionIsolation(level);
-        pConn.setResetInd(Pos_TransactionIsolationInd, level != pConn.defaultTransactionIsolationCode);
+        pConn.setResetInd(POS_TRANS, level != pConn.defaultTransactionIsolationCode);
     }
 
     public void setReadOnly(boolean readOnly) throws SQLException {
         delegate.setReadOnly(readOnly);
-        pConn.setResetInd(Pos_ReadOnlyInd, readOnly != pConn.defaultReadOnly);
+        pConn.setResetInd(POS_READONLY, readOnly != pConn.defaultReadOnly);
     }
 
     public void setCatalog(String catalog) throws SQLException {
         delegate.setCatalog(catalog);
-        pConn.setResetInd(Pos_CatalogInd, !PoolStaticCenter.equals(catalog, pConn.defaultCatalog));
+        pConn.setResetInd(POS_CATALOG, !PoolStaticCenter.equals(catalog, pConn.defaultCatalog));
     }
 
     public boolean isValid(int timeout) throws SQLException {
@@ -115,7 +115,7 @@ public abstract class ProxyConnectionBase implements Connection {
     //for JDK1.7 begin
     public void setSchema(String schema) throws SQLException {
         delegate.setSchema(schema);
-        pConn.setResetInd(Pos_SchemaInd, !PoolStaticCenter.equals(schema, pConn.defaultSchema));
+        pConn.setResetInd(POS_SCHEMA, !PoolStaticCenter.equals(schema, pConn.defaultSchema));
     }
 
     public void abort(Executor executor) throws SQLException {
@@ -123,11 +123,7 @@ public abstract class ProxyConnectionBase implements Connection {
         if (executor == null) throw new SQLException("executor can't be null");
         executor.execute(new Runnable() {
             public void run() {
-                try {
-                    ProxyConnectionBase.this.close();
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
+                ProxyConnectionBase.this.trySetAsClosed();
             }
         });
     }
@@ -140,7 +136,7 @@ public abstract class ProxyConnectionBase implements Connection {
         checkClosed();
         if (pConn.supportNetworkTimeout()) {
             delegate.setNetworkTimeout(executor, milliseconds);
-            pConn.setResetInd(Pos_NetworkTimeoutInd, milliseconds != pConn.defaultNetworkTimeout);
+            pConn.setResetInd(POS_NETWORK, milliseconds != pConn.defaultNetworkTimeout);
         } else {
             throw DriverNotSupportNetworkTimeoutException;
         }

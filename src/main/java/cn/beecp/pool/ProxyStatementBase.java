@@ -76,7 +76,7 @@ abstract class ProxyStatementBase implements Statement {
             try {
                 delegate.close();
             } finally {
-                delegate = CLOSED_CSTM;
+                delegate = CLOSED_CSTM;//why? because Mysql's PreparedStatement just only remark as closed with useServerCache mode
             }
         }
     }

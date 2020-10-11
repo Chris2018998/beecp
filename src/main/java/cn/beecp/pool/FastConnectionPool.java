@@ -629,7 +629,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             removeAllConnections(force, DESC_REMOVE_RESET);
             commonLog.info("All pooledConn were cleared");
             poolState.set(POOL_NORMAL);// restore state;
-            commonLog.info("BeeCP({})finished reseting", poolName);
+            commonLog.info("BeeCP({})finished resetting", poolName);
         }
     }
 

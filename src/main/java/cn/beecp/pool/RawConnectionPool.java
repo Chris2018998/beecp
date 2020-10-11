@@ -71,6 +71,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
                 0,
                 poolConfig.getBorrowSemaphoreSize(),
                 poolMode,
+                0,
                 poolConfig.getDriverClassName());
 
         poolState.set(POOL_NORMAL);
