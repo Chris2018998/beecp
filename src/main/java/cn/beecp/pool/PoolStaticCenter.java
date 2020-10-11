@@ -65,13 +65,14 @@ public class PoolStaticCenter {
     public static final SQLException ResultSetClosedException = new SQLException("No operations allowed after resultSet closed.");
     public static final SQLException AutoCommitChangeForbiddenException = new SQLException("Execute 'commit' or 'rollback' before this operation");
     public static final SQLException DriverNotSupportNetworkTimeoutException = new SQLException("Driver not support 'networkTimeout'");
+    public static final Logger commonLog = LoggerFactory.getLogger(PoolStaticCenter.class);
 
     public static final Connection CLOSED_CON = (Connection) Proxy.newProxyInstance(
             PoolStaticCenter.class.getClassLoader(),
             new Class[]{Connection.class},
             new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    return call(method.getName(), 1);
+                    throw ConnectionClosedException;
                 }
             }
     );
@@ -81,7 +82,7 @@ public class PoolStaticCenter {
             new Class[]{CallableStatement.class},
             new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    return call(method.getName(), 2);
+                    throw StatementClosedException;
                 }
             }
     );
@@ -91,25 +92,10 @@ public class PoolStaticCenter {
             new Class[]{ResultSet.class},
             new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    return call(method.getName(), 3);
+                    throw ResultSetClosedException;
                 }
             }
     );
-
-    public static final Logger commonLog = LoggerFactory.getLogger(PoolStaticCenter.class);
-
-    private static final Object call(String methodName, int type) throws SQLException {
-        switch (type) {
-            case 1:
-                throw ConnectionClosedException;
-            case 2:
-                throw StatementClosedException;
-            case 3:
-                throw ResultSetClosedException;
-            default:
-                throw ConnectionClosedException;
-        }
-    }
 
     public static final boolean equals(String a, String b) {
         return a == null ? b == null : a.equals(b);
