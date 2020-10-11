@@ -411,8 +411,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (failed) {
                     BwrStUpd.compareAndSet(borrower, state, failedCause);
                 } else {
-                    long timeout;
-                    if ((timeout = deadline - nanoTime()) > 0L) {
+                    long timeout=deadline - nanoTime();
+                    if (timeout > 0L) {
                         if (spinSize > 0) {
                             --spinSize;
                         } else if (timeout > spinForTimeoutThreshold && BwrStUpd.compareAndSet(borrower, state, BORROWER_WAITING)) {
