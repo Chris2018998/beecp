@@ -38,7 +38,7 @@ public abstract class ProxyConnectionBase implements Connection {
         this.pConn = pConn;
         pConn.proxyConn = this;
         this.delegate = pConn.rawConn;
-        this.statements = pConn.tracedStatements;
+        this.statements = pConn.tracedStatements;//safe?
         //this.tracedStatements = new StatementArray(pConn.traceStatement ? 10 : 0);1 or 2 ?
     }
 
