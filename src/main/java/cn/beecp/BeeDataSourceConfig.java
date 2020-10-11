@@ -323,10 +323,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
     }
 
     public void setMaxActive(int maxActive) {
-        if (!this.checked && maxActive > 1) {
+        if (!this.checked && maxActive > 0) {
             this.maxActive = maxActive;
             //fix issue:#19 Chris-2020-08-16 begin
-            this.borrowSemaphoreSize = Math.min(maxActive/2,Runtime.getRuntime().availableProcessors());
+            if(maxActive>1)
+             this.borrowSemaphoreSize = Math.min(maxActive/2,Runtime.getRuntime().availableProcessors());
             //fix issue:#19 Chris-2020-08-16 end
         }
     }
