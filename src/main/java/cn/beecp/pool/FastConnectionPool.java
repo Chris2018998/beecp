@@ -402,7 +402,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     }
 
                     borrower.state = BORROWER_NORMAL;
-                    yield();
+                    yield();continue;
                 } else if (state instanceof SQLException) {
                     waitQueue.remove(borrower);
                     throw (SQLException) state;
