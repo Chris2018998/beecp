@@ -56,3 +56,30 @@
 
 [INFO]2020-10-13 23:14:42-HikariPool-1 - Shutdown initiated...
 [INFO]2020-10-13 23:14:42-HikariPool-1 - Shutdown completed.
+
+
+
+[INFO]2020-10-15 20:26:51-BeeCP(FastPool-1)starting....
+[INFO]2020-10-15 20:26:51-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.mysql.jdbc.Driver}
+[INFO]2020-10-15 20:26:51-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2020-10-15 20:27:47-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:1000000,total time:10067884ms,avg time:10.091013ms,min time:0ms,max time:8054ms
+[INFO]2020-10-15 20:27:47-success count       :997708
+[INFO]2020-10-15 20:27:47-fail count          :2292
+[INFO]2020-10-15 20:27:47-avr(ms)             :10.091013
+[INFO]2020-10-15 20:27:47-min(ms)             :0
+[INFO]2020-10-15 20:27:47-max(ms)             :8054
+[INFO]2020-10-15 20:27:47-time==0ms           :930931
+[INFO]2020-10-15 20:27:47-1ms=<time<=10ms     :63966
+[INFO]2020-10-15 20:27:47-10ms<time<=50ms     :825
+[INFO]2020-10-15 20:27:47-50ms<time<=100ms    :180
+[INFO]2020-10-15 20:27:47-100ms<time<=200ms   :138
+[INFO]2020-10-15 20:27:47-200ms<time<=500ms   :151
+[INFO]2020-10-15 20:27:47-500ms<time<=1000ms  :97
+[INFO]2020-10-15 20:27:47-1000ms<time<=2000ms :64
+[INFO]2020-10-15 20:27:47-2000ms<time<=8000ms :1334
+[INFO]2020-10-15 20:27:47-time>8000ms         :22
+[INFO]2020-10-15 20:27:47-
+
+[INFO]2020-10-15 20:27:47-BeeCP(FastPool-1)begin to shutdown
+[INFO]2020-10-15 20:27:47-BeeCP(FastPool-1)has shutdown
+
