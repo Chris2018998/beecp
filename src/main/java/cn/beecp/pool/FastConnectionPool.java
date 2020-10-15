@@ -375,7 +375,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
         try {//borrowSemaphore acquired
             //1:try to search one from array
-            for (PooledConnection pConn : connArray) {
+            PooledConnection[] tempArray=connArray;
+            for (PooledConnection pConn : tempArray) {
                 if (ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn))
                     return createProxyConnection(pConn, borrower);
             }
