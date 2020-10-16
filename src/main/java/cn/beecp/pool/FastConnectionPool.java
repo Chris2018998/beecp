@@ -375,7 +375,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
         try {//borrowSemaphore acquired
             //1:try to search one from array
-            PooledConnection[] tempArray=connArray;
+            PooledConnection[] tempArray = connArray;
             for (PooledConnection pConn : tempArray) {
                 if (ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn))
                     return createProxyConnection(pConn, borrower);
@@ -403,7 +403,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     }
 
                     borrower.state = BORROWER_NORMAL;
-                    yield();continue;
+                    yield();
+                    continue;
                 } else if (state instanceof SQLException) {
                     waitQueue.remove(borrower);
                     throw (SQLException) state;
@@ -412,12 +413,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (failed) {
                     BwrStUpd.compareAndSet(borrower, state, failedCause);
                 } else {
-                    long timeout=deadline - nanoTime();
+                    long timeout = deadline - nanoTime();
                     if (timeout > 0L) {
                         if (spinSize > 0) {
                             --spinSize;
                         } else if (timeout > spinForTimeoutThreshold && BwrStUpd.compareAndSet(borrower, state, BORROWER_WAITING)) {
-                            parkNanos(this, timeout);
+                            parkNanos(borrower, timeout);
                             if (borrower.thread.isInterrupted()) {
                                 failed = true;
                                 failedCause = RequestInterruptException;
