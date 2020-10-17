@@ -42,18 +42,22 @@ public class BeeSemaphore {
     private static final int STS_FAILED = 4;
     //park min nanoSecond,spin min time value
     private static final long parkForTimeoutThreshold = 1000L;
+    /**
+     * The number of times to spin before blocking in timed waits.
+     */
+    private static final int maxTimedSpins = (Runtime.getRuntime().availableProcessors() < 2) ? 0 : 32;
+
+    //Thread Interrupted Exception
+    private static final InterruptedException RequestInterruptException = new InterruptedException();
 
     //state updater
     private static final AtomicIntegerFieldUpdater<Waiter> updater = AtomicIntegerFieldUpdater
             .newUpdater(Waiter.class, "state");
-    //Thread Interrupted Exception
-    private static final InterruptedException RequestInterruptException = new InterruptedException();
 
     /**
      * Synchronization implementation for semaphore.
      */
     private Sync sync;
-
     public BeeSemaphore(int size, boolean fair) {
         sync = fair ? new FairSync(size) : new NonfairSync(size);
     }
@@ -117,20 +121,17 @@ public class BeeSemaphore {
         public Sync(int size) {
             this.size = size;
         }
+        public boolean hasQueuedThreads() {
+            return !waiterQueue.isEmpty();
+        }
+        public int getQueueLength() {
+            return waiterQueue.size();
+        }
 
         public int availablePermits() {
             int availableSize = size - usingSize.get();
             return (availableSize > 0) ? availableSize : 0;
         }
-
-        public boolean hasQueuedThreads() {
-            return !waiterQueue.isEmpty();
-        }
-
-        public int getQueueLength() {
-            return waiterQueue.size();
-        }
-
         private final boolean acquirePermit() {
             while (true) {
                 int expect = usingSize.get();
@@ -147,7 +148,7 @@ public class BeeSemaphore {
          * @param stsCode
          * @return true success,false failed
          */
-        protected final boolean transferToWaiter(Waiter waiter, int stsCode) {
+        protected static final boolean transferToWaiter(Waiter waiter, int stsCode) {
             for (int state = waiter.state; (state == STS_NORMAL || state == STS_WAITING); state = waiter.state) {
                 if (updater.compareAndSet(waiter, state, stsCode)) {
                     if (state == STS_WAITING) LockSupport.unpark(waiter.thread);
@@ -171,7 +172,9 @@ public class BeeSemaphore {
             Waiter waiter = new Waiter();
             Thread thread = waiter.thread;
             waiterQueue.offer(waiter);
+            int spinSize = (waiterQueue.peek() == waiter) ? maxTimedSpins : 0;
             final long deadline = nanoTime() + unit.toNanos(timeout);
+
             while (true) {
                 int state = waiter.state;
                 if (state == STS_ACQUIRED) {
@@ -192,9 +195,12 @@ public class BeeSemaphore {
                             return false;
                     }
                 } else {
-                    if ((timeout = deadline - nanoTime()) > 0L) {
-                        if (timeout > parkForTimeoutThreshold && updater.compareAndSet(waiter, state, STS_WAITING)) {
-                            parkNanos(this, timeout);
+                    timeout = deadline - nanoTime();
+                    if (timeout > 0L) {
+                        if (spinSize > 0) {
+                            --spinSize;
+                        } else if (timeout > parkForTimeoutThreshold && updater.compareAndSet(waiter, state, STS_WAITING)) {
+                            parkNanos(waiter, timeout);
                             if (thread.isInterrupted()) {
                                 isFailed = true;
                                 isInterrupted = true;

@@ -191,11 +191,12 @@ public final class BeeTransferQueue<E> extends AbstractQueue<E> {
                         return null;
                 }
             } else {
-                if ((timeout = deadline - nanoTime()) > 0L) {
+                timeout = deadline - nanoTime();
+                if (timeout > 0L) {
                     if (spinSize > 0) {
                         --spinSize;
                     } else if (timeout > spinForTimeoutThreshold && TransferUpdater.compareAndSet(waiter, state, STS_WAITING)) {
-                        parkNanos(this, timeout);
+                        parkNanos(waiter, timeout);
                         if (thread.isInterrupted()) {
                             isFailed = true;
                             isInterrupted = true;
