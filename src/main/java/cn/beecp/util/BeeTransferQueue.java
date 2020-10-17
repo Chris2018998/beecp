@@ -168,9 +168,7 @@ public final class BeeTransferQueue<E> extends AbstractQueue<E> {
 
         boolean isFailed = false;
         boolean isInterrupted = false;
-
         Waiter waiter = new Waiter();
-        Thread thread = waiter.thread;
         waiterQueue.offer(waiter);
 
         int spinSize = (waiterQueue.peek() == waiter) ? maxTimedSpins : 0;
@@ -197,7 +195,7 @@ public final class BeeTransferQueue<E> extends AbstractQueue<E> {
                         --spinSize;
                     } else if (timeout > spinForTimeoutThreshold && TransferUpdater.compareAndSet(waiter, state, STS_WAITING)) {
                         parkNanos(waiter, timeout);
-                        if (thread.isInterrupted()) {
+                        if (waiter.thread.isInterrupted()) {
                             isFailed = true;
                             isInterrupted = true;
                         }
