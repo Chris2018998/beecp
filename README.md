@@ -152,11 +152,11 @@ Function List
 
 4: Idle timeout and holding timeout 
 
-5: Preparedstatement cache support (optional)
+5: Before connection recovery, things can be rolled back
 
-6: Before connection recovery, things can be rolled back
+6: Support property reset before connection recycling (for example: autocommit, transactionisolation, readonly, Catlog, schema, networktimeout)
 
-7: Support property reset before connection recycling (for example: autocommit, transactionisolation, readonly, Catlog, schema, networktimeout)
+7: XDataSource
 
 8: JMX support
 
