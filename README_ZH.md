@@ -151,11 +151,11 @@ public class DataSourceConfig {
 
 4：闲置超时和持有超时处理
 
-5：PreparedStatement缓存支持（也可不用）
+5：支持连接回收前，事物回滚
 
-6：支持连接回收前，事物回滚
+6：支持连接回收前，属性重置（比如：autoCommit,transactionIsolation,readonly,catlog,schema,networkTimeout）
 
-7：支持连接回收前，属性重置（比如：autoCommit,transactionIsolation,readonly,catlog,schema,networkTimeout）
+7:支持XADataSource
 
 8: 支持JMX
 
@@ -175,7 +175,6 @@ public class DataSourceConfig {
 | initialSize     | 连接池初始大小                  |                                   |
 | maxActive       | 连接池最大个数                  |                                   | 
 | borrowConcurrentSize  | 信号量请求并发数（借用者线程数）| 不允许大于连接最大数                 |
-| preparedStatementCacheSize |SQL宣言缓存大小       | 0 表示不适用缓存                    |
 | defaultAutoCommit|连接是否为自动提交              | 默认true                            |
 | defaultTransactionIsolation|事物等级             | 默认读提交，Connection.TRANSACTION_READ_COMMITTED |
 | defaultCatalog    |                             |                                     |
