@@ -25,3 +25,7 @@ BeeCP-2.5.2,BeeCP-2.5.3
  
  BeeCP-2.5.4.1
  1:修复spring cloud 启动时会加载两次上下文，在切换上下文时产生的关闭异常(#20)
+ 
+  BeeCP-3.0.0
+  1: 移除PreparedStatement缓存（一般驱动都提供）
+  2：增加XADataSource支持
