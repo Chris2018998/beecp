@@ -376,13 +376,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         try {//borrowSemaphore acquired
             //1:try to search one from array
             PooledConnection[] tempArray = connArray;
-            for (PooledConnection pConn : tempArray) {
+            int len = tempArray.length;
+            PooledConnection pConn;
+            for (int i = 0; i < len; i++) {
+                pConn = tempArray[i];
                 if (ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn))
                     return createProxyConnection(pConn, borrower);
             }
 
             //2:try to create one directly
-            PooledConnection pConn;
             if (connArray.length < poolMaxSize && (pConn = createPooledConn(CONNECTION_USING)) != null)
                 return createProxyConnection(pConn, borrower);
 
@@ -402,9 +404,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         return createProxyConnection(pConn, borrower);
                     }
 
-                    borrower.state = BORROWER_NORMAL;
+                    state = BORROWER_NORMAL;
+                    borrower.state = state;
                     yield();
-                    continue;
                 } else if (state instanceof SQLException) {
                     waitQueue.remove(borrower);
                     throw (SQLException) state;
