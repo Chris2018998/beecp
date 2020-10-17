@@ -125,7 +125,7 @@ Java7
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>2.5.4.1</version>
+   <version>3.0.0</version>
 </dependency>
 ```
 
@@ -176,7 +176,6 @@ Configuration
 | initialSize        | pool initial size             |                                   |
 | maxActive          | pool max size                 |                                   | 
 | borrowConcurrentSize | borrower thread concurrent size  | not greater than  'maxActive'   |
-| preparedStatementCacheSize |statment cache size       | 0 cache is invalid            |
 | defaultAutoCommit  |default autoCommit                | default is true               |
 | defaultTransactionIsolation|trasaction level          | default:Connection.TRANSACTION_READ_COMMITTED |
 | defaultCatalog     |                                  |                                     |
