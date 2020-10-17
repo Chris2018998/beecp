@@ -10,3 +10,8 @@ BeeCP-2.5.1
  1:Connection retrieve source code optimization 
  2:fix Connction reanonly not reset issue(#18)
  3:fix Connction networtimeout check worning(#16)
+
+
+BeeCP-3.0.0
+1: Remove PreparedStatement cache from pool
+2: Support XADataSource
