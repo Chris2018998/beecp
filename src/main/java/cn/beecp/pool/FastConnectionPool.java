@@ -390,8 +390,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
             //3:try to get one transferred connection
             boolean failed = false;
+            SQLException failedCause = null;
             borrower.state = BORROWER_NORMAL;
-            SQLException failedCause = RequestTimeoutException;
 
             waitQueue.offer(borrower);
             int spinSize = (waitQueue.peek() == borrower) ? maxTimedSpins : 0;
@@ -428,6 +428,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         }
                     } else {//timeout
                         failed = true;
+                        failedCause = RequestTimeoutException;
                     }
                 }
             }//while
