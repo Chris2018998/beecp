@@ -125,7 +125,7 @@ Java7
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>3.0.0</version>
+   <version>3.0.1</version>
 </dependency>
 ```
 
