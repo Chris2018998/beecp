@@ -12,6 +12,10 @@ BeeCP-2.5.1
  3:fix Connction networtimeout check worning(#16)
 
 
-BeeCP-3.0.0
+
+BeeCP-3.0.1
 1: Remove PreparedStatement cache from pool
 2: Support XADataSource
+
+BeeCP-3.0.1
+1: Connection transfer performance optimization
