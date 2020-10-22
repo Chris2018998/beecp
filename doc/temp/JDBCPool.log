@@ -1,392 +1,79 @@
-[INFO]2020-10-08 14:20:22-[JDBC INFO]
-[INFO]2020-10-08 14:20:22-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
-[INFO]2020-10-08 14:20:22-[URL:jdbc:stub]
-[INFO]2020-10-08 14:20:22-
+beecp-3.0.0
+[INFO]2020-10-13 23:10:55-[JDBC INFO]
+[INFO]2020-10-13 23:10:55-[Driver:com.mysql.jdbc.Driver]
+[INFO]2020-10-13 23:10:55-[URL:jdbc:mysql://localhost/test]
+[INFO]2020-10-13 23:10:55-
 
-[INFO]2020-10-08 14:20:22-MLog clients using slf4j logging.
-[INFO]2020-10-08 14:20:22-Initializing c3p0-0.9.5.2 [built 08-December-2015 22:06:04 -0800; debug? true; trace: 10]
-[INFO]2020-10-08 14:20:22-Pool[C3P0 -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
-[INFO]2020-10-08 14:20:22-Initializing c3p0 pool... com.mchange.v2.c3p0.ComboPooledDataSource [ acquireIncrement -> 3, acquireRetryAttempts -> 30, acquireRetryDelay -> 1000, autoCommitOnClose -> false, automaticTestTable -> null, breakAfterAcquireFailure -> false, checkoutTimeout -> 80000, connectionCustomizerClassName -> null, connectionTesterClassName -> com.mchange.v2.c3p0.impl.DefaultConnectionTester, contextClassLoaderSource -> caller, dataSourceName -> 1hge15xad1wlkzo1341qz7|222114ba, debugUnreturnedConnectionStackTraces -> false, description -> null, driverClass -> com.zaxxer.hikari.benchmark.stubs.StubDriver, extensions -> {}, factoryClassLocation -> null, forceIgnoreUnresolvedTransactions -> false, forceSynchronousCheckins -> false, forceUseNamedDriverClass -> false, identityToken -> 1hge15xad1wlkzo1341qz7|222114ba, idleConnectionTestPeriod -> 0, initialPoolSize -> 10, jdbcUrl -> jdbc:stub, maxAdministrativeTaskTime -> 0, maxConnectionAge -> 0, maxIdleTime -> 0, maxIdleTimeExcessConnections -> 0, maxPoolSize -> 10, maxStatements -> 0, maxStatementsPerConnection -> 20, minPoolSize -> 10, numHelperThreads -> 3, preferredTestQuery -> select 1 from dual, privilegeSpawnedThreads -> false, properties -> {user=******, password=******}, propertyCycle -> 0, statementCacheNumDeferredCloseThreads -> 0, testConnectionOnCheckin -> false, testConnectionOnCheckout -> true, unreturnedConnectionTimeout -> 0, userOverrides -> {}, usesTraditionalReflectiveProxies -> false ]
-[INFO]2020-10-08 14:20:31-Pool[C3P0 -- Multiple thread borrow] -- Execution count:1000000,total time:8463397ms,avg time:8.463397ms,min time:0ms,max time:707ms
-[INFO]2020-10-08 14:20:31-success count       :1000000
-[INFO]2020-10-08 14:20:31-fail count          :0
-[INFO]2020-10-08 14:20:31-avr(ms)             :8.463397
-[INFO]2020-10-08 14:20:31-min(ms)             :0
-[INFO]2020-10-08 14:20:31-max(ms)             :707
-[INFO]2020-10-08 14:20:31-time==0ms           :646516
-[INFO]2020-10-08 14:20:31-1ms=<time<=10ms     :166586
-[INFO]2020-10-08 14:20:31-10ms<time<=50ms     :141273
-[INFO]2020-10-08 14:20:31-50ms<time<=100ms    :34388
-[INFO]2020-10-08 14:20:31-100ms<time<=200ms   :10148
-[INFO]2020-10-08 14:20:31-200ms<time<=500ms   :1078
-[INFO]2020-10-08 14:20:31-500ms<time<=1000ms  :11
-[INFO]2020-10-08 14:20:31-1000ms<time<=2000ms :0
-[INFO]2020-10-08 14:20:31-2000ms<time<=8000ms :0
-[INFO]2020-10-08 14:20:31-time>8000ms         :0
-[INFO]2020-10-08 14:20:31-
+[INFO]2020-10-13 23:10:55-BeeCP(FastPool-1)starting....
+[INFO]2020-10-13 23:10:55-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.mysql.jdbc.Driver}
+[INFO]2020-10-13 23:10:55-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2020-10-13 23:11:51-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:1000000,total time:13374119ms,avg time:13.405138ms,min time:0ms,max time:9839ms
+[INFO]2020-10-13 23:11:51-success count       :997686
+[INFO]2020-10-13 23:11:51-fail count          :2314
+[INFO]2020-10-13 23:11:51-avr(ms)             :13.405138
+[INFO]2020-10-13 23:11:51-min(ms)             :0
+[INFO]2020-10-13 23:11:51-max(ms)             :9839
+[INFO]2020-10-13 23:11:51-time==0ms           :939443
+[INFO]2020-10-13 23:11:51-1ms=<time<=10ms     :54680
+[INFO]2020-10-13 23:11:51-10ms<time<=50ms     :779
+[INFO]2020-10-13 23:11:51-50ms<time<=100ms    :203
+[INFO]2020-10-13 23:11:51-100ms<time<=200ms   :80
+[INFO]2020-10-13 23:11:51-200ms<time<=500ms   :87
+[INFO]2020-10-13 23:11:51-500ms<time<=1000ms  :80
+[INFO]2020-10-13 23:11:51-1000ms<time<=2000ms :269
+[INFO]2020-10-13 23:11:51-2000ms<time<=8000ms :2045
+[INFO]2020-10-13 23:11:51-time>8000ms         :20
+[INFO]2020-10-13 23:11:51-
+[INFO]2020-10-13 23:11:51-BeeCP(FastPool-1)begin to shutdown
+[INFO]2020-10-13 23:11:51-BeeCP(FastPool-1)has shutdown
 
-[INFO]2020-10-08 14:20:36-Pool[DBCP -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
-[INFO]2020-10-08 14:20:41-Pool[DBCP -- Multiple thread borrow] -- Execution count:1000000,total time:5200391ms,avg time:5.200391ms,min time:0ms,max time:185ms
-[INFO]2020-10-08 14:20:41-success count       :1000000
-[INFO]2020-10-08 14:20:41-fail count          :0
-[INFO]2020-10-08 14:20:41-avr(ms)             :5.200391
-[INFO]2020-10-08 14:20:41-min(ms)             :0
-[INFO]2020-10-08 14:20:41-max(ms)             :185
-[INFO]2020-10-08 14:20:41-time==0ms           :82
-[INFO]2020-10-08 14:20:41-1ms=<time<=10ms     :992716
-[INFO]2020-10-08 14:20:41-10ms<time<=50ms     :5312
-[INFO]2020-10-08 14:20:41-50ms<time<=100ms    :876
-[INFO]2020-10-08 14:20:41-100ms<time<=200ms   :1014
-[INFO]2020-10-08 14:20:41-200ms<time<=500ms   :0
-[INFO]2020-10-08 14:20:41-500ms<time<=1000ms  :0
-[INFO]2020-10-08 14:20:41-1000ms<time<=2000ms :0
-[INFO]2020-10-08 14:20:41-2000ms<time<=8000ms :0
-[INFO]2020-10-08 14:20:41-time>8000ms         :0
-[INFO]2020-10-08 14:20:41-
-
-[INFO]2020-10-08 14:20:47-Pool[Tomcat -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
-[INFO]2020-10-08 14:20:50-Pool[Tomcat -- Multiple thread borrow] -- Execution count:1000000,total time:2927550ms,avg time:2.927550ms,min time:0ms,max time:189ms
-[INFO]2020-10-08 14:20:50-success count       :1000000
-[INFO]2020-10-08 14:20:50-fail count          :0
-[INFO]2020-10-08 14:20:50-avr(ms)             :2.927550
-[INFO]2020-10-08 14:20:50-min(ms)             :0
-[INFO]2020-10-08 14:20:50-max(ms)             :189
-[INFO]2020-10-08 14:20:50-time==0ms           :4
-[INFO]2020-10-08 14:20:50-1ms=<time<=10ms     :993903
-[INFO]2020-10-08 14:20:50-10ms<time<=50ms     :4332
-[INFO]2020-10-08 14:20:50-50ms<time<=100ms    :326
-[INFO]2020-10-08 14:20:50-100ms<time<=200ms   :1435
-[INFO]2020-10-08 14:20:50-200ms<time<=500ms   :0
-[INFO]2020-10-08 14:20:50-500ms<time<=1000ms  :0
-[INFO]2020-10-08 14:20:50-1000ms<time<=2000ms :0
-[INFO]2020-10-08 14:20:50-2000ms<time<=8000ms :0
-[INFO]2020-10-08 14:20:50-time>8000ms         :0
-[INFO]2020-10-08 14:20:50-
-
-[INFO]2020-10-08 14:20:55-Pool[Vibur -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
-[INFO]2020-10-08 14:20:56-Pool[Vibur -- Multiple thread borrow] -- Execution count:1000000,total time:280649ms,avg time:0.280649ms,min time:0ms,max time:444ms
-[INFO]2020-10-08 14:20:56-success count       :1000000
-[INFO]2020-10-08 14:20:56-fail count          :0
-[INFO]2020-10-08 14:20:56-avr(ms)             :0.280649
-[INFO]2020-10-08 14:20:56-min(ms)             :0
-[INFO]2020-10-08 14:20:56-max(ms)             :444
-[INFO]2020-10-08 14:20:56-time==0ms           :999203
-[INFO]2020-10-08 14:20:56-1ms=<time<=10ms     :31
-[INFO]2020-10-08 14:20:56-10ms<time<=50ms     :3
-[INFO]2020-10-08 14:20:56-50ms<time<=100ms    :0
-[INFO]2020-10-08 14:20:56-100ms<time<=200ms   :17
-[INFO]2020-10-08 14:20:56-200ms<time<=500ms   :746
-[INFO]2020-10-08 14:20:56-500ms<time<=1000ms  :0
-[INFO]2020-10-08 14:20:56-1000ms<time<=2000ms :0
-[INFO]2020-10-08 14:20:56-2000ms<time<=8000ms :0
-[INFO]2020-10-08 14:20:56-time>8000ms         :0
-[INFO]2020-10-08 14:20:56-
-
-[INFO]2020-10-08 14:21:01-Pool[Druid -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
-[INFO]2020-10-08 14:21:01-{dataSource-1} inited
-[INFO]2020-10-08 14:21:05-Pool[Druid -- Multiple thread borrow] -- Execution count:1000000,total time:2873355ms,avg time:2.873355ms,min time:0ms,max time:1734ms
-[INFO]2020-10-08 14:21:05-success count       :1000000
-[INFO]2020-10-08 14:21:05-fail count          :0
-[INFO]2020-10-08 14:21:05-avr(ms)             :2.873355
-[INFO]2020-10-08 14:21:05-min(ms)             :0
-[INFO]2020-10-08 14:21:05-max(ms)             :1734
-[INFO]2020-10-08 14:21:05-time==0ms           :969854
-[INFO]2020-10-08 14:21:05-1ms=<time<=10ms     :10203
-[INFO]2020-10-08 14:21:05-10ms<time<=50ms     :6292
-[INFO]2020-10-08 14:21:05-50ms<time<=100ms    :4441
-[INFO]2020-10-08 14:21:05-100ms<time<=200ms   :4571
-[INFO]2020-10-08 14:21:05-200ms<time<=500ms   :3983
-[INFO]2020-10-08 14:21:05-500ms<time<=1000ms  :625
-[INFO]2020-10-08 14:21:05-1000ms<time<=2000ms :31
-[INFO]2020-10-08 14:21:05-2000ms<time<=8000ms :0
-[INFO]2020-10-08 14:21:05-time>8000ms         :0
-[INFO]2020-10-08 14:21:05-
-
-[INFO]2020-10-08 14:21:05-{dataSource-1} closing ...
-[INFO]2020-10-08 14:21:05-{dataSource-1} closed
-[INFO]2020-10-08 14:21:10-HikariPool-1 - Starting...
-[INFO]2020-10-08 14:21:10-HikariPool-1 - Start completed.
-[INFO]2020-10-08 14:21:10-Pool[HikariCP -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
-[INFO]2020-10-08 14:21:11-Pool[HikariCP -- Multiple thread borrow] -- Execution count:1000000,total time:425429ms,avg time:0.425429ms,min time:0ms,max time:696ms
-[INFO]2020-10-08 14:21:11-success count       :1000000
-[INFO]2020-10-08 14:21:11-fail count          :0
-[INFO]2020-10-08 14:21:11-avr(ms)             :0.425429
-[INFO]2020-10-08 14:21:11-min(ms)             :0
-[INFO]2020-10-08 14:21:11-max(ms)             :696
-[INFO]2020-10-08 14:21:11-time==0ms           :996309
-[INFO]2020-10-08 14:21:11-1ms=<time<=10ms     :1009
-[INFO]2020-10-08 14:21:11-10ms<time<=50ms     :1019
-[INFO]2020-10-08 14:21:11-50ms<time<=100ms    :559
-[INFO]2020-10-08 14:21:11-100ms<time<=200ms   :207
-[INFO]2020-10-08 14:21:11-200ms<time<=500ms   :743
-[INFO]2020-10-08 14:21:11-500ms<time<=1000ms  :154
-[INFO]2020-10-08 14:21:11-1000ms<time<=2000ms :0
-[INFO]2020-10-08 14:21:11-2000ms<time<=8000ms :0
-[INFO]2020-10-08 14:21:11-time>8000ms         :0
-[INFO]2020-10-08 14:21:11-
-
-[INFO]2020-10-08 14:21:11-HikariPool-1 - Shutdown initiated...
-[INFO]2020-10-08 14:21:11-HikariPool-1 - Shutdown completed.
-[INFO]2020-10-08 14:21:16-BeeCP(FastPool-1)starting....
-[INFO]2020-10-08 14:21:16-BeeCP(FastPool-1)has startup{mode:fair,init size:10,max size:10,semaphore size:4,max wait:80000ms,driver:com.zaxxer.hikari.benchmark.stubs.StubDriver}
-[INFO]2020-10-08 14:21:16-Pool[BeeCP_Fair -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
-[INFO]2020-10-08 14:21:16-Pool[BeeCP_Fair -- Multiple thread borrow] -- Execution count:1000000,total time:218ms,avg time:0.000218ms,min time:0ms,max time:17ms
-[INFO]2020-10-08 14:21:16-success count       :1000000
-[INFO]2020-10-08 14:21:16-fail count          :0
-[INFO]2020-10-08 14:21:16-avr(ms)             :0.000218
-[INFO]2020-10-08 14:21:16-min(ms)             :0
-[INFO]2020-10-08 14:21:16-max(ms)             :17
-[INFO]2020-10-08 14:21:16-time==0ms           :999997
-[INFO]2020-10-08 14:21:16-1ms=<time<=10ms     :2
-[INFO]2020-10-08 14:21:16-10ms<time<=50ms     :1
-[INFO]2020-10-08 14:21:16-50ms<time<=100ms    :0
-[INFO]2020-10-08 14:21:16-100ms<time<=200ms   :0
-[INFO]2020-10-08 14:21:16-200ms<time<=500ms   :0
-[INFO]2020-10-08 14:21:16-500ms<time<=1000ms  :0
-[INFO]2020-10-08 14:21:16-1000ms<time<=2000ms :0
-[INFO]2020-10-08 14:21:16-2000ms<time<=8000ms :0
-[INFO]2020-10-08 14:21:16-time>8000ms         :0
-[INFO]2020-10-08 14:21:16-
-
-[INFO]2020-10-08 14:21:16-BeeCP(FastPool-1)begin to shutdown
-[INFO]2020-10-08 14:21:16-BeeCP(FastPool-1)has shutdown
-[INFO]2020-10-08 14:21:21-BeeCP(FastPool-2)starting....
-[INFO]2020-10-08 14:21:21-BeeCP(FastPool-2)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:80000ms,driver:com.zaxxer.hikari.benchmark.stubs.StubDriver}
-[INFO]2020-10-08 14:21:21-Pool[BeeCP_Compete -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
-[INFO]2020-10-08 14:21:21-Pool[BeeCP_Compete -- Multiple thread borrow] -- Execution count:1000000,total time:283ms,avg time:0.000283ms,min time:0ms,max time:22ms
-[INFO]2020-10-08 14:21:21-success count       :1000000
-[INFO]2020-10-08 14:21:21-fail count          :0
-[INFO]2020-10-08 14:21:21-avr(ms)             :0.000283
-[INFO]2020-10-08 14:21:21-min(ms)             :0
-[INFO]2020-10-08 14:21:21-max(ms)             :22
-[INFO]2020-10-08 14:21:21-time==0ms           :999991
-[INFO]2020-10-08 14:21:21-1ms=<time<=10ms     :3
-[INFO]2020-10-08 14:21:21-10ms<time<=50ms     :6
-[INFO]2020-10-08 14:21:21-50ms<time<=100ms    :0
-[INFO]2020-10-08 14:21:21-100ms<time<=200ms   :0
-[INFO]2020-10-08 14:21:21-200ms<time<=500ms   :0
-[INFO]2020-10-08 14:21:21-500ms<time<=1000ms  :0
-[INFO]2020-10-08 14:21:21-1000ms<time<=2000ms :0
-[INFO]2020-10-08 14:21:21-2000ms<time<=8000ms :0
-[INFO]2020-10-08 14:21:21-time>8000ms         :0
-[INFO]2020-10-08 14:21:21-
-
-[INFO]2020-10-08 14:21:21-BeeCP(FastPool-2)begin to shutdown
-[INFO]2020-10-08 14:21:21-BeeCP(FastPool-2)has shutdown
-[INFO]2020-10-08 14:21:26-[Multiple thread borrow]Performance analysis:Bee_F(0.000218) > Bee_C(0.000283) > Vibur(0.280649) > HikariCP(0.425429) > Druid(2.873355) > TOMCAT(2.927550) > DBCP(5.200391) > C3P0(8.463397)
-[INFO]2020-10-08 14:21:26-|Sumary|C3P0|DBCP|TOMCAT|Vibur|Druid|HikariCP|Bee_F|Bee_C|
-[INFO]2020-10-08 14:21:26-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-[INFO]2020-10-08 14:21:26-|success Count|1000000|1000000|1000000|1000000|1000000|1000000|1000000|1000000|
-[INFO]2020-10-08 14:21:26-|fail count|0|0|0|0|0|0|0|0|
-[INFO]2020-10-08 14:21:26-|avr(ms)|8.463397|5.200391|2.927550|0.280649|2.873355|0.425429|0.000218|0.000283|
-[INFO]2020-10-08 14:21:26-|min(ms)|0|0|0|0|0|0|0|0|
-[INFO]2020-10-08 14:21:26-|max(ms)|707|185|189|444|1734|696|17|22|
-[INFO]2020-10-08 14:21:26-|time=0ms|646516|82|4|999203|969854|996309|999997|999991|
-[INFO]2020-10-08 14:21:26-|1ms=<time<=10ms|166586|992716|993903|31|10203|1009|2|3|
-[INFO]2020-10-08 14:21:26-|10ms<time<=50ms|141273|5312|4332|3|6292|1019|1|6|
-[INFO]2020-10-08 14:21:26-|50ms<time<=100ms|34388|876|326|0|4441|559|0|0|
-[INFO]2020-10-08 14:21:26-|100ms<time<=200ms|10148|1014|1435|17|4571|207|0|0|
-[INFO]2020-10-08 14:21:26-|200ms<time<=500ms|1078|0|0|746|3983|743|0|0|
-[INFO]2020-10-08 14:21:26-|500ms<time<=1000ms|11|0|0|0|625|154|0|0|
-[INFO]2020-10-08 14:21:26-|1000ms<time<=2000ms|0|0|0|0|31|0|0|0|
-[INFO]2020-10-08 14:21:26-|2000ms<time<=800ms|0|0|0|0|0|0|0|0|
-[INFO]2020-10-08 14:21:26-|8000ms<time|0|0|0|0|0|0|0|0||
-[INFO]2020-10-08 14:21:26-
+HikariCP-3.4.5
+[INFO]2020-10-13 23:13:42-[JDBC INFO]
+[INFO]2020-10-13 23:13:42-[Driver:com.mysql.jdbc.Driver]
+[INFO]2020-10-13 23:13:42-[URL:jdbc:mysql://localhost/test]
+[INFO]2020-10-13 23:13:42-
+[INFO]2020-10-13 23:13:43-HikariPool-1 - Starting...
+[INFO]2020-10-13 23:13:43-HikariPool-1 - Start completed.
+[INFO]2020-10-13 23:13:43-Pool[HikariCP -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2020-10-13 23:14:42-Pool[HikariCP -- Multiple thread query] -- Execution count:1000000,total time:22835886ms,avg time:22.888667ms,min time:0ms,max time:8676ms
+[INFO]2020-10-13 23:14:42-success count       :997694
+[INFO]2020-10-13 23:14:42-fail count          :2306
+[INFO]2020-10-13 23:14:42-avr(ms)             :22.888667
+[INFO]2020-10-13 23:14:42-min(ms)             :0
+[INFO]2020-10-13 23:14:42-max(ms)             :8676
+[INFO]2020-10-13 23:14:42-time==0ms           :922328
+[INFO]2020-10-13 23:14:42-1ms=<time<=10ms     :65471
+[INFO]2020-10-13 23:14:42-10ms<time<=50ms     :1111
+[INFO]2020-10-13 23:14:42-50ms<time<=100ms    :491
+[INFO]2020-10-13 23:14:42-100ms<time<=200ms   :553
+[INFO]2020-10-13 23:14:42-200ms<time<=500ms   :1020
+[INFO]2020-10-13 23:14:42-500ms<time<=1000ms  :1028
+[INFO]2020-10-13 23:14:42-1000ms<time<=2000ms :1432
+[INFO]2020-10-13 23:14:42-2000ms<time<=8000ms :4244
+[INFO]2020-10-13 23:14:42-time>8000ms         :16
+[INFO]2020-10-13 23:14:42-
+[INFO]2020-10-13 23:14:42-HikariPool-1 - Shutdown initiated...
+[INFO]2020-10-13 23:14:42-HikariPool-1 - Shutdown completed.
 
 
-[INFO]2020-10-08 14:21:31-[JDBC INFO]
-[INFO]2020-10-08 14:21:31-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
-[INFO]2020-10-08 14:21:31-[URL:jdbc:stub]
-[INFO]2020-10-08 14:21:31-
-
-[INFO]2020-10-08 14:21:31-MLog clients using slf4j logging.
-[INFO]2020-10-08 14:21:31-Initializing c3p0-0.9.5.2 [built 08-December-2015 22:06:04 -0800; debug? true; trace: 10]
-[INFO]2020-10-08 14:21:31-Pool[C3P0 -- Multiple thread query] -- Begin{1000threads X 1000iterate}
-[INFO]2020-10-08 14:21:32-Initializing c3p0 pool... com.mchange.v2.c3p0.ComboPooledDataSource [ acquireIncrement -> 3, acquireRetryAttempts -> 30, acquireRetryDelay -> 1000, autoCommitOnClose -> false, automaticTestTable -> null, breakAfterAcquireFailure -> false, checkoutTimeout -> 80000, connectionCustomizerClassName -> null, connectionTesterClassName -> com.mchange.v2.c3p0.impl.DefaultConnectionTester, contextClassLoaderSource -> caller, dataSourceName -> 1hge15xad1wn2lw5oys0t|222114ba, debugUnreturnedConnectionStackTraces -> false, description -> null, driverClass -> com.zaxxer.hikari.benchmark.stubs.StubDriver, extensions -> {}, factoryClassLocation -> null, forceIgnoreUnresolvedTransactions -> false, forceSynchronousCheckins -> false, forceUseNamedDriverClass -> false, identityToken -> 1hge15xad1wn2lw5oys0t|222114ba, idleConnectionTestPeriod -> 0, initialPoolSize -> 10, jdbcUrl -> jdbc:stub, maxAdministrativeTaskTime -> 0, maxConnectionAge -> 0, maxIdleTime -> 0, maxIdleTimeExcessConnections -> 0, maxPoolSize -> 10, maxStatements -> 0, maxStatementsPerConnection -> 20, minPoolSize -> 10, numHelperThreads -> 3, preferredTestQuery -> select 1 from dual, privilegeSpawnedThreads -> false, properties -> {user=******, password=******}, propertyCycle -> 0, statementCacheNumDeferredCloseThreads -> 0, testConnectionOnCheckin -> false, testConnectionOnCheckout -> true, unreturnedConnectionTimeout -> 0, userOverrides -> {}, usesTraditionalReflectiveProxies -> false ]
-[INFO]2020-10-08 14:21:44-Pool[C3P0 -- Multiple thread query] -- Execution count:1000000,total time:11632487ms,avg time:11.632487ms,min time:0ms,max time:974ms
-[INFO]2020-10-08 14:21:44-success count       :1000000
-[INFO]2020-10-08 14:21:44-fail count          :0
-[INFO]2020-10-08 14:21:44-avr(ms)             :11.632487
-[INFO]2020-10-08 14:21:44-min(ms)             :0
-[INFO]2020-10-08 14:21:44-max(ms)             :974
-[INFO]2020-10-08 14:21:44-time==0ms           :492067
-[INFO]2020-10-08 14:21:44-1ms=<time<=10ms     :216912
-[INFO]2020-10-08 14:21:44-10ms<time<=50ms     :235747
-[INFO]2020-10-08 14:21:44-50ms<time<=100ms    :43756
-[INFO]2020-10-08 14:21:44-100ms<time<=200ms   :10207
-[INFO]2020-10-08 14:21:44-200ms<time<=500ms   :1294
-[INFO]2020-10-08 14:21:44-500ms<time<=1000ms  :17
-[INFO]2020-10-08 14:21:44-1000ms<time<=2000ms :0
-[INFO]2020-10-08 14:21:44-2000ms<time<=8000ms :0
-[INFO]2020-10-08 14:21:44-time>8000ms         :0
-[INFO]2020-10-08 14:21:44-
-
-[INFO]2020-10-08 14:21:49-Pool[DBCP -- Multiple thread query] -- Begin{1000threads X 1000iterate}
-[INFO]2020-10-08 14:21:55-Pool[DBCP -- Multiple thread query] -- Execution count:1000000,total time:5824020ms,avg time:5.824020ms,min time:1ms,max time:241ms
-[INFO]2020-10-08 14:21:55-success count       :1000000
-[INFO]2020-10-08 14:21:55-fail count          :0
-[INFO]2020-10-08 14:21:55-avr(ms)             :5.824020
-[INFO]2020-10-08 14:21:55-min(ms)             :1
-[INFO]2020-10-08 14:21:55-max(ms)             :241
-[INFO]2020-10-08 14:21:55-time==0ms           :0
-[INFO]2020-10-08 14:21:55-1ms=<time<=10ms     :985115
-[INFO]2020-10-08 14:21:55-10ms<time<=50ms     :12820
-[INFO]2020-10-08 14:21:55-50ms<time<=100ms    :862
-[INFO]2020-10-08 14:21:55-100ms<time<=200ms   :741
-[INFO]2020-10-08 14:21:55-200ms<time<=500ms   :462
-[INFO]2020-10-08 14:21:55-500ms<time<=1000ms  :0
-[INFO]2020-10-08 14:21:55-1000ms<time<=2000ms :0
-[INFO]2020-10-08 14:21:55-2000ms<time<=8000ms :0
-[INFO]2020-10-08 14:21:55-time>8000ms         :0
-[INFO]2020-10-08 14:21:55-
-
-[INFO]2020-10-08 14:22:00-Pool[Tomcat -- Multiple thread query] -- Begin{1000threads X 1000iterate}
-[INFO]2020-10-08 14:22:03-Pool[Tomcat -- Multiple thread query] -- Execution count:1000000,total time:3167346ms,avg time:3.167346ms,min time:0ms,max time:245ms
-[INFO]2020-10-08 14:22:03-success count       :1000000
-[INFO]2020-10-08 14:22:03-fail count          :0
-[INFO]2020-10-08 14:22:03-avr(ms)             :3.167346
-[INFO]2020-10-08 14:22:03-min(ms)             :0
-[INFO]2020-10-08 14:22:03-max(ms)             :245
-[INFO]2020-10-08 14:22:03-time==0ms           :3
-[INFO]2020-10-08 14:22:03-1ms=<time<=10ms     :992104
-[INFO]2020-10-08 14:22:03-10ms<time<=50ms     :6082
-[INFO]2020-10-08 14:22:03-50ms<time<=100ms    :608
-[INFO]2020-10-08 14:22:03-100ms<time<=200ms   :1130
-[INFO]2020-10-08 14:22:03-200ms<time<=500ms   :73
-[INFO]2020-10-08 14:22:03-500ms<time<=1000ms  :0
-[INFO]2020-10-08 14:22:03-1000ms<time<=2000ms :0
-[INFO]2020-10-08 14:22:03-2000ms<time<=8000ms :0
-[INFO]2020-10-08 14:22:03-time>8000ms         :0
-[INFO]2020-10-08 14:22:03-
-
-[INFO]2020-10-08 14:22:08-Pool[Vibur -- Multiple thread query] -- Begin{1000threads X 1000iterate}
-[INFO]2020-10-08 14:22:09-Pool[Vibur -- Multiple thread query] -- Execution count:1000000,total time:419987ms,avg time:0.419987ms,min time:0ms,max time:732ms
-[INFO]2020-10-08 14:22:09-success count       :1000000
-[INFO]2020-10-08 14:22:09-fail count          :0
-[INFO]2020-10-08 14:22:09-avr(ms)             :0.419987
-[INFO]2020-10-08 14:22:09-min(ms)             :0
-[INFO]2020-10-08 14:22:09-max(ms)             :732
-[INFO]2020-10-08 14:22:09-time==0ms           :999264
-[INFO]2020-10-08 14:22:09-1ms=<time<=10ms     :60
-[INFO]2020-10-08 14:22:09-10ms<time<=50ms     :17
-[INFO]2020-10-08 14:22:09-50ms<time<=100ms    :1
-[INFO]2020-10-08 14:22:09-100ms<time<=200ms   :8
-[INFO]2020-10-08 14:22:09-200ms<time<=500ms   :5
-[INFO]2020-10-08 14:22:09-500ms<time<=1000ms  :645
-[INFO]2020-10-08 14:22:09-1000ms<time<=2000ms :0
-[INFO]2020-10-08 14:22:09-2000ms<time<=8000ms :0
-[INFO]2020-10-08 14:22:09-time>8000ms         :0
-[INFO]2020-10-08 14:22:09-
-
-[INFO]2020-10-08 14:22:14-Pool[Druid -- Multiple thread query] -- Begin{1000threads X 1000iterate}
-[INFO]2020-10-08 14:22:14-{dataSource-1} inited
-[INFO]2020-10-08 14:22:20-Pool[Druid -- Multiple thread query] -- Execution count:1000000,total time:3631486ms,avg time:3.631486ms,min time:0ms,max time:2915ms
-[INFO]2020-10-08 14:22:20-success count       :1000000
-[INFO]2020-10-08 14:22:20-fail count          :0
-[INFO]2020-10-08 14:22:20-avr(ms)             :3.631486
-[INFO]2020-10-08 14:22:20-min(ms)             :0
-[INFO]2020-10-08 14:22:20-max(ms)             :2915
-[INFO]2020-10-08 14:22:20-time==0ms           :966018
-[INFO]2020-10-08 14:22:20-1ms=<time<=10ms     :11812
-[INFO]2020-10-08 14:22:20-10ms<time<=50ms     :6698
-[INFO]2020-10-08 14:22:20-50ms<time<=100ms    :4646
-[INFO]2020-10-08 14:22:20-100ms<time<=200ms   :5024
-[INFO]2020-10-08 14:22:20-200ms<time<=500ms   :4608
-[INFO]2020-10-08 14:22:20-500ms<time<=1000ms  :1047
-[INFO]2020-10-08 14:22:20-1000ms<time<=2000ms :145
-[INFO]2020-10-08 14:22:20-2000ms<time<=8000ms :2
-[INFO]2020-10-08 14:22:20-time>8000ms         :0
-[INFO]2020-10-08 14:22:20-
-
-[INFO]2020-10-08 14:22:20-{dataSource-1} closing ...
-[INFO]2020-10-08 14:22:20-{dataSource-1} closed
-[INFO]2020-10-08 14:22:25-HikariPool-1 - Starting...
-[INFO]2020-10-08 14:22:25-HikariPool-1 - Start completed.
-[INFO]2020-10-08 14:22:25-Pool[HikariCP -- Multiple thread query] -- Begin{1000threads X 1000iterate}
-[INFO]2020-10-08 14:22:25-Pool[HikariCP -- Multiple thread query] -- Execution count:1000000,total time:201584ms,avg time:0.201584ms,min time:0ms,max time:344ms
-[INFO]2020-10-08 14:22:25-success count       :1000000
-[INFO]2020-10-08 14:22:25-fail count          :0
-[INFO]2020-10-08 14:22:25-avr(ms)             :0.201584
-[INFO]2020-10-08 14:22:25-min(ms)             :0
-[INFO]2020-10-08 14:22:25-max(ms)             :344
-[INFO]2020-10-08 14:22:25-time==0ms           :996475
-[INFO]2020-10-08 14:22:25-1ms=<time<=10ms     :1322
-[INFO]2020-10-08 14:22:25-10ms<time<=50ms     :994
-[INFO]2020-10-08 14:22:25-50ms<time<=100ms    :382
-[INFO]2020-10-08 14:22:25-100ms<time<=200ms   :626
-[INFO]2020-10-08 14:22:25-200ms<time<=500ms   :201
-[INFO]2020-10-08 14:22:25-500ms<time<=1000ms  :0
-[INFO]2020-10-08 14:22:25-1000ms<time<=2000ms :0
-[INFO]2020-10-08 14:22:25-2000ms<time<=8000ms :0
-[INFO]2020-10-08 14:22:25-time>8000ms         :0
-[INFO]2020-10-08 14:22:25-
-
-[INFO]2020-10-08 14:22:25-HikariPool-1 - Shutdown initiated...
-[INFO]2020-10-08 14:22:25-HikariPool-1 - Shutdown completed.
-[INFO]2020-10-08 14:22:30-BeeCP(FastPool-1)starting....
-[INFO]2020-10-08 14:22:30-BeeCP(FastPool-1)has startup{mode:fair,init size:10,max size:10,semaphore size:4,max wait:80000ms,driver:com.zaxxer.hikari.benchmark.stubs.StubDriver}
-[INFO]2020-10-08 14:22:30-Pool[BeeCP_Fair -- Multiple thread query] -- Begin{1000threads X 1000iterate}
-[INFO]2020-10-08 14:22:31-Pool[BeeCP_Fair -- Multiple thread query] -- Execution count:1000000,total time:328ms,avg time:0.000328ms,min time:0ms,max time:2ms
-[INFO]2020-10-08 14:22:31-success count       :1000000
-[INFO]2020-10-08 14:22:31-fail count          :0
-[INFO]2020-10-08 14:22:31-avr(ms)             :0.000328
-[INFO]2020-10-08 14:22:31-min(ms)             :0
-[INFO]2020-10-08 14:22:31-max(ms)             :2
-[INFO]2020-10-08 14:22:31-time==0ms           :999997
-[INFO]2020-10-08 14:22:31-1ms=<time<=10ms     :3
-[INFO]2020-10-08 14:22:31-10ms<time<=50ms     :0
-[INFO]2020-10-08 14:22:31-50ms<time<=100ms    :0
-[INFO]2020-10-08 14:22:31-100ms<time<=200ms   :0
-[INFO]2020-10-08 14:22:31-200ms<time<=500ms   :0
-[INFO]2020-10-08 14:22:31-500ms<time<=1000ms  :0
-[INFO]2020-10-08 14:22:31-1000ms<time<=2000ms :0
-[INFO]2020-10-08 14:22:31-2000ms<time<=8000ms :0
-[INFO]2020-10-08 14:22:31-time>8000ms         :0
-[INFO]2020-10-08 14:22:31-
-
-[INFO]2020-10-08 14:22:31-BeeCP(FastPool-1)begin to shutdown
-[INFO]2020-10-08 14:22:31-BeeCP(FastPool-1)has shutdown
-[INFO]2020-10-08 14:22:36-BeeCP(FastPool-2)starting....
-[INFO]2020-10-08 14:22:36-BeeCP(FastPool-2)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:80000ms,driver:com.zaxxer.hikari.benchmark.stubs.StubDriver}
-[INFO]2020-10-08 14:22:36-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{1000threads X 1000iterate}
-[INFO]2020-10-08 14:22:36-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:1000000,total time:292ms,avg time:0.000292ms,min time:0ms,max time:18ms
-[INFO]2020-10-08 14:22:36-success count       :1000000
-[INFO]2020-10-08 14:22:36-fail count          :0
-[INFO]2020-10-08 14:22:36-avr(ms)             :0.000292
-[INFO]2020-10-08 14:22:36-min(ms)             :0
-[INFO]2020-10-08 14:22:36-max(ms)             :18
-[INFO]2020-10-08 14:22:36-time==0ms           :999996
-[INFO]2020-10-08 14:22:36-1ms=<time<=10ms     :2
-[INFO]2020-10-08 14:22:36-10ms<time<=50ms     :2
-[INFO]2020-10-08 14:22:36-50ms<time<=100ms    :0
-[INFO]2020-10-08 14:22:36-100ms<time<=200ms   :0
-[INFO]2020-10-08 14:22:36-200ms<time<=500ms   :0
-[INFO]2020-10-08 14:22:36-500ms<time<=1000ms  :0
-[INFO]2020-10-08 14:22:36-1000ms<time<=2000ms :0
-[INFO]2020-10-08 14:22:36-2000ms<time<=8000ms :0
-[INFO]2020-10-08 14:22:36-time>8000ms         :0
-[INFO]2020-10-08 14:22:36-
-
-[INFO]2020-10-08 14:22:36-BeeCP(FastPool-2)begin to shutdown
-[INFO]2020-10-08 14:22:36-BeeCP(FastPool-2)has shutdown
-[INFO]2020-10-08 14:22:41-[Multiple thread query]Performance analysis:Bee_C(0.000292) > Bee_F(0.000328) > HikariCP(0.201584) > Vibur(0.419987) > TOMCAT(3.167346) > Druid(3.631486) > DBCP(5.824020) > C3P0(11.632487)
-[INFO]2020-10-08 14:22:41-|Sumary|C3P0|DBCP|TOMCAT|Vibur|Druid|HikariCP|Bee_F|Bee_C|
-[INFO]2020-10-08 14:22:41-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-[INFO]2020-10-08 14:22:41-|success Count|1000000|1000000|1000000|1000000|1000000|1000000|1000000|1000000|
-[INFO]2020-10-08 14:22:41-|fail count|0|0|0|0|0|0|0|0|
-[INFO]2020-10-08 14:22:41-|avr(ms)|11.632487|5.824020|3.167346|0.419987|3.631486|0.201584|0.000328|0.000292|
-[INFO]2020-10-08 14:22:41-|min(ms)|0|1|0|0|0|0|0|0|
-[INFO]2020-10-08 14:22:41-|max(ms)|974|241|245|732|2915|344|2|18|
-[INFO]2020-10-08 14:22:41-|time=0ms|492067|0|3|999264|966018|996475|999997|999996|
-[INFO]2020-10-08 14:22:41-|1ms=<time<=10ms|216912|985115|992104|60|11812|1322|3|2|
-[INFO]2020-10-08 14:22:41-|10ms<time<=50ms|235747|12820|6082|17|6698|994|0|2|
-[INFO]2020-10-08 14:22:41-|50ms<time<=100ms|43756|862|608|1|4646|382|0|0|
-[INFO]2020-10-08 14:22:41-|100ms<time<=200ms|10207|741|1130|8|5024|626|0|0|
-[INFO]2020-10-08 14:22:41-|200ms<time<=500ms|1294|462|73|5|4608|201|0|0|
-[INFO]2020-10-08 14:22:41-|500ms<time<=1000ms|17|0|0|645|1047|0|0|0|
-[INFO]2020-10-08 14:22:41-|1000ms<time<=2000ms|0|0|0|0|145|0|0|0|
-[INFO]2020-10-08 14:22:41-|2000ms<time<=800ms|0|0|0|0|2|0|0|0|
-[INFO]2020-10-08 14:22:41-|8000ms<time|0|0|0|0|0|0|0|0||
-[INFO]2020-10-08 14:22:41-
-
-
+beecp-3.0.1
+[INFO]2020-10-22 21:24:12-BeeCP(FastPool-1)starting....
+[INFO]2020-10-22 21:24:13-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.mysql.jdbc.Driver}
+[INFO]2020-10-22 21:24:13-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2020-10-22 21:24:59-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:1000000,total time:8441081ms,avg time:8.458311ms,min time:0ms,max time:8217ms
+[INFO]2020-10-22 21:24:59-success count       :997963
+[INFO]2020-10-22 21:24:59-fail count          :2037
+[INFO]2020-10-22 21:24:59-avr(ms)             :8.458311
+[INFO]2020-10-22 21:24:59-min(ms)             :0
+[INFO]2020-10-22 21:24:59-max(ms)             :8217
+[INFO]2020-10-22 21:24:59-time==0ms           :981048
+[INFO]2020-10-22 21:24:59-1ms=<time<=10ms     :14776
+[INFO]2020-10-22 21:24:59-10ms<time<=50ms     :432
+[INFO]2020-10-22 21:24:59-50ms<time<=100ms    :98
+[INFO]2020-10-22 21:24:59-100ms<time<=200ms   :50
+[INFO]2020-10-22 21:24:59-200ms<time<=500ms   :74
+[INFO]2020-10-22 21:24:59-500ms<time<=1000ms  :23
+[INFO]2020-10-22 21:24:59-1000ms<time<=2000ms :63
+[INFO]2020-10-22 21:24:59-2000ms<time<=8000ms :1382
+[INFO]2020-10-22 21:24:59-time>8000ms         :17
+[INFO]2020-10-22 21:24:59-
