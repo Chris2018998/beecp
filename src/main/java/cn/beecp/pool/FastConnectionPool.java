@@ -365,7 +365,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
 
 
-        long deadline = nanoTime() + defaultMaxWaitNanos;
+        final long deadline = nanoTime() + defaultMaxWaitNanos;
         try {
             if (!borrowSemaphore.tryAcquire(this.defaultMaxWaitNanos, NANOSECONDS))
                 throw RequestTimeoutException;
@@ -421,6 +421,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                             --spinSize;
                         } else if (timeout > spinForTimeoutThreshold && BwrStUpd.compareAndSet(borrower, state, BORROWER_WAITING)) {
                             parkNanos(borrower, timeout);
+                            if (borrower.state == BORROWER_WAITING)//reset to normal
+                                BwrStUpd.compareAndSet(borrower, BORROWER_WAITING, BORROWER_NORMAL);
                             if (borrower.thread.isInterrupted()) {
                                 failed = true;
                                 failedCause = RequestInterruptException;
