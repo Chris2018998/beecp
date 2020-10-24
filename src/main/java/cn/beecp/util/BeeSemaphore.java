@@ -201,6 +201,8 @@ public class BeeSemaphore {
                             --spinSize;
                         } else if (timeout > parkForTimeoutThreshold && updater.compareAndSet(waiter, state, STS_WAITING)) {
                             parkNanos(waiter, timeout);
+                            if (waiter.state == STS_WAITING)//reset to normal
+                                updater.compareAndSet(waiter, STS_WAITING, STS_NORMAL);
                             if (thread.isInterrupted()) {
                                 isFailed = true;
                                 isInterrupted = true;
