@@ -421,8 +421,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                             --spinSize;
                         } else if (timeout > spinForTimeoutThreshold && BwrStUpd.compareAndSet(borrower, state, BORROWER_WAITING)) {
                             parkNanos(borrower, timeout);
-                            if (borrower.state == BORROWER_WAITING)//reset to normal
-                                BwrStUpd.compareAndSet(borrower, BORROWER_WAITING, BORROWER_NORMAL);
+                            BwrStUpd.compareAndSet(borrower, BORROWER_WAITING, BORROWER_NORMAL);//reset to normal
                             if (borrower.thread.isInterrupted()) {
                                 failed = true;
                                 failedCause = RequestInterruptException;
