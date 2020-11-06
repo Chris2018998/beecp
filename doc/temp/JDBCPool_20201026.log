@@ -246,34 +246,6 @@
 [INFO]2020-10-27 22:28:09-BeeCP(FastPool-1)has shutdown
 
 
-[INFO]2020-11-06 20:39:26-[JDBC INFO]
-[INFO]2020-11-06 20:39:26-[Driver:com.mysql.jdbc.Driver]
-[INFO]2020-11-06 20:39:26-[URL:jdbc:mysql://localhost/test]
-[INFO]2020-11-06 20:39:26-
-
-[INFO]2020-11-06 20:39:26-BeeCP(FastPool-1)starting....
-[INFO]2020-11-06 20:39:26-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.mysql.jdbc.Driver}
-[INFO]2020-11-06 20:39:26-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{10000threads X 10iterate}
-[INFO]2020-11-06 20:39:31-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:100000,total time:146187ms,avg time:1.461870ms,min time:0ms,max time:1191ms
-[INFO]2020-11-06 20:39:31-success count       :100000
-[INFO]2020-11-06 20:39:31-fail count          :0
-[INFO]2020-11-06 20:39:31-avr(ms)             :1.461870
-[INFO]2020-11-06 20:39:31-min(ms)             :0
-[INFO]2020-11-06 20:39:31-max(ms)             :1191
-[INFO]2020-11-06 20:39:31-time==0ms           :98936
-[INFO]2020-11-06 20:39:31-1ms=<time<=10ms     :672
-[INFO]2020-11-06 20:39:31-10ms<time<=50ms     :140
-[INFO]2020-11-06 20:39:31-50ms<time<=100ms    :24
-[INFO]2020-11-06 20:39:31-100ms<time<=200ms   :46
-[INFO]2020-11-06 20:39:31-200ms<time<=500ms   :76
-[INFO]2020-11-06 20:39:31-500ms<time<=1000ms  :73
-[INFO]2020-11-06 20:39:31-1000ms<time<=2000ms :33
-[INFO]2020-11-06 20:39:31-2000ms<time<=8000ms :0
-[INFO]2020-11-06 20:39:31-time>8000ms         :0
-[INFO]2020-11-06 20:39:31-
- 
-
-
 
 [INFO]2020-10-27 22:29:54-[JDBC INFO]
 [INFO]2020-10-27 22:29:54-[Driver:com.mysql.jdbc.Driver]
