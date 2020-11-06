@@ -1,0 +1,51 @@
+PC: I5-4210M(2.6hz),12G
+JDK:JAVA8_64
+DB:mysql-5.6.50_64
+Pool:init size:10，maxsize:10
+Driver：mysql-connector-java-5.1.48
+SQL:select 1 from dual
+ 
+[INFO]2020-11-06 20:49:58-BeeCP(FastPool-1)starting....
+[INFO]2020-11-06 20:49:58-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.mysql.jdbc.Driver}
+[INFO]2020-11-06 20:49:59-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{10000threads X 10iterate}
+[INFO]2020-11-06 20:50:04-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:100000,total time:63012ms,avg time:0.630120ms,min time:0ms,max time:888ms
+[INFO]2020-11-06 20:50:04-success count       :100000
+[INFO]2020-11-06 20:50:04-fail count          :0
+[INFO]2020-11-06 20:50:04-avr(ms)             :0.630120
+[INFO]2020-11-06 20:50:04-min(ms)             :0
+[INFO]2020-11-06 20:50:04-max(ms)             :888
+[INFO]2020-11-06 20:50:04-time==0ms           :99123
+[INFO]2020-11-06 20:50:04-1ms=<time<=10ms     :637
+[INFO]2020-11-06 20:50:04-10ms<time<=50ms     :72
+[INFO]2020-11-06 20:50:04-50ms<time<=100ms    :66
+[INFO]2020-11-06 20:50:04-100ms<time<=200ms   :61
+[INFO]2020-11-06 20:50:04-200ms<time<=500ms   :13
+[INFO]2020-11-06 20:50:04-500ms<time<=1000ms  :28
+[INFO]2020-11-06 20:50:04-1000ms<time<=2000ms :0
+[INFO]2020-11-06 20:50:04-2000ms<time<=8000ms :0
+[INFO]2020-11-06 20:50:04-time>8000ms         :0
+[INFO]2020-11-06 20:50:04-
+
+[INFO]2020-11-06 20:50:35-HikariPool-1 - Starting...
+[INFO]2020-11-06 20:50:35-HikariPool-1 - Start completed.
+[INFO]2020-11-06 20:50:35-Pool[HikariCP -- Multiple thread query] -- Begin{10000threads X 10iterate}
+[INFO]2020-11-06 20:50:41-Pool[HikariCP -- Multiple thread query] -- Execution count:100000,total time:2513275ms,avg time:25.132750ms,min time:0ms,max time:1250ms
+[INFO]2020-11-06 20:50:41-success count       :100000
+[INFO]2020-11-06 20:50:41-fail count          :0
+[INFO]2020-11-06 20:50:41-avr(ms)             :25.132750
+[INFO]2020-11-06 20:50:41-min(ms)             :0
+[INFO]2020-11-06 20:50:41-max(ms)             :1250
+[INFO]2020-11-06 20:50:41-time==0ms           :86207
+[INFO]2020-11-06 20:50:41-1ms=<time<=10ms     :5559
+[INFO]2020-11-06 20:50:41-10ms<time<=50ms     :1848
+[INFO]2020-11-06 20:50:41-50ms<time<=100ms    :969
+[INFO]2020-11-06 20:50:41-100ms<time<=200ms   :1445
+[INFO]2020-11-06 20:50:41-200ms<time<=500ms   :2007
+[INFO]2020-11-06 20:50:41-500ms<time<=1000ms  :1862
+[INFO]2020-11-06 20:50:41-1000ms<time<=2000ms :103
+[INFO]2020-11-06 20:50:41-2000ms<time<=8000ms :0
+[INFO]2020-11-06 20:50:41-time>8000ms         :0
+[INFO]2020-11-06 20:50:41-
+
+[INFO]2020-11-06 20:50:41-HikariPool-1 - Shutdown initiated...
+[INFO]2020-11-06 20:50:41-HikariPool-1 - Shutdown completed.
