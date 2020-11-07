@@ -38,7 +38,6 @@ public class OperationAfterOwnerCloseTest extends TestCase {
 		config.setDriverClassName(Config.JDBC_DRIVER);
 		config.setUsername(Config.JDBC_USER);
 		config.setPassword(Config.JDBC_PASSWORD);
-		config.setTraceStatement(true);
 		ds = new BeeDataSource(config);
 	}
 
