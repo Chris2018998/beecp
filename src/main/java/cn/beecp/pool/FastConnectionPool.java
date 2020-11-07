@@ -347,94 +347,96 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @throws SQLException if pool is closed or waiting timeout,then throw exception
      */
     public Connection getConnection() throws SQLException {
-        if (poolState.get() != POOL_NORMAL) throw PoolCloseException;
+        if (poolState.get() == POOL_NORMAL) {
+            //0:try to get from threadLocal cache
+            WeakReference<Borrower> ref = threadLocal.get();
+            Borrower borrower = (ref != null) ? ref.get() : null;
+            if (borrower != null) {
+                PooledConnection pConn = borrower.lastUsedConn;
+                if (pConn != null && ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
+                    if (testOnBorrow(pConn)) return createProxyConnection(pConn, borrower);
 
-        //0:try to get from threadLocal cache
-        WeakReference<Borrower> ref = threadLocal.get();
-        Borrower borrower = (ref != null) ? ref.get() : null;
-        if (borrower != null) {
-            PooledConnection pConn = borrower.lastUsedConn;
-            if (pConn != null && ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
-                if (testOnBorrow(pConn)) return createProxyConnection(pConn, borrower);
-
-                borrower.lastUsedConn = null;
-            }
-        } else {
-            borrower = new Borrower();
-            threadLocal.set(new WeakReference<Borrower>(borrower));
-        }
-
-
-        final long deadline = nanoTime() + defaultMaxWaitNanos;
-        try {
-            if (!borrowSemaphore.tryAcquire(this.defaultMaxWaitNanos, NANOSECONDS))
-                throw RequestTimeoutException;
-        } catch (InterruptedException e) {
-            throw RequestInterruptException;
-        }
-
-        try {//borrowSemaphore acquired
-            //1:try to search one from array
-            PooledConnection[] tempArray = connArray;
-            int len = tempArray.length;
-            PooledConnection pConn;
-            for (int i = 0; i < len; i++) {
-                pConn = tempArray[i];
-                if (ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn))
-                    return createProxyConnection(pConn, borrower);
+                    borrower.lastUsedConn = null;
+                }
+            } else {
+                borrower = new Borrower();
+                threadLocal.set(new WeakReference<Borrower>(borrower));
             }
 
-            //2:try to create one directly
-            if (connArray.length < poolMaxSize && (pConn = createPooledConn(CONNECTION_USING)) != null)
-                return createProxyConnection(pConn, borrower);
 
-            //3:try to get one transferred connection
-            boolean failed = false;
-            SQLException failedCause = null;
-            borrower.state = BORROWER_NORMAL;
+            final long deadline = nanoTime() + defaultMaxWaitNanos;
+            try {
+                if (!borrowSemaphore.tryAcquire(this.defaultMaxWaitNanos, NANOSECONDS))
+                    throw RequestTimeoutException;
+            } catch (InterruptedException e) {
+                throw RequestInterruptException;
+            }
 
-            waitQueue.offer(borrower);
-            int spinSize = (waitQueue.peek() == borrower) ? maxTimedSpins : 0;
-            while (true) {
-                Object state = borrower.state;
-                if (state instanceof PooledConnection) {
-                    pConn = (PooledConnection) state;
-                    if (transferPolicy.tryCatch(pConn) && testOnBorrow(pConn)) {
-                        waitQueue.remove(borrower);
+            try {//borrowSemaphore acquired
+                //1:try to search one from array
+                PooledConnection[] tempArray = connArray;
+                int len = tempArray.length;
+                PooledConnection pConn;
+                for (int i = 0; i < len; i++) {
+                    pConn = tempArray[i];
+                    if (ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn))
                         return createProxyConnection(pConn, borrower);
-                    }
-
-                    state = BORROWER_NORMAL;
-                    borrower.state = state;
-                    yield();
-                } else if (state instanceof SQLException) {
-                    waitQueue.remove(borrower);
-                    throw (SQLException) state;
                 }
 
-                if (failed) {
-                    BwrStUpd.compareAndSet(borrower, state, failedCause);
-                } else {
-                    long timeout = deadline - nanoTime();
-                    if (timeout > 0L) {
-                        if (spinSize > 0) {
-                            --spinSize;
-                        } else if (timeout-spinForTimeoutThreshold>0 && BwrStUpd.compareAndSet(borrower, state, BORROWER_WAITING)) {
-                            parkNanos(borrower, timeout);
-                            BwrStUpd.compareAndSet(borrower, BORROWER_WAITING, BORROWER_NORMAL);//reset to normal
-                            if (borrower.thread.isInterrupted()) {
-                                failed = true;
-                                failedCause = RequestInterruptException;
-                            }
+                //2:try to create one directly
+                if (connArray.length < poolMaxSize && (pConn = createPooledConn(CONNECTION_USING)) != null)
+                    return createProxyConnection(pConn, borrower);
+
+                //3:try to get one transferred connection
+                boolean failed = false;
+                SQLException failedCause = null;
+                borrower.state = BORROWER_NORMAL;
+
+                waitQueue.offer(borrower);
+                int spinSize = (waitQueue.peek() == borrower) ? maxTimedSpins : 0;
+                while (true) {
+                    Object state = borrower.state;
+                    if (state instanceof PooledConnection) {
+                        pConn = (PooledConnection) state;
+                        if (transferPolicy.tryCatch(pConn) && testOnBorrow(pConn)) {
+                            waitQueue.remove(borrower);
+                            return createProxyConnection(pConn, borrower);
                         }
-                    } else {//timeout
-                        failed = true;
-                        failedCause = RequestTimeoutException;
+
+                        state = BORROWER_NORMAL;
+                        borrower.state = state;
+                        yield();
+                    } else if (state instanceof SQLException) {
+                        waitQueue.remove(borrower);
+                        throw (SQLException) state;
                     }
-                }
-            }//while
-        } finally {
-            borrowSemaphore.release();
+
+                    if (failed) {
+                        BwrStUpd.compareAndSet(borrower, state, failedCause);
+                    } else {
+                        long timeout = deadline - nanoTime();
+                        if (timeout > 0L) {
+                            if (spinSize > 0) {
+                                --spinSize;
+                            } else if (timeout - spinForTimeoutThreshold > 0 && BwrStUpd.compareAndSet(borrower, state, BORROWER_WAITING)) {
+                                parkNanos(borrower, timeout);
+                                BwrStUpd.compareAndSet(borrower, BORROWER_WAITING, BORROWER_NORMAL);//reset to normal
+                                if (borrower.thread.isInterrupted()) {
+                                    failed = true;
+                                    failedCause = RequestInterruptException;
+                                }
+                            }
+                        } else {//timeout
+                            failed = true;
+                            failedCause = RequestTimeoutException;
+                        }
+                    }
+                }//while
+            } finally {
+                borrowSemaphore.release();
+            }
+        }else{
+            throw PoolCloseException;
         }
     }
 
