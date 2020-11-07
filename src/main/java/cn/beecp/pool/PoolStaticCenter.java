@@ -50,7 +50,7 @@ public class PoolStaticCenter {
 
     //Connection reset pos in array
     public static final int POS_AUTO = 0;
-    public static final int POS_TRANS= 1;
+    public static final int POS_TRANS = 1;
     public static final int POS_READONLY = 2;
     public static final int POS_CATALOG = 3;
     public static final int POS_SCHEMA = 4;

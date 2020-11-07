@@ -58,6 +58,7 @@ public class BeeSemaphore {
      * Synchronization implementation for semaphore.
      */
     private Sync sync;
+
     public BeeSemaphore(int size, boolean fair) {
         sync = fair ? new FairSync(size) : new NonfairSync(size);
     }
@@ -121,25 +122,6 @@ public class BeeSemaphore {
         public Sync(int size) {
             this.size = size;
         }
-        public boolean hasQueuedThreads() {
-            return !waiterQueue.isEmpty();
-        }
-        public int getQueueLength() {
-            return waiterQueue.size();
-        }
-
-        public int availablePermits() {
-            int availableSize = size - usingSize.get();
-            return (availableSize > 0) ? availableSize : 0;
-        }
-        private final boolean acquirePermit() {
-            while (true) {
-                int expect = usingSize.get();
-                int update = expect + 1;
-                if (update > size) return false;
-                if (usingSize.compareAndSet(expect, update)) return true;
-            }
-        }
 
         /**
          * Transfer a permit to a waiter
@@ -156,6 +138,28 @@ public class BeeSemaphore {
                 }
             }
             return false;
+        }
+
+        public boolean hasQueuedThreads() {
+            return !waiterQueue.isEmpty();
+        }
+
+        public int getQueueLength() {
+            return waiterQueue.size();
+        }
+
+        public int availablePermits() {
+            int availableSize = size - usingSize.get();
+            return (availableSize > 0) ? availableSize : 0;
+        }
+
+        private final boolean acquirePermit() {
+            while (true) {
+                int expect = usingSize.get();
+                int update = expect + 1;
+                if (update > size) return false;
+                if (usingSize.compareAndSet(expect, update)) return true;
+            }
         }
 
         /**

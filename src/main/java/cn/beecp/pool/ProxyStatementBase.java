@@ -33,7 +33,7 @@ abstract class ProxyStatementBase implements Statement {
     protected Statement delegate;
     protected PooledConnection pConn;//called by subclass to update time
     private ProxyResultSetBase curRe;
-    private boolean registered;
+    private boolean registered = true;
     private boolean isClosed;
     private int resultOpenCode = CLOSE_CURRENT_RESULT;
     private ArrayList<ProxyResultSetBase> results;
@@ -43,8 +43,7 @@ abstract class ProxyStatementBase implements Statement {
         this.delegate = delegate;
         this.pConn = pConn;
         proxyConn = pConn.proxyConn;
-        registered = pConn.traceStatement;
-        if (registered)proxyConn.registerStatement(this);
+        proxyConn.registerStatement(this);
     }
 
     private void checkClosed() throws SQLException {

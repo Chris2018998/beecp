@@ -47,7 +47,6 @@ class PooledConnection {
     String defaultSchema;
     int defaultNetworkTimeout;
 
-    boolean traceStatement;
     StatementArray tracedStatements;
     private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
     private FastConnectionPool pool;
@@ -70,8 +69,7 @@ class PooledConnection {
         curAutoCommit = defaultAutoCommit;
         //default value
 
-        traceStatement = config.isTraceStatement();
-        tracedStatements = new StatementArray(traceStatement ? 10 : 0);
+        tracedStatements = new StatementArray(10);
         lastAccessTime = currentTimeMillis();//first time
     }
 

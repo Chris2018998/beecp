@@ -96,10 +96,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
     private int maxActive = 10;
 
     /**
-     * true:trance statement
-     */
-    private boolean traceStatement;
-    /**
      * borrow Semaphore Size
      */
     private int borrowSemaphoreSize;
@@ -326,19 +322,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
         if (!this.checked && maxActive > 0) {
             this.maxActive = maxActive;
             //fix issue:#19 Chris-2020-08-16 begin
-            if(maxActive>1)
-             this.borrowSemaphoreSize = Math.min(maxActive/2,Runtime.getRuntime().availableProcessors());
+            if (maxActive > 1)
+                this.borrowSemaphoreSize = Math.min(maxActive / 2, Runtime.getRuntime().availableProcessors());
             //fix issue:#19 Chris-2020-08-16 end
         }
-    }
-
-    public boolean isTraceStatement() {
-        return traceStatement;
-    }
-
-    public void setTraceStatement(boolean traceStatement) {
-        if (!this.checked)
-            this.traceStatement = traceStatement;
     }
 
     public int getBorrowSemaphoreSize() {

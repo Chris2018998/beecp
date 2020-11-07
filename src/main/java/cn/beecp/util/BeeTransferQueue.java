@@ -130,7 +130,7 @@ public final class BeeTransferQueue<E> extends AbstractQueue<E> {
     public boolean tryTransfer(E e) {
         Waiter waiter;
         while ((waiter = waiterQueue.poll()) != null) {
-            for (Object state = waiter.state; state == STS_NORMAL || state == STS_WAITING; state = waiter.state) {
+            for (Object state = waiter.state; (state == STS_NORMAL || state == STS_WAITING); state = waiter.state) {
                 if (TransferUpdater.compareAndSet(waiter, state, e)) {
                     if (state == STS_WAITING) LockSupport.unpark(waiter.thread);
                     return true;
@@ -194,7 +194,8 @@ public final class BeeTransferQueue<E> extends AbstractQueue<E> {
                         --spinSize;
                     } else if (timeout > spinForTimeoutThreshold && TransferUpdater.compareAndSet(waiter, state, STS_WAITING)) {
                         parkNanos(waiter, timeout);
-                        TransferUpdater.compareAndSet(waiter, STS_WAITING, STS_NORMAL);//reset to normal
+                        //if (waiter.state == STS_WAITING)//reset to normal
+                        TransferUpdater.compareAndSet(waiter, STS_WAITING, STS_NORMAL);
                         if (waiter.thread.isInterrupted()) {
                             isFailed = true;
                             isInterrupted = true;

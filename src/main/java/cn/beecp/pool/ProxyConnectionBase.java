@@ -77,9 +77,11 @@ public abstract class ProxyConnectionBase implements Connection {
     synchronized final void registerStatement(ProxyStatementBase st) {
         statements.add(st);
     }
+
     synchronized final void unregisterStatement(ProxyStatementBase st) {
         statements.remove(st);
     }
+
     /************* statement trace ******************************/
 
     public void setAutoCommit(boolean autoCommit) throws SQLException {
