@@ -170,7 +170,7 @@ final class StatementArray {
         return pos;
     }
 
-    public void add(ProxyStatementBase e) {
+    public final void add(ProxyStatementBase e) {
         if (pos == elements.length) {
             ProxyStatementBase[] newArray = new ProxyStatementBase[elements.length << 1];
             System.arraycopy(elements, 0, newArray, 0, elements.length);
@@ -179,7 +179,7 @@ final class StatementArray {
         elements[pos++] = e;
     }
 
-    public void remove(ProxyStatementBase e) {
+    public final void remove(ProxyStatementBase e) {
         for (int i = 0; i < pos; i++)
             if (e == elements[i]) {
                 int m = pos - i - 1;
@@ -189,13 +189,15 @@ final class StatementArray {
             }
     }
 
-    public void clear() {
-        for (int i = 0; i < pos; i++) {
-            if (elements[i] != null) {
-                elements[i].setAsClosed();
-                elements[i] = null;// clear to let GC do its work
+    public final void clear() {
+        if(pos>0) {
+            for (int i = 0; i < pos; i++) {
+                if (elements[i] != null) {
+                    elements[i].setAsClosed();
+                    elements[i] = null;// clear to let GC do its work
+                }
             }
+            pos = 0;
         }
-        pos = 0;
     }
 }
