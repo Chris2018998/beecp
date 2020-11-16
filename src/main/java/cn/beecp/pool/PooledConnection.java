@@ -166,7 +166,7 @@ final class StatementArray {
         elements = new ProxyStatementBase[initSize];
     }
 
-    public int size() {
+    public final int size() {
         return pos;
     }
 
@@ -190,14 +190,14 @@ final class StatementArray {
     }
 
     public final void clear() {
-        if(pos>0) {
+        if (pos > 0){
             for (int i = 0; i < pos; i++) {
                 if (elements[i] != null) {
                     elements[i].setAsClosed();
                     elements[i] = null;// clear to let GC do its work
                 }
             }
-            pos = 0;
+             pos = 0;
         }
     }
 }

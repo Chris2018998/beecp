@@ -60,7 +60,8 @@ public abstract class ProxyConnectionBase implements Connection {
             if (isClosed) return;
             isClosed = true;
             delegate = CLOSED_CON;
-            statements.clear();
+            //if(statements.size()>0)
+              statements.clear();
         }
         pConn.recycleSelf();
     }
