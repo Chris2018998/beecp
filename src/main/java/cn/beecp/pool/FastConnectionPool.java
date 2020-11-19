@@ -28,7 +28,6 @@ import java.sql.Statement;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import static cn.beecp.pool.PoolStaticCenter.*;
@@ -67,8 +66,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private ConnectionPoolHook exitHook;
     private BeeDataSourceConfig poolConfig;
     private Semaphore borrowSemaphore;
-    private int waitLen;
-    private AtomicReference<Borrower>[] waitArray;
+    private ConcurrentLinkedQueue<Borrower>waitQueue=new ConcurrentLinkedQueue<Borrower>();
 
     private TransferPolicy transferPolicy;
     private ConnectionTestPolicy testPolicy;
@@ -124,13 +122,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             exitHook = new ConnectionPoolHook();
             Runtime.getRuntime().addShutdownHook(exitHook);
 
-            waitLen = poolConfig.getBorrowSemaphoreSize();
-            waitArray = new AtomicReference[waitLen];
-            for (int i = 0; i < waitLen; i++) {
-                waitArray[i] = new AtomicReference();
-            }
-
-            borrowSemaphore = new Semaphore(waitLen, poolConfig.isFairMode());
+            borrowSemaphore = new Semaphore(poolConfig.getBorrowSemaphoreSize(), poolConfig.isFairMode());
             idleSchExecutor.setKeepAliveTime(15, SECONDS);
             idleSchExecutor.allowCoreThreadTimeOut(true);
             idleCheckSchFuture = idleSchExecutor.scheduleAtFixedRate(new Runnable() {
@@ -349,13 +341,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    private final int offerWaiter(Borrower borrower) {
-        for (int i = 0; i < waitLen; i++)
-            if (waitArray[i].compareAndSet(null, borrower))
-                return i;
-        return -1;
-    }
-
     /**
      * borrow one connection from pool
      *
@@ -408,22 +393,23 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 boolean failed = false;
                 SQLException failedCause = null;
                 borrower.state = BORROWER_NORMAL;
-                int pos = offerWaiter(borrower);
-                int spinSize = (pos == 0) ? maxTimedSpins : 0;
+                waitQueue.offer(borrower);
+                int spinSize =(waitQueue.peek()== borrower) ? maxTimedSpins : 0;
 
                 while (true) {
                     Object state = borrower.state;
                     if (state instanceof PooledConnection) {
                         pConn = (PooledConnection) state;
                         if (transferPolicy.tryCatch(pConn) && testOnBorrow(pConn)) {
-                            waitArray[pos].set(null);
+                            waitQueue.remove(borrower);
                             return createProxyConnection(pConn, borrower);
                         }
+
                         state = BORROWER_NORMAL;
                         borrower.state = state;
                         yield();
                     } else if (state instanceof SQLException) {
-                        waitArray[pos].set(null);
+                        waitQueue.remove(borrower);
                         throw (SQLException) state;
                     }
 
@@ -474,19 +460,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     public final void recycle(PooledConnection pConn) {
         transferPolicy.beforeTransfer(pConn);
 
-        for (int i = 0; i < this.waitLen; ++i) {
-            Borrower borrower = (Borrower) this.waitArray[i].get();
-            if (borrower != null) {
-                for (Object state = borrower.state; state == BORROWER_NORMAL || state == BORROWER_WAITING; state = borrower.state) {
-                    if (pConn.state - this.conUnCatchStateCode != 0) return;
-                    if (BwrStUpd.compareAndSet(borrower, state, pConn)) {
-                        if (state == BORROWER_WAITING)
-                            unpark(borrower.thread);
-                        return;
-                    }
+        for( Borrower borrower:waitQueue)
+            for (Object state = borrower.state; state == BORROWER_NORMAL || state == BORROWER_WAITING; state = borrower.state) {
+                if (pConn.state - this.conUnCatchStateCode != 0) return;
+                if (BwrStUpd.compareAndSet(borrower, state, pConn)) {
+                    if (state == BORROWER_WAITING)
+                        unpark(borrower.thread);
+                    return;
                 }
             }
-        }
         transferPolicy.onFailedTransfer(pConn);
     }
 
@@ -494,17 +476,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @param exception: transfer Exception to waiter
      */
     private void transferException(SQLException exception) {
-        for (int i = 0; i < waitLen; i++) {
-            Borrower borrower = (Borrower) this.waitArray[i].get();
-            if (borrower != null) {
-                for (Object state = borrower.state; state == BORROWER_NORMAL || state == BORROWER_WAITING; state = borrower.state) {
-                    if (BwrStUpd.compareAndSet(borrower, state, exception)) {//transfer successful
-                        if (state == BORROWER_WAITING) unpark(borrower.thread);
-                        return;
-                    }
+        for(Borrower borrower:waitQueue)
+            for (Object state = borrower.state; state == BORROWER_NORMAL || state == BORROWER_WAITING; state = borrower.state) {
+                if (BwrStUpd.compareAndSet(borrower, state, exception)) {//transfer successful
+                    if (state == BORROWER_WAITING) unpark(borrower.thread);
+                    return;
                 }
             }
-        }
     }
 
     /**
@@ -695,10 +673,20 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     public int getTransferWaitingSize() {
         int size = 0;
-        for (int i = 0; i < waitLen; i++) {
-            Borrower borrower = (Borrower) this.waitArray[i].get();
-            if (borrower != null) size++;
-        }
+        for (Borrower borrower : waitQueue) {
+            Object state=borrower.state;
+            if (state == BORROWER_NORMAL || state == BORROWER_WAITING)
+            size++;
+    }
+
+
+//        for (int i = 0; i < waitLen; i++) {
+//            Borrower borrower = (Borrower) this.waitArray[i].get();
+//            if (borrower != null) size++;
+//        }
+
+
+
         return size;
     }
 
