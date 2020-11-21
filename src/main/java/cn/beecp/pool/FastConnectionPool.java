@@ -66,7 +66,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private ConnectionPoolHook exitHook;
     private BeeDataSourceConfig poolConfig;
     private Semaphore borrowSemaphore;
-    private ConcurrentLinkedQueue<Borrower>waitQueue=new ConcurrentLinkedQueue<Borrower>();
+    private ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
 
     private TransferPolicy transferPolicy;
     private ConnectionTestPolicy testPolicy;
@@ -394,7 +394,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 SQLException failedCause = null;
                 borrower.state = BORROWER_NORMAL;
                 waitQueue.offer(borrower);
-                int spinSize =(waitQueue.peek()== borrower) ? maxTimedSpins : 0;
+                int spinSize = (waitQueue.peek() == borrower) ? maxTimedSpins : 0;
 
                 while (true) {
                     Object state = borrower.state;
@@ -460,7 +460,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     public final void recycle(PooledConnection pConn) {
         transferPolicy.beforeTransfer(pConn);
 
-        for( Borrower borrower:waitQueue)
+        for (Borrower borrower : waitQueue)
             for (Object state = borrower.state; state == BORROWER_NORMAL || state == BORROWER_WAITING; state = borrower.state) {
                 if (pConn.state - this.conUnCatchStateCode != 0) return;
                 if (BwrStUpd.compareAndSet(borrower, state, pConn)) {
@@ -476,7 +476,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @param exception: transfer Exception to waiter
      */
     private void transferException(SQLException exception) {
-        for(Borrower borrower:waitQueue)
+        for (Borrower borrower : waitQueue)
             for (Object state = borrower.state; state == BORROWER_NORMAL || state == BORROWER_WAITING; state = borrower.state) {
                 if (BwrStUpd.compareAndSet(borrower, state, exception)) {//transfer successful
                     if (state == BORROWER_WAITING) unpark(borrower.thread);
@@ -674,17 +674,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     public int getTransferWaitingSize() {
         int size = 0;
         for (Borrower borrower : waitQueue) {
-            Object state=borrower.state;
+            Object state = borrower.state;
             if (state == BORROWER_NORMAL || state == BORROWER_WAITING)
-            size++;
-    }
+                size++;
+        }
 
 
 //        for (int i = 0; i < waitLen; i++) {
 //            Borrower borrower = (Borrower) this.waitArray[i].get();
 //            if (borrower != null) size++;
 //        }
-
 
 
         return size;
