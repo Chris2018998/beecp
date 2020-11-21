@@ -678,14 +678,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (state == BORROWER_NORMAL || state == BORROWER_WAITING)
                 size++;
         }
-
-
-//        for (int i = 0; i < waitLen; i++) {
-//            Borrower borrower = (Borrower) this.waitArray[i].get();
-//            if (borrower != null) size++;
-//        }
-
-
         return size;
     }
 
