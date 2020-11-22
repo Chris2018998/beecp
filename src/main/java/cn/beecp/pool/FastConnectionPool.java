@@ -198,9 +198,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         synchronized (connArrayLock) {
             int arrayLen = connArray.length;
             if (arrayLen < poolMaxSize) {
+                commonLog.debug("BeeCP({}))begin to create new pooled connection,state:{}", poolName, connState);
                 Connection con = connFactory.create();
                 setDefaultOnRawConn(con);
                 PooledConnection pConn = new PooledConnection(con, connState, this, poolConfig);// add
+                commonLog.debug("BeeCP({}))has created new pooled connection:{},state:{}", poolName, pConn, connState);
                 PooledConnection[] arrayNew = new PooledConnection[arrayLen + 1];
                 arraycopy(connArray, 0, arrayNew, 0, arrayLen);
                 arrayNew[arrayLen] = pConn;// tail
@@ -214,6 +216,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     //remove Pooled connection
     private void removePooledConn(PooledConnection pConn, String removeType) {
+        commonLog.debug("BeeCP({}))begin to remove pooled connection:{},reason:{}", poolName, pConn, removeType);
         pConn.state = CONNECTION_CLOSED;
         pConn.closeRawConn();
         synchronized (connArrayLock) {
@@ -227,6 +230,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     break;
                 }
             }
+
+            commonLog.debug("BeeCP({}))has removed pooled connection:{},reason:{}", poolName, pConn, removeType);
             connArray = arrayNew;
         }
     }
@@ -512,6 +517,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     tryToCreateNewConnByAsyn();
                 }
             }
+
+            ConnectionPoolMonitorVo vo = this.getMonitorVo();
+            commonLog.debug("BeeCP({})idle:{},using:{},semaphore-waiter:{},wait-transfer:{}", poolName, vo.getIdleSize(), vo.getUsingSize(), vo.getSemaphoreWaiterSize(), vo.getTransferWaiterSize());
         }
     }
 
