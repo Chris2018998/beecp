@@ -47,11 +47,11 @@ public abstract class ProxyConnectionBase implements Connection {
         return delegate;
     }
 
-    public boolean isClosed() throws SQLException {
+    public final boolean isClosed() throws SQLException {
         return isClosed;
     }
 
-    protected void checkClosed() throws SQLException {
+    protected final void checkClosed() throws SQLException {
         if (isClosed) throw ConnectionClosedException;
     }
 

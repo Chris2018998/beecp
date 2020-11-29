@@ -46,7 +46,7 @@ abstract class ProxyStatementBase implements Statement {
         proxyConn.registerStatement(this);
     }
 
-    private void checkClosed() throws SQLException {
+    private final void checkClosed() throws SQLException {
         if (isClosed) throw StatementClosedException;
     }
 
@@ -55,7 +55,7 @@ abstract class ProxyStatementBase implements Statement {
         return proxyConn;
     }
 
-    public boolean isClosed() throws SQLException {
+    public final boolean isClosed() throws SQLException {
         return isClosed;
     }
 
