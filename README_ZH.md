@@ -147,19 +147,27 @@ public class DataSourceConfig {
 
 2：两种模式：公平与竞争
 
-3：断网连接池自动恢复
+3：支持连接安全关闭
 
-4：闲置超时和持有超时处理
+4：断网连接池自动恢复
 
-5：支持连接回收前，事物回滚
+5：闲置超时和持有超时处理
 
-6：支持连接回收前，属性重置（比如：autoCommit,transactionIsolation,readonly,catlog,schema,networkTimeout）
+6：支持连接回收前，事物回滚
 
-7:支持XADataSource
+7:若连接出现问题，池自动补充
 
-8: 支持JMX
+8：支持连接池重置
 
-9：支持连接工厂自定义
+9：支持连接回收前，属性重置（比如：autoCommit,transactionIsolation,readonly,catlog,schema,networkTimeout）
+
+10:支持XADataSource
+
+11：支持JMX
+
+12：支持连接工厂自定义
+
+
 ```
 
 七：配置项说明
