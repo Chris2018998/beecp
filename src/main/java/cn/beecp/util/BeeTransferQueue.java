@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.locks.LockSupport;
 
 import static java.lang.System.nanoTime;
+import static java.lang.Thread.yield;
 import static java.util.concurrent.locks.LockSupport.parkNanos;
 
 /**
@@ -194,8 +195,8 @@ public final class BeeTransferQueue<E> extends AbstractQueue<E> {
                         --spinSize;
                     } else if (timeout > spinForTimeoutThreshold && TransferUpdater.compareAndSet(waiter, state, STS_WAITING)) {
                         parkNanos(waiter, timeout);
-                        //if (waiter.state == STS_WAITING)//reset to normal
-                        TransferUpdater.compareAndSet(waiter, STS_WAITING, STS_NORMAL);
+                        if (waiter.state == STS_WAITING)//reset to normal
+                           TransferUpdater.compareAndSet(waiter, STS_WAITING, STS_NORMAL);
                         if (waiter.thread.isInterrupted()) {
                             isFailed = true;
                             isInterrupted = true;

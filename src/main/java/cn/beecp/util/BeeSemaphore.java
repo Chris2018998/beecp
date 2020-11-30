@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.locks.LockSupport;
 
 import static java.lang.System.nanoTime;
+import static java.lang.Thread.yield;
 import static java.util.concurrent.locks.LockSupport.parkNanos;
 
 /**
@@ -187,6 +188,10 @@ public class BeeSemaphore {
                     if (acquirePermit()) {
                         waiterQueue.remove(waiter);
                         return true;
+                    }else{
+                        state=STS_NORMAL;
+                        waiter.state=state;
+                        yield();
                     }
                 }
 
