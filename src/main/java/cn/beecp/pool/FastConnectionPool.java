@@ -53,9 +53,9 @@ public final class FastConnectionPool implements ConnectionPool, ConnectionPoolJ
     private static final String DESC_REMOVE_CLOSED = "closed";
     private static final String DESC_REMOVE_RESET = "reset";
     private static final String DESC_REMOVE_DESTROY = "destroy";
+    private static final AtomicInteger poolNameIndex = new AtomicInteger(1);
     private final Object connArrayLock = new Object();
     private final Object connNotifyLock = new Object();
-    private static final AtomicInteger poolNameIndex = new AtomicInteger(1);
     private final ConnectionPoolMonitorVo monitorVo = new ConnectionPoolMonitorVo();
     private final ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
 
@@ -364,7 +364,7 @@ public final class FastConnectionPool implements ConnectionPool, ConnectionPoolJ
             Borrower borrower = (ref != null) ? ref.get() : null;
             if (borrower != null) {
                 PooledConnection pConn = borrower.lastUsedConn;
-                if (pConn != null && ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
+                if (pConn != null && pConn.state == CONNECTION_IDLE && ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING)) {
                     if (testOnBorrow(pConn)) return createProxyConnection(pConn, borrower);
 
                     borrower.lastUsedConn = null;
@@ -386,15 +386,13 @@ public final class FastConnectionPool implements ConnectionPool, ConnectionPoolJ
             try {//borrowSemaphore acquired
                 //1:try to search one from array
                 PooledConnection[] tempArray = connArray;
-                int len = tempArray.length;
-                PooledConnection pConn;
-                for (int i = 0; i < len; i++) {
-                    pConn = tempArray[i];
-                    if (ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn))
+                for (PooledConnection pConn:tempArray) {
+                    if (pConn.state == CONNECTION_IDLE && ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn))
                         return createProxyConnection(pConn, borrower);
                 }
 
                 //2:try to create one directly
+                PooledConnection pConn;
                 if (connArray.length < poolMaxSize && (pConn = createPooledConn(CONNECTION_USING)) != null)
                     return createProxyConnection(pConn, borrower);
 
@@ -431,7 +429,8 @@ public final class FastConnectionPool implements ConnectionPool, ConnectionPoolJ
                                 spinSize--;
                             } else if (timeout - spinForTimeoutThreshold > 0 && BwrStUpd.compareAndSet(borrower, state, BORROWER_WAITING)) {
                                 parkNanos(borrower, timeout);
-                                BwrStUpd.compareAndSet(borrower, BORROWER_WAITING, BORROWER_NORMAL);//reset to normal
+                                if (borrower.state == BORROWER_WAITING)
+                                    BwrStUpd.compareAndSet(borrower, BORROWER_WAITING, BORROWER_NORMAL);//reset to normal
                                 if (borrower.thread.isInterrupted()) {
                                     failed = true;
                                     failedCause = RequestInterruptException;
