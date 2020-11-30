@@ -43,14 +43,10 @@ public class BeeSemaphore {
     private static final int STS_FAILED = 4;
     //park min nanoSecond,spin min time value
     private static final long parkForTimeoutThreshold = 1000L;
-    /**
-     * The number of times to spin before blocking in timed waits.
-     */
+    //The number of times to spin before blocking in timed waits.
     private static final int maxTimedSpins = (Runtime.getRuntime().availableProcessors() < 2) ? 0 : 32;
-
     //Thread Interrupted Exception
     private static final InterruptedException RequestInterruptException = new InterruptedException();
-
     //state updater
     private static final AtomicIntegerFieldUpdater<Waiter> updater = AtomicIntegerFieldUpdater
             .newUpdater(Waiter.class, "state");
