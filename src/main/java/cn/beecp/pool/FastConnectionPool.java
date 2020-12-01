@@ -380,14 +380,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
         try {//borrowSemaphore acquired
             //1:try to search one from array
+            PooledConnection pConn;
             PooledConnection[] tempArray = connArray;
-            for (PooledConnection pConn : tempArray) {
+            for (int i=0,l=tempArray.length;i<l;i++) {
+                pConn=tempArray[i];
                 if (pConn.state == CONNECTION_IDLE && ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn))
                     return createProxyConnection(pConn, borrower);
             }
 
             //2:try to create one directly
-            PooledConnection pConn;
             if (connArray.length < poolMaxSize && (pConn = createPooledConn(CONNECTION_USING)) != null)
                 return createProxyConnection(pConn, borrower);
 
@@ -395,6 +396,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             boolean failed = false;
             SQLException failedCause = null;
             borrower.state = BORROWER_NORMAL;
+            Thread cThread=borrower.thread;
             waitQueue.offer(borrower);
             int spinSize = (waitQueue.peek() == borrower) ? maxTimedSpins : 0;
 
@@ -424,7 +426,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                             --spinSize;
                         } else if (timeout - spinForTimeoutThreshold > 0 && BwrStUpd.compareAndSet(borrower, state, BORROWER_WAITING)) {
                             parkNanos(borrower, timeout);
-                            if (borrower.thread.isInterrupted()) {
+                            if (cThread.isInterrupted()) {
                                 failed = true;
                                 failedCause = RequestInterruptException;
                             }
