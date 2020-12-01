@@ -428,9 +428,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                                 failed = true;
                                 failedCause = RequestInterruptException;
                             }
-                            if (borrower.state == BORROWER_WAITING) {
-                                BwrStUpd.compareAndSet(borrower, BORROWER_WAITING, (failedCause != null) ? failedCause : BORROWER_NORMAL);//reset to normal
-                            }
+                            if (borrower.state == BORROWER_WAITING)
+                                BwrStUpd.compareAndSet(borrower, BORROWER_WAITING, failed?failedCause:BORROWER_NORMAL);//reset to normal
                         }
                     } else {//timeout
                         failed = true;
