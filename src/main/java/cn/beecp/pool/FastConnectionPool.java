@@ -382,8 +382,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             //1:try to search one from array
             PooledConnection pConn;
             PooledConnection[] tempArray = connArray;
-            for (int i=0,l=tempArray.length;i<l;i++) {
-                pConn=tempArray[i];
+            for (int i = 0, l = tempArray.length; i < l; i++) {
+                pConn = tempArray[i];
                 if (pConn.state == CONNECTION_IDLE && ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn))
                     return createProxyConnection(pConn, borrower);
             }
@@ -396,7 +396,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             boolean failed = false;
             SQLException failedCause = null;
             borrower.state = BORROWER_NORMAL;
-            Thread cThread=borrower.thread;
+            Thread cThread = borrower.thread;
             waitQueue.offer(borrower);
             int spinSize = (waitQueue.peek() == borrower) ? maxTimedSpins : 0;
 
@@ -431,7 +431,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                                 failedCause = RequestInterruptException;
                             }
                             if (borrower.state == BORROWER_WAITING)
-                                BwrStUpd.compareAndSet(borrower, BORROWER_WAITING, failed?failedCause:BORROWER_NORMAL);//reset to normal
+                                BwrStUpd.compareAndSet(borrower, BORROWER_WAITING, failed ? failedCause : BORROWER_NORMAL);//reset to normal
                         }
                     } else {//timeout
                         failed = true;
