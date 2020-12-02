@@ -53,7 +53,7 @@ class PooledConnection {
     private int resetCnt;// reset count
     private boolean[] resetInd = new boolean[FALSE_ARRAY.length];
 
-    public PooledConnection(Connection rawConn, int connState, FastConnectionPool connPool, BeeDataSourceConfig config) throws SQLException {
+    public PooledConnection(Connection rawConn, int connState, FastConnectionPool connPool, BeeDataSourceConfig config) {
         pool = connPool;
         state = connState;
         this.rawConn = rawConn;
@@ -77,7 +77,7 @@ class PooledConnection {
     void closeRawConn() {//called by pool
         try {
             resetRawConnOnReturn();
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             commonLog.error("Connection close error", e);
         } finally {
             oclose(rawConn);
