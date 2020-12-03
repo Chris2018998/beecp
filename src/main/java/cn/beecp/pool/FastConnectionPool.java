@@ -54,7 +54,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private static final String DESC_REMOVE_DESTROY = "destroy";
     private static final AtomicInteger poolNameIndex = new AtomicInteger(1);
     private final Object connArrayLock = new Object();
-    private final Object connNotifyLock = new Object();
     private final ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
     private final ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
     private final ConnectionPoolMonitorVo monitorVo = new ConnectionPoolMonitorVo();
@@ -192,7 +191,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     //create Pooled connection
-    private PooledConnection createPooledConn(int connState) throws SQLException {
+    private final PooledConnection createPooledConn(int connState) throws SQLException {
         synchronized (connArrayLock) {
             int arrayLen = connArray.length;
             if (arrayLen < poolMaxSize) {
@@ -586,13 +585,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     // notify to create connections to pool
     private void tryToCreateNewConnByAsyn() {
-        if (connArray.length + needAddConnSize.get() < poolMaxSize) {
-            synchronized (connNotifyLock) {
-                if (connArray.length + needAddConnSize.get() < poolMaxSize) {
-                    needAddConnSize.incrementAndGet();
-                    if (createConnThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
-                        unpark(this);
-                }
+        while (true) {
+            int curAddSize = needAddConnSize.get();
+            int updAddSize = curAddSize + 1;
+            if (connArray.length + updAddSize > poolMaxSize) return;
+            if (needAddConnSize.compareAndSet(curAddSize, updAddSize)) {
+                if (createConnThreadState.get() == THREAD_WAITING && createConnThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
+                    unpark(this);
+                return;
             }
         }
     }
