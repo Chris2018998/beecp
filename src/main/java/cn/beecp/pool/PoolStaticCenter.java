@@ -40,6 +40,7 @@ public class PoolStaticCenter {
     public static final int CONNECTION_IDLE = 1;
     public static final int CONNECTION_USING = 2;
     public static final int CONNECTION_CLOSED = 3;
+
     //ADD CONNECTION THREAD STATE
     public static final int THREAD_WORKING = 1;
     public static final int THREAD_WAITING = 2;

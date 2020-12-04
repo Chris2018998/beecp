@@ -46,6 +46,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private static final int maxTimedSpins = (Runtime.getRuntime().availableProcessors() < 2) ? 0 : 32;
     private static final AtomicIntegerFieldUpdater<PooledConnection> ConnStUpd = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class, "state");
     private static final AtomicReferenceFieldUpdater<Borrower, Object> BwrStUpd = AtomicReferenceFieldUpdater.newUpdater(Borrower.class, Object.class, "state");
+    private static final String DESC_REMOVE_PREINIT = "pre-init";
     private static final String DESC_REMOVE_INIT = "init";
     private static final String DESC_REMOVE_BAD = "bad";
     private static final String DESC_REMOVE_IDLE = "idle";
@@ -187,7 +188,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     private boolean existBorrower() {
-        return poolConfig.getBorrowSemaphoreSize() > borrowSemaphore.availablePermits() || borrowSemaphore.hasQueuedThreads();
+        return poolConfig.getBorrowSemaphoreSize() > borrowSemaphore.availablePermits();
     }
 
     //create Pooled connection
@@ -333,13 +334,20 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @throws SQLException error occurred in creating connections
      */
     private void createInitConnections(int initSize) throws SQLException {
-        try {
-            for (int i = 0; i < initSize; i++)
-                createPooledConn(CONNECTION_IDLE);
-        } catch (SQLException e) {
-            for (PooledConnection pConn : connArray)
-                removePooledConn(pConn, DESC_REMOVE_INIT);
-            throw e;
+        if (initSize == 0) {//try to create one
+            try {
+                removePooledConn(createPooledConn(CONNECTION_IDLE), DESC_REMOVE_PREINIT);
+            } catch (Throwable e) {
+            }
+        } else {
+            try {
+                for (int i = 0; i < initSize; i++)
+                    createPooledConn(CONNECTION_IDLE);
+            } catch (SQLException e) {
+                for (PooledConnection pConn : connArray)
+                    removePooledConn(pConn, DESC_REMOVE_INIT);
+                throw e;
+            }
         }
     }
 
