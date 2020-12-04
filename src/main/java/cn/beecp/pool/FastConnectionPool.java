@@ -122,7 +122,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
             exitHook = new ConnectionPoolHook();
             Runtime.getRuntime().addShutdownHook(exitHook);
-            borrowSemaphoreSize=poolConfig.getBorrowSemaphoreSize();
+            borrowSemaphoreSize = poolConfig.getBorrowSemaphoreSize();
             borrowSemaphore = new Semaphore(borrowSemaphoreSize, poolConfig.isFairMode());
             idleSchExecutor.setKeepAliveTime(15, SECONDS);
             idleSchExecutor.allowCoreThreadTimeOut(true);
@@ -247,7 +247,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
         try {
             rawConn.setTransactionIsolation(poolConfig.getDefaultTransactionIsolationCode());
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             commonLog.warn("BeeCP({}))failed to set default on executing to 'setTransactionIsolation'", poolName);
         }
 
@@ -338,9 +338,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     private void createInitConnections(int initSize) throws SQLException {
         if (initSize == 0) {//try to create one
+            Connection con = null;
             try {
-                removePooledConn(createPooledConn(CONNECTION_IDLE), DESC_REMOVE_PREINIT);
+                con = connFactory.create();
+                setDefaultOnRawConn(con);
             } catch (Throwable e) {
+            } finally {
+                if (con != null) try {
+                    con.close();
+                } catch (Throwable e) {
+                }
             }
         } else {
             try {
@@ -404,7 +411,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
             //3:try to get one transferred connection
             boolean failed = false;
-            SQLException failedCause = null;
+            SQLException failedCause=null ;
             borrower.state = BORROWER_NORMAL;
             Thread cThread = borrower.thread;
             waitQueue.offer(borrower);
