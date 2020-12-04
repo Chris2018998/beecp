@@ -66,6 +66,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private long connectionTestInterval;//milliseconds
     private ConnectionPoolHook exitHook;
     private BeeDataSourceConfig poolConfig;
+
+    private int borrowSemaphoreSize;
     private Semaphore borrowSemaphore;
     private TransferPolicy transferPolicy;
     private ConnectionTestPolicy testPolicy;
@@ -120,7 +122,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
             exitHook = new ConnectionPoolHook();
             Runtime.getRuntime().addShutdownHook(exitHook);
-            borrowSemaphore = new Semaphore(poolConfig.getBorrowSemaphoreSize(), poolConfig.isFairMode());
+            borrowSemaphoreSize=poolConfig.getBorrowSemaphoreSize();
+            borrowSemaphore = new Semaphore(borrowSemaphoreSize, poolConfig.isFairMode());
             idleSchExecutor.setKeepAliveTime(15, SECONDS);
             idleSchExecutor.allowCoreThreadTimeOut(true);
             idleCheckSchFuture = idleSchExecutor.scheduleAtFixedRate(new Runnable() {
@@ -135,7 +138,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     poolMode,
                     connArray.length,
                     config.getMaxActive(),
-                    poolConfig.getBorrowSemaphoreSize(),
+                    borrowSemaphoreSize,
                     poolConfig.getMaxWait(),
                     poolConfig.getDriverClassName());
 
@@ -187,8 +190,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         return idleSchExecutor;
     }
 
-    private boolean existBorrower() {
-        return poolConfig.getBorrowSemaphoreSize() > borrowSemaphore.availablePermits();
+    private final boolean existBorrower() {
+        return borrowSemaphoreSize > borrowSemaphore.availablePermits();
     }
 
     //create Pooled connection
