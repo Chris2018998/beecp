@@ -25,7 +25,6 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.locks.LockSupport;
 
 import static java.lang.System.nanoTime;
-import static java.lang.Thread.yield;
 import static java.util.concurrent.locks.LockSupport.parkNanos;
 
 /**
@@ -167,7 +166,6 @@ public final class BeeTransferQueue<E> extends AbstractQueue<E> {
         E e = elementQueue.poll();
         if (e != null) return e;
 
-        boolean isFailed = false;
         boolean isInterrupted = false;
         Waiter waiter = new Waiter();
         waiterQueue.offer(waiter);
@@ -176,34 +174,30 @@ public final class BeeTransferQueue<E> extends AbstractQueue<E> {
 
         while (true) {
             Object state = waiter.state;
-            if (!(state instanceof State)) {
+            if (state == RequestInterruptException)
+                throw RequestInterruptException;
+            else if (!(state instanceof State))
                 return (E) state;
-            }
 
-            if (isFailed) {
-                if (TransferUpdater.compareAndSet(waiter, state, STS_FAILED)) {
+            if (isInterrupted) {
+                if (waiter.state == state && TransferUpdater.compareAndSet(waiter, state, RequestInterruptException)) {
                     waiterQueue.remove(waiter);
-                    if (isInterrupted)
-                        throw RequestInterruptException;
-                    else
-                        return null;
+                    throw RequestInterruptException;
                 }
             } else {
                 timeout = deadline - nanoTime();
                 if (timeout > 0L) {
                     if (spinSize > 0) {
                         --spinSize;
-                    } else if (timeout > spinForTimeoutThreshold && TransferUpdater.compareAndSet(waiter, state, STS_WAITING)) {
-                        parkNanos(waiter, timeout);
-                        if (waiter.state == STS_WAITING)//reset to normal
-                           TransferUpdater.compareAndSet(waiter, STS_WAITING, STS_NORMAL);
-                        if (waiter.thread.isInterrupted()) {
-                            isFailed = true;
+                    } else if (timeout - spinForTimeoutThreshold > 0 && waiter.state == state && TransferUpdater.compareAndSet(waiter, state, STS_WAITING)) {
+                        parkNanos(timeout);
+                        if (waiter.thread.isInterrupted())
                             isInterrupted = true;
-                        }
+                        if (waiter.state == STS_WAITING)
+                            TransferUpdater.compareAndSet(waiter, STS_WAITING, isInterrupted ? RequestInterruptException : null);
                     }
-                } else {//timeout
-                    isFailed = true;
+                } else if (waiter.state == state) {//timeout
+                    TransferUpdater.compareAndSet(waiter, state, null);
                 }
             }
         }//while

@@ -184,15 +184,15 @@ public class BeeSemaphore {
                     if (acquirePermit()) {
                         waiterQueue.remove(waiter);
                         return true;
-                    }else{
-                        state=STS_NORMAL;
-                        waiter.state=state;
+                    } else {
+                        state = STS_NORMAL;
+                        waiter.state = state;
                         yield();
                     }
                 }
 
                 if (isFailed) {
-                    if (updater.compareAndSet(waiter, state, STS_FAILED)) {
+                    if (waiter.state==state&&updater.compareAndSet(waiter, state, STS_FAILED)) {
                         waiterQueue.remove(waiter);
                         if (isInterrupted)
                             throw RequestInterruptException;
@@ -204,14 +204,14 @@ public class BeeSemaphore {
                     if (timeout > 0L) {
                         if (spinSize > 0) {
                             --spinSize;
-                        } else if (timeout > parkForTimeoutThreshold && updater.compareAndSet(waiter, state, STS_WAITING)) {
+                        } else if (timeout-parkForTimeoutThreshold>parkForTimeoutThreshold&&waiter.state ==state&&updater.compareAndSet(waiter, state, STS_WAITING)) {
                             parkNanos(waiter, timeout);
-                            if (waiter.state == STS_WAITING)//reset to normal
-                                updater.compareAndSet(waiter, STS_WAITING, STS_NORMAL);
                             if (thread.isInterrupted()) {
                                 isFailed = true;
                                 isInterrupted = true;
                             }
+                            if (waiter.state == STS_WAITING)//reset to normal
+                                updater.compareAndSet(waiter, STS_WAITING, STS_NORMAL);
                         }
                     } else {//timeout
                         isFailed = true;

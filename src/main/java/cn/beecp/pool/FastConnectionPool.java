@@ -411,7 +411,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
             //3:try to get one transferred connection
             boolean failed = false;
-            SQLException failedCause=null ;
+            SQLException failedCause = null;
             borrower.state = BORROWER_NORMAL;
             Thread cThread = borrower.thread;
             waitQueue.offer(borrower);
@@ -435,14 +435,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 }
 
                 if (failed) {
-                    BwrStUpd.compareAndSet(borrower, state, failedCause);
+                    if(borrower.state == state)
+                      BwrStUpd.compareAndSet(borrower, state, failedCause);
                 } else {
                     long timeout = deadline - nanoTime();
                     if (timeout > 0L) {
                         if (spinSize > 0) {
                             --spinSize;
-                        } else if (timeout - spinForTimeoutThreshold > 0 && BwrStUpd.compareAndSet(borrower, state, BORROWER_WAITING)) {
-                            parkNanos(borrower, timeout);
+                        } else if (timeout - spinForTimeoutThreshold > 0 && borrower.state == state && BwrStUpd.compareAndSet(borrower, state, BORROWER_WAITING)) {
+                            parkNanos(timeout);
                             if (cThread.isInterrupted()) {
                                 failed = true;
                                 failedCause = RequestInterruptException;
@@ -453,7 +454,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     } else {//timeout
                         failed = true;
                         failedCause = RequestTimeoutException;
-                        BwrStUpd.compareAndSet(borrower, state, failedCause);//set to fail
+                        if(borrower.state == state)
+                            BwrStUpd.compareAndSet(borrower, state, failedCause);//set to fail
                     }
                 }
             }//while

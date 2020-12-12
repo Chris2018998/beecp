@@ -60,23 +60,22 @@ abstract class ProxyStatementBase implements Statement {
     }
 
     public final void close() throws SQLException {
-        if (!isClosed) {
-            isClosed = true;
-            if (curRe != null && !curRe.isClosed)
-                curRe.setAsClosed();
-            if (results != null && results.size() > 0) {
-                for (ProxyResultSetBase re : results)
-                    re.setAsClosed();
-                results.clear();
-            }
-            if (registered)
-                proxyConn.unregisterStatement(this);
+        if (isClosed) return;
 
-            try {
-                delegate.close();
-            } finally {
-                delegate = CLOSED_CSTM;//why? because Mysql's PreparedStatement just only remark as closed with useServerCache mode
-            }
+        isClosed = true;
+        if (curRe != null && !curRe.isClosed)
+            curRe.setAsClosed();
+        if (results != null && results.size() > 0) {
+            for (ProxyResultSetBase re : results)
+                re.setAsClosed();
+            results.clear();
+        }
+
+        if (registered) proxyConn.unregisterStatement(this);
+        try {
+            delegate.close();
+        } finally {
+            delegate = CLOSED_CSTM;//why? because Mysql's PreparedStatement just only remark as closed with useServerCache mode
         }
     }
 
