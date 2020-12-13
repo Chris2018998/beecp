@@ -10,7 +10,6 @@
 *                                                                                                                               *
 *                                                                                                                               *
 ********************************************************************************************************************************
- 
 [INFO]2020-11-06 20:49:58-BeeCP(FastPool-1)starting....
 [INFO]2020-11-06 20:49:58-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.mysql.jdbc.Driver}
 [INFO]2020-11-06 20:49:59-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{10000threads X 10iterate}
