@@ -129,7 +129,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
      * until other borrower release
      * @throws SQLException if pool is closed or waiting timeout,then throw exception
      */
-    public Connection getConnection() throws SQLException {
+    public final Connection getConnection() throws SQLException {
         if (inited) return pool.getConnection();
 
         if (writeLock.tryLock()) {
