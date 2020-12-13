@@ -2,7 +2,7 @@
 *                                                                                                                               *
 *                                             Date:2020-11-06                                                                   *
 *                                             PC: I5-4210M(2.6hz),12G                                                           *          
-*                                             JDK:JAVA8_64                                                                      *
+*                                             JDK:JAVA1.8.0_65-b17(64)                                                          *
 *                                             DB:mysql-5.6.50_64                                                                *
 *                                             Pool:init size:10，maxsize:10 beecp-3.0.2                                         *
 *                                             Driver：mysql-connector-java-5.1.48                                               *
@@ -60,7 +60,7 @@
 *                                                                                                                               *
 *                                             Date:2020-12-13                                                                   *
 *                                             PC: I5-4210M(2.6hz),12G                                                           *          
-*                                             JDK:JAVA8_64                                                                      *
+*                                             JDK:JAVA1.8.0_65-b17(64)                                                                *
 *                                             DB:mysql-5.6.50_64                                                                *
 *                                             Pool:init size:10，maxsize:10 beecp-3.0.5                                         *
 *                                             Driver：mysql-connector-java-5.1.48                                               *
