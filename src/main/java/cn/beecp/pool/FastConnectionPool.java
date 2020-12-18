@@ -46,7 +46,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private static final int maxTimedSpins = (Runtime.getRuntime().availableProcessors() < 2) ? 0 : 32;
     private static final AtomicIntegerFieldUpdater<PooledConnection> ConnStUpd = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class, "state");
     private static final AtomicReferenceFieldUpdater<Borrower, Object> BwrStUpd = AtomicReferenceFieldUpdater.newUpdater(Borrower.class, Object.class, "state");
-    private static final String DESC_REMOVE_PREINIT = "pre-init";
+    private static final String DESC_REMOVE_PRE_INIT = "pre_init";
     private static final String DESC_REMOVE_INIT = "init";
     private static final String DESC_REMOVE_BAD = "bad";
     private static final String DESC_REMOVE_IDLE = "idle";
@@ -338,16 +338,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     private void createInitConnections(int initSize) throws SQLException {
         if (initSize == 0) {//try to create one
-            Connection con = null;
+            PooledConnection pConn = null;
             try {
-                con = connFactory.create();
-                setDefaultOnRawConn(con);
+                pConn = createPooledConn(CONNECTION_IDLE);
             } catch (Throwable e) {
             } finally {
-                if (con != null) try {
-                    con.close();
-                } catch (Throwable e) {
-                }
+                if (pConn != null)
+                    try {
+                        removePooledConn(pConn, DESC_REMOVE_PRE_INIT);
+                    } catch (Throwable e) { }
             }
         } else {
             try {
