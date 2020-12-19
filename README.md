@@ -185,14 +185,14 @@ Configuration
 | idleTimeout        |max idle time in pool(mills)               | default is 3 minutes                          |  
 | holdTimeout        |max hold time in not using                 | default is 5 minutes                          |  
 | connectionTestSQL  |Connection valid test sql                  | a 'select' statment                           |  
-| connectionTestTimeout |Connection valid test timeout(seconds)  | default 5 seconds                             |  
-| connectionTestInterval |connection valid test interval time(mills)| default 500ms                              |  
+| connectionTestTimeout |Connection valid test timeout(seconds)  | default is 5 seconds                             |  
+| connectionTestInterval |connection valid test interval time(mills)| default is 500ms                              |  
 | forceCloseConnection   |connection close force ind  |default is false,true:close using directly，false:close using when it is idle|
 | waitTimeToClearPool    |wait time to clean when exist using conneciton（seconds） | default is 3 seconds        |                  
-| idleCheckTimeInterval  |idle check time interval(mills)            |  5 minutes                                |
-| idleCheckTimeInitDelay |idle check thread delay time to check first| 1 seconds                                 |
+| idleCheckTimeInterval  |idle check time interval(mills)            | default is 5 minutes                                |
+| idleCheckTimeInitDelay |idle check thread delay time to check first| default is 1 seconds                                 |
 | connectionFactoryClassName|Custom JDBC connection factory class name| default is null                           |
-| enableJMX                 |JMX Ind                                |                                             |           
+| enableJMX                 |JMX Ind                                |  default is false                                       
 	
 
 JDBC Driver and DB List
