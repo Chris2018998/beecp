@@ -146,7 +146,7 @@ Function List
 ---
 1: Request timeout support
 
-2: Two modes: fairness and competition
+2: Two modes: fair and competition
 
 3: Pool recreate new connections when network restore
 
@@ -165,34 +165,34 @@ Function List
 
 Configuration
 ---
-| Configuration item |   Description                |   remark                          |
-| ----------------   | ---------------------------  | ------------------------          |
-| username           | JDBC username                 |                                   |
-| password           | JDBC password                 |                                   |
-| jdbcUrl            | JDBC url                      |                                   |
-| driverClassName    | Driver class name             |                                   |
-| poolName           | Pool name                     |                                   |
-| fairMode           | fair mode for pool            | default is false                   |
-| initialSize        | pool initial size             |                                   |
-| maxActive          | pool max size                 |                                   | 
-| borrowConcurrentSize | borrower thread concurrent size  | not greater than  'maxActive'   |
-| defaultAutoCommit  |default autoCommit                | default is true               |
-| defaultTransactionIsolation|trasaction level          | default:Connection.TRANSACTION_READ_COMMITTED |
-| defaultCatalog     |                                  |                                     |
-| defaultSchema      |                                  |                                     |
-| defaultReadOnly    |                                  | default is false                     |
-| maxWait            |max wait time to borrow a connection(mills)| default is 8 seconds       |
-| idleTimeout        |max idle time in pool(mills)      | default is 3 minutes                |  
-| holdIdleTimeout    |max hold time in not using        | default is 5 minutes              |  
-| connectionTestSQL  |Connection valid test sql          | a 'select' statment               |  
-| connectionTestTimeout |Connection valid test timeout(seconds)  | default 5 seconds         |  
-| connectionTestInterval |connection valid test interval time(mills)| default 500ms          |  
+| Configuration item |   Description                             |   remark                                      |
+| ----------------   | ----------------------------------------- | -----------------------------------------     |
+| username           | JDBC username                             |                                               |
+| password           | JDBC password                             |                                               |
+| jdbcUrl            | JDBC url                                  |                                               |
+| driverClassName    | Driver class name                         |                                               |
+| poolName           | Pool name                                 |                                               |
+| fairMode           | fair mode for pool                        | default is false                              |                
+| initialSize        | pool initial size                         | default is 0                                  |    
+| maxActive          | pool max size                             | default value is 10                           |      
+| borrowSemaphoreSize| borrow semaphore size                     | not greater than  'maxActive'                 |
+| defaultAutoCommit  |default autoCommit                         | default is true                               |
+| defaultTransactionIsolation|trasaction level                   | default:Connection.TRANSACTION_READ_COMMITTED |
+| defaultCatalog     |                                           |                                               |
+| defaultSchema      |                                           |                                               |
+| defaultReadOnly    |                                           | default is false                              |
+| maxWait            |max wait time to borrow a connection(mills)| default is 8 seconds                          |
+| idleTimeout        |max idle time in pool(mills)               | default is 3 minutes                          |  
+| holdTimeout        |max hold time in not using                 | default is 5 minutes                          |  
+| connectionTestSQL  |Connection valid test sql                  | a 'select' statment                           |  
+| connectionTestTimeout |Connection valid test timeout(seconds)  | default 5 seconds                             |  
+| connectionTestInterval |connection valid test interval time(mills)| default 500ms                              |  
 | forceCloseConnection   |connection close force ind  |default is false,true:close using directly，false:close using when it is idle|
-| waitTimeToClearPool    |wait time to clean when exist using conneciton（seconds） | default is 3 seconds |                  
-| idleCheckTimeInterval  |idle check time interval(mills)  |                     |
-| idleCheckTimeInitDelay |idle check thread delay time to check first|                    |
-| connectionFactoryClassName|Custom JDBC connection factory class name              | default is null          |
-| enableJMX                 |JMX Ind                                |                    | |
+| waitTimeToClearPool    |wait time to clean when exist using conneciton（seconds） | default is 3 seconds        |                  
+| idleCheckTimeInterval  |idle check time interval(mills)            |  5 minutes                                |
+| idleCheckTimeInitDelay |idle check thread delay time to check first| 1 seconds                                 |
+| connectionFactoryClassName|Custom JDBC connection factory class name| default is null                           |
+| enableJMX                 |JMX Ind                                |                                             |           
 	
 
 JDBC Driver and DB List
