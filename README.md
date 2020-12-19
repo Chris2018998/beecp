@@ -2,7 +2,7 @@
 
 Introduction <img height="50px" width="50px" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img>
 ---
-BeeCP is a high performance JDBC connection pool
+BeeCP is a lightway,high performance JDBC connection pool
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/README_ZH.md">中文</a>
 
