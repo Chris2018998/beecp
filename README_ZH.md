@@ -179,10 +179,10 @@ public class DataSourceConfig {
 | jdbcUrl         | JDBC连接URL                   |                                   |
 | driverClassName | JDBC驱动类名                   |                                   |
 | poolName        | 连接池名                       |                                   |
-| fairMode        | 连接池是否公平模式               | 公平锁,等待者优先获取连接            |
+| fairMode        | 连接池是否公平模式               | 默认false,竞争模式                 | 
 | initialSize     | 连接池初始大小                  |                                   |
 | maxActive       | 连接池最大个数                  |                                   | 
-| borrowConcurrentSize  | 信号量请求并发数（借用者线程数）| 不允许大于连接最大数                 |
+| borrowSemaphoreSize  | 信号量请求并发数（借用者线程数）| 不允许大于连接最大数                 |
 | defaultAutoCommit|连接是否为自动提交              | 默认true                            |
 | defaultTransactionIsolation|事物等级             | 默认读提交，Connection.TRANSACTION_READ_COMMITTED |
 | defaultCatalog    |                             |                                     |
@@ -191,15 +191,15 @@ public class DataSourceConfig {
 | maxWait           |连接借用等待最大时间(毫秒)       | 默认8秒，连接请求最大等待时间           |
 | idleTimeout       |连接闲置最大时间(毫秒)          | 默认3分钟，超时会被清理                 |  
 | holdTimeout       |连接被持有不用的最大时间(毫秒)    | 默认5分钟，超时会被清理                 |  
-| maxLifeTime       |在池中的最大时间(毫秒)            | 默认30分钟，超时会被清理                 |  
 | connectionTestSQL |连接有效性测试SQL语句           | 一条 select 语句，不建议放入存储过程     |  
 | connectionTestTimeout |连接有效性测试超时时间(秒)   |默认5秒 执行查询测试语句时间，在指定时间范围内等待反应|  
 | connectionTestInterval |连接测试的间隔时间(毫秒)     |默认500毫秒 连接上次活动时间点与当前时间时间差值小于它，则假定连接是有效的|  
 | forceCloseConnection   |是否需要暴力关闭连接         |默认false;true:直接关闭使用中连接，false:等待处于使用中归还后再关闭|
-| waitTimeToClearPool    |延迟清理的时候时间（秒）      |默认3秒，非暴力清理池下，还存在使用中的连接，延迟等待时间再清理|                   | idleCheckTimeInterval  |闲置扫描线程间隔时间(毫秒)             |                     |
-| idleCheckTimeInitDelay |闲置扫描线程延迟时间再执行第一次扫描(毫秒)|                    |
-| connectionFactoryClassName|自定义的JDBC连接工作类名            | 默认为空             |
-| enableJMX                 |JMX监控支持开关                    |                    | |
+| waitTimeToClearPool    |延迟清理的时候时间（秒）      |默认3秒，非暴力清理池下，还存在使用中的连接，延迟等待时间再清理|                   
+| idleCheckTimeInterval  |闲置扫描线程间隔时间(毫秒)     |   默认5分钟                                 |
+| idleCheckTimeInitDelay |闲置扫描线程延迟时间再执行第一次扫描(毫秒)|    默认1秒                |
+| connectionFactoryClassName|自定义的JDBC连接工作类名            | 默认为空                  |
+| enableJMX                 |JMX监控支持开关                    | 默认false                | 
 
 
 
