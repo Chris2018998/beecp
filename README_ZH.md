@@ -1,6 +1,6 @@
 <img height="50px" width="50px" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img> <a href="https://github.com/Chris2018998/BeeCP/blob/master/README.md">English</a>
 
-小蜜蜂对象池：一款轻量高性能Java对象池 
+小蜜蜂连接池：一款轻量高性能JDBC连接池
 
 Maven坐标（Java7)
 ```java
@@ -21,29 +21,28 @@ Maven坐标（Java6)
 
 ##### 性能测试
 
-**1** 100万次借用测试(1000线程 x 1000次),单次计时间范围:[datasource.getConnection(),connection.close()] 结果如下
-
-| 时间(ms)    |   HikariC3.3.1  |  Bee_F(BeeCP-2.3.2)| Bee_C(BeeCP-2.3.2)    |
+100万次借用/归还(1000线程x1000次),获取时间分布,平均时间
+|    连接池名  |   HikariC3.3.1  | BeeCP-2.3.2_Fair  | BeeCP-2.3.2_compete   |
 | ----------- |----------------| -------------------| ----------------------| 
-| 总时间      | 151516          | 53384              |          142          | 
-| 平均时间    | 0.1515          | 0.0534             |        0.0001         ||  
+| 总时间       | 151516         | 53384             |          142          | 
+| 平均时间     | 0.1515         | 0.0534            |        0.0001         |
 
-说明：
+测试配置：PC:I5-4210M(2.6赫兹，双核4线程),12G内存 Java:JAVA8_64 Pool:初始10,最大10
+ 
+测试源码：https://github.com/Chris2018998/PoolPerformance
 
-Bee_F:公平模式池，Bee_C:竞争模式池
-
-总时间=线程1耗时 + 线程2耗时 + ...... + 线程1000耗时, 平均时间 = 总时间/1000000
-
-测试电脑: Win7 I3-7100 8G mysql5.6.46_64  连接池设置: init size10 max size:10
+日志文件：<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200417_JDBCPool_I37100.log">20200417_JDBCPool_I37100.log</a>
 
 
-每次测试重新启动数据库,日志文件下载：<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200417_JDBCPool_I37100.log">20200417_JDBCPool_I37100.log</a>
-
-性能测试代码请访问项目：https://github.com/Chris2018998/PoolPerformance
 
 **2：** 采用光连接池的性能基准测试结果(I3-7100,8G)
 
 <img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/PoolPerformaceCompare.png"></img> 下载性能测试源码：<a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
+
+---
+
+
+
 
 
 
