@@ -38,11 +38,11 @@ Test soruce：https://github.com/Chris2018998/PoolPerformance
 
 <img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/PoolPerformaceCompare.png"></img> 
 
-性能测试源码：<a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
+Test source：<a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
 
 ---
 
-##### 范例1
+##### Example1
 
 ```java
 BeeDataSourceConfig config = new BeeDataSourceConfig();
@@ -62,7 +62,7 @@ Connection con=ds.getConnection();
 
 ---
 
-###### 范例2（SpringBoot）
+###### Example12（SpringBoot）
 
 *application.properties*
 
