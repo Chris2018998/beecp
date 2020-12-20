@@ -115,31 +115,31 @@ public class DataSourceConfig {
 
 ---
 
-###### 功能与特性
+###### Features
 
-1：请求超时支持
+1：Borrowing timeout
 
-2：两种模式：公平与竞争
+2：Fair mode and compete mode for borrowing
 
-3：支持连接安全关闭
+3：Proxy object safe close when returning
 
-4：断网连接池自动恢复
+4：Pooled connection cleared when network bad,pooled connection recreate when network restore OK
 
-5：闲置超时和持有超时处理
+5：Idle timeout and hold timeout(long time inactively hold by borrower)
 
-6：支持连接回收前，事物回滚
+6：Connection transaction rollback if exist commit transaction when return 
 
-7：若连接出现问题，池自动补充
+7：Pooled connection closed when exception,then create new one and transfer it to waiter
 
-8：支持连接池重置
+8：Pooled connection attributes reset when return（autoCommit,transactionIsolation,readonly,catlog,schema,networkTimeout）
 
-9：支持连接回收前，属性重置（比如：autoCommit,transactionIsolation,readonly,catlog,schema,networkTimeout）
+9：XADataSource support
 
-10：支持XADataSource
+10：support self defined connection factory
 
-11：支持JMX
+11：Pooled connection reset when return
 
-12：支持连接工厂自定义
+12：JMX support
 
 ---
 ###### 配置项说明
