@@ -1,49 +1,48 @@
-[![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
+<img height="50px" width="50px" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img> <a href="https://github.com/Chris2018998/BeeCP/blob/master/README_ZH.md">中文</a>
 
-Introduction <img height="50px" width="50px" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img>
+BeeCP：A light high-performance JDBC pool
+
+Maven artifactId(Java7)
+```xml
+<dependency>
+   <groupId>com.github.chris2018998</groupId>
+   <artifactId>beecp</artifactId>
+   <version>3.0.6</version>
+</dependency>
+```
+Maven artifactId(Java6)
+```xml
+<dependency>
+   <groupId>com.github.chris2018998</groupId>
+   <artifactId>beecp</artifactId>
+   <version>1.6.8</version>
+</dependency>
+```
 ---
-BeeCP is a lightway,high performance JDBC connection pool
 
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/README_ZH.md">中文</a>
+##### Performance
 
-Feature
---- 
+**1：** 1 million borrowing / returning (1000 threads x 1000 times)
+|   Pool type      |   HikariCP-3.3.1  | BeeCP-2.3.2_Fair  | BeeCP-2.3.2_compete   |
+| ---------------  |---------------- | ----------------- | ----------------------| 
+| Total(ms)        |151516           | 53384             |          142          | 
+| Average time(ms) | 0.1515          | 0.0534            |        0.0001         |
 
-1: Good performance,faster than HikariCP
+PC:I5-4210M(2.6Hz，dual core4threads),12G memory Java:JAVA8_64 Pool:init-size10,max-size:10
 
-2: Less code: 21 files, 2600 lines of source code
+Test log file：<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200417_JDBCPool_I37100.log">20200417_JDBCPool_I37100.log</a>
  
-Performance
+Test soruce：https://github.com/Chris2018998/PoolPerformance
+
+**2：** Test with HikariCP performance benchmark(I3-7100,8G)
+
+<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/PoolPerformaceCompare.png"></img> 
+
+性能测试源码：<a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
+
 ---
 
-1: One million times borrow tests[1000 X 1000],time scope:[datasource.getConnection(),connection.close()]
-
-| Time(ms)         |   HikariC3.3.1  |  Bee_F(BeeCP-2.3.2)| Bee_C(BeeCP-2.3.2)    |
-| ---------------- |---------------- | -------------------| ----------------------| 
-| Total time       | 151516          | 53384              |          142          | 
-| Avg time         | 0.1515          | 0.0534             |        0.0001         ||  
-
-Bee_F:Fair Mode Pool，Bee_C:Compete Mode Pool
-
-Total time=Thread1 time + Thread2 time + ...... + Thread1000 time,  Avg time  = Total time/1000000
-
-PC: Win7 I3-7100 8G mysql5.6.46_64,  Pool Setting: init size10, max size:10
- 
-DB restart after every test,log file:<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200417_JDBCPool_I37100.log">20200417_JDBCPool_I37100.log</a>
-
-project for performance test code,please visit：https://github.com/Chris2018998/PoolPerformance
-
-
-2：Test with HikariCP benchmark(I3-7100,8G)
-
-<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/PoolPerformaceCompare.png"></img>
-
-Download <a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
-
-
-
-Demo1
----
+##### 范例1
 
 ```java
 BeeDataSourceConfig config = new BeeDataSourceConfig();
@@ -61,21 +60,21 @@ Connection con=ds.getConnection();
 
 ```
 
-Demo2(SpringBoot)
---- 
- 
+---
+
+###### 范例2（SpringBoot）
+
 *application.properties*
 
 ```java
 spring.datasource.username=xx
 spring.datasource.password=xx
 spring.datasource.url=xx
-spring.datasource.driverClassName=xxx 
+spring.datasource.driverClassName=xxx
 spring.datasource.datasourceJndiName=xxx
-```
+``` 
 
 *DataSourceConfig.java*
-
 ```java
 @Configuration
 public class DataSourceConfig {
@@ -114,94 +113,74 @@ public class DataSourceConfig {
 }
 ```
 
-
-Release download
 ---
 
-Java7
+###### 功能与特性
+
+1：请求超时支持
+
+2：两种模式：公平与竞争
+
+3：支持连接安全关闭
+
+4：断网连接池自动恢复
+
+5：闲置超时和持有超时处理
+
+6：支持连接回收前，事物回滚
+
+7：若连接出现问题，池自动补充
+
+8：支持连接池重置
+
+9：支持连接回收前，属性重置（比如：autoCommit,transactionIsolation,readonly,catlog,schema,networkTimeout）
+
+10：支持XADataSource
+
+11：支持JMX
+
+12：支持连接工厂自定义
+
 ---
+###### 配置项说明
 
-```java
-<dependency>
-   <groupId>com.github.chris2018998</groupId>
-   <artifactId>beecp</artifactId>
-   <version>3.0.6</version>
-</dependency>
-```
+|  配置项          |   描述                        |   备注                            |
+| ----------------| ---------------------------  | ------------------------          |
+| username        | JDBC用户名                    |                                   |
+| password        | JDBC密码                      |                                   |
+| jdbcUrl         | JDBC连接URL                   |                                   |
+| driverClassName | JDBC驱动类名                   |                                   |
+| poolName        | 连接池名                       |                                   |
+| fairMode        | 连接池是否公平模式               | 默认false,竞争模式                 | 
+| initialSize     | 连接池初始大小                  |                                   |
+| maxActive       | 连接池最大个数                  |                                   | 
+| borrowSemaphoreSize  | 信号量请求并发数（借用者线程数）| 不允许大于连接最大数                 |
+| defaultAutoCommit|连接是否为自动提交              | 默认true                            |
+| defaultTransactionIsolation|事物等级             | 默认读提交，Connection.TRANSACTION_READ_COMMITTED |
+| defaultCatalog    |                             |                                     |
+| defaultSchema     |                             |                                     |
+| defaultReadOnly   |                             | 默认false                            |
+| maxWait           |连接借用等待最大时间(毫秒)       | 默认8秒，连接请求最大等待时间           |
+| idleTimeout       |连接闲置最大时间(毫秒)          | 默认3分钟，超时会被清理                 |  
+| holdTimeout       |连接被持有不用的最大时间(毫秒)    | 默认5分钟，超时会被清理                 |  
+| connectionTestSQL |连接有效性测试SQL语句           | 一条 select 语句，不建议放入存储过程     |  
+| connectionTestTimeout |连接有效性测试超时时间(秒)   |默认5秒 执行查询测试语句时间，在指定时间范围内等待反应|  
+| connectionTestInterval |连接测试的间隔时间(毫秒)     |默认500毫秒 连接上次活动时间点与当前时间时间差值小于它，则假定连接是有效的|  
+| forceCloseConnection   |是否需要暴力关闭连接         |默认false;true:直接关闭使用中连接，false:等待处于使用中归还后再关闭|
+| waitTimeToClearPool    |延迟清理的时候时间（秒）      |默认3秒，非暴力清理池下，还存在使用中的连接，延迟等待时间再清理|                   
+| idleCheckTimeInterval  |闲置扫描线程间隔时间(毫秒)     |   默认5分钟                                 |
+| idleCheckTimeInitDelay |闲置扫描线程延迟时间再执行第一次扫描(毫秒)|    默认1秒                |
+| connectionFactoryClassName|自定义的JDBC连接工作类名            | 默认为空                  |
+| enableJMX                 |JMX监控支持开关                    | 默认false                | 
 
-Java6
+
 ---
-
-```java
-<dependency>
-   <groupId>com.github.chris2018998</groupId>
-   <artifactId>beecp</artifactId>
-   <version>1.6.8</version>
-</dependency>
-```
-
-*Friendly tips: the latest version is recommended*
-
-Function List
----
-1: Request timeout support
-
-2: Two modes: fair and competition
-
-3: Pool recreate new connections when network restore
-
-4: Idle timeout and holding timeout 
-
-5: Before connection recovery, things can be rolled back
-
-6: Support property reset before connection recycling (for example: autocommit, transactionisolation, readonly, Catlog, schema, networktimeout)
-
-7: XDataSource
-
-8: JMX support
-
-9: Support connection factory customization
-
-
-Configuration
----
-| Configuration item |   Description                             |   remark                                      |
-| ----------------   | ----------------------------------------- | -----------------------------------------     |
-| username           | JDBC username                             |                                               |
-| password           | JDBC password                             |                                               |
-| jdbcUrl            | JDBC url                                  |                                               |
-| driverClassName    | Driver class name                         |                                               |
-| poolName           | Pool name                                 |                                               |
-| fairMode           | fair mode for pool                        | default is false                              |                
-| initialSize        | pool initial size                         | default is 0                                  |    
-| maxActive          | pool max size                             | default value is 10                           |      
-| borrowSemaphoreSize| borrow semaphore size                     | not greater than  'maxActive'                 |
-| defaultAutoCommit  |default autoCommit                         | default is true                               |
-| defaultTransactionIsolation|trasaction level                   | default:Connection.TRANSACTION_READ_COMMITTED |
-| defaultCatalog     |                                           |                                               |
-| defaultSchema      |                                           |                                               |
-| defaultReadOnly    |                                           | default is false                              |
-| maxWait            |max wait time to borrow a connection(mills)| default is 8 seconds                          |
-| idleTimeout        |max idle time in pool(mills)               | default is 3 minutes                          |  
-| holdTimeout        |max hold time in not using                 | default is 5 minutes                          |  
-| connectionTestSQL  |Connection valid test sql                  | a 'select' statment                           |  
-| connectionTestTimeout |Connection valid test timeout(seconds)  | default is 5 seconds                             |  
-| connectionTestInterval |connection valid test interval time(mills)| default is 500ms                              |  
-| forceCloseConnection   |connection close force ind  |default is false,true:close using directly，false:close using when it is idle|
-| waitTimeToClearPool    |wait time to clean when exist using conneciton（seconds） | default is 3 seconds        |                  
-| idleCheckTimeInterval  |idle check time interval(mills)            | default is 5 minutes                       |
-| idleCheckTimeInitDelay |idle check thread delay time to check first| default is 1 second                        
-| connectionFactoryClassName|Custom JDBC connection factory class name| default is null                           |
-| enableJMX                 |JMX Ind                                |  default is false                                       
-	
-
-JDBC Driver and DB List
----
-|  DB             |  JDBC Driver Class              |   Refer url                  |
-| ----------------| ---------------------------     | ------------------------    |
-|Mariadb         |org.mariadb.jdbc.Driver   	   |  jdbc:mariadb://localhost/test  |
+###### 数据库与驱动信息
+|  数据库          |   驱动类名                     |   参考url                       |
+| ----------------| ---------------------------   | ------------------------       |
+|Mariadb         |org.mariadb.jdbc.Driver   				  |  jdbc:mariadb://localhost/test  |
 |MySQL            |om.mysql.jdbc.Driver            |  jdbc:mysql://localhost/test    |
 |Oracle          |oracle.jdbc.driver.OracleDriver |  jdbc:oracle:thin:@localhost:1521:orcl|
 |MSSQL           |com.microsoft.sqlserver.jdbc.SQLServerDriver | jdbc:sqlserver://localhost:1433;databaseName=test|
 |Postgresql      |org.postgresql.Driver                 |  jdbc:postgresql://localhost:5432/postgres|
-
+ 
