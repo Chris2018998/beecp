@@ -40,10 +40,8 @@ Maven坐标(Java6)
 
 ---
 
+##### 范例1
 
-##### 范例
- 
-###### 例1
 ```java
 BeeDataSourceConfig config = new BeeDataSourceConfig();
 config.setDriverClassName("com.mysql.jdbc.Driver");
@@ -59,8 +57,8 @@ Connection con=ds.getConnection();
 ....
 
 ```
-
-###### 例12（SpringBoot）
+---
+###### 范例12（SpringBoot）
 
 *application.properties*
 
@@ -111,14 +109,9 @@ public class DataSourceConfig {
 }
 ```
 
-
-五：版本下载
 ---
 
-
-```
-
-*友情提示：建议使用最新版本*
+ 
 
 
 六：功能支持
