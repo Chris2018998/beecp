@@ -3,7 +3,7 @@
 小蜜蜂连接池：一款轻量高性能JDBC连接池
 
 Maven坐标（Java7)
-```java
+```xml
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
@@ -11,18 +11,19 @@ Maven坐标（Java7)
 </dependency>
 ```
 Maven坐标（Java6)
-```java
+```xml
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
    <version>1.6.8</version>
 </dependency>
+```
 ---
 
 ##### 性能测试
 
-100万次借用/归还(1000线程x1000次),获取时间分布,平均时间
-|    连接池名  |   HikariC3.3.1  | BeeCP-2.3.2_Fair  | BeeCP-2.3.2_compete   |
+**1：** 100万次借用/归还(1000线程x1000次),获取时间分布,平均时间
+|   连接池名   |   HikariC3.3.1  | BeeCP-2.3.2_Fair  | BeeCP-2.3.2_compete   |
 | ----------- |----------------| -------------------| ----------------------| 
 | 总时间       | 151516         | 53384             |          142          | 
 | 平均时间     | 0.1515         | 0.0534            |        0.0001         |
@@ -32,7 +33,6 @@ Maven坐标（Java6)
 测试源码：https://github.com/Chris2018998/PoolPerformance
 
 日志文件：<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200417_JDBCPool_I37100.log">20200417_JDBCPool_I37100.log</a>
-
 
 
 **2：** 采用光连接池的性能基准测试结果(I3-7100,8G)
