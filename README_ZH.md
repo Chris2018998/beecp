@@ -29,11 +29,10 @@ Maven坐标(Java6)
 | 平均时间(毫秒)  | 0.1515          | 0.0534            |        0.0001         |
 
 测试配置：PC:I5-4210M(2.6赫兹，双核4线程),12G内存 Java:JAVA8_64 Pool:初始10,最大10
- 
-测试源码：https://github.com/Chris2018998/PoolPerformance
 
 日志文件：<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200417_JDBCPool_I37100.log">20200417_JDBCPool_I37100.log</a>
-
+ 
+测试源码：https://github.com/Chris2018998/PoolPerformance
 
 **2：** 采用光连接池的性能基准测试结果(I3-7100,8G)
 
