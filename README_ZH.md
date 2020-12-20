@@ -36,21 +36,14 @@ Maven坐标(Java6)
 
 **2：** 采用光连接池的性能基准测试结果(I3-7100,8G)
 
-<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/PoolPerformaceCompare.png"></img> 下载性能测试源码：<a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
+<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/PoolPerformaceCompare.png"></img> 性能测试源码：<a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
 
 ---
 
 
-
-
-
-
-四：参考Demo
----
-
-Demo1
----
-
+##### 范例
+ 
+###### 例1
 ```java
 BeeDataSourceConfig config = new BeeDataSourceConfig();
 config.setDriverClassName("com.mysql.jdbc.Driver");
@@ -67,8 +60,7 @@ Connection con=ds.getConnection();
 
 ```
 
-Demo2（SpringBoot）
----
+###### 例12（SpringBoot）
 
 *application.properties*
 
