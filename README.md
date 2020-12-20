@@ -137,7 +137,7 @@ public class DataSourceConfig {
 
 10：support self defined connection factory
 
-11：Pooled connection reset when return
+11：Pool Reset
 
 12：JMX support
 
