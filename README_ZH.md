@@ -131,15 +131,15 @@ public class DataSourceConfig {
 
 7：若连接出现问题，池自动补充
 
-8：支持连接池重置
+8：支持连接回收前，属性重置（比如：autoCommit,transactionIsolation,readonly,catlog,schema,networkTimeout）
 
-9：支持连接回收前，属性重置（比如：autoCommit,transactionIsolation,readonly,catlog,schema,networkTimeout）
+9：支持XADataSource
 
-10：支持XADataSource
+10：支持连接工厂自定义
 
-11：支持JMX
+11：支持连接池重置
 
-12：支持连接工厂自定义
+12：支持JMX
 
 ---
 ###### 配置项说明
