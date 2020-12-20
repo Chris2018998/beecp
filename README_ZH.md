@@ -1,21 +1,27 @@
-[![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
+<img height="50px" width="50px" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img> <a href="https://github.com/Chris2018998/BeeCP/blob/master/README.md">English</a>
 
-一：介绍 <img height="50px" width="50px" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img>
+小蜜蜂对象池：一款轻量高性能Java对象池 
+
+Maven坐标（Java7)
+```java
+<dependency>
+   <groupId>com.github.chris2018998</groupId>
+   <artifactId>beecp</artifactId>
+   <version>3.0.6</version>
+</dependency>
+```
+Maven坐标（Java6)
+```java
+<dependency>
+   <groupId>com.github.chris2018998</groupId>
+   <artifactId>beecp</artifactId>
+   <version>1.6.8</version>
+</dependency>
 ---
-小蜜蜂连接池：一款轻量高性能JDBC连接池
 
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/README.md">English</a>
+##### 性能测试
 
-二：特点
----
-1：性能好,比光连接池更快 
-
-2：代码少：21个文件，2600行源码
-
-
-三：性能测试
----
-**1：** 100万次借用测试(1000线程 x 1000次),单次计时间范围:[datasource.getConnection(),connection.close()] 结果如下
+**1** 100万次借用测试(1000线程 x 1000次),单次计时间范围:[datasource.getConnection(),connection.close()] 结果如下
 
 | 时间(ms)    |   HikariC3.3.1  |  Bee_F(BeeCP-2.3.2)| Bee_C(BeeCP-2.3.2)    |
 | ----------- |----------------| -------------------| ----------------------| 
@@ -118,22 +124,7 @@ public class DataSourceConfig {
 
 五：版本下载
 ---
-**Java7**
-```java
-<dependency>
-   <groupId>com.github.chris2018998</groupId>
-   <artifactId>beecp</artifactId>
-   <version>3.0.6</version>
-</dependency>
-```
 
-**Java6**
-```java
-<dependency>
-   <groupId>com.github.chris2018998</groupId>
-   <artifactId>beecp</artifactId>
-   <version>1.6.8</version>
-</dependency>
 
 ```
 
