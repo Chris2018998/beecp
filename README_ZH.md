@@ -59,6 +59,7 @@ Connection con=ds.getConnection();
 ```
 
 ---
+
 ###### 范例2（SpringBoot）
 
 *application.properties*
@@ -112,12 +113,8 @@ public class DataSourceConfig {
 
 ---
 
- 
+###### 功能与特性
 
-
-六：功能支持
----
-```java
 1：请求超时支持
 
 2：两种模式：公平与竞争
@@ -142,11 +139,9 @@ public class DataSourceConfig {
 
 12：支持连接工厂自定义
 
-
-```
-
-七：配置项说明
 ---
+###### 配置项说明
+
 |  配置项          |   描述                        |   备注                            |
 | ----------------| ---------------------------  | ------------------------          |
 | username        | JDBC用户名                    |                                   |
@@ -177,9 +172,8 @@ public class DataSourceConfig {
 | enableJMX                 |JMX监控支持开关                    | 默认false                | 
 
 
-
-八：支持的数据库
 ---
+###### 支持的数据库
 |  数据库          |   驱动类名                     |   参考url                       |
 | ----------------| ---------------------------   | ------------------------       |
 |Mariadb         |org.mariadb.jdbc.Driver   				  |  jdbc:mariadb://localhost/test  |
