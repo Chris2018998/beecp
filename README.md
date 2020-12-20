@@ -22,7 +22,7 @@ Maven artifactId(Java6)
 
 ##### Performance
 
-**1：** 1 million borrowing / returning (1000 threads x 1000 times)
+**1：** 1 million borrow/return (1000 threads x 1000 times)
 |   Pool type      |   HikariCP-3.3.1  | BeeCP-2.3.2_Fair  | BeeCP-2.3.2_compete   |
 | ---------------  |---------------- | ----------------- | ----------------------| 
 | Total(ms)        |151516           | 53384             |          142          | 
@@ -121,7 +121,7 @@ public class DataSourceConfig {
 
 2：Fair mode and compete mode for borrowing
 
-3：Proxy object safe close when returning
+3：Proxy object safe close when return
 
 4：Pooled connection cleared when network bad,pooled connection recreate when network restore OK
 
