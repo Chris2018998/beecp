@@ -60,8 +60,6 @@ Connection con=ds.getConnection();
 
 ```
 
----
-
 ###### 范例2（SpringBoot）
 
 *application.properties*
