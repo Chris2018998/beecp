@@ -62,7 +62,7 @@ Connection con=ds.getConnection();
 
 ---
 
-###### Example-2（SpringBoot）
+##### Example-2（SpringBoot）
 
 *application.properties*
 
