@@ -143,7 +143,7 @@ public class DataSourceConfig {
 
 ---
 ###### configuration
-|     field name         |       Description                               |   Remark                                                   |
+|     Field name         |       Description                               |   Remark                                                   |
 | ---------------------  | ------------------------------------------------| -----------------------------------------------------------|
 |username                |JDBC User                                       |                                                             |
 |password                |JDBC Password                                   |                                                             |
