@@ -40,6 +40,9 @@ Maven坐标(Java6)
 
 测试源码：<a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
 
+想知道它性能高的原因吗？ 请
+<a href='https://github.com/Chris2018998/BeeCP/wiki/%E6%83%B3%E7%9F%A5%E9%81%93%E5%B0%8F%E8%9C%9C%E8%9C%82%E8%BF%9E%E6%8E%A5%E6%B1%A0%E6%80%A7%E8%83%BD%E4%B8%BA%E5%95%A5%E8%BF%99%E4%B9%88%E9%AB%98%E5%90%97%EF%BC%9F'> 点击 </a>
+
 ---
 
 ##### 范例1
@@ -60,7 +63,7 @@ Connection con=ds.getConnection();
 
 ```
 
-###### 范例2（SpringBoot）
+##### 范例2（SpringBoot）
 
 *application.properties*
 
