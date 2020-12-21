@@ -22,7 +22,7 @@ Maven artifactId(Java6)
 
 ##### Performance
 
-**1：** 1 million borrow/return (1000 threads x 1000 times)
+**1：** One million borrow/return (1000 threads x 1000 times)
 |   Pool type      |   HikariCP-3.3.1  | BeeCP-2.3.2_Fair  | BeeCP-2.3.2_compete   |
 | ---------------  |---------------- | ----------------- | ----------------------| 
 | Total(ms)        |151516           | 53384             |          142          | 
@@ -42,7 +42,7 @@ Test source：<a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/mast
 
 ---
 
-##### Example1
+##### Example-1
 
 ```java
 BeeDataSourceConfig config = new BeeDataSourceConfig();
@@ -62,7 +62,7 @@ Connection con=ds.getConnection();
 
 ---
 
-###### Example12（SpringBoot）
+###### Example-2（SpringBoot）
 
 *application.properties*
 
