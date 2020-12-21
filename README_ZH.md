@@ -34,7 +34,7 @@ Maven坐标(Java6)
  
 测试源码：https://github.com/Chris2018998/PoolPerformance
 
-**2：** 光连接池的测试基结果(I3-7100,8G)
+**2：** 使用光连接池基准测试结果(I3-7100,8G)
 
 <img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/PoolPerformaceCompare.png"></img> 
 
