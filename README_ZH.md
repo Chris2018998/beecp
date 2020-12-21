@@ -150,7 +150,7 @@ public class DataSourceConfig {
 | password        | JDBC密码                      |                                   |
 | jdbcUrl         | JDBC连接URL                   |                                   |
 | driverClassName | JDBC驱动类名                   |                                   |
-| poolName        | 连接池名                       |                                   |
+| poolName	      |池名                            |如果未赋值则会自动产生一个            |
 | fairMode        | 连接池是否公平模式               | 默认false,竞争模式                 | 
 | initialSize     | 连接池初始大小                  |                                   |
 | maxActive       | 连接池最大个数                  |                                   | 
