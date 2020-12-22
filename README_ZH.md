@@ -25,7 +25,7 @@ Maven坐标(Java6)
 **1：** 100万次查询测试(10000 线程 x 10 次数)
 |   Pool type      | HikariCP-3.4.5  | beecp-3.0.5_compete|  
 | ---------------  |---------------- | ----------------- |          
-| 平均时间(毫秒)     25.132750        | 0.284550          | 
+| 平均时间(毫秒)     |25.132750        | 0.284550          | 
 
 ##### SQL:select 1 from dual
 ##### PC:I5-4210M(2.6Hz,dual core4threads),12G memory Java:JAVA8_64 Pool:init-size10,max-size:10 
