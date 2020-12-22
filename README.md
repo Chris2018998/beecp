@@ -1,4 +1,4 @@
-<img height="50px" width="50px" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img> <a href="https://github.com/Chris2018998/BeeCP/blob/master/README_ZH.md">中文</a>
+<img height="50px" width="50px" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img><a href="https://github.com/Chris2018998/BeeCP/blob/master/README_ZH.md">English</a>|<a href="https://github.com/Chris2018998/BeeCP/blob/master/README_ZH.md">中文</a>
 
 BeeCP：A light high-performance JDBC pool
 
