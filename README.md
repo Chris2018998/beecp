@@ -22,12 +22,14 @@ Maven artifactId(Java6)
 
 ##### Performance
 
-**1：** One million Mutil-thread query (1000 threads x 1000 times)
+**1：** One million Mutil-thread query (10000 threads x 10 times)
 |   Pool type      | HikariCP-3.4.5  | beecp-3.0.5_compete|  
 | ---------------  |---------------- | ----------------- |          
-| Average time(ms) |12.991780        | 0.284550          | 
+| Average time(ms) |25.132750        | 0.284550          | 
 
-PC:I5-4210M(2.6Hz，dual core4threads),12G memory Java:JAVA8_64 Pool:init-size10,max-size:10
+<font size=1>sql:select 1 from dual</font>
+
+<font size=1>PC:I5-4210M(2.6Hz，dual core4threads),12G memory Java:JAVA8_64 Pool:init-size10,max-size:10</font>
 
 Test log file：<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/temp/JDBCPool2020-11-06.log">JDBCPool2020-11-06.log</a>
  
