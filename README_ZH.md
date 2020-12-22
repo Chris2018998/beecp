@@ -22,15 +22,17 @@ Maven坐标(Java6)
 
 ##### 性能测试
 
-**1：** 100万次借用/归还(1000线程x1000次),获取时间分布,平均时间
-|   连接池名      |   HikariC3.3.1  | BeeCP-2.3.2_Fair  | BeeCP-2.3.2_compete   |
-| ---------------|---------------- | ----------------- | ----------------------| 
-| 总时间(毫秒)    | 151516          | 53384             |          142          | 
-| 平均时间(毫秒)  | 0.1515          | 0.0534            |        0.0001         |
 
-测试配置：PC:I5-4210M(2.6赫兹，双核4线程),12G内存 Java:JAVA8_64 Pool:初始10,最大10
+**1：** 100万次查询测试(10000 线程 x 10 次数)
+|   Pool type      | HikariCP-3.4.5  | beecp-3.0.5_compete|  
+| ---------------  |---------------- | ----------------- |          
+| 平均时间(毫秒)     25.132750        | 0.284550          | 
 
-日志文件：<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200417_JDBCPool_I37100.log">20200417_JDBCPool_I37100.log</a>
+##### SQL:select 1 from dual
+
+##### PC:I5-4210M(2.6Hz,dual core4threads),12G memory Java:JAVA8_64 Pool:init-size10,max-size:10</font>
+
+日志文件：<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/temp/JDBCPool2020-11-06.log">JDBCPool2020-11-06.log</a>
  
 测试源码：https://github.com/Chris2018998/PoolPerformance
 
