@@ -22,15 +22,14 @@ Maven artifactId(Java6)
 
 ##### Performance
 
-**1：** One million borrow/return (1000 threads x 1000 times)
-|   Pool type      |   HikariCP-3.3.1  | BeeCP-2.3.2_Fair  | BeeCP-2.3.2_compete   |
-| ---------------  |---------------- | ----------------- | ----------------------| 
-| Total(ms)        |151516           | 53384             |          142          | 
-| Average time(ms) | 0.1515          | 0.0534            |        0.0001         |
+**1：** One million Mutil-thread query (1000 threads x 1000 times)
+|   Pool type      | HikariCP-3.4.5  | beecp-3.0.5_compete|  
+| ---------------  |---------------- | ----------------- |          
+| Average time(ms) |12.991780        | 0.284550          | 
 
 PC:I5-4210M(2.6Hz，dual core4threads),12G memory Java:JAVA8_64 Pool:init-size10,max-size:10
 
-Test log file：<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/20200417_JDBCPool_I37100.log">20200417_JDBCPool_I37100.log</a>
+Test log file：<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/temp/JDBCPool2020-11-06.log">JDBCPool2020-11-06.log</a>
  
 Test soruce：https://github.com/Chris2018998/PoolPerformance
 
