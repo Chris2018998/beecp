@@ -27,9 +27,9 @@ Maven artifactId(Java6)
 | ---------------  |---------------- | ----------------- |          
 | Average time(ms) |25.132750        | 0.284550          | 
 
-<font size=1>sql:select 1 from dual</font>
+##### SQL:select 1 from dual
 
-<font size=1>PC:I5-4210M(2.6Hz，dual core4threads),12G memory Java:JAVA8_64 Pool:init-size10,max-size:10</font>
+##### PC:I5-4210M(2.6Hz,dual core4threads),12G memory Java:JAVA8_64 Pool:init-size10,max-size:10</font>
 
 Test log file：<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/temp/JDBCPool2020-11-06.log">JDBCPool2020-11-06.log</a>
  
