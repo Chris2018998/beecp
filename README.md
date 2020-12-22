@@ -26,10 +26,8 @@ Maven artifactId(Java6)
 |   Pool type      | HikariCP-3.4.5  | beecp-3.0.5_compete|  
 | ---------------  |---------------- | ----------------- |          
 | Average time(ms) |25.132750        | 0.284550          | 
-
-##### SQL:select 1 from dual
-
-##### PC:I5-4210M(2.6Hz,dual core4threads),12G memory Java:JAVA8_64 Pool:init-size10,max-size:10</font>
+#### SQL:select 1 from dual
+#### PC:I5-4210M(2.6Hz,dual core4threads),12G memory Java:JAVA8_64 Pool:init-size10,max-size:10
 
 Test log file：<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/temp/JDBCPool2020-11-06.log">JDBCPool2020-11-06.log</a>
  
