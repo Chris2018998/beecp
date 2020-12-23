@@ -95,7 +95,7 @@ abstract class ProxyStatementBase implements Statement {
             }
             case KEEP_CURRENT_RESULT: {
                 if (curRe != null && !curRe.isClosed) {
-                    if (results == null) results = new ArrayList<>(1);
+                    if (results == null) results = new ArrayList<ProxyResultSetBase>(1);
                     results.add(curRe);
                 }
                 break;
