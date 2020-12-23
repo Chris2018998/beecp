@@ -16,7 +16,7 @@ Maven坐标(Java6)
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>1.6.8</version>
+   <version>1.6.9</version>
 </dependency>
 ```
 ---
@@ -28,8 +28,8 @@ Maven坐标(Java6)
 | ---------------  |---------------- | ----------------- |          
 | 平均时间(毫秒)     |25.132750        | 0.284550          | 
 
-##### SQL:select 1 from dual
-##### PC:I5-4210M(2.6Hz,dual core4threads),12G memory Java:JAVA8_64 Pool:init-size10,max-size:10 
+###### SQL:select 1 from dual
+###### PC:I5-4210M(2.6Hz,dual core4threads),12G memory Java:JAVA8_64 Pool:init-size10,max-size:10 
 
 日志文件：<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/temp/JDBCPool2020-11-06.log">JDBCPool2020-11-06.log</a>
  
@@ -117,7 +117,7 @@ public class DataSourceConfig {
 
 ---
 
-###### 功能与特性
+##### 功能与特性
 
 1：请求超时支持
 
@@ -144,7 +144,7 @@ public class DataSourceConfig {
 12：支持JMX
 
 ---
-###### 配置项说明
+##### 配置项说明
 
 |  配置项          |   描述                        |   备注                            |
 | ----------------| ---------------------------  | ------------------------          |
