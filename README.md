@@ -113,7 +113,7 @@ public class DataSourceConfig {
 
 ---
 
-###### Features
+##### Features
 
 1：Borrow timeout
 
@@ -140,7 +140,7 @@ public class DataSourceConfig {
 12：JMX support
 
 ---
-###### configuration
+##### configuration
 |     Field name         |       Description                               |   Remark                                                   |
 | ---------------------  | ------------------------------------------------| -----------------------------------------------------------|
 |username                |JDBC User                                       |                                                             |
@@ -168,7 +168,7 @@ public class DataSourceConfig {
  
 
 ---
-###### DB and driver
+##### DB and driver
 |  DB             |   Driver class                      |   jdbc refrence url                    |
 | ----------------| ---------------------------         | ------------------------       |
 |Mariadb         |org.mariadb.jdbc.Driver   				  |  jdbc:mariadb://localhost/test  |
