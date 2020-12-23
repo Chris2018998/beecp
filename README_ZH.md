@@ -177,7 +177,7 @@ public class DataSourceConfig {
 
 
 ---
-###### 数据库与驱动信息
+##### 数据库与驱动信息
 |  数据库          |   驱动类名                     |   参考url                       |
 | ----------------| ---------------------------   | ------------------------       |
 |Mariadb         |org.mariadb.jdbc.Driver   				  |  jdbc:mariadb://localhost/test  |
