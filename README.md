@@ -16,7 +16,7 @@ Maven artifactId(Java6)
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>1.6.8</version>
+   <version>1.6.9</version>
 </dependency>
 ```
 ---
