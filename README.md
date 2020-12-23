@@ -140,7 +140,7 @@ public class DataSourceConfig {
 12：JMX support
 
 ---
-##### configuration
+##### Configuration
 |     Field name         |       Description                               |   Remark                                                   |
 | ---------------------  | ------------------------------------------------| -----------------------------------------------------------|
 |username                |JDBC User                                       |                                                             |
