@@ -1,7 +1,7 @@
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/README.md">English</a>|<a href="https://github.com/Chris2018998/BeeCP/blob/master/README_ZH.md">中文</a>
 <img height="50px" width="50px" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img>
 
-BeeCP：A light high-performance JDBC pool
+BeeCP：A lightweight,high-performance JDBC pool
 
 Maven artifactId(Java7)
 ```xml
