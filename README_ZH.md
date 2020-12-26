@@ -1,7 +1,7 @@
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/README.md">English</a>|<a href="https://github.com/Chris2018998/BeeCP/blob/master/README_ZH.md">中文</a>
 <img height="50px" width="50px" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img>
 
-小蜜蜂连接池：一款轻量高性能JDBC连接池
+小蜜蜂连接池：一款轻量,高性能JDBC连接池
 
 Maven坐标(Java7)
 ```xml
