@@ -16,6 +16,7 @@
 package cn.beecp;
 
 import cn.beecp.pool.ConnectionPool;
+import cn.beecp.pool.ConnectionPoolMonitorVo;
 import cn.beecp.pool.ProxyConnectionBase;
 import cn.beecp.xa.XaConnectionFactory;
 import cn.beecp.xa.XaConnectionWrapper;
@@ -94,6 +95,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
      */
     public BeeDataSource() {
     }
+
 
     /**
      * constructor
@@ -214,6 +216,11 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             return (T) this;
         else
             throw new SQLException("Wrapped object is not an instance of " + iface);
+    }
+
+    public ConnectionPoolMonitorVo getMonitorVo() throws SQLException {
+        if (pool == null) throw new SQLException("DataSource not initialized");
+        return pool.getMonitorVo();
     }
 
     /**
