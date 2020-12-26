@@ -346,7 +346,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (pConn != null)
                     try {
                         removePooledConn(pConn, DESC_REMOVE_PRE_INIT);
-                    } catch (Throwable e) { }
+                    } catch (Throwable e) {
+                    }
             }
         } else {
             try {
@@ -434,8 +435,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 }
 
                 if (failed) {
-                    if(borrower.state == state)
-                      BwrStUpd.compareAndSet(borrower, state, failedCause);
+                    if (borrower.state == state)
+                        BwrStUpd.compareAndSet(borrower, state, failedCause);
                 } else {
                     long timeout = deadline - nanoTime();
                     if (timeout > 0L) {
@@ -453,7 +454,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     } else {//timeout
                         failed = true;
                         failedCause = RequestTimeoutException;
-                        if(borrower.state == state)
+                        if (borrower.state == state)
                             BwrStUpd.compareAndSet(borrower, state, failedCause);//set to fail
                     }
                 }

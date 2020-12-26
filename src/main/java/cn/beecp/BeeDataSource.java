@@ -93,9 +93,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     /**
      * constructor
      */
-    public BeeDataSource() {
-    }
-
+    public BeeDataSource() { }
 
     /**
      * constructor
