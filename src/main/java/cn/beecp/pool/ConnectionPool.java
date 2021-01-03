@@ -70,5 +70,17 @@ public interface ConnectionPool {
      */
     ConnectionPoolMonitorVo getMonitorVo();
 
+    /**
+     * reset pool
+     */
+    public void reset();
+
+    /**
+     * reset pool
+     *
+     * @param force close using connection directly
+     */
+    public void reset(boolean force);
+
 }
 	

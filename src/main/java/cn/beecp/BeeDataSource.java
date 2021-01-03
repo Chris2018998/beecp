@@ -93,7 +93,8 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     /**
      * constructor
      */
-    public BeeDataSource() { }
+    public BeeDataSource() {
+    }
 
     /**
      * constructor
@@ -216,9 +217,31 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             throw new SQLException("Wrapped object is not an instance of " + iface);
     }
 
-    public ConnectionPoolMonitorVo getMonitorVo() throws SQLException {
+    /**
+     * @return pool monitor vo
+     * @throws SQLException
+     */
+    public ConnectionPoolMonitorVo getPoolMonitorVo() throws SQLException {
         if (pool == null) throw new SQLException("DataSource not initialized");
         return pool.getMonitorVo();
+    }
+
+    /**
+     * reset pool
+     */
+    public void resetPool() throws SQLException {
+        this.resetPool(false);
+    }
+
+    /**
+     * reset pool
+     *
+     * @param force close using connection directly
+     * @throws SQLException if pool not be initialized
+     */
+    public void resetPool(boolean force) throws SQLException {
+        if (pool == null) throw new SQLException("DataSource not initialized");
+        pool.reset(force);
     }
 
     /**
