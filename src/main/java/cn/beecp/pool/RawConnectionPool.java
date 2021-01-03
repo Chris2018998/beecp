@@ -135,8 +135,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
     public void reset() {
     }
 
-    public void reset(boolean force) {
-    }
+    public void reset(boolean force) { }
 
     public int getConnTotalSize() {
         return 0;

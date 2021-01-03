@@ -124,6 +124,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             Runtime.getRuntime().addShutdownHook(exitHook);
             borrowSemaphoreSize = poolConfig.getBorrowSemaphoreSize();
             borrowSemaphore = new Semaphore(borrowSemaphoreSize, poolConfig.isFairMode());
+            idleSchExecutor.setMaximumPoolSize(2);
             idleSchExecutor.setKeepAliveTime(15, SECONDS);
             idleSchExecutor.allowCoreThreadTimeOut(true);
             idleCheckSchFuture = idleSchExecutor.scheduleAtFixedRate(new Runnable() {

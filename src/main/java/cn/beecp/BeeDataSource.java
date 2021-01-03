@@ -219,7 +219,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
 
     /**
      * @return pool monitor vo
-     * @throws SQLException
+     * @throws SQLException if pool not be initialized
      */
     public ConnectionPoolMonitorVo getPoolMonitorVo() throws SQLException {
         if (pool == null) throw new SQLException("DataSource not initialized");
@@ -228,6 +228,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
 
     /**
      * reset pool
+     * @throws SQLException if pool not be initialized
      */
     public void resetPool() throws SQLException {
         this.resetPool(false);
