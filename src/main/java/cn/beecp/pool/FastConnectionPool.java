@@ -124,7 +124,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             Runtime.getRuntime().addShutdownHook(exitHook);
             borrowSemaphoreSize = poolConfig.getBorrowSemaphoreSize();
             borrowSemaphore = new Semaphore(borrowSemaphoreSize, poolConfig.isFairMode());
-            idleSchExecutor.setMaximumPoolSize(2);
             idleSchExecutor.setKeepAliveTime(15, SECONDS);
             idleSchExecutor.allowCoreThreadTimeOut(true);
             idleCheckSchFuture = idleSchExecutor.scheduleAtFixedRate(new Runnable() {
@@ -426,10 +425,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         waitQueue.remove(borrower);
                         return createProxyConnection(pConn, borrower);
                     }
-
-                    state = BORROWER_NORMAL;
-                    borrower.state = state;
-                    yield();
                 } else if (state instanceof SQLException) {
                     waitQueue.remove(borrower);
                     throw (SQLException) state;
@@ -438,7 +433,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (failed) {
                     if (borrower.state == state)
                         BwrStUpd.compareAndSet(borrower, state, failedCause);
-                } else {
+                } else if (state instanceof PooledConnection) {
+                    borrower.state = BORROWER_NORMAL;
+                    yield();
+                } else {//here:(state == BORROWER_NORMAL)
                     long timeout = deadline - nanoTime();
                     if (timeout > 0L) {
                         if (spinSize > 0) {
@@ -458,7 +456,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         if (borrower.state == state)
                             BwrStUpd.compareAndSet(borrower, state, failedCause);//set to fail
                     }
-                }
+                }//end (state == BORROWER_NORMAL)
             }//while
         } finally {
             borrowSemaphore.release();

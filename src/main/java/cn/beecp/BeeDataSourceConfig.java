@@ -82,8 +82,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
      */
     private String poolName;
     /**
-     * if true,first arrival,first taking if false,competition for all borrower
-     * to take idle connection
+     *  true,fair mode,FIFO for borrowers
+     *  false,compete mode
      */
     private boolean fairMode;
     /**
@@ -675,15 +675,15 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
     }
 
     public void loadPropertiesFile(String filename) throws IOException {
-        File file = new File(filename);
-        if (!file.exists()) throw new FileNotFoundException(filename);
-        loadPropertiesFile(file);
+        loadPropertiesFile(new File(filename));
     }
 
     public void loadPropertiesFile(File file) throws IOException {
-        if (!file.isFile()) throw new IOException("Invalid properties file");
+        if (file == null) throw new IOException("Properties file can't be null");
+        if (!file.exists()) throw new FileNotFoundException(file.getAbsolutePath());
+        if (!file.isFile()) throw new IOException("Target object is not a valid file");
         if (!file.getAbsolutePath().toLowerCase(Locale.US).endsWith(".properties"))
-            throw new IOException("Invalid properties file");
+            throw new IOException("Target file is not a properties file");
 
         if (!checked) {
             InputStream stream = null;

@@ -228,6 +228,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
 
     /**
      * reset pool
+     *
      * @throws SQLException if pool not be initialized
      */
     public void resetPool() throws SQLException {
