@@ -43,7 +43,6 @@ import static java.util.concurrent.locks.LockSupport.*;
  */
 public final class FastConnectionPool extends Thread implements ConnectionPool, ConnectionPoolJMXBean {
     private static final long spinForTimeoutThreshold = 1000L;
-    private static final int maxTimedSpins = (Runtime.getRuntime().availableProcessors() < 2) ? 0 : 32;
     private static final AtomicIntegerFieldUpdater<PooledConnection> ConnStUpd = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class, "state");
     private static final AtomicReferenceFieldUpdater<Borrower, Object> BwrStUpd = AtomicReferenceFieldUpdater.newUpdater(Borrower.class, Object.class, "state");
     private static final String DESC_REMOVE_PRE_INIT = "pre_init";
@@ -412,10 +411,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             //3:try to get one transferred connection
             boolean failed = false;
             SQLException failedCause = null;
-            borrower.state = BORROWER_NORMAL;
             Thread cThread = borrower.thread;
+            borrower.state = BORROWER_NORMAL;
             waitQueue.offer(borrower);
-            int spinSize = (waitQueue.peek() == borrower) ? maxTimedSpins : 0;
 
             while (true) {
                 Object state = borrower.state;
@@ -439,9 +437,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 } else {//here:(state == BORROWER_NORMAL)
                     long timeout = deadline - nanoTime();
                     if (timeout > 0L) {
-                        if (spinSize > 0) {
-                            --spinSize;
-                        } else if (timeout - spinForTimeoutThreshold > 0 && borrower.state == state && BwrStUpd.compareAndSet(borrower, state, BORROWER_WAITING)) {
+                        if (timeout - spinForTimeoutThreshold > 0 && borrower.state == state && BwrStUpd.compareAndSet(borrower, state, BORROWER_WAITING)) {
                             parkNanos(timeout);
                             if (cThread.isInterrupted()) {
                                 failed = true;

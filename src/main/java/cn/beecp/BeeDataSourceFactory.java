@@ -15,20 +15,20 @@
  */
 package cn.beecp;
 
-
-import javax.naming.*;
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.RefAddr;
+import javax.naming.Reference;
 import javax.naming.spi.NamingManager;
 import javax.naming.spi.ObjectFactory;
 import javax.sql.DataSource;
-import java.lang.reflect.Field;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
+import java.lang.reflect.Method;
 import java.util.Hashtable;
-import java.util.Properties;
-import java.util.logging.Logger;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-import static cn.beecp.pool.PoolStaticCenter.isBlank;
+import static cn.beecp.pool.PoolStaticCenter.*;
 
 /**
  * BeeDataSource factory
@@ -37,37 +37,6 @@ import static cn.beecp.pool.PoolStaticCenter.isBlank;
  * @version 1.0
  */
 public final class BeeDataSourceFactory implements ObjectFactory {
-    private Properties initProperties = new Properties();
-
-    public BeeDataSourceFactory() {
-    }
-
-    public BeeDataSourceFactory(Properties initProperties) {
-        if (initProperties != null) this.initProperties = initProperties;
-    }
-
-    public void addProperty(String key, String value) {
-        this.initProperties.put(key, value);
-    }
-
-    public void removeProperty(String key) {
-        this.initProperties.remove(key);
-    }
-
-    public void unbind(String jndi) throws NamingException {
-        InitialContext ctx = new InitialContext(initProperties);
-        ctx.unbind(jndi);
-    }
-
-    public DataSource lookup(String jndi) throws NamingException {
-        InitialContext ctx = new InitialContext(initProperties);
-        return new JndiDataSourceWrapper((DataSource) ctx.lookup(jndi));
-    }
-
-    public void bind(String jndi, DataSource obj) throws NamingException {
-        InitialContext ctx = new InitialContext(initProperties);
-        ctx.bind(jndi, obj);
-    }
 
     public DataSource create(BeeDataSourceConfig config) {
         return new BeeDataSource(config);
@@ -93,90 +62,47 @@ public final class BeeDataSourceFactory implements ObjectFactory {
     public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment)
             throws Exception {
 
-        Class configClass = BeeDataSourceConfig.class;
-        Field[] fields = configClass.getDeclaredFields();
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        Properties connectProperties = new Properties();
-
         Reference ref = (Reference) obj;
-        for (Field field : fields) {
-            String fieldName = field.getName();
-            if ("checked".equals(fieldName) || "connectionFactory".equals(fieldName))
-                continue;
-            RefAddr ra = ref.get(fieldName);
+
+        //1:create datasource config instance
+        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        //2:create properties to collect config value
+        Map<String, Object> setValueMap = new LinkedHashMap<String, Object>();
+        //3:get all properties set methods
+        Map<String, Method> setMethodMap = getSetMethodMap(config.getClass());
+        //4:loop to find config value by properties map
+        Iterator<String> iterator = setMethodMap.keySet().iterator();
+        while (iterator.hasNext()) {
+            String propertyName = iterator.next();
+            RefAddr ra = ref.get(propertyName);
+            if (ra == null) ra = ref.get(propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_MiddleLine));
+            if (ra == null) ra = ref.get(propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_UnderLine));
             if (ra == null) continue;
+
             String configVal = ra.getContent().toString();
+            if (isBlank(configVal)) continue;
+            setValueMap.put(propertyName, configVal.trim());
+        }
+        //5:inject found config value to ds config object
+        setPropertiesValue(config, setMethodMap, setValueMap);
 
-            if (!isBlank(configVal)) {
-                configVal = configVal.trim();
-
-                Class fieldType = field.getType();
-                if (fieldType.equals(String.class)) {
-                    field.set(config, configVal);
-                } else if (fieldType.equals(Boolean.class) || fieldType.equals(Boolean.TYPE)) {
-                    field.set(config, Boolean.valueOf(configVal));
-                } else if (fieldType.equals(Integer.class) || fieldType.equals(Integer.TYPE)) {
-                    field.set(config, Integer.valueOf(configVal));
-                } else if (fieldType.equals(Long.class) || fieldType.equals(Long.TYPE)) {
-                    field.set(config, Long.valueOf(configVal));
-                } else if ("connectProperties".equals(field.getName())) {
-                    connectProperties.clear();
-                    configVal = configVal.trim();
-                    String[] attributeArray = configVal.split(";");
-                    for (String attribute : attributeArray) {
-                        String[] pairs = attribute.split("=");
-                        if (pairs.length == 2)
-                            connectProperties.put(pairs[0].trim(), pairs[1].trim());
-                    }
-                    field.set(config, connectProperties);
-                }
+        //6:try to find 'connectProperties' config value and put to ds config object
+        String connectPropName = "connectProperties";
+        RefAddr ra = ref.get(connectPropName);
+        if (ra == null) ra = ref.get(propertyNameToFieldId(connectPropName, DS_Config_Prop_Separator_MiddleLine));
+        if (ra == null) ra = ref.get(propertyNameToFieldId(connectPropName, DS_Config_Prop_Separator_UnderLine));
+        String configVal = ra.getContent().toString();
+        if (!isBlank(configVal)) {
+            configVal = configVal.trim();
+            String[] attributeArray = configVal.split(";");
+            for (String attribute : attributeArray) {
+                String[] pairs = attribute.split("=");
+                if (pairs.length == 2)
+                    config.addConnectProperty(pairs[0].trim(), pairs[1].trim());
             }
         }
+
+        //7:create dataSource by config
         return new BeeDataSource(config);
-    }
-
-    static final class JndiDataSourceWrapper implements DataSource {
-        private DataSource delegete;
-
-        public JndiDataSourceWrapper(DataSource delegete) {
-            this.delegete = delegete;
-        }
-
-        public Connection getConnection() throws SQLException {
-            return delegete.getConnection();
-        }
-
-        public Connection getConnection(String username, String password) throws SQLException {
-            return delegete.getConnection(username, password);
-        }
-
-        public java.io.PrintWriter getLogWriter() throws SQLException {
-            return delegete.getLogWriter();
-        }
-
-        public void setLogWriter(java.io.PrintWriter out) throws SQLException {
-            delegete.setLogWriter(out);
-        }
-
-        public int getLoginTimeout() throws SQLException {
-            return delegete.getLoginTimeout();
-        }
-
-        public void setLoginTimeout(int seconds) throws SQLException {
-            delegete.setLoginTimeout(seconds);
-        }
-
-        public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-            return null;
-            //return delegete.getParentLogger();
-        }
-
-        public <T> T unwrap(Class<T> iface) throws SQLException {
-            return delegete.unwrap(iface);
-        }
-
-        public boolean isWrapperFor(Class<?> iface) throws SQLException {
-            return delegete.isWrapperFor(iface);
-        }
     }
 }

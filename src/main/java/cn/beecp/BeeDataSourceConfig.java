@@ -25,19 +25,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import static cn.beecp.pool.PoolStaticCenter.isBlank;
+import static cn.beecp.pool.PoolStaticCenter.setPropertiesValue;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -82,8 +79,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
      */
     private String poolName;
     /**
-     *  true,fair mode,FIFO for borrowers
-     *  false,compete mode
+     * true,fair mode,FIFO for borrowers
+     * false,compete mode
      */
     private boolean fairMode;
     /**
@@ -567,15 +564,20 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
                     connectionFactory = (ConnectionFactory) conFactClass.newInstance();
                 } else if (DataSource.class.isAssignableFrom(conFactClass)) {
                     DataSource driverDataSource = (DataSource) conFactClass.newInstance();
-                    Iterator itor = connectProperties.entrySet().iterator();
-                    while (itor.hasNext()) {
-                        Map.Entry entry = (Map.Entry) itor.next();
-                        if (entry.getKey() instanceof String) {
-                            try {
-                                setDataSourceProperty((String) entry.getKey(), entry.getValue(), driverDataSource);
-                            } catch (Exception e) {
-                                throw new BeeDataSourceConfigException("Failed to set datasource property[" + entry.getKey() + "]", e);
+                    if (connectProperties != null && !connectProperties.isEmpty()) {
+                        Map<String, Object> setValueMap = new HashMap<String, Object>();
+                        Iterator<Map.Entry<Object, Object>> itor = connectProperties.entrySet().iterator();
+                        while (itor.hasNext()) {
+                            Map.Entry<Object, Object> entry = (Map.Entry<Object, Object>) itor.next();
+                            if (entry.getKey() instanceof String) {
+                                setValueMap.put((String) entry.getKey(), entry.getValue());
                             }
+                        }
+
+                        try {
+                            setPropertiesValue(driverDataSource, setValueMap);
+                        } catch (Exception e) {
+                            throw new BeeDataSourceConfigException("Failed to set config value", e);
                         }
                     }
                     connectionFactory = new DataSourceConnectionFactory(driverDataSource, username, password);
@@ -637,41 +639,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
             //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end
             throw new BeeDataSourceConfigException("Connection 'connectionTestSQL' must start with 'select '");
         //}
-    }
-
-    private void setDataSourceProperty(String propName, Object propValue, Object bean) throws Exception {
-        if (propName.endsWith(".")) return;
-        int index = propName.lastIndexOf('.');
-        if (index >= 0) propName = propName.substring(index + 1);
-
-        propName = propName.trim();
-        String methodName = "set" + propName.substring(0, 1).toUpperCase(Locale.US) + propName.substring(1);
-        Method[] methods = bean.getClass().getMethods();
-        Method targetMethod = null;
-        for (Method method : methods) {
-            if (method.getName().equals(methodName) && method.getParameterTypes().length == 1) {
-                targetMethod = method;
-                break;
-            }
-        }
-
-        if (targetMethod != null) {
-            Class paramType = targetMethod.getParameterTypes()[0];
-            if (paramType.isInstance(propValue)) {
-                targetMethod.invoke(bean, new Object[]{propValue});
-            } else if (propValue instanceof String) {
-                String value = (String) propValue;
-                if (paramType == String.class) {
-                    targetMethod.invoke(bean, new Object[]{propValue});
-                } else if (paramType == boolean.class || paramType == Boolean.class) {
-                    targetMethod.invoke(bean, new Object[]{Boolean.valueOf(value)});
-                } else if (paramType == int.class || paramType == Integer.class) {
-                    targetMethod.invoke(bean, new Object[]{Integer.valueOf(value)});
-                } else if (paramType == long.class || paramType == Long.class) {
-                    targetMethod.invoke(bean, new Object[]{Long.valueOf(value)});
-                }
-            }
-        }
     }
 
     public void loadPropertiesFile(String filename) throws IOException {
