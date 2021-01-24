@@ -16,6 +16,8 @@
 package cn.beecp;
 
 import java.sql.Connection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Transaction Isolation Level
@@ -41,29 +43,18 @@ public final class TransactionIsolationLevel {
             .append(LEVEL_READ_UNCOMMITTED).append(",")
             .append(LVEVL_REPEATABLE_READ).append(",")
             .append(LEVEL_ERIALIZABLE).toString();
+    private final static Map<String, Integer> IsolationLevelMap = new HashMap<String, Integer>();
 
-    public final static int CODE_NONE = Connection.TRANSACTION_NONE;
-
-    public final static int CODE_READ_COMMITTED = Connection.TRANSACTION_READ_COMMITTED;
-
-    public final static int CODE_READ_UNCOMMITTED = Connection.TRANSACTION_READ_UNCOMMITTED;
-
-    public final static int CODE_REPEATABLE_READ = Connection.TRANSACTION_REPEATABLE_READ;
-
-    public final static int CODE_SERIALIZABLE = Connection.TRANSACTION_SERIALIZABLE;
+    static {
+        IsolationLevelMap.put(LEVEL_NONE, Connection.TRANSACTION_NONE);
+        IsolationLevelMap.put(LEVEL_READ_COMMITTED, Connection.TRANSACTION_READ_COMMITTED);
+        IsolationLevelMap.put(LEVEL_READ_UNCOMMITTED, Connection.TRANSACTION_READ_UNCOMMITTED);
+        IsolationLevelMap.put(LVEVL_REPEATABLE_READ, Connection.TRANSACTION_REPEATABLE_READ);
+        IsolationLevelMap.put(LEVEL_ERIALIZABLE, Connection.TRANSACTION_SERIALIZABLE);
+    }
 
     public final static int nameToCode(String name) {
-        if (LEVEL_NONE.equalsIgnoreCase(name))
-            return CODE_NONE;
-        else if (LEVEL_READ_COMMITTED.equalsIgnoreCase(name))
-            return CODE_READ_COMMITTED;
-        else if (LEVEL_READ_UNCOMMITTED.equalsIgnoreCase(name))
-            return CODE_READ_UNCOMMITTED;
-        else if (LVEVL_REPEATABLE_READ.equalsIgnoreCase(name))
-            return CODE_REPEATABLE_READ;
-        else if (LEVEL_ERIALIZABLE.equalsIgnoreCase(name))
-            return CODE_SERIALIZABLE;
-        else
-            return -999;
+        Integer code = IsolationLevelMap.get(name.toUpperCase());
+        return (code != null) ? code : -999;
     }
 }

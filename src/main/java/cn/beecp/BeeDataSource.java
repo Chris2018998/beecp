@@ -35,7 +35,6 @@ import static cn.beecp.pool.PoolStaticCenter.isBlank;
 
 /**
  * Bee DataSource,there are two pool implementation for it.
- * <p>
  * 1) cn.beecp.pool.FastConnectionPool:base implementation with semaphore
  * 2) cn.beecp.pool.RawConnectionPool:return raw connections to borrowers directly(maybe used for BeeNode)
  * <p>
@@ -60,34 +59,17 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         XaConnectionFactoryMap.put("postgresql", "cn.beecp.xa.PostgresXaConnectionFactory");
     }
 
-    /**
-     * pool initialized
-     */
+    //pool initialized
     private boolean inited;
-    /**
-     * connection pool
-     */
+    //connection pool
     private ConnectionPool pool;
-    /**
-     * failed cause to creating pool
-     */
+    //failed cause to creating pool
     private SQLException failedCause;
-    /**
-     * read Write Locker
-     */
+    //read Write Locker
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-    /**
-     * read Locker
-     */
     private ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
-    /**
-     * write Locker
-     */
     private ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-    /**
-     * @return a XAConnection
-     * @throws SQLException
-     */
+    //xaConnectionFactory
     private XaConnectionFactory xaConnectionFactory;
 
     /**

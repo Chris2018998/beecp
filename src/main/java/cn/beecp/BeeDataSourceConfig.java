@@ -28,6 +28,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -39,155 +40,81 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
- * Connection pool configuration
+ * Connection pool configuration under data source
  *
  * @author Chris.Liao
  * @version 1.0
  */
 public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
-
-    /**
-     * Default implementation class name
-     */
+    //Pool implementation default class name
     static final String DefaultImplementClassName = "cn.beecp.pool.FastConnectionPool";
-    /**
-     * borrower request timeout(milliseconds)
-     */
-    protected long maxWait = SECONDS.toMillis(8);
-    /**
-     * indicator to not allow to modify configuration after initialization
-     */
+    //indicator of configuration check result,true,passed
     private boolean checked;
-    /**
-     * User
-     */
+    //jdbc user name
     private String username;
-    /**
-     * Password
-     */
+    //jdbc password
     private String password;
-    /**
-     * URL
-     */
+    //jdbc url
     private String jdbcUrl;
-    /**
-     * driver class name
-     */
+    //jdbc driver class name
     private String driverClassName;
-    /**
-     * pool name
-     */
+    //pool name
     private String poolName;
-    /**
-     * true,fair mode,FIFO for borrowers
-     * false,compete mode
-     */
+    //true:first come first take connection
     private boolean fairMode;
-    /**
-     * pool initialization size
-     */
+    //connection created size at pool initialization
     private int initialSize;
-    /**
-     * pool allow max size
-     */
+    //connection max size in pool
     private int maxActive = 10;
-
-    /**
-     * borrow Semaphore Size
-     */
+    //borrow Semaphore Size
     private int borrowSemaphoreSize;
-
-    /**
-     * connection.setAutoCommit(boolean);
-     */
+    //default set value on raw connection after it created. <code>connection.setAutoCommit(boolean)</code>
     private boolean defaultAutoCommit = true;
-    /**
-     * default Transaction Isolation
-     */
+    //default transaction isolation description,match isolation code can be set to <code>defaultTransactionIsolationCode</code>
     private String defaultTransactionIsolation;
-    /**
-     * default Transaction Isolation code
-     */
+    //default set value on raw connection after it created,<code>connection.setTransactionIsolation(int)</code>
     private int defaultTransactionIsolationCode;
-    /**
-     * connection.setCatalog
-     */
+    //default set value on raw connection after it created <code>connection.setAutoCommit(String)</code> .
     private String defaultCatalog;
-    /**
-     * connection.setSchema
-     */
+    //default set value on raw connection after it created <code>connection.setSchema(String)</code> .
     private String defaultSchema;
-    /**
-     * connection.setReadOnly
-     */
+    //default set value on raw connection after it created <code>connection.setReadOnly(boolean)</code> .
     private boolean defaultReadOnly;
-    /**
-     * max idle time for pooledConnection(milliseconds),default value: three minutes
-     * minutes
-     */
+
+    //milliseconds:borrower request timeout
+    private long maxWait = SECONDS.toMillis(8);
+    //milliseconds:idle timeout connection will be removed from pool
     private long idleTimeout = MINUTES.toMillis(3);
-    /**
-     * max hold time in Unused(milliseconds),pool will release it by forced
-     */
+    //milliseconds:long time not active connection hold by borrower will closed by pool
     private long holdTimeout = MINUTES.toMillis(5);
-    /**
-     * a test SQL to check connection active state
-     */
+    //a SQL to check connection active,recommend to use a simple query SQL,not contain procedure,function in SQL
     private String connectionTestSQL = "select 1 from dual";
-    /**
-     * connection validate timeout:3 seconds
-     */
+    //seconds:wait time to get connection whether active result.
     private int connectionTestTimeout = 3;
-    /**
-     * milliseconds,max inactive time to check active for borrower
-     */
+    //milliseconds:connection test interval time from last active time
     private long connectionTestInterval = 500L;
-    /**
-     * close all connections in force when shutdown
-     */
+    //indicator,when pool close or reset,need close using connection directly
     private boolean forceCloseConnection;
-    /**
-     * seconds,wait for retry to clear all connections
-     */
+    //seconds:delay time to close using connection util them become idle.
     private long waitTimeToClearPool = 3;
-    /**
-     * milliseconds,idle Check Time Period
-     */
+    //milliseconds:interval time to run check task in scheduledThreadPoolExecutor
     private long idleCheckTimeInterval = MINUTES.toMillis(5);
-    /**
-     * milliseconds,idle Check Time initialize delay
-     */
+    //milliseconds:delay time to run first task in scheduledThreadPoolExecutor
     private long idleCheckTimeInitDelay = SECONDS.toMillis(1);
-    /**
-     * BeeCP implementation class name
-     */
+
+    //Pool implementation class name
     private String poolImplementClassName = DefaultImplementClassName;
-
-    /**
-     * Physical JDBC Connection factory class name
-     */
+    //Physical JDBC Connection factory class name
     private String connectionFactoryClassName;
-    /**
-     * Physical JDBC Connection factory
-     */
+    //Physical JDBC Connection factory
     private ConnectionFactory connectionFactory;
-    /**
-     * connection extra properties
-     */
+    //connection extra properties
     private Properties connectProperties = new Properties();
-
-    /**
-     * xaConnection Factory ClassName
-     */
+    //xaConnection Factory ClassName
     private String xaConnectionFactoryClassName;
-    /**
-     * xaConnectionFactory
-     */
+    // xaConnectionFactory
     private XaConnectionFactory xaConnectionFactory;
-
-    /**
-     * enableJMX
-     */
+    //indicator,whether register datasource to jmx
     private boolean enableJMX;
 
     public BeeDataSourceConfig() {
@@ -200,7 +127,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
         this.password = password;
         this.driverClassName = driver;
         defaultTransactionIsolation = TransactionIsolationLevel.LEVEL_READ_COMMITTED;
-        defaultTransactionIsolationCode = TransactionIsolationLevel.CODE_READ_COMMITTED;
+        defaultTransactionIsolationCode = Connection.TRANSACTION_READ_COMMITTED;
         //fix issue:#19 Chris-2020-08-16 begin
         borrowSemaphoreSize = Math.min(maxActive / 2, Runtime.getRuntime().availableProcessors());
         //fix issue:#19 Chris-2020-08-16 end

@@ -70,7 +70,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         Map<String, Object> setValueMap = new LinkedHashMap<String, Object>();
         //3:get all properties set methods
         Map<String, Method> setMethodMap = getSetMethodMap(config.getClass());
-        //4:loop to find config value by properties map
+        //4:loop to find out set methods
         Iterator<String> iterator = setMethodMap.keySet().iterator();
         while (iterator.hasNext()) {
             String propertyName = iterator.next();
