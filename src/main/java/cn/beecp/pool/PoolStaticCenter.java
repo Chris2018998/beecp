@@ -77,8 +77,7 @@ public class PoolStaticCenter {
     public static final Logger commonLog = LoggerFactory.getLogger(PoolStaticCenter.class);
     public static final String DS_Config_Prop_Separator_MiddleLine = "-";
     public static final String DS_Config_Prop_Separator_UnderLine = "_";
-
-    public static final Connection CLOSED_CON = (Connection) Proxy.newProxyInstance(
+    static final Connection CLOSED_CON = (Connection) Proxy.newProxyInstance(
             PoolStaticCenter.class.getClassLoader(),
             new Class[]{Connection.class},
             new InvocationHandler() {
@@ -87,8 +86,7 @@ public class PoolStaticCenter {
                 }
             }
     );
-
-    public static final CallableStatement CLOSED_CSTM = (CallableStatement) Proxy.newProxyInstance(
+    static final CallableStatement CLOSED_CSTM = (CallableStatement) Proxy.newProxyInstance(
             PoolStaticCenter.class.getClassLoader(),
             new Class[]{CallableStatement.class},
             new InvocationHandler() {
@@ -97,8 +95,7 @@ public class PoolStaticCenter {
                 }
             }
     );
-
-    public static final ResultSet CLOSED_RSLT = (ResultSet) Proxy.newProxyInstance(
+    static final ResultSet CLOSED_RSLT = (ResultSet) Proxy.newProxyInstance(
             PoolStaticCenter.class.getClassLoader(),
             new Class[]{ResultSet.class},
             new InvocationHandler() {
@@ -147,13 +144,13 @@ public class PoolStaticCenter {
         }
     }
 
-    public static final Connection createProxyConnection(PooledConnection pConn, Borrower borrower) throws SQLException {
+    static final Connection createProxyConnection(PooledConnection pConn, Borrower borrower) throws SQLException {
         // borrower.setBorrowedConnection(pConn);
         // return pConn.proxyConnCurInstance=new ProxyConnection(pConn);
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
     }
 
-    public static final ResultSet createProxyResultSet(ResultSet delegate, ProxyStatementBase proxyStatement, PooledConnection pConn) throws SQLException {
+    static final ResultSet createProxyResultSet(ResultSet delegate, ProxyStatementBase proxyStatement, PooledConnection pConn) throws SQLException {
         // return new ProxyResultSet(delegate,pConn);
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
     }
@@ -161,8 +158,7 @@ public class PoolStaticCenter {
 
     public static final void setPropertiesValue(Object bean, Map<String, Object> setValueMap) throws Exception {
         if (bean == null) throw new BeeDataSourceConfigException("Bean can't be null");
-        Map<String, Method> setMethodMap = getSetMethodMap(bean.getClass());
-        setPropertiesValue(bean, setMethodMap, setValueMap);
+        setPropertiesValue(bean, getSetMethodMap(bean.getClass()), setValueMap);
     }
 
     public static final void setPropertiesValue(Object bean, Map<String, Method> setMethodMap, Map<String, Object> setValueMap) throws BeeDataSourceConfigException {
