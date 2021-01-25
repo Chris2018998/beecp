@@ -29,7 +29,7 @@ import java.util.LinkedList;
  * @version 1.0
  */
 @SuppressWarnings("unchecked")
-public final class ProxyClassGenerator {
+final class ProxyClassGenerator {
 
     /**
      * default classes output folder in project
