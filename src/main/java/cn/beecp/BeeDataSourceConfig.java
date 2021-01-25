@@ -102,17 +102,17 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
     //milliseconds:delay time to run first task in scheduledThreadPoolExecutor
     private long idleCheckTimeInitDelay = SECONDS.toMillis(1);
 
-    //Pool implementation class name
+    //pool implementation class name
     private String poolImplementClassName = DefaultImplementClassName;
-    //Physical JDBC Connection factory class name
+    //physical JDBC Connection factory class name
     private String connectionFactoryClassName;
-    //Physical JDBC Connection factory
+    //physical JDBC Connection factory
     private ConnectionFactory connectionFactory;
     //connection extra properties
     private Properties connectProperties = new Properties();
     //xaConnection Factory ClassName
     private String xaConnectionFactoryClassName;
-    // xaConnectionFactory
+    //xaConnectionFactory
     private XaConnectionFactory xaConnectionFactory;
     //indicator,whether register datasource to jmx
     private boolean enableJMX;

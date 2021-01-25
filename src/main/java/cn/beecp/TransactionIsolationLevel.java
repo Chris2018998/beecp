@@ -33,7 +33,7 @@ public final class TransactionIsolationLevel {
 
     public final static String LEVEL_READ_UNCOMMITTED = "READ_UNCOMMITTED";
 
-    public final static String LVEVL_REPEATABLE_READ = "REPEATABLE_READ";
+    public final static String LEVEL_REPEATABLE_READ = "REPEATABLE_READ";
 
     public final static String LEVEL_ERIALIZABLE = "SERIALIZABLE";
 
@@ -41,15 +41,15 @@ public final class TransactionIsolationLevel {
             .append(LEVEL_NONE).append(",")
             .append(LEVEL_READ_COMMITTED).append(",")
             .append(LEVEL_READ_UNCOMMITTED).append(",")
-            .append(LVEVL_REPEATABLE_READ).append(",")
+            .append(LEVEL_REPEATABLE_READ).append(",")
             .append(LEVEL_ERIALIZABLE).toString();
-    private final static Map<String, Integer> IsolationLevelMap = new HashMap<String, Integer>();
+    private final static Map<String, Integer> IsolationLevelMap = new HashMap<String, Integer>(5);
 
     static {
         IsolationLevelMap.put(LEVEL_NONE, Connection.TRANSACTION_NONE);
         IsolationLevelMap.put(LEVEL_READ_COMMITTED, Connection.TRANSACTION_READ_COMMITTED);
         IsolationLevelMap.put(LEVEL_READ_UNCOMMITTED, Connection.TRANSACTION_READ_UNCOMMITTED);
-        IsolationLevelMap.put(LVEVL_REPEATABLE_READ, Connection.TRANSACTION_REPEATABLE_READ);
+        IsolationLevelMap.put(LEVEL_REPEATABLE_READ, Connection.TRANSACTION_REPEATABLE_READ);
         IsolationLevelMap.put(LEVEL_ERIALIZABLE, Connection.TRANSACTION_SERIALIZABLE);
     }
 
