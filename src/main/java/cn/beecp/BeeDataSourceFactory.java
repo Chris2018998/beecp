@@ -23,10 +23,7 @@ import javax.naming.spi.NamingManager;
 import javax.naming.spi.ObjectFactory;
 import javax.sql.DataSource;
 import java.lang.reflect.Method;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 import static cn.beecp.pool.PoolStaticCenter.*;
 
@@ -66,10 +63,10 @@ public final class BeeDataSourceFactory implements ObjectFactory {
 
         //1:create datasource config instance
         BeeDataSourceConfig config = new BeeDataSourceConfig();
-        //2:create properties to collect config value
-        Map<String, Object> setValueMap = new LinkedHashMap<String, Object>();
-        //3:get all properties set methods
+        //2:get all properties set methods
         Map<String, Method> setMethodMap = getSetMethodMap(config.getClass());
+        //3:create properties to collect config value
+        Map<String, Object> setValueMap = new HashMap<String, Object>(setMethodMap.size());
         //4:loop to find out properties config value by set methods
         Iterator<String> iterator = setMethodMap.keySet().iterator();
         while (iterator.hasNext()) {
