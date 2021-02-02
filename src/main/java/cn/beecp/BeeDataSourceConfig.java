@@ -101,6 +101,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
     private long idleCheckTimeInterval = MINUTES.toMillis(5);
     //milliseconds:delay time to run first task in scheduledThreadPoolExecutor
     private long idleCheckTimeInitDelay = SECONDS.toMillis(1);
+    //seconds:socket connect time
+    private int socketLoginTimeout=10;
 
     //pool implementation class name
     private String poolImplementClassName = DefaultImplementClassName;
@@ -398,6 +400,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
         if (!this.checked && idleCheckTimeInitDelay >= 1000L)
             this.idleCheckTimeInitDelay = idleCheckTimeInitDelay;
     }
+    public int getSocketLoginTimeout() {
+        return socketLoginTimeout;
+    }
+    public void setSocketLoginTimeout(int socketLoginTimeout) {
+        this.socketLoginTimeout=socketLoginTimeout;
+    }
 
     public String getPoolImplementClassName() {
         return poolImplementClassName;
@@ -483,6 +491,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
             if (!isBlank(this.password))
                 this.connectProperties.put("password", this.password);
 
+            if(this.socketLoginTimeout>0)DriverManager.setLoginTimeout(socketLoginTimeout);
             connectionFactory = new DriverConnectionFactory(jdbcUrl, connectDriver, connectProperties);
         } else if (connectionFactory == null && !isBlank(this.connectionFactoryClassName)) {
             try {
