@@ -482,8 +482,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
                 this.connectProperties.put("user", this.username);
             if (!isBlank(this.password))
                 this.connectProperties.put("password", this.password);
-
-            if (this.socketLoginTimeout > 0) DriverManager.setLoginTimeout(socketLoginTimeout);
+            
             connectionFactory = new DriverConnectionFactory(jdbcUrl, connectDriver, connectProperties);
         } else if (connectionFactory == null && !isBlank(this.connectionFactoryClassName)) {
             try {
