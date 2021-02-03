@@ -169,11 +169,11 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     }
 
     public PrintWriter getLogWriter() throws SQLException {
-       return DriverManager.getLogWriter();
+        throw new SQLFeatureNotSupportedException("Not supported");
     }
 
     public void setLogWriter(PrintWriter out) throws SQLException {
-        DriverManager.setLogWriter(out);
+        throw new SQLFeatureNotSupportedException("Not supported");
     }
 
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
@@ -181,11 +181,11 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     }
 
     public int getLoginTimeout() throws SQLException {
-      return DriverManager.getLoginTimeout();
+        throw new SQLFeatureNotSupportedException("Not supported");
     }
 
     public void setLoginTimeout(int seconds) throws SQLException {
-        DriverManager.setLoginTimeout(seconds);
+        throw new SQLFeatureNotSupportedException("Not supported");
     }
 
     public boolean isWrapperFor(Class<?> iface) throws SQLException {

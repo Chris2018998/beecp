@@ -23,7 +23,10 @@ import javax.naming.spi.NamingManager;
 import javax.naming.spi.ObjectFactory;
 import javax.sql.DataSource;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
 
 import static cn.beecp.pool.PoolStaticCenter.*;
 
