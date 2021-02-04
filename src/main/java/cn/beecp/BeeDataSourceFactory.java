@@ -94,7 +94,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         String configVal = ra.getContent().toString();
         if (!isBlank(configVal)) {
             configVal = configVal.trim();
-            String[] attributeArray = configVal.split(";");
+            String[] attributeArray = configVal.split("&");
             for (String attribute : attributeArray) {
                 String[] pairs = attribute.split("=");
                 if (pairs.length == 2)
