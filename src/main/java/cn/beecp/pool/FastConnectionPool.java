@@ -323,12 +323,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * false if false then close it
      */
     private final boolean testOnBorrow(PooledConnection pConn) {
-        if (currentTimeMillis() - pConn.lastAccessTime - connectionTestInterval < 0 || testPolicy.isActive(pConn))
+        if (currentTimeMillis() - pConn.lastAccessTime - this.connectionTestInterval >= 0L && !this.testPolicy.isActive(pConn)) {
+            this.removePooledConn(pConn, DESC_REMOVE_BAD);
+            this.tryToCreateNewConnByAsyn();
+            return false;
+        } else {
             return true;
-
-        removePooledConn(pConn, DESC_REMOVE_BAD);
-        tryToCreateNewConnByAsyn();
-        return false;
+        }
     }
 
     /**
