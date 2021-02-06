@@ -37,7 +37,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
  * @author Chris.Liao
  * @version 1.0
  */
-public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJMXBean {
+public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJmxBean {
     private static AtomicInteger poolNameIndex = new AtomicInteger(1);
     private final ConnectionPoolMonitorVo monitorVo = new ConnectionPoolMonitorVo();
     private long defaultMaxWait;
@@ -132,10 +132,10 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 
     //******************************** JMX **************************************//
     // close all connections
-    public void reset() {
+    public void clearAllConnections() {
     }
 
-    public void reset(boolean force) {
+    public void clearAllConnections(boolean force) {
     }
 
     public int getConnTotalSize() {
@@ -178,7 +178,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 
     // register JMX
     private void registerJMX() {
-        if (poolConfig.isEnableJMX()) {
+        if (poolConfig.isEnableJmx()) {
             final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
             try {
                 final ObjectName poolRegName = new ObjectName("cn.beecp.pool.RawConnectionPool:type=BeeCP(" + poolName + ")");
@@ -208,7 +208,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJM
 
     // unregister JMX
     private void unregisterJMX() {
-        if (poolConfig.isEnableJMX()) {
+        if (poolConfig.isEnableJmx()) {
             final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
             try {
                 final ObjectName poolRegName = new ObjectName("cn.beecp.pool.RawConnectionPool:type=BeeCP(" + poolName + ")");

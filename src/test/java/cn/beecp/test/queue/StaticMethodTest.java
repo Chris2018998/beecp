@@ -27,20 +27,22 @@ import java.util.concurrent.locks.LockSupport;
  */
 public class StaticMethodTest {
     private static long time = TimeUnit.MILLISECONDS.toNanos(10);
-    public static void main(String[]args)throws Exception{
-        int threadSize=1000,operateSize=1000;
-        test("SingleInstance",threadSize,operateSize,1);
-        test("StaticMethod",threadSize,operateSize,2);
-        test("ObjectMethod",threadSize,operateSize,3);
+
+    public static void main(String[] args) throws Exception {
+        int threadSize = 1000, operateSize = 1000;
+        test("SingleInstance", threadSize, operateSize, 1);
+        test("StaticMethod", threadSize, operateSize, 2);
+        test("ObjectMethod", threadSize, operateSize, 3);
     }
-    private static void test(String name,int threadSize,int operateSize,int testType) throws Exception {
+
+    private static void test(String name, int threadSize, int operateSize, int testType) throws Exception {
         BigDecimal totTime = new BigDecimal(0);
-        if(testType==1) {//SingleInstance
-            StaticMethodTest test=new StaticMethodTest();
+        if (testType == 1) {//SingleInstance
+            StaticMethodTest test = new StaticMethodTest();
             SingleInstanceThread[] testThreads = new SingleInstanceThread[threadSize];
             CountDownLatch threadsDownLatch = new CountDownLatch(threadSize);
             for (int i = 0; i < threadSize; i++) {
-                testThreads[i] = new SingleInstanceThread(test,operateSize, threadsDownLatch);
+                testThreads[i] = new SingleInstanceThread(test, operateSize, threadsDownLatch);
                 testThreads[i].start();
             }
             threadsDownLatch.await();
@@ -49,7 +51,7 @@ public class StaticMethodTest {
             for (int i = 0; i < threadSize; i++) {
                 totTime = totTime.add(new BigDecimal(testThreads[i].getTookTime()));
             }
-        }else if(testType==2) {//StaticMethod
+        } else if (testType == 2) {//StaticMethod
             StaticMethodThread[] testThreads = new StaticMethodThread[threadSize];
             CountDownLatch threadsDownLatch = new CountDownLatch(threadSize);
             for (int i = 0; i < threadSize; i++) {
@@ -62,7 +64,7 @@ public class StaticMethodTest {
             for (int i = 0; i < threadSize; i++) {
                 totTime = totTime.add(new BigDecimal(testThreads[i].getTookTime()));
             }
-        }else if(testType==3) {//ObjectMethod
+        } else if (testType == 3) {//ObjectMethod
             ObjectMethodThread[] testThreads = new ObjectMethodThread[threadSize];
             CountDownLatch threadsDownLatch = new CountDownLatch(threadSize);
             for (int i = 0; i < threadSize; i++) {
@@ -93,10 +95,10 @@ public class StaticMethodTest {
         private StaticMethodTest test;
         private CountDownLatch threadsDownLatch;
 
-        public SingleInstanceThread(StaticMethodTest test, int operateTimes,CountDownLatch threadsDownLatch) {
+        public SingleInstanceThread(StaticMethodTest test, int operateTimes, CountDownLatch threadsDownLatch) {
             this.test = test;
             this.operateTimes = operateTimes;
-            this.threadsDownLatch=threadsDownLatch;
+            this.threadsDownLatch = threadsDownLatch;
         }
 
         public long getTookTime() {
@@ -120,7 +122,7 @@ public class StaticMethodTest {
 
         public StaticMethodThread(int operateTimes, CountDownLatch threadsDownLatch) {
             this.operateTimes = operateTimes;
-            this.threadsDownLatch=threadsDownLatch;
+            this.threadsDownLatch = threadsDownLatch;
         }
 
         public long getTookTime() {
@@ -144,7 +146,7 @@ public class StaticMethodTest {
 
         public ObjectMethodThread(int operateTimes, CountDownLatch threadsDownLatch) {
             this.operateTimes = operateTimes;
-            this.threadsDownLatch=threadsDownLatch;
+            this.threadsDownLatch = threadsDownLatch;
         }
 
         public long getTookTime() {

@@ -38,6 +38,7 @@ public class DataSourceConnectionCloseTest extends TestCase {
 
     public void tearDown() throws Throwable {
     }
+
     public void test() throws Exception {
         ds.close();
         Connection con = null;
@@ -45,7 +46,7 @@ public class DataSourceConnectionCloseTest extends TestCase {
             con = ds.getConnection();
             if (con != null) TestUtil.assertError("DataSourceConnectionFactoryTest failed");
             System.out.println(con);
-        } catch (SQLException e){
+        } catch (SQLException e) {
         } finally {
             if (con != null)
                 TestUtil.oclose(con);

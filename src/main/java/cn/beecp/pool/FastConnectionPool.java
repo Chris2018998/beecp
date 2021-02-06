@@ -41,7 +41,7 @@ import static java.util.concurrent.locks.LockSupport.*;
  * @author Chris.Liao
  * @version 1.0
  */
-public final class FastConnectionPool extends Thread implements ConnectionPool, ConnectionPoolJMXBean {
+public final class FastConnectionPool extends Thread implements ConnectionPool, ConnectionPoolJmxBean {
     private static final long spinForTimeoutThreshold = 1000L;
     private static final int maxTimedSpins = (Runtime.getRuntime().availableProcessors() < 2) ? 0 : 32;
     private static final AtomicIntegerFieldUpdater<PooledConnection> ConnStUpd = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class, "state");
@@ -51,7 +51,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private static final String DESC_REMOVE_BAD = "bad";
     private static final String DESC_REMOVE_IDLE = "idle";
     private static final String DESC_REMOVE_CLOSED = "closed";
-    private static final String DESC_REMOVE_RESET = "reset";
+    private static final String DESC_REMOVE_CLEAR = "clear";
     private static final String DESC_REMOVE_DESTROY = "destroy";
     private static final AtomicInteger poolNameIndex = new AtomicInteger(1);
     private final Object connArrayLock = new Object();
@@ -130,7 +130,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 public void run() {// check idle connection
                     closeIdleTimeoutConnection();
                 }
-            }, config.getIdleCheckTimeInitDelay(), config.getIdleCheckTimeInterval(), TimeUnit.MILLISECONDS);
+            }, 1000, config.getIdleCheckTimeInterval(), TimeUnit.MILLISECONDS);
 
             registerJMX();
             commonLog.info("BeeCP({})has startup{mode:{},init size:{},max size:{},semaphore size:{},max wait:{}ms,driver:{}}",
@@ -540,11 +540,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     // shutdown pool
     public void close() throws SQLException {
-        long parkNanoSeconds = SECONDS.toNanos(poolConfig.getWaitTimeToClearPool());
+        long parkNanoSeconds = SECONDS.toNanos(poolConfig.getDelayTimeToNextClearConnections());
         while (true) {
             if (poolState.compareAndSet(POOL_NORMAL, POOL_CLOSED)) {
                 commonLog.info("BeeCP({})begin to shutdown", poolName);
-                removeAllConnections(poolConfig.isForceCloseConnection(), DESC_REMOVE_DESTROY);
+                removeAllConnections(poolConfig.isForceCloseUsingConnectionsOnClear(), DESC_REMOVE_DESTROY);
                 unregisterJMX();
                 shutdownCreateConnThread();
                 while (!idleCheckSchFuture.isCancelled() && !idleCheckSchFuture.isDone())
@@ -575,7 +575,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             transferException(PoolCloseException);
         }
 
-        long parkNanoSeconds = SECONDS.toNanos(poolConfig.getWaitTimeToClearPool());
+        long parkNanoSeconds = SECONDS.toNanos(poolConfig.getDelayTimeToNextClearConnections());
         while (connArray.length > 0) {
             PooledConnection[] array = connArray;
             for (int i = 0, len = array.length; i < len; i++) {
@@ -654,15 +654,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     /******************************** JMX **************************************/
     // close all connections
-    public void reset() {
-        reset(false);// wait borrower release connection,then close them
+    public void clearAllConnections() {
+        clearAllConnections(false);
     }
 
     // close all connections
-    public void reset(boolean force) {
+    public void clearAllConnections(boolean force) {
         if (poolState.compareAndSet(POOL_NORMAL, POOL_RESTING)) {
             commonLog.info("BeeCP({})begin to reset.", poolName);
-            removeAllConnections(force, DESC_REMOVE_RESET);
+            removeAllConnections(force, DESC_REMOVE_CLEAR);
             commonLog.info("All pooledConn were cleared");
             poolState.set(POOL_NORMAL);// restore state;
             commonLog.info("BeeCP({})finished resetting", poolName);
@@ -721,7 +721,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     // register JMX
     private void registerJMX() {
-        if (poolConfig.isEnableJMX()) {
+        if (poolConfig.isEnableJmx()) {
             MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
             registerJMXBean(mBeanServer, String.format("cn.beecp.pool.FastConnectionPool:type=BeeCP(%s)", poolName), this);
             registerJMXBean(mBeanServer, String.format("cn.beecp.BeeDataSourceConfig:type=BeeCP(%s)-config", poolName), poolConfig);
@@ -741,7 +741,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     // unregister JMX
     private void unregisterJMX() {
-        if (poolConfig.isEnableJMX()) {
+        if (poolConfig.isEnableJmx()) {
             MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
             unregisterJMXBean(mBeanServer, String.format("cn.beecp.pool.FastConnectionPool:type=BeeCP(%s)", poolName));
             unregisterJMXBean(mBeanServer, String.format("cn.beecp.BeeDataSourceConfig:type=BeeCP(%s)-config", poolName));

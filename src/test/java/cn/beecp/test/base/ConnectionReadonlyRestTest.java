@@ -17,7 +17,6 @@ package cn.beecp.test.base;
 
 import cn.beecp.BeeDataSource;
 import cn.beecp.BeeDataSourceConfig;
-import cn.beecp.pool.FastConnectionPool;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
@@ -38,31 +37,31 @@ public class ConnectionReadonlyRestTest extends TestCase {
         config.setBorrowSemaphoreSize(1);
         config.setConnectionTestSQL("SELECT 1 from dual");
         config.setIdleTimeout(3000);
-        config.setIdleCheckTimeInitDelay(10);
         ds = new BeeDataSource(config);
     }
 
     public void tearDown() throws Throwable {
         ds.close();
     }
+
     public void test() throws InterruptedException, Exception {
-        Connection con1=null;
+        Connection con1 = null;
         try {
             con1 = ds.getConnection();
             con1.setReadOnly(true);
             if (!con1.isReadOnly()) TestUtil.assertError("Connection Readonly set error");
 //            con1.setReadOnly(false);
 //            if (con1.isReadOnly()) TestUtil.assertError("Connection Readonly set error");
-        }finally {
-            if(con1!=null) con1.close();
+        } finally {
+            if (con1 != null) con1.close();
         }
 
-        Connection con2=null;
+        Connection con2 = null;
         try {
             con2 = ds.getConnection();
             if (con2.isReadOnly()) TestUtil.assertError("Connection Readonly reset error");
-        }finally {
-            if(con2!=null) con2.close();
+        } finally {
+            if (con2 != null) con2.close();
         }
     }
 }

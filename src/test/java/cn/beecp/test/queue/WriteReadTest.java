@@ -45,7 +45,7 @@ public class WriteReadTest {
 
         //Consumers
         for (int i = 0; i < testThreadSize; i++) {
-            threads[i] = new WriteAndReadThread(queue,operateSize,threadsDownLatch);
+            threads[i] = new WriteAndReadThread(queue, operateSize, threadsDownLatch);
             threads[i].start();
         }
         threadsDownLatch.await();
@@ -64,7 +64,7 @@ public class WriteReadTest {
         BigDecimal readAvgTime = readTotTime.divide(new BigDecimal(totalExeSize), 0, BigDecimal.ROUND_HALF_UP);
 
         System.out.println("<" + queueName + "> thread-size:" + testThreadSize + ",operate-size:"
-                + operateSize + ",write avg time:" + writeAvgTime + "(ns),read avg time:" + readAvgTime.longValue()+"(ns)");
+                + operateSize + ",write avg time:" + writeAvgTime + "(ns),read avg time:" + readAvgTime.longValue() + "(ns)");
     }
 
     static final class WriteAndReadThread extends Thread {
@@ -74,17 +74,20 @@ public class WriteReadTest {
         private CountDownLatch latch;
         private Queue<Object> queue;
 
-        public WriteAndReadThread(Queue<Object> queue,int operateTimes,CountDownLatch latch) {
+        public WriteAndReadThread(Queue<Object> queue, int operateTimes, CountDownLatch latch) {
             this.queue = queue;
             this.latch = latch;
             this.operateTimes = operateTimes;
         }
+
         public long getWriteTime() {
             return writeTime;
         }
+
         public long getReadTime() {
             return readTime;
         }
+
         public void run() {
             long time1 = System.nanoTime();
             for (int i = 0; i < operateTimes; i++) {
@@ -95,8 +98,8 @@ public class WriteReadTest {
                 queue.poll();
             }
             long time3 = System.nanoTime();
-            writeTime=time2-time1;
-            readTime=time3-time2;
+            writeTime = time2 - time1;
+            readTime = time3 - time2;
             latch.countDown();
         }
     }

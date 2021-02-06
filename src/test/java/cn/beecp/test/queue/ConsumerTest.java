@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package cn.beecp.test.queue;
 
 import cn.beecp.util.BeeTransferQueue;
@@ -33,9 +33,10 @@ import java.util.concurrent.locks.LockSupport;
  */
 public class ConsumerTest {
     private static final Object transferObject = new Object();
+
     public static void main(String[] args) throws Exception {
-        int producerSize =Runtime.getRuntime().availableProcessors();
-		int consumerSize = producerSize, operateSize = 1000;
+        int producerSize = Runtime.getRuntime().availableProcessors();
+        int consumerSize = producerSize, operateSize = 1000;
         System.out.println(".................ConsumerTest......................");
         ArrayList<Long> timeList = new ArrayList<Long>(5);
 
@@ -43,57 +44,57 @@ public class ConsumerTest {
         timeList.add(testQueue("LinkedBlockingQueue", new LinkedBlockingQueue<Object>(), producerSize, consumerSize, operateSize));
         timeList.add(testQueue("LinkedTransferQueue", new LinkedTransferQueue<Object>(), producerSize, consumerSize, operateSize));
         timeList.add(testQueue("SynchronousQueue", new SynchronousQueue<Object>(), producerSize, consumerSize, operateSize));
-		timeList.add(testQueue("BeeTransferQueue", new BeeTransferQueue<Object>(), producerSize, consumerSize, operateSize));
+        timeList.add(testQueue("BeeTransferQueue", new BeeTransferQueue<Object>(), producerSize, consumerSize, operateSize));
         Collections.sort(timeList);
         System.out.println(timeList);
     }
 
     private static long testQueue(String queueName, Queue<Object> queue, int producerSize, int consumerSize, int operateSize) throws Exception {
-		BlqConsumer[] blkConsumers=null;
-		FstQConsumer[] fstConsumers=null;
-		CountDownLatch producersDownLatch = new CountDownLatch(producerSize);
-		CountDownLatch consumersDownLatch = new CountDownLatch(consumerSize);
-		AtomicBoolean existConsumerInd = new AtomicBoolean(true);
-		long startTime= System.nanoTime()+TimeUnit.SECONDS.toNanos(10);
-		
-		if(queue instanceof BlockingQueue){//Blocking Queue Consumers
-			BlockingQueue<Object> blockingQueue=(BlockingQueue<Object>)queue;
-			blkConsumers = new BlqConsumer[consumerSize];
-			for (int i = 0; i < consumerSize; i++) {
-				blkConsumers[i] = new BlqConsumer(startTime, blockingQueue,consumersDownLatch,operateSize);
-				blkConsumers[i].start();
-			}
-		}else {//Fast Transfer Queue Consumers
-			BeeTransferQueue<Object> BeeTransferQueue=(BeeTransferQueue<Object>)queue;
-			fstConsumers = new FstQConsumer[consumerSize];
-			for (int i = 0; i < consumerSize; i++) {
-				fstConsumers[i] = new FstQConsumer(startTime,BeeTransferQueue,consumersDownLatch,operateSize);
-				fstConsumers[i].start();
-			}
-		}
-	
-		// Producers
-		for (int i = 0; i < producerSize; i++) {
-			new Producer(startTime,queue,existConsumerInd,producersDownLatch).start();
-		}
+        BlqConsumer[] blkConsumers = null;
+        FstQConsumer[] fstConsumers = null;
+        CountDownLatch producersDownLatch = new CountDownLatch(producerSize);
+        CountDownLatch consumersDownLatch = new CountDownLatch(consumerSize);
+        AtomicBoolean existConsumerInd = new AtomicBoolean(true);
+        long startTime = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
 
-		consumersDownLatch.await();
-		existConsumerInd.set(false);
-		producersDownLatch.await();
+        if (queue instanceof BlockingQueue) {//Blocking Queue Consumers
+            BlockingQueue<Object> blockingQueue = (BlockingQueue<Object>) queue;
+            blkConsumers = new BlqConsumer[consumerSize];
+            for (int i = 0; i < consumerSize; i++) {
+                blkConsumers[i] = new BlqConsumer(startTime, blockingQueue, consumersDownLatch, operateSize);
+                blkConsumers[i].start();
+            }
+        } else {//Fast Transfer Queue Consumers
+            BeeTransferQueue<Object> BeeTransferQueue = (BeeTransferQueue<Object>) queue;
+            fstConsumers = new FstQConsumer[consumerSize];
+            for (int i = 0; i < consumerSize; i++) {
+                fstConsumers[i] = new FstQConsumer(startTime, BeeTransferQueue, consumersDownLatch, operateSize);
+                fstConsumers[i].start();
+            }
+        }
 
-		// Summary and Conclusion
+        // Producers
+        for (int i = 0; i < producerSize; i++) {
+            new Producer(startTime, queue, existConsumerInd, producersDownLatch).start();
+        }
+
+        consumersDownLatch.await();
+        existConsumerInd.set(false);
+        producersDownLatch.await();
+
+        // Summary and Conclusion
         long totalExeSize = consumerSize * operateSize;
-		BigDecimal totTime = new BigDecimal(0);
-		if(queue instanceof BlockingQueue){
-			for (int i = 0; i < consumerSize; i++) {
-				totTime = totTime.add(new BigDecimal(blkConsumers[i].getEndTime() - blkConsumers[i].getStartTime()));
-			}
-		}else{
-			for (int i = 0; i < consumerSize; i++) {
-				totTime = totTime.add(new BigDecimal(fstConsumers[i].getEndTime() - fstConsumers[i].getStartTime()));
-			}	
-		}
-		
+        BigDecimal totTime = new BigDecimal(0);
+        if (queue instanceof BlockingQueue) {
+            for (int i = 0; i < consumerSize; i++) {
+                totTime = totTime.add(new BigDecimal(blkConsumers[i].getEndTime() - blkConsumers[i].getStartTime()));
+            }
+        } else {
+            for (int i = 0; i < consumerSize; i++) {
+                totTime = totTime.add(new BigDecimal(fstConsumers[i].getEndTime() - fstConsumers[i].getStartTime()));
+            }
+        }
+
         BigDecimal avgTime = totTime.divide(new BigDecimal(totalExeSize), 0, BigDecimal.ROUND_HALF_UP);
         System.out.println("<" + queueName + "> producer-size:" + producerSize + ",consumer-size:"
                 + consumerSize + ",poll total size:" + totalExeSize + ",total time:" + totTime.longValue()
@@ -103,91 +104,98 @@ public class ConsumerTest {
     }
 
     static final class Producer extends Thread {
-		private long startTime;
-		private AtomicBoolean activeInd;
-		private Queue<Object> queue;
-		private CountDownLatch producersDownLatch;
+        private long startTime;
+        private AtomicBoolean activeInd;
+        private Queue<Object> queue;
+        private CountDownLatch producersDownLatch;
 
-		public Producer(long startTime,Queue<Object> queue, AtomicBoolean activeInd, CountDownLatch producersDownLatch) {
-			this.startTime=startTime;
-			this.queue = queue;
-			this.activeInd = activeInd;
-			this.producersDownLatch = producersDownLatch;
-		}
-		
-		public void run() {
-			 LockSupport.parkNanos(startTime-System.nanoTime());
-	         while (activeInd.get()) {
-	            queue.offer(transferObject);
-	         }
-	         producersDownLatch.countDown();
-		}
-	}
+        public Producer(long startTime, Queue<Object> queue, AtomicBoolean activeInd, CountDownLatch producersDownLatch) {
+            this.startTime = startTime;
+            this.queue = queue;
+            this.activeInd = activeInd;
+            this.producersDownLatch = producersDownLatch;
+        }
 
-	static final class BlqConsumer extends Thread {
-		private long startTime;
-		private long endTime;
-		private int operateSize;
-		private CountDownLatch latch;
-		private BlockingQueue<Object> queue;
-		
-		public BlqConsumer(long startTime,BlockingQueue<Object> queue, CountDownLatch latch,int operateSize) {
-			this.queue = queue;
-			this.latch = latch;
-			this.startTime=startTime;
-			this.operateSize=operateSize;
-		}
-		
-		public long getStartTime() {
-			return startTime;
-		}
-		public long getEndTime() {
-			return endTime;
-		}
-		public void run() {
-			 LockSupport.parkNanos(startTime-System.nanoTime());
-			 startTime=System.nanoTime();
-	         for (int i = 0; i < operateSize; i++) {
-	        	 try{
-	        		 queue.poll(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-	        	 }catch(InterruptedException e){}
-	         }
-	         endTime = System.nanoTime();
-	         latch.countDown();
-		}
-	}
+        public void run() {
+            LockSupport.parkNanos(startTime - System.nanoTime());
+            while (activeInd.get()) {
+                queue.offer(transferObject);
+            }
+            producersDownLatch.countDown();
+        }
+    }
 
-	static final class FstQConsumer extends Thread {
-		private long startTime;
-		private long endTime;
-		private int operateSize;
-		private CountDownLatch latch;
-		private BeeTransferQueue<Object> queue;
-		public FstQConsumer(long startTime,BeeTransferQueue<Object> queue, CountDownLatch latch,int operateSize) {
-			this.queue = queue;
-			this.latch = latch;
-			this.startTime=startTime;
-			this.operateSize=operateSize;
-		}
-		
-		public long getStartTime() {
-			return startTime;
-		}
-		public long getEndTime() {
-			return endTime;
-		}
-		public void run() {
-			 LockSupport.parkNanos(startTime-System.nanoTime());
-			 startTime=System.nanoTime();
-	         for (int i = 0; i < operateSize; i++) {
-	        	 try{
-	        		 queue.poll(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-	        	 }catch(InterruptedException e){}
-	         }
-	         endTime = System.nanoTime();
-	         latch.countDown();
-		}
-	}
+    static final class BlqConsumer extends Thread {
+        private long startTime;
+        private long endTime;
+        private int operateSize;
+        private CountDownLatch latch;
+        private BlockingQueue<Object> queue;
+
+        public BlqConsumer(long startTime, BlockingQueue<Object> queue, CountDownLatch latch, int operateSize) {
+            this.queue = queue;
+            this.latch = latch;
+            this.startTime = startTime;
+            this.operateSize = operateSize;
+        }
+
+        public long getStartTime() {
+            return startTime;
+        }
+
+        public long getEndTime() {
+            return endTime;
+        }
+
+        public void run() {
+            LockSupport.parkNanos(startTime - System.nanoTime());
+            startTime = System.nanoTime();
+            for (int i = 0; i < operateSize; i++) {
+                try {
+                    queue.poll(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+                } catch (InterruptedException e) {
+                }
+            }
+            endTime = System.nanoTime();
+            latch.countDown();
+        }
+    }
+
+    static final class FstQConsumer extends Thread {
+        private long startTime;
+        private long endTime;
+        private int operateSize;
+        private CountDownLatch latch;
+        private BeeTransferQueue<Object> queue;
+
+        public FstQConsumer(long startTime, BeeTransferQueue<Object> queue, CountDownLatch latch, int operateSize) {
+            this.queue = queue;
+            this.latch = latch;
+            this.startTime = startTime;
+            this.operateSize = operateSize;
+        }
+
+        public long getStartTime() {
+            return startTime;
+        }
+
+        public long getEndTime() {
+            return endTime;
+        }
+
+        public void run() {
+            LockSupport.parkNanos(startTime - System.nanoTime());
+            startTime = System.nanoTime();
+            for (int i = 0; i < operateSize; i++) {
+                try {
+                    queue.poll(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+                } catch (InterruptedException e) {
+                }
+            }
+            endTime = System.nanoTime();
+            latch.countDown();
+        }
+    }
 }
 
 

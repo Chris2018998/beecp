@@ -45,8 +45,8 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  * @author Chris.Liao
  * @version 1.0
  */
-public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
-    //Pool implementation default class name
+public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
+    //Default pool implementation class name
     static final String DefaultImplementClassName = "cn.beecp.pool.FastConnectionPool";
     //indicator of configuration check result,true:check passed
     private boolean checked;
@@ -89,18 +89,16 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
     private long holdTimeout = MINUTES.toMillis(5);
     //a SQL to check connection active,recommend to use a simple query SQL,not contain procedure,function in SQL
     private String connectionTestSQL = "select 1 from dual";
-    //seconds:wait time to get connection whether active result.
+    //seconds:max time to get check active result from connection(socket readout time)
     private int connectionTestTimeout = 3;
     //milliseconds:connection test interval time from last active time
     private long connectionTestInterval = 500L;
-    //indicator,when pool close or reset,need close using connection directly
-    private boolean forceCloseConnection;
-    //seconds:delay time to close using connection util them become idle.
-    private long waitTimeToClearPool = 3;
+    //using connection close indicator,true,close directly;false,wait connection becoming idle,then close it
+    private boolean forceCloseUsingConnectionsOnClear;
+    //seconds:delay time to clear pooled connections when exists using connections and 'forceCloseUsingOnClear' is false
+    private long delayTimeToNextClearConnections = 3;
     //milliseconds:interval time to run check task in scheduledThreadPoolExecutor
     private long idleCheckTimeInterval = MINUTES.toMillis(5);
-    //milliseconds:delay time to run first task in scheduledThreadPoolExecutor
-    private long idleCheckTimeInitDelay = SECONDS.toMillis(1);
 
     //pool implementation class name
     private String poolImplementClassName = DefaultImplementClassName;
@@ -115,7 +113,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
     //xaConnectionFactory
     private XaConnectionFactory xaConnectionFactory;
     //indicator,whether register datasource to jmx
-    private boolean enableJMX;
+    private boolean enableJmx;
 
     public BeeDataSourceConfig() {
         this(null, null, null, null);
@@ -363,22 +361,22 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
             this.connectionTestInterval = connectionTestInterval;
     }
 
-    public boolean isForceCloseConnection() {
-        return forceCloseConnection;
+    public boolean isForceCloseUsingConnectionsOnClear() {
+        return forceCloseUsingConnectionsOnClear;
     }
 
-    public void setForceCloseConnection(boolean forceCloseConnection) {
+    public void setForceCloseUsingConnectionsOnClear(boolean forceCloseUsingConnectionsOnClear) {
         if (!this.checked)
-            this.forceCloseConnection = forceCloseConnection;
+            this.forceCloseUsingConnectionsOnClear = forceCloseUsingConnectionsOnClear;
     }
 
-    public long getWaitTimeToClearPool() {
-        return waitTimeToClearPool;
+    public long getDelayTimeToNextClearConnections() {
+        return delayTimeToNextClearConnections;
     }
 
-    public void setWaitTimeToClearPool(long waitTimeToClearPool) {
-        if (!this.checked && waitTimeToClearPool >= 0)
-            this.waitTimeToClearPool = waitTimeToClearPool;
+    public void setDelayTimeToNextClearConnections(long delayTimeToNextClearConnections) {
+        if (!this.checked && delayTimeToNextClearConnections >= 0)
+            this.delayTimeToNextClearConnections = delayTimeToNextClearConnections;
     }
 
     public long getIdleCheckTimeInterval() {
@@ -388,15 +386,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
     public void setIdleCheckTimeInterval(long idleCheckTimeInterval) {
         if (!this.checked && idleCheckTimeInterval >= 1000L)
             this.idleCheckTimeInterval = idleCheckTimeInterval;
-    }
-
-    public long getIdleCheckTimeInitDelay() {
-        return idleCheckTimeInitDelay;
-    }
-
-    public void setIdleCheckTimeInitDelay(long idleCheckTimeInitDelay) {
-        if (!this.checked && idleCheckTimeInitDelay >= 1000L)
-            this.idleCheckTimeInitDelay = idleCheckTimeInitDelay;
     }
 
     public String getPoolImplementClassName() {
@@ -421,13 +410,13 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
         }
     }
 
-    public boolean isEnableJMX() {
-        return enableJMX;
+    public boolean isEnableJmx() {
+        return enableJmx;
     }
 
-    public void setEnableJMX(boolean enableJMX) {
+    public void setEnableJMX(boolean enableJmx) {
         if (!this.checked)
-            this.enableJMX = enableJMX;
+            this.enableJmx = enableJmx;
     }
 
     void copyTo(BeeDataSourceConfig config) throws SQLException {
@@ -482,7 +471,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJMXBean {
                 this.connectProperties.put("user", this.username);
             if (!isBlank(this.password))
                 this.connectProperties.put("password", this.password);
-            
+
             connectionFactory = new DriverConnectionFactory(jdbcUrl, connectDriver, connectProperties);
         } else if (connectionFactory == null && !isBlank(this.connectionFactoryClassName)) {
             try {

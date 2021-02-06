@@ -71,16 +71,16 @@ public interface ConnectionPool {
     ConnectionPoolMonitorVo getMonitorVo();
 
     /**
-     * reset pool
+     * Clear all connections from pool
      */
-    public void reset();
+    public void clearAllConnections();
 
     /**
-     * reset pool
+     * Clear all connections from pool
      *
-     * @param force close using connection directly
+     * @param forceCloseUsingConnections close using connection directly
      */
-    public void reset(boolean force);
+    public void clearAllConnections(boolean forceCloseUsingConnections);
 
 }
 	

@@ -15,6 +15,7 @@
  */
 
 package cn.beecp.test.queue;
+
 import cn.beecp.util.BeeTransferQueue;
 
 import java.math.BigDecimal;
@@ -116,18 +117,21 @@ public class TryTransferTest {
     }
 
     //base
-   static final class TransferPacket {
+    static final class TransferPacket {
         public long sendTime = System.nanoTime();
         public long arriveTime;
     }
+
     static abstract class Consumer extends Thread {
         protected TransferPacket packet;
         protected CountDownLatch pollStartCountLatch;
         protected CountDownLatch pollEndCountLatch;
-        public Consumer(CountDownLatch pollStartCountLatch,CountDownLatch pollEndCountLatch) {
+
+        public Consumer(CountDownLatch pollStartCountLatch, CountDownLatch pollEndCountLatch) {
             this.pollStartCountLatch = pollStartCountLatch;
             this.pollEndCountLatch = pollEndCountLatch;
         }
+
         public TransferPacket getTransferPacket() {
             return packet;
         }
@@ -137,20 +141,24 @@ public class TryTransferTest {
                 pollStartCountLatch.countDown();
                 packet = poll(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
                 packet.arriveTime = System.nanoTime();
-            } catch (InterruptedException e) { }
+            } catch (InterruptedException e) {
+            }
 
             pollEndCountLatch.countDown();
         }
 
-        abstract TransferPacket poll(long time,TimeUnit unit)throws InterruptedException;
+        abstract TransferPacket poll(long time, TimeUnit unit) throws InterruptedException;
     }
+
     static abstract class Producer extends Thread {
         protected AtomicBoolean activeInd;
         protected CountDownLatch producersDownLatch;
+
         public Producer(AtomicBoolean activeInd, CountDownLatch producersDownLatch) {
             this.activeInd = activeInd;
             this.producersDownLatch = producersDownLatch;
         }
+
         public void run() {
             while (activeInd.get()) {
                 tryTransfer(new TransferPacket());
@@ -164,21 +172,26 @@ public class TryTransferTest {
     //BeeTransferQueue
     static final class BeeTransferQueueConsumer extends Consumer {
         private BeeTransferQueue<TransferPacket> queue;
+
         public BeeTransferQueueConsumer(BeeTransferQueue<TransferPacket> queue, CountDownLatch pollStartLatch, CountDownLatch pollEndDownLatch) {
-            super(pollStartLatch,pollEndDownLatch);
+            super(pollStartLatch, pollEndDownLatch);
             this.queue = queue;
         }
-        public TransferPacket poll(long time, TimeUnit unit)throws InterruptedException{
-            return queue.poll(time,unit);
+
+        public TransferPacket poll(long time, TimeUnit unit) throws InterruptedException {
+            return queue.poll(time, unit);
         }
     }
+
     static final class BeeTransferQueueTryTransferProducer extends Producer {
         private BeeTransferQueue<TransferPacket> queue;
+
         public BeeTransferQueueTryTransferProducer(BeeTransferQueue<TransferPacket> queue, AtomicBoolean activeInd, CountDownLatch producersDownLatch) {
-            super(activeInd,producersDownLatch);
+            super(activeInd, producersDownLatch);
             this.queue = queue;
         }
-        public void tryTransfer(TransferPacket packet){
+
+        public void tryTransfer(TransferPacket packet) {
             queue.tryTransfer(packet);
         }
     }
@@ -186,21 +199,26 @@ public class TryTransferTest {
     //LinkedTransferQueue
     static final class LinkedTransferQueueConsumer extends Consumer {
         private LinkedTransferQueue<TransferPacket> queue;
+
         public LinkedTransferQueueConsumer(LinkedTransferQueue<TransferPacket> queue, CountDownLatch pollStartLatch, CountDownLatch pollEndDownLatch) {
-            super(pollStartLatch,pollEndDownLatch);
+            super(pollStartLatch, pollEndDownLatch);
             this.queue = queue;
         }
-        public TransferPacket poll(long time, TimeUnit unit)throws InterruptedException{
-            return queue.poll(time,unit);
+
+        public TransferPacket poll(long time, TimeUnit unit) throws InterruptedException {
+            return queue.poll(time, unit);
         }
     }
+
     static final class LinkedTransferQueueTryTransferProducer extends Producer {
         private LinkedTransferQueue<TransferPacket> queue;
+
         public LinkedTransferQueueTryTransferProducer(LinkedTransferQueue<TransferPacket> queue, AtomicBoolean activeInd, CountDownLatch producersDownLatch) {
-            super(activeInd,producersDownLatch);
+            super(activeInd, producersDownLatch);
             this.queue = queue;
         }
-        public void tryTransfer(TransferPacket packet){
+
+        public void tryTransfer(TransferPacket packet) {
             queue.tryTransfer(packet);
         }
     }

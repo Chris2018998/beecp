@@ -63,7 +63,6 @@ public final class BeeDataSourceFactory implements ObjectFactory {
             throws Exception {
 
         Reference ref = (Reference) obj;
-
         //1:create datasource config instance
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         //2:get all properties set methods

@@ -10,10 +10,11 @@ import cn.beecp.test.TestUtil;
 
 import java.sql.Connection;
 
-public class ConnectionResetTest  extends TestCase {
+public class ConnectionResetTest extends TestCase {
+    String catlog = "mysql";
+    String schema = "mysql";
     private BeeDataSource ds;
-    String catlog="mysql";
-    String schema="mysql";
+
     public void setUp() throws Throwable {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         config.setJdbcUrl(Config.JDBC_URL);
@@ -41,21 +42,23 @@ public class ConnectionResetTest  extends TestCase {
             con.setReadOnly(false);
             con.setCatalog("test");
         } finally {
-        	if(con!=null)
-            TestUtil.oclose(con);
+            if (con != null)
+                TestUtil.oclose(con);
         }
         try {
             FastConnectionPool pool = (FastConnectionPool) TestUtil.getPool(ds);
-            if(pool.getConnTotalSize()!=1)TestUtil.assertError("Total connections not as expected:"+1);
+            if (pool.getConnTotalSize() != 1) TestUtil.assertError("Total connections not as expected:" + 1);
 
             con = ds.getConnection();
             //if(con.getAutoCommit()!=false)TestUtil.assertError("autoCommit reset fail");
-            if(con.getTransactionIsolation()!=Connection.TRANSACTION_READ_COMMITTED)TestUtil.assertError("TransactionIsolation reset fail");
-            if(con.isReadOnly()!=true)TestUtil.assertError("readony reset fail");
-            if(!catlog.equals(con.getCatalog()))TestUtil.assertError("catalog reset fail,excpect:s%,cuurent is s%",catlog,  con.getCatalog());
+            if (con.getTransactionIsolation() != Connection.TRANSACTION_READ_COMMITTED)
+                TestUtil.assertError("TransactionIsolation reset fail");
+            if (con.isReadOnly() != true) TestUtil.assertError("readony reset fail");
+            if (!catlog.equals(con.getCatalog()))
+                TestUtil.assertError("catalog reset fail,excpect:s%,cuurent is s%", catlog, con.getCatalog());
         } finally {
-        	if(con!=null)
-             TestUtil.oclose(con);
+            if (con != null)
+                TestUtil.oclose(con);
         }
     }
 }

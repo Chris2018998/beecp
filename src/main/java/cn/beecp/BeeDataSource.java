@@ -209,23 +209,23 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     }
 
     /**
-     * reset pool
+     * clear all pooled connections from pool
      *
-     * @throws SQLException if pool not be initialized
+     * @throws SQLException if pool under datasource not be initialized
      */
-    public void resetPool() throws SQLException {
-        this.resetPool(false);
+    public void clearAllConnections() throws SQLException {
+        this.clearAllConnections(false);
     }
 
     /**
-     * reset pool
+     * clear all pooled connections from pool
      *
      * @param force close using connection directly
-     * @throws SQLException if pool not be initialized
+     * @throws SQLException if pool under datasource not be initialized
      */
-    public void resetPool(boolean force) throws SQLException {
+    public void clearAllConnections(boolean force) throws SQLException {
         if (pool == null) throw new SQLException("DataSource not initialized");
-        pool.reset(force);
+        pool.clearAllConnections(force);
     }
 
     /**

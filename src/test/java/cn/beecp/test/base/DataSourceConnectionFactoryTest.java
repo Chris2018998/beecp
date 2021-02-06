@@ -30,29 +30,30 @@ public class DataSourceConnectionFactoryTest extends TestCase {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         config.setUsername(Config.JDBC_USER);
         config.setPassword(Config.JDBC_PASSWORD);
-        config.addConnectProperty("url",Config.JDBC_URL);
+        config.addConnectProperty("url", Config.JDBC_URL);
         config.setConnectionFactoryClassName("com.mysql.cj.jdbc.MysqlDataSource");
         config.setInitialSize(5);
         config.setConnectionTestSQL("SELECT 1 from dual");
         config.setIdleTimeout(3000);
-        config.setIdleCheckTimeInitDelay(10);
         ds = new BeeDataSource(config);
     }
+
     public void tearDown() throws Throwable {
         ds.close();
     }
+
     public void test() throws InterruptedException, Exception {
-        Connection con=null;
+        Connection con = null;
         try {
             con = ds.getConnection();
             if (con == null) TestUtil.assertError("DataSourceConnectionFactoryTest failed");
             System.out.println(con);
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             throw e;
-        }finally{
-        	if(con!=null)
-              TestUtil.oclose(con);
+        } finally {
+            if (con != null)
+                TestUtil.oclose(con);
         }
     }
 }

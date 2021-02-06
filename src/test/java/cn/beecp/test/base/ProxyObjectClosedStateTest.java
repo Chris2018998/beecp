@@ -21,7 +21,10 @@ import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 
-import java.sql.*;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 
 public class ProxyObjectClosedStateTest extends TestCase {
     private BeeDataSource ds;
@@ -35,7 +38,6 @@ public class ProxyObjectClosedStateTest extends TestCase {
         config.setInitialSize(5);
         config.setConnectionTestSQL("SELECT 1 from dual");
         config.setIdleTimeout(3000);
-        config.setIdleCheckTimeInitDelay(10);
         ds = new BeeDataSource(config);
     }
 
@@ -72,8 +74,7 @@ public class ProxyObjectClosedStateTest extends TestCase {
             if (!con.isClosed())
                 TestUtil.assertError("Connection is not closed");
             con = null;
-        }
-        finally {
+        } finally {
             if (st != null)
                 TestUtil.oclose(st);
             if (cs != null)
