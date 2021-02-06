@@ -88,8 +88,10 @@ public final class BeeDataSourceFactory implements ObjectFactory {
             String[] attributeArray = connectPropVal.split("&");
             for (String attribute : attributeArray) {
                 String[] pairs = attribute.split("=");
-                if (pairs.length == 2)
+                if (pairs.length == 2) {
                     config.addConnectProperty(pairs[0].trim(), pairs[1].trim());
+                    commonLog.info("beecp.connectProperties.{}={}",pairs[0].trim(),pairs[1].trim());
+                }
             }
         }
 
