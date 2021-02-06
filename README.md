@@ -8,7 +8,7 @@ Maven artifactId(Java7)
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>3.0.7</version>
+   <version>3.0.8</version>
 </dependency>
 ```
 Maven artifactId(Java6)
@@ -162,9 +162,9 @@ public class DataSourceConfig {
 |holdTimeout                |max inactive time hold by borrower            |time unit is ms,default is 300000 ms                        |  
 |connectionTestSQL          |connection valid test sql                     |select statement（don't recommand store procedure in select  |  
 |connectionTestTimeout      |connection test timeout                       |time unit is second, default is 5 seconds                    |  
-|forceCloseConnection       |object close indicator when pool closing or reseting|true:close;false:wait object return, default is false  |            |waitTimeToClearPool        |park time to clear when checked object is in using state|effected when forceCloseConnection==true            |                            |idleCheckTimeInterval   |scan thread time interval to check idle connection |time unit is ms,default is 300000 ms                        |
+|forceCloseUsingConnectionsOnClear|using connection close indicator,|true,close directly;false,wait util connection becoming idle,then close it |            |delayTimeToNextClearConnections |delay time to clear pooled connections|                                                                |                        |idleCheckTimeInterval           |scan thread time interval to check idle connection |time unit is ms,default is 300000 ms                |
 |connectionFactoryClassName |object factory class name                           |default is null                                         |
-|enableJMX                  |JMX boolean indicator for pool                      |default is false                                        |
+|enableJmx                 |JMX boolean indicator for pool                      |default is false                                        |
  
 
 ---
