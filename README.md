@@ -162,7 +162,7 @@ public class DataSourceConfig {
 |holdTimeout                |max inactive time hold by borrower            |time unit is ms,default is 300000 ms                        |  
 |connectionTestSQL          |connection valid test sql                     |select statement（don't recommand store procedure in select  |  
 |connectionTestTimeout      |connection test timeout                       |time unit is second, default is 5 seconds                    |  
-|forceCloseUsingConnectionsOnClear|using connection close indicator,|true,close directly;false,wait util connection becoming idle,then close it |            |delayTimeToNextClearConnections |delay time to clear pooled connections|                                                                |                        |idleCheckTimeInterval           |scan thread time interval to check idle connection |time unit is ms,default is 300000 ms                |
+|forceCloseUsingConnectionsOnClear|using connection close indicator|true,close directly;false,wait util connection becoming idle,then close it |            |delayTimeToNextClearConnections |delay time to clear pooled connections|                                                                |                        |idleCheckTimeInterval           |scan thread time interval to check idle connection |time unit is ms,default is 300000 ms                |
 |connectionFactoryClassName |object factory class name                           |default is null                                         |
 |enableJmx                 |JMX boolean indicator for pool                      |default is false                                        |
  
