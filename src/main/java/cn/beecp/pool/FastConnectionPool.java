@@ -545,11 +545,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (poolState.compareAndSet(POOL_NORMAL, POOL_CLOSED)) {
                 commonLog.info("BeeCP({})begin to shutdown", poolName);
                 removeAllConnections(poolConfig.isForceCloseUsingConnectionsOnClear(), DESC_REMOVE_DESTROY);
-                unregisterJMX();
+                unregisterJmx();
                 shutdownCreateConnThread();
                 while (!idleCheckSchFuture.isCancelled() && !idleCheckSchFuture.isDone())
                     idleCheckSchFuture.cancel(true);
+                idleSchExecutor.getQueue().clear();
                 idleSchExecutor.shutdownNow();
+
                 try {
                     Runtime.getRuntime().removeShutdownHook(exitHook);
                 } catch (Throwable e) {
@@ -586,22 +588,17 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     removePooledConn(pConn, source);
                 } else if (pConn.state == CONNECTION_USING) {
                     ProxyConnectionBase proxyConn = pConn.proxyConn;
-                    if (force) {
-                        if (proxyConn != null) {
-                            proxyConn.trySetAsClosed();
-                        }
-                    } else {
-                        boolean isTimeout = (currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldTimeout() >= 0);
-                        if (isTimeout && proxyConn != null) {
-                            proxyConn.trySetAsClosed();
+                    if (proxyConn != null) {
+                        if (force)proxyConn.trySetAsClosed();
+                        } else {
+                            boolean isTimeout = (currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldTimeout() >= 0);
+                            if (isTimeout)proxyConn.trySetAsClosed();
                         }
                     }
-                }
             } // for
 
             if (connArray.length > 0) parkNanos(parkNanoSeconds);
         } // while
-        idleSchExecutor.getQueue().clear();
     }
 
     // notify to create connections to pool
@@ -723,12 +720,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private void registerJMX() {
         if (poolConfig.isEnableJmx()) {
             MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-            registerJMXBean(mBeanServer, String.format("cn.beecp.pool.FastConnectionPool:type=BeeCP(%s)", poolName), this);
-            registerJMXBean(mBeanServer, String.format("cn.beecp.BeeDataSourceConfig:type=BeeCP(%s)-config", poolName), poolConfig);
+            registerJmxBean(mBeanServer, String.format("cn.beecp.pool.FastConnectionPool:type=BeeCP(%s)", poolName), this);
+            registerJmxBean(mBeanServer, String.format("cn.beecp.BeeDataSourceConfig:type=BeeCP(%s)-config", poolName), poolConfig);
         }
     }
 
-    private void registerJMXBean(MBeanServer mBeanServer, String regName, Object bean) {
+    private void registerJmxBean(MBeanServer mBeanServer, String regName, Object bean) {
         try {
             ObjectName jmxRegName = new ObjectName(regName);
             if (!mBeanServer.isRegistered(jmxRegName)) {
@@ -740,15 +737,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     // unregister JMX
-    private void unregisterJMX() {
+    private void unregisterJmx() {
         if (poolConfig.isEnableJmx()) {
             MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-            unregisterJMXBean(mBeanServer, String.format("cn.beecp.pool.FastConnectionPool:type=BeeCP(%s)", poolName));
-            unregisterJMXBean(mBeanServer, String.format("cn.beecp.BeeDataSourceConfig:type=BeeCP(%s)-config", poolName));
+            unregisterJmxBean(mBeanServer, String.format("cn.beecp.pool.FastConnectionPool:type=BeeCP(%s)", poolName));
+            unregisterJmxBean(mBeanServer, String.format("cn.beecp.BeeDataSourceConfig:type=BeeCP(%s)-config", poolName));
         }
     }
 
-    private void unregisterJMXBean(MBeanServer mBeanServer, String regName) {
+    private void unregisterJmxBean(MBeanServer mBeanServer, String regName) {
         try {
             ObjectName jmxRegName = new ObjectName(regName);
             if (mBeanServer.isRegistered(jmxRegName)) {
