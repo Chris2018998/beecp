@@ -73,27 +73,19 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         Iterator<String> iterator = setMethodMap.keySet().iterator();
         while (iterator.hasNext()) {
             String propertyName = iterator.next();
-            RefAddr ra = ref.get(propertyName);
-            if (ra == null) ra = ref.get(propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_MiddleLine));
-            if (ra == null) ra = ref.get(propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_UnderLine));
-            if (ra == null) continue;
+            String configVal = getConfigValue(ref, propertyName);
 
-            String configVal = ra.getContent().toString();
             if (isBlank(configVal)) continue;
-            setValueMap.put(propertyName, configVal.trim());
+            setValueMap.put(propertyName, configVal);
         }
         //5:inject found config value to ds config object
         setPropertiesValue(config, setMethodMap, setValueMap);
 
         //6:try to find 'connectProperties' config value and put to ds config object
         String connectPropName = "connectProperties";
-        RefAddr ra = ref.get(connectPropName);
-        if (ra == null) ra = ref.get(propertyNameToFieldId(connectPropName, DS_Config_Prop_Separator_MiddleLine));
-        if (ra == null) ra = ref.get(propertyNameToFieldId(connectPropName, DS_Config_Prop_Separator_UnderLine));
-        String configVal = ra.getContent().toString();
-        if (!isBlank(configVal)) {
-            configVal = configVal.trim();
-            String[] attributeArray = configVal.split("&");
+        String connectPropVal = getConfigValue(ref, connectPropName);
+        if (!isBlank(connectPropVal)) {
+            String[] attributeArray = connectPropVal.split("&");
             for (String attribute : attributeArray) {
                 String[] pairs = attribute.split("=");
                 if (pairs.length == 2)
@@ -103,5 +95,28 @@ public final class BeeDataSourceFactory implements ObjectFactory {
 
         //7:create dataSource by config
         return new BeeDataSource(config);
+    }
+
+    private final String getConfigValue(Reference ref, String propertyName) {
+        String value = readConfig(ref, propertyName);
+        if (isBlank(value))
+            value = readConfig(ref, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_MiddleLine));
+        if (isBlank(value))
+            value = readConfig(ref, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_UnderLine));
+        return value;
+    }
+
+    private final String readConfig(Reference ref, String propertyName) {
+        RefAddr refAddr = ref.get(propertyName);
+        if (refAddr != null) {
+            Object refObject = refAddr.getContent();
+            if (refObject == null) return null;
+            String value = refObject.toString().trim();
+            if (!isBlank(value)) {
+                commonLog.info("beecp.{}={}", propertyName, value);
+                return value;
+            }
+        }
+        return null;
     }
 }

@@ -589,12 +589,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 } else if (pConn.state == CONNECTION_USING) {
                     ProxyConnectionBase proxyConn = pConn.proxyConn;
                     if (proxyConn != null) {
-                        if (force)proxyConn.trySetAsClosed();
-                        } else {
-                            boolean isTimeout = (currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldTimeout() >= 0);
-                            if (isTimeout)proxyConn.trySetAsClosed();
-                        }
+                        if (force) proxyConn.trySetAsClosed();
+                    } else {
+                        boolean isTimeout = (currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldTimeout() >= 0);
+                        if (isTimeout) proxyConn.trySetAsClosed();
                     }
+                }
             } // for
 
             if (connArray.length > 0) parkNanos(parkNanoSeconds);
