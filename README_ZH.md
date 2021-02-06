@@ -8,7 +8,7 @@ Maven坐标(Java7)
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>3.0.7</version>
+   <version>3.0.8</version>
 </dependency>
 ```
 Maven坐标(Java6)
@@ -168,12 +168,11 @@ public class DataSourceConfig {
 | connectionTestSQL |连接有效性测试SQL语句           | 一条 select 语句，不建议放入存储过程     |  
 | connectionTestTimeout |连接有效性测试超时时间(秒)   |默认5秒 执行查询测试语句时间，在指定时间范围内等待反应|  
 | connectionTestInterval |连接测试的间隔时间(毫秒)     |默认500毫秒 连接上次活动时间点与当前时间时间差值小于它，则假定连接是有效的|  
-| forceCloseConnection   |是否需要暴力关闭连接         |默认false;true:直接关闭使用中连接，false:等待处于使用中归还后再关闭|
-| waitTimeToClearPool    |延迟清理的时候时间（秒）      |默认3秒，非暴力清理池下，还存在使用中的连接，延迟等待时间再清理|                   
+| forceCloseUsingConnectionsOnClear|是否直接关闭使用中转连接|默认false;true:直接关闭使用中连接，false:等待处于使用中归还后再关闭|
+| delayTimeToNextClearConnections  |延迟清理的时候时间（秒）|默认3秒,还存在使用中的连接，延迟等待时间再清理|                   
 | idleCheckTimeInterval  |闲置扫描线程间隔时间(毫秒)     |   默认5分钟                                 |
-| idleCheckTimeInitDelay |闲置扫描线程延迟时间再执行第一次扫描(毫秒)|    默认1秒                |
 | connectionFactoryClassName|自定义的JDBC连接工作类名            | 默认为空                  |
-| enableJMX                 |JMX监控支持开关                    | 默认false                | 
+| enableJmx                 |JMX监控支持开关                    | 默认false                | 
 
 
 ---
