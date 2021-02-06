@@ -74,11 +74,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private String defaultTransactionIsolation;
     //default set value on raw connection after it created,<code>connection.setTransactionIsolation(int)</code>
     private int defaultTransactionIsolationCode;
-    //default set value on raw connection after it created <code>connection.setAutoCommit(String)</code> .
+    //default set value on raw connection after it created <code>connection.setAutoCommit(String)</code>
     private String defaultCatalog;
-    //default set value on raw connection after it created <code>connection.setSchema(String)</code> .
+    //default set value on raw connection after it created <code>connection.setSchema(String)</code>
     private String defaultSchema;
-    //default set value on raw connection after it created <code>connection.setReadOnly(boolean)</code> .
+    //default set value on raw connection after it created <code>connection.setReadOnly(boolean)</code>
     private boolean defaultReadOnly;
 
     //milliseconds:borrower request timeout

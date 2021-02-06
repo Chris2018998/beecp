@@ -45,7 +45,7 @@ public interface ConnectionPool {
     Connection getConnection() throws SQLException;
 
     /**
-     * return connection to pool
+     * return connection to pool after used
      *
      * @param pConn target connection need release
      */
