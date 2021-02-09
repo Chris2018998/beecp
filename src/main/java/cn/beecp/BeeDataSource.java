@@ -236,8 +236,8 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
      * @return a initialized pool for data source
      */
     private final ConnectionPool createPool(BeeDataSourceConfig config) throws SQLException {
-        config.check();
-        String poolImplementClassName = config.getPoolImplementClassName();
+        BeeDataSourceConfig configCopy = config.check();
+        String poolImplementClassName = configCopy.getPoolImplementClassName();
         if (isBlank(poolImplementClassName))
             poolImplementClassName = BeeDataSourceConfig.DefaultImplementClassName;
 
@@ -246,9 +246,8 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             if (!ConnectionPool.class.isAssignableFrom(poolClass))
                 throw new IllegalArgumentException("Connection pool class must be implemented 'ConnectionPool' interface");
 
-            config.setAsChecked();
             ConnectionPool pool = (ConnectionPool) poolClass.newInstance();
-            pool.init(config);
+            pool.init(configCopy);
 
             //Create XAConnection Factory begin
             xaConnectionFactory = config.getXaConnectionFactory();
