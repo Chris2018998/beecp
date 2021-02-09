@@ -45,7 +45,6 @@ public class PoolDelayInitializeFailedTest extends TestCase {
             con = ds.getConnection();
             TestUtil.assertError("A pool fail to init e need be thrown,but not");
         } catch (SQLException e) {
-            System.out.println(e.getCause());
         } finally {
             if (con != null)
                 TestUtil.oclose(con);

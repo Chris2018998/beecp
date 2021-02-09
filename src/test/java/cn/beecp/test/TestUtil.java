@@ -16,7 +16,9 @@
 package cn.beecp.test;
 
 import cn.beecp.BeeDataSource;
+import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.pool.ConnectionPool;
+import cn.beecp.pool.FastConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +39,16 @@ public class TestUtil {
             Field field = ds.getClass().getDeclaredField("pool");
             field.setAccessible(true);
             return (ConnectionPool) field.get(ds);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static BeeDataSourceConfig getPoolConfig(FastConnectionPool pool) {
+        try {
+            Field field = pool.getClass().getDeclaredField("poolConfig");
+            field.setAccessible(true);
+            return (BeeDataSourceConfig) field.get(pool);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
