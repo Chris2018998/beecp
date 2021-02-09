@@ -98,7 +98,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         if (poolState.get() == POOL_UNINIT) {
             if (config == null) throw new SQLException("Configuration can't be null");
             checkProxyClasses();
-            poolConfig = config;
+            poolConfig = config.check();
 
             poolName = !isBlank(config.getPoolName()) ? config.getPoolName() : "FastPool-" + poolNameIndex.getAndIncrement();
             commonLog.info("BeeCP({})starting....", poolName);

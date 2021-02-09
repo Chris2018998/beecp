@@ -532,7 +532,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     //check pool configuration
-    BeeDataSourceConfig check() throws SQLException {
+    public BeeDataSourceConfig check() throws SQLException {
         if (this.maxActive <= 0)
             throw new BeeDataSourceConfigException("maxActive must be greater than zero");
         if (this.initialSize < 0)
