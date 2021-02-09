@@ -165,7 +165,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     }
 
     public boolean isClosed() {
-        return (pool != null) ? pool.isClosed() : false;
+        return (pool != null) ? pool.isClosed() : true;
     }
 
     public PrintWriter getLogWriter() throws SQLException {
