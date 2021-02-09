@@ -64,6 +64,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private int conUnCatchStateCode;
     private int connectionTestTimeout;//seconds
     private long connectionTestInterval;//milliseconds
+    private long delayTimeForNextClearNanos;//nanoseconds
+
     private ConnectionPoolHook exitHook;
     private BeeDataSourceConfig poolConfig;
 
@@ -94,8 +96,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     public void init(BeeDataSourceConfig config) throws SQLException {
         if (poolState.get() == POOL_UNINIT) {
+            if (config == null) throw new SQLException("Configuration can't be null");
             checkProxyClasses();
-            if (config == null) throw new SQLException("DataSource configuration can't be null");
             poolConfig = config;
 
             poolName = !isBlank(config.getPoolName()) ? config.getPoolName() : "FastPool-" + poolNameIndex.getAndIncrement();
@@ -104,9 +106,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             poolMaxSize = poolConfig.getMaxActive();
             connFactory = poolConfig.getConnectionFactory();
             connectionTestTimeout = poolConfig.getConnectionTestTimeout();
-            this.testPolicy = new SQLQueryTestPolicy(poolConfig.isDefaultAutoCommit(), poolConfig.getConnectionTestSQL());
-
+            testPolicy = new SQLQueryTestPolicy(poolConfig.isDefaultAutoCommit(), poolConfig.getConnectionTestSQL());
             defaultMaxWaitNanos = MILLISECONDS.toNanos(poolConfig.getMaxWait());
+            delayTimeForNextClearNanos = MILLISECONDS.toNanos(poolConfig.getDelayTimeForNextClear());
             connectionTestInterval = poolConfig.getConnectionTestInterval();
             createInitConnections(poolConfig.getInitialSize());
 
@@ -132,7 +134,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 }
             }, 1000, config.getIdleCheckTimeInterval(), TimeUnit.MILLISECONDS);
 
-            registerJMX();
+            registerJmx();
             commonLog.info("BeeCP({})has startup{mode:{},init size:{},max size:{},semaphore size:{},max wait:{}ms,driver:{}}",
                     poolName,
                     poolMode,
@@ -526,9 +528,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     ProxyConnectionBase proxyConn = pConn.proxyConn;
                     boolean isHoldTimeoutInNotUsing = currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldTimeout() >= 0;
                     if (isHoldTimeoutInNotUsing) {//recycle connection
-                        if(proxyConn != null) {
+                        if (proxyConn != null) {
                             proxyConn.trySetAsClosed();
-                        }else{
+                        } else {
                             removePooledConn(pConn, DESC_REMOVE_BAD);
                             tryToCreateNewConnByAsyn();
                         }
@@ -545,11 +547,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     // shutdown pool
     public void close() throws SQLException {
-        long parkNanoSeconds = SECONDS.toNanos(poolConfig.getDelayTimeToNextClearConnections());
         while (true) {
             if (poolState.compareAndSet(POOL_NORMAL, POOL_CLOSED)) {
                 commonLog.info("BeeCP({})begin to shutdown", poolName);
-                removeAllConnections(poolConfig.isForceCloseUsingConnectionsOnClear(), DESC_REMOVE_DESTROY);
+                removeAllConnections(poolConfig.isForceCloseUsingOnClear(), DESC_REMOVE_DESTROY);
                 unregisterJmx();
                 shutdownCreateConnThread();
                 while (!idleCheckSchFuture.isCancelled() && !idleCheckSchFuture.isDone())
@@ -567,7 +568,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             } else if (poolState.get() == POOL_CLOSED) {
                 break;
             } else {
-                parkNanos(parkNanoSeconds);// wait 3 seconds
+                parkNanos(delayTimeForNextClearNanos);// wait 3 seconds
             }
         }
     }
@@ -582,7 +583,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             transferException(PoolCloseException);
         }
 
-        long parkNanoSeconds = SECONDS.toNanos(poolConfig.getDelayTimeToNextClearConnections());
         while (connArray.length > 0) {
             PooledConnection[] array = connArray;
             for (int i = 0, len = array.length; i < len; i++) {
@@ -600,13 +600,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                             boolean isTimeout = (currentTimeMillis() - pConn.lastAccessTime - poolConfig.getHoldTimeout() >= 0);
                             if (isTimeout) proxyConn.trySetAsClosed();
                         }
-                    }else{
+                    } else {
                         removePooledConn(pConn, source);
                     }
                 }
             } // for
 
-            if (connArray.length > 0) parkNanos(parkNanoSeconds);
+            if (connArray.length > 0) parkNanos(delayTimeForNextClearNanos);
         } // while
     }
 
@@ -726,7 +726,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     // register JMX
-    private void registerJMX() {
+    private void registerJmx() {
         if (poolConfig.isEnableJmx()) {
             MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
             registerJmxBean(mBeanServer, String.format("cn.beecp.pool.FastConnectionPool:type=BeeCP(%s)", poolName), this);

@@ -93,12 +93,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private int connectionTestTimeout = 3;
     //milliseconds:connection test interval time from last active time
     private long connectionTestInterval = 500L;
-    //using connection close indicator,true,close directly;false,delay close util them becoming idle or hold timeout
-    private boolean forceCloseUsingConnectionsOnClear;
-    //seconds:delay time to next clear pooled connections when exists using connections and 'forceCloseUsingOnClear' is false
-    private long delayTimeToNextClearConnections = 3;
     //milliseconds:interval time to run check task in scheduledThreadPoolExecutor
     private long idleCheckTimeInterval = MINUTES.toMillis(5);
+    //using connection close indicator,true,close directly;false,delay close util them becoming idle or hold timeout
+    private boolean forceCloseUsingOnClear;
+    //milliseconds:delay time for next clear pooled connections when exists using connections and 'forceCloseUsingOnClear' is false
+    private long delayTimeForNextClear = 3000L;
 
     //pool implementation class name
     private String poolImplementClassName = DefaultImplementClassName;
@@ -361,22 +361,22 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             this.connectionTestInterval = connectionTestInterval;
     }
 
-    public boolean isForceCloseUsingConnectionsOnClear() {
-        return forceCloseUsingConnectionsOnClear;
+    public boolean isForceCloseUsingOnClear() {
+        return forceCloseUsingOnClear;
     }
 
-    public void setForceCloseUsingConnectionsOnClear(boolean forceCloseUsingConnectionsOnClear) {
+    public void setForceCloseUsingOnClear(boolean forceCloseUsingOnClear) {
         if (!this.checked)
-            this.forceCloseUsingConnectionsOnClear = forceCloseUsingConnectionsOnClear;
+            this.forceCloseUsingOnClear = forceCloseUsingOnClear;
     }
 
-    public long getDelayTimeToNextClearConnections() {
-        return delayTimeToNextClearConnections;
+    public long getDelayTimeForNextClear() {
+        return delayTimeForNextClear;
     }
 
-    public void setDelayTimeToNextClearConnections(long delayTimeToNextClearConnections) {
-        if (!this.checked && delayTimeToNextClearConnections >= 0)
-            this.delayTimeToNextClearConnections = delayTimeToNextClearConnections;
+    public void setDelayTimeForNextClear(long delayTimeForNextClear) {
+        if (!this.checked && delayTimeForNextClear >= 0)
+            this.delayTimeForNextClear = delayTimeForNextClear;
     }
 
     public long getIdleCheckTimeInterval() {

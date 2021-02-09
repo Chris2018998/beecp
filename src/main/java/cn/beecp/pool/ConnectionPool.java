@@ -78,9 +78,9 @@ public interface ConnectionPool {
     /**
      * Clear all connections from pool
      *
-     * @param forceCloseUsingConnections close using connection directly
+     * @param forceCloseUsingOnClear close using connection directly
      */
-    public void clearAllConnections(boolean forceCloseUsingConnections);
+    public void clearAllConnections(boolean forceCloseUsingOnClear);
 
 }
 	

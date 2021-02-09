@@ -64,9 +64,9 @@ public interface BeeDataSourceConfigJmxBean {
 
     long getConnectionTestInterval();
 
-    boolean isForceCloseUsingConnectionsOnClear();
+    boolean isForceCloseUsingOnClear();
 
-    long getDelayTimeToNextClearConnections();
+    long getDelayTimeForNextClear();
 
     long getIdleCheckTimeInterval();
 
