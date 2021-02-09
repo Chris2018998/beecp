@@ -236,49 +236,20 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
      * @return a initialized pool for data source
      */
     private final ConnectionPool createPool(BeeDataSourceConfig config) throws SQLException {
-        config.check();
-        String poolImplementClassName = config.getPoolImplementClassName();
-        if (isBlank(poolImplementClassName))
-            poolImplementClassName = BeeDataSourceConfig.DefaultImplementClassName;
-
-        try {
-            Class<?> poolClass = Class.forName(poolImplementClassName, true, getClass().getClassLoader());
-            if (!ConnectionPool.class.isAssignableFrom(poolClass))
-                throw new IllegalArgumentException("Connection pool class must be implemented 'ConnectionPool' interface");
-
-            ConnectionPool pool = (ConnectionPool) poolClass.newInstance();
-            pool.init(config);
-
-            //Create XAConnection Factory begin
-            xaConnectionFactory = config.getXaConnectionFactory();
-            if (xaConnectionFactory == null && !isBlank(config.getUrl())) {
-                String driverType = getDriverType(config.getUrl());
-                if (!isBlank(driverType)) {
-                    String xaConnectionFactoryClassName = XaConnectionFactoryMap.get(driverType);
-                    if (!isBlank(xaConnectionFactoryClassName)) {
-                        try {
-                            Class<?> xaConnectionFactoryClass = Class.forName(xaConnectionFactoryClassName, true, getClass().getClassLoader());
-                            if (XaConnectionFactory.class.isAssignableFrom(xaConnectionFactoryClass)) {
-                                xaConnectionFactory = (XaConnectionFactory) xaConnectionFactoryClass.newInstance();
-                            }
-                        } catch (ClassNotFoundException e) {
-                            throw new BeeDataSourceConfigException("Class(" + xaConnectionFactoryClassName + ")not found ");
-                        } catch (InstantiationException e) {
-                            throw new BeeDataSourceConfigException("Failed to instantiate XAConnection factory class:" + xaConnectionFactoryClassName, e);
-                        } catch (IllegalAccessException e) {
-                            throw new BeeDataSourceConfigException("Failed to instantiate XAConnection factory class:" + xaConnectionFactoryClassName, e);
-                        }
-                    }
-                }
+        //1:try to create xaFactory,why at first?
+        xaConnectionFactory = tryCreateXAConnectionFactoryByConfig(config);
+        if (xaConnectionFactory == null && !isBlank(config.getUrl())) {
+            String driverType = getDriverType(config.getUrl());
+            if (!isBlank(driverType)) {
+                String xaConnectionFactoryClassName = XaConnectionFactoryMap.get(driverType);
+                xaConnectionFactory = createXAConnectionFactoryByClassName(xaConnectionFactoryClassName);
             }
-            //Create XAConnection Factory end
-
-            return pool;
-        } catch (ClassNotFoundException e) {
-            throw new SQLException("Not found connection pool implementation class:" + poolImplementClassName);
-        } catch (Throwable e) {
-            throw new SQLException(e);
         }
+
+        //2:create pool instance and init it with config
+        ConnectionPool pool = createPoolInstanceByConfig(config);
+        pool.init(config);
+        return pool;
     }
 
     private String getDriverType(String url) {
@@ -299,5 +270,53 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             commonLog.warn("Can't get driver by url from driverManager", e);
             return null;
         }
+    }
+
+    //try to create connection pool instance by config
+    private final ConnectionPool createPoolInstanceByConfig(BeeDataSourceConfig config) throws BeeDataSourceConfigException {
+        String poolImplementClassName = config.getPoolImplementClassName();
+        if (isBlank(poolImplementClassName)) poolImplementClassName = BeeDataSourceConfig.DefaultImplementClassName;
+
+        try {
+            Class<?> poolClass = Class.forName(poolImplementClassName, true, getClass().getClassLoader());
+            if (ConnectionPool.class.isAssignableFrom(poolClass)) {
+                return (ConnectionPool) poolClass.newInstance();
+            } else {
+                throw new BeeDataSourceConfigException("poolImplementClassName error,must implement '" + ConnectionPool.class.getName() + "' interface");
+            }
+
+        } catch (ClassNotFoundException e) {
+            throw new BeeDataSourceConfigException("Not found connection pool class:" + poolImplementClassName);
+        } catch (InstantiationException e) {
+            throw new BeeDataSourceConfigException("Failed to instantiate connection pool class:" + poolImplementClassName, e);
+        } catch (IllegalAccessException e) {
+            throw new BeeDataSourceConfigException("Failed to instantiate connection pool class:" + poolImplementClassName, e);
+        }
+    }
+
+    //try to create XAConnection factory by config
+    private final XaConnectionFactory tryCreateXAConnectionFactoryByConfig(BeeDataSourceConfig config) throws BeeDataSourceConfigException {
+        if (config.getXaConnectionFactory() != null) return config.getXaConnectionFactory();
+        return createXAConnectionFactoryByClassName(config.getXaConnectionFactoryClassName());
+    }
+
+    private final XaConnectionFactory createXAConnectionFactoryByClassName(String xaConnectionFactoryClassName) throws BeeDataSourceConfigException {
+        if (!isBlank(xaConnectionFactoryClassName)) {
+            try {
+                Class<?> xaConnectionFactoryClass = Class.forName(xaConnectionFactoryClassName, true, this.getClass().getClassLoader());
+                if (XaConnectionFactory.class.isAssignableFrom(xaConnectionFactoryClass)) {
+                    return (XaConnectionFactory) xaConnectionFactoryClass.newInstance();
+                } else {
+                    throw new BeeDataSourceConfigException("xaConnectionFactoryClassName error,must implement '" + XaConnectionFactory.class.getName() + "' interface");
+                }
+            } catch (ClassNotFoundException e) {
+                throw new BeeDataSourceConfigException("Not found XAConnection factory class:" + xaConnectionFactoryClassName);
+            } catch (InstantiationException e) {
+                throw new BeeDataSourceConfigException("Failed to instantiate XAConnection factory class:" + xaConnectionFactoryClassName, e);
+            } catch (IllegalAccessException e) {
+                throw new BeeDataSourceConfigException("Failed to instantiate XAConnection factory class:" + xaConnectionFactoryClassName, e);
+            }
+        }
+        return null;
     }
 }

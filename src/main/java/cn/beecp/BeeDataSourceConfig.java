@@ -130,115 +130,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         //fix issue:#19 Chris-2020-08-16 end
     }
 
-    private static final int getTransactionIsolationCode(BeeDataSourceConfig config) throws BeeDataSourceConfigException {
-        if (!isBlank(config.defaultTransactionIsolation)) {
-            int transactionIsolationCode = TransactionIsolationLevel.getTransactionIsolationCode(config.defaultTransactionIsolation);
-            if (transactionIsolationCode == -999)
-                throw new BeeDataSourceConfigException("defaultTransactionIsolation error,valid value is one of[" + TRANS_LEVEL_DESC_LIST + "]");
-            return transactionIsolationCode;
-        } else {
-            if (!isValidTransactionIsolationCode(config.defaultTransactionIsolationCode))
-                throw new BeeDataSourceConfigException("defaultTransactionIsolationCode error,valid value is one of[" + TRANS_LEVEL_CODE_LIST + "]");
-
-            return config.defaultTransactionIsolationCode;
-        }
-    }
-
-    private static final Driver loadJdbcDriver(String driverClassName) throws BeeDataSourceConfigException {
-        try {
-            Class<?> driverClass = Class.forName(driverClassName, true, BeeDataSourceConfig.class.getClassLoader());
-            return (Driver) driverClass.newInstance();
-        } catch (ClassNotFoundException e) {
-            throw new BeeDataSourceConfigException("Driver class[" + driverClassName + "]not found");
-        } catch (InstantiationException e) {
-            throw new BeeDataSourceConfigException("Driver class[" + driverClassName + "]can't be instantiated", e);
-        } catch (IllegalAccessException e) {
-            throw new BeeDataSourceConfigException("Driver class[" + driverClassName + "]can't be instantiated", e);
-        }
-    }
-
-    public static final ConnectionFactory tryCreateConnectionFactory(BeeDataSourceConfig config) throws BeeDataSourceConfigException, SQLException {
-        if (config.connectionFactory != null) return config.connectionFactory;
-
-        if (isBlank(config.connectionFactoryClassName)) {
-            if (isBlank(config.jdbcUrl))
-                throw new BeeDataSourceConfigException("jdbcUrl can't be null");
-
-            Driver connectDriver = null;
-            if (!isBlank(config.driverClassName))
-                connectDriver = loadJdbcDriver(config.driverClassName);
-            else if (!isBlank(config.jdbcUrl))
-                connectDriver = DriverManager.getDriver(config.jdbcUrl);
-            if (connectDriver == null)
-                throw new BeeDataSourceConfigException("Failed to load jdbc Driver");
-            if (!connectDriver.acceptsURL(config.jdbcUrl))
-                throw new BeeDataSourceConfigException("Driver can not match jdbcUrl");
-
-            Properties connectProperties = new Properties();
-            connectProperties.putAll(config.connectProperties);
-            if (!isBlank(config.username))
-                connectProperties.put("user", config.username);
-            if (!isBlank(config.password))
-                connectProperties.put("password", config.password);
-            return new DriverConnectionFactory(config.jdbcUrl, connectDriver, connectProperties);
-        } else {
-            try {
-                Class<?> conFactClass = Class.forName(config.connectionFactoryClassName, true, BeeDataSourceConfig.class.getClassLoader());
-                if (ConnectionFactory.class.isAssignableFrom(conFactClass)) {
-                    return (ConnectionFactory) conFactClass.newInstance();
-                } else if (DataSource.class.isAssignableFrom(conFactClass)) {
-                    DataSource dataSource = (DataSource) conFactClass.newInstance();
-                    Properties connectProperties = config.connectProperties;
-                    Map<String, Object> setValueMap = new HashMap<String, Object>(connectProperties.size());
-                    Iterator<Map.Entry<Object, Object>> iterator = connectProperties.entrySet().iterator();
-                    while (iterator.hasNext()) {
-                        Map.Entry<Object, Object> entry = (Map.Entry<Object, Object>) iterator.next();
-                        if (entry.getKey() instanceof String) {
-                            setValueMap.put((String) entry.getKey(), entry.getValue());
-                        }
-                    }
-
-                    try {
-                        setPropertiesValue(dataSource, setValueMap);
-                    } catch (Exception e) {
-                        throw new BeeDataSourceConfigException("Failed to set config value to dataSource factory", e);
-                    }
-
-                    return new DataSourceConnectionFactory(dataSource, config.username, config.password);
-                } else {
-                    throw new BeeDataSourceConfigException("Custom connection factory class must be implemented 'ConnectionFactory' interface");
-                }
-            } catch (ClassNotFoundException e) {
-                throw new BeeDataSourceConfigException("Class(" + config.connectionFactoryClassName + ")not found ");
-            } catch (InstantiationException e) {
-                throw new BeeDataSourceConfigException("Failed to instantiate connection factory class:" + config.connectionFactoryClassName, e);
-            } catch (IllegalAccessException e) {
-                throw new BeeDataSourceConfigException("Failed to instantiate connection factory class:" + config.connectionFactoryClassName, e);
-            }
-        }
-    }
-
-    //try to create XAConnection factory
-    public static final XaConnectionFactory tryCreateXAConnectionFactory(BeeDataSourceConfig config) throws BeeDataSourceConfigException {
-        if (config.xaConnectionFactory != null) return config.xaConnectionFactory;
-
-        if (!isBlank(config.xaConnectionFactoryClassName)) {
-            try {
-                Class<?> xaConnectionFactoryClass = Class.forName(config.xaConnectionFactoryClassName, true, BeeDataSourceConfig.class.getClassLoader());
-                if (XaConnectionFactory.class.isAssignableFrom(xaConnectionFactoryClass)) {
-                    config.xaConnectionFactory = (XaConnectionFactory) xaConnectionFactoryClass.newInstance();
-                }
-            } catch (ClassNotFoundException e) {
-                throw new BeeDataSourceConfigException("Class(" + config.xaConnectionFactoryClassName + ")not found ");
-            } catch (InstantiationException e) {
-                throw new BeeDataSourceConfigException("Failed to instantiate XAConnection factory class:" + config.xaConnectionFactoryClassName, e);
-            } catch (IllegalAccessException e) {
-                throw new BeeDataSourceConfigException("Failed to instantiate XAConnection factory class:" + config.xaConnectionFactoryClassName, e);
-            }
-        }
-        return null;
-    }
-
     public String getUsername() {
         return username;
     }
@@ -559,19 +450,15 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         //}
 
         //get transaction Isolation Code
-        int transactionIsolationCode = getTransactionIsolationCode(this);
+        int transactionIsolationCode = getTransactionIsolationCode();
 
         //try to create connection factory
-        ConnectionFactory connectionFactory = tryCreateConnectionFactory(this);
-
-        //try to create XAConnection factory
-        XaConnectionFactory xaConnectionFactory = tryCreateXAConnectionFactory(this);
+        ConnectionFactory connectionFactory = tryCreateConnectionFactory();
 
         BeeDataSourceConfig configCopy = new BeeDataSourceConfig();
         this.copyTo(configCopy);
 
         configCopy.setConnectionFactory(connectionFactory);
-        configCopy.setXaConnectionFactory(xaConnectionFactory);
         configCopy.setDefaultTransactionIsolationCode(transactionIsolationCode);
         return configCopy;
     }
@@ -595,6 +482,94 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             connectProperties.load(stream);
         } finally {
             if (stream != null) stream.close();
+        }
+    }
+
+    private final int getTransactionIsolationCode() throws BeeDataSourceConfigException {
+        if (!isBlank(defaultTransactionIsolation)) {
+            int transactionIsolationCode = TransactionIsolationLevel.getTransactionIsolationCode(defaultTransactionIsolation);
+            if (transactionIsolationCode == -999)
+                throw new BeeDataSourceConfigException("defaultTransactionIsolation error,valid value is one of[" + TRANS_LEVEL_DESC_LIST + "]");
+            return transactionIsolationCode;
+        } else {
+            if (!isValidTransactionIsolationCode(defaultTransactionIsolationCode))
+                throw new BeeDataSourceConfigException("defaultTransactionIsolationCode error,valid value is one of[" + TRANS_LEVEL_CODE_LIST + "]");
+
+            return defaultTransactionIsolationCode;
+        }
+    }
+
+    private final Driver loadJdbcDriver(String driverClassName) throws BeeDataSourceConfigException {
+        try {
+            Class<?> driverClass = Class.forName(driverClassName, true, BeeDataSourceConfig.class.getClassLoader());
+            return (Driver) driverClass.newInstance();
+        } catch (ClassNotFoundException e) {
+            throw new BeeDataSourceConfigException("Not found driver class:" + driverClassName);
+        } catch (InstantiationException e) {
+            throw new BeeDataSourceConfigException("Failed to instantiate driver class:" + driverClassName, e);
+        } catch (IllegalAccessException e) {
+            throw new BeeDataSourceConfigException("Failed to instantiate driver class:" + driverClassName, e);
+        }
+    }
+
+    private final ConnectionFactory tryCreateConnectionFactory() throws BeeDataSourceConfigException, SQLException {
+        if (connectionFactory != null) return connectionFactory;
+
+        if (isBlank(connectionFactoryClassName)) {
+            if (isBlank(jdbcUrl))
+                throw new BeeDataSourceConfigException("jdbcUrl can't be null");
+
+            Driver connectDriver = null;
+            if (!isBlank(driverClassName))
+                connectDriver = loadJdbcDriver(driverClassName);
+            else if (!isBlank(jdbcUrl))
+                connectDriver = DriverManager.getDriver(jdbcUrl);
+            if (connectDriver == null)
+                throw new BeeDataSourceConfigException("Failed to load jdbc Driver:" + driverClassName);
+            if (!connectDriver.acceptsURL(jdbcUrl))
+                throw new BeeDataSourceConfigException("jdbcUrl(" + jdbcUrl + ")can not match driver:" + connectDriver.getClass().getName());
+
+            Properties connectProperties = new Properties();
+            connectProperties.putAll(this.connectProperties);
+            if (!isBlank(username))
+                connectProperties.put("user", username);
+            if (!isBlank(password))
+                connectProperties.put("password", password);
+            return new DriverConnectionFactory(jdbcUrl, connectDriver, connectProperties);
+        } else {
+            try {
+                Class<?> conFactClass = Class.forName(connectionFactoryClassName, true, BeeDataSourceConfig.class.getClassLoader());
+                if (ConnectionFactory.class.isAssignableFrom(conFactClass)) {
+                    return (ConnectionFactory) conFactClass.newInstance();
+                } else if (DataSource.class.isAssignableFrom(conFactClass)) {
+                    DataSource dataSource = (DataSource) conFactClass.newInstance();
+                    Properties connectProperties = this.connectProperties;
+                    Map<String, Object> setValueMap = new HashMap<String, Object>(connectProperties.size());
+                    Iterator<Map.Entry<Object, Object>> iterator = connectProperties.entrySet().iterator();
+                    while (iterator.hasNext()) {
+                        Map.Entry<Object, Object> entry = (Map.Entry<Object, Object>) iterator.next();
+                        if (entry.getKey() instanceof String) {
+                            setValueMap.put((String) entry.getKey(), entry.getValue());
+                        }
+                    }
+
+                    try {
+                        setPropertiesValue(dataSource, setValueMap);
+                    } catch (Exception e) {
+                        throw new BeeDataSourceConfigException("Failed to set config value to connection dataSource", e);
+                    }
+
+                    return new DataSourceConnectionFactory(dataSource, username, password);
+                } else {
+                    throw new BeeDataSourceConfigException("Error connection factory class,must implement '" + ConnectionFactory.class.getName() + "' interface");
+                }
+            } catch (ClassNotFoundException e) {
+                throw new BeeDataSourceConfigException("Not found connection factory class:" + connectionFactoryClassName);
+            } catch (InstantiationException e) {
+                throw new BeeDataSourceConfigException("Failed to instantiate connection factory class:" + connectionFactoryClassName, e);
+            } catch (IllegalAccessException e) {
+                throw new BeeDataSourceConfigException("Failed to instantiate connection factory class:" + connectionFactoryClassName, e);
+            }
         }
     }
 }
