@@ -66,7 +66,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //connection max size in pool
     private int maxActive = 10;
     //borrow Semaphore Size
-    private int borrowSemaphoreSize= Math.min(maxActive / 2, Runtime.getRuntime().availableProcessors());
+    private int borrowSemaphoreSize = Math.min(maxActive / 2, Runtime.getRuntime().availableProcessors());
 
     //default set value on raw connection after it created. <code>connection.setAutoCommit(boolean)</code>
     private boolean defaultAutoCommit = true;
@@ -80,8 +80,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private String defaultSchema;
     //default set value on raw connection after it created <code>connection.setReadOnly(boolean)</code>
     private boolean defaultReadOnly;
-    //a SQL to check connection active,recommend to use a simple query SQL,not contain procedure,function in SQL
-    private String connectionTestSQL = "select 1 from dual";
 
 
     //milliseconds:borrower request timeout
@@ -101,6 +99,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //milliseconds:delay time for next clear pooled connections when exists using connections and 'forceCloseUsingOnClear' is false
     private long delayTimeForNextClear = 3000L;
 
+
+    //a SQL to check connection active,recommend to use a simple query SQL,not contain procedure,function in SQL
+    private String connectionTestSQL = "select 1 from dual";
     //physical JDBC Connection factory class name
     private String connectionFactoryClassName;
     //physical JDBC Connection factory
@@ -215,6 +216,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         if (borrowSemaphoreSize > 0)
             this.borrowSemaphoreSize = borrowSemaphoreSize;
     }
+
 
     public boolean isDefaultAutoCommit() {
         return defaultAutoCommit;

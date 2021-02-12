@@ -89,7 +89,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             pool = createPool(this);
             inited = true;
         } catch (SQLException e) {
-            throw new ExceptionInInitializerError(e);
+            throw new RuntimeException(e);
         }
     }
 
