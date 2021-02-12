@@ -125,6 +125,9 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             } catch (SQLException e) {
                 failedCause = e;
                 throw e;
+            } catch (Throwable e) {
+                failedCause = new SQLException(e);
+                throw e;
             } finally {
                 writeLock.unlock();
             }
