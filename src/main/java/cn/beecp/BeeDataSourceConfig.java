@@ -68,19 +68,20 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //borrow Semaphore Size
     private int borrowSemaphoreSize = Math.min(maxActive / 2, Runtime.getRuntime().availableProcessors());
 
-    //default set value on raw connection after it created. <code>connection.setAutoCommit(boolean)</code>
-    private boolean defaultAutoCommit = true;
-    //default transaction isolation description,match isolation code can be set to <code>defaultTransactionIsolationCode</code>
-    private String defaultTransactionIsolation;
-    //default set value on raw connection after it created,<code>connection.setTransactionIsolation(int)</code>
-    private int defaultTransactionIsolationCode;
     //default set value on raw connection after it created <code>connection.setAutoCommit(String)</code>
     private String defaultCatalog;
     //default set value on raw connection after it created <code>connection.setSchema(String)</code>
     private String defaultSchema;
     //default set value on raw connection after it created <code>connection.setReadOnly(boolean)</code>
     private boolean defaultReadOnly;
-
+    //default set value on raw connection after it created. <code>connection.setAutoCommit(boolean)</code>
+    private boolean defaultAutoCommit = true;
+    //default set value on raw connection after it created,<code>connection.setTransactionIsolation(int)</code>
+    private int defaultTransactionIsolationCode = Connection.TRANSACTION_READ_COMMITTED;
+    //default transaction isolation description,match isolation code can be set to <code>defaultTransactionIsolationCode</code>
+    private String defaultTransactionIsolation = TransactionIsolationLevel.LEVEL_READ_COMMITTED;
+    //a SQL to check connection active,recommend to use a simple query SQL,not contain procedure,function in SQL
+    private String connectionTestSQL = "select 1 from dual";
 
     //milliseconds:borrower request timeout
     private long maxWait = SECONDS.toMillis(8);
@@ -99,27 +100,22 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //milliseconds:delay time for next clear pooled connections when exists using connections and 'forceCloseUsingOnClear' is false
     private long delayTimeForNextClear = 3000L;
 
-
-    //a SQL to check connection active,recommend to use a simple query SQL,not contain procedure,function in SQL
-    private String connectionTestSQL = "select 1 from dual";
     //physical JDBC Connection factory class name
     private String connectionFactoryClassName;
     //physical JDBC Connection factory
     private ConnectionFactory connectionFactory;
-    //connection extra properties
-    private Properties connectProperties = new Properties();
     //xaConnection Factory ClassName
     private String xaConnectionFactoryClassName;
     //xaConnectionFactory
     private XaConnectionFactory xaConnectionFactory;
-    //indicator,whether register datasource to jmx
-    private boolean enableJmx;
+    //connection extra properties
+    private Properties connectProperties = new Properties();
     //pool implementation class name
     private String poolImplementClassName = DefaultImplementClassName;
-
+    //indicator,whether register datasource to jmx
+    private boolean enableJmx;
 
     public BeeDataSourceConfig() {
-        this(null, null, null, null);
     }
 
     public BeeDataSourceConfig(String driver, String url, String user, String password) {
@@ -127,24 +123,37 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.username = user;
         this.password = password;
         this.driverClassName = driver;
-        defaultTransactionIsolation = TransactionIsolationLevel.LEVEL_READ_COMMITTED;
-        defaultTransactionIsolationCode = Connection.TRANSACTION_READ_COMMITTED;
     }
 
+    @Override
     public String getUsername() {
         return username;
     }
 
     public void setUsername(String username) {
         if (!isBlank(username))
-            this.username = username.trim();
+            this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
     }
 
     public void setPassword(String password) {
         if (!isBlank(password))
-            this.password = password.trim();
+            this.password = password;
     }
 
+    public String getJdbcUrl() {
+        return jdbcUrl;
+    }
+
+    public void setJdbcUrl(String jdbcUrl) {
+        if (!isBlank(jdbcUrl))
+            this.jdbcUrl = jdbcUrl;
+    }
+
+    @Override
     public String getUrl() {
         return jdbcUrl;
     }
@@ -154,11 +163,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             this.jdbcUrl = jdbcUrl.trim();
     }
 
-    public void setJdbcUrl(String jdbcUrl) {
-        if (!isBlank(jdbcUrl))
-            this.jdbcUrl = jdbcUrl.trim();
-    }
-
+    @Override
     public String getDriverClassName() {
         return driverClassName;
     }
@@ -168,6 +173,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             this.driverClassName = driverClassName.trim();
     }
 
+    @Override
     public String getPoolName() {
         return poolName;
     }
@@ -177,6 +183,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             this.poolName = poolName.trim();
     }
 
+    @Override
     public boolean isFairMode() {
         return fairMode;
     }
@@ -185,15 +192,17 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.fairMode = fairMode;
     }
 
+    @Override
     public int getInitialSize() {
         return initialSize;
     }
 
     public void setInitialSize(int initialSize) {
-        if (initialSize > 0)
+        if (initialSize >= 0)
             this.initialSize = initialSize;
     }
 
+    @Override
     public int getMaxActive() {
         return maxActive;
     }
@@ -208,6 +217,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         }
     }
 
+    @Override
     public int getBorrowSemaphoreSize() {
         return borrowSemaphoreSize;
     }
@@ -217,7 +227,35 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             this.borrowSemaphoreSize = borrowSemaphoreSize;
     }
 
+    @Override
+    public String getDefaultCatalog() {
+        return defaultCatalog;
+    }
 
+    public void setDefaultCatalog(String defaultCatalog) {
+        if (!isBlank(defaultCatalog))
+            this.defaultCatalog = defaultCatalog.trim();
+    }
+
+    public String getDefaultSchema() {
+        return defaultSchema;
+    }
+
+    public void setDefaultSchema(String defaultSchema) {
+        if (!isBlank(defaultSchema))
+            this.defaultSchema = defaultSchema.trim();
+    }
+
+    @Override
+    public boolean isDefaultReadOnly() {
+        return defaultReadOnly;
+    }
+
+    public void setDefaultReadOnly(boolean defaultReadOnly) {
+        this.defaultReadOnly = defaultReadOnly;
+    }
+
+    @Override
     public boolean isDefaultAutoCommit() {
         return defaultAutoCommit;
     }
@@ -226,6 +264,16 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.defaultAutoCommit = defaultAutoCommit;
     }
 
+    @Override
+    public int getDefaultTransactionIsolationCode() {
+        return defaultTransactionIsolationCode;
+    }
+
+    public void setDefaultTransactionIsolationCode(int defaultTransactionIsolationCode) {
+        this.defaultTransactionIsolationCode = defaultTransactionIsolationCode;
+    }
+
+    @Override
     public String getDefaultTransactionIsolation() {
         return defaultTransactionIsolation;
     }
@@ -235,40 +283,17 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             this.defaultTransactionIsolation = defaultTransactionIsolation.trim();
     }
 
-    public int getDefaultTransactionIsolationCode() {
-        return defaultTransactionIsolationCode;
+    @Override
+    public String getConnectionTestSQL() {
+        return connectionTestSQL;
     }
 
-    public void setDefaultTransactionIsolationCode(int defaultTransactionIsolationCode) {
-        this.defaultTransactionIsolationCode = defaultTransactionIsolationCode;
+    public void setConnectionTestSQL(String connectionTestSQL) {
+        if (!isBlank(connectionTestSQL))
+            this.connectionTestSQL = connectionTestSQL.trim();
     }
 
-    public String getDefaultCatalog() {
-        return defaultCatalog;
-    }
-
-    public void setDefaultCatalog(String catalog) {
-        if (!isBlank(catalog))
-            this.defaultCatalog = catalog.trim();
-    }
-
-    public String getDefaultSchema() {
-        return defaultSchema;
-    }
-
-    public void setDefaultSchema(String schema) {
-        if (!isBlank(schema))
-            this.defaultSchema = schema.trim();
-    }
-
-    public boolean isDefaultReadOnly() {
-        return defaultReadOnly;
-    }
-
-    public void setDefaultReadOnly(boolean readOnly) {
-        this.defaultReadOnly = readOnly;
-    }
-
+    @Override
     public long getMaxWait() {
         return maxWait;
     }
@@ -278,6 +303,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             this.maxWait = maxWait;
     }
 
+    @Override
     public long getIdleTimeout() {
         return idleTimeout;
     }
@@ -287,6 +313,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             this.idleTimeout = idleTimeout;
     }
 
+    @Override
     public long getHoldTimeout() {
         return holdTimeout;
     }
@@ -296,15 +323,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             this.holdTimeout = holdTimeout;
     }
 
-    public String getConnectionTestSQL() {
-        return connectionTestSQL;
-    }
-
-    public void setConnectionTestSQL(String validationQuery) {
-        if (!isBlank(validationQuery))
-            this.connectionTestSQL = validationQuery.trim();
-    }
-
+    @Override
     public int getConnectionTestTimeout() {
         return connectionTestTimeout;
     }
@@ -314,6 +333,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             this.connectionTestTimeout = connectionTestTimeout;
     }
 
+    @Override
     public long getConnectionTestInterval() {
         return connectionTestInterval;
     }
@@ -323,6 +343,17 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             this.connectionTestInterval = connectionTestInterval;
     }
 
+    @Override
+    public long getIdleCheckTimeInterval() {
+        return idleCheckTimeInterval;
+    }
+
+    public void setIdleCheckTimeInterval(long idleCheckTimeInterval) {
+        if (idleCheckTimeInterval > 0)
+            this.idleCheckTimeInterval = idleCheckTimeInterval;
+    }
+
+    @Override
     public boolean isForceCloseUsingOnClear() {
         return forceCloseUsingOnClear;
     }
@@ -331,15 +362,17 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.forceCloseUsingOnClear = forceCloseUsingOnClear;
     }
 
+    @Override
     public long getDelayTimeForNextClear() {
         return delayTimeForNextClear;
     }
 
     public void setDelayTimeForNextClear(long delayTimeForNextClear) {
-        if (delayTimeForNextClear >= 0)
+        if (delayTimeForNextClear > 0)
             this.delayTimeForNextClear = delayTimeForNextClear;
     }
 
+    @Override
     public String getConnectionFactoryClassName() {
         return connectionFactoryClassName;
     }
@@ -362,7 +395,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setXaConnectionFactoryClassName(String xaConnectionFactoryClassName) {
-        if (!isBlank(xaConnectionFactoryClassName))
+        if (!isBlank(connectionFactoryClassName))
             this.xaConnectionFactoryClassName = xaConnectionFactoryClassName.trim();
     }
 
@@ -374,15 +407,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.xaConnectionFactory = xaConnectionFactory;
     }
 
-    public long getIdleCheckTimeInterval() {
-        return idleCheckTimeInterval;
-    }
-
-    public void setIdleCheckTimeInterval(long idleCheckTimeInterval) {
-        if (idleCheckTimeInterval >= 1000L)
-            this.idleCheckTimeInterval = idleCheckTimeInterval;
-    }
-
     public void removeConnectProperty(String key) {
         connectProperties.remove(key);
     }
@@ -391,22 +415,23 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         connectProperties.put(key, value);
     }
 
+    @Override
+    public String getPoolImplementClassName() {
+        return poolImplementClassName;
+    }
+
+    public void setPoolImplementClassName(String poolImplementClassName) {
+        if (!isBlank(poolImplementClassName))
+            this.poolImplementClassName = poolImplementClassName.trim();
+    }
+
+    @Override
     public boolean isEnableJmx() {
         return enableJmx;
     }
 
     public void setEnableJmx(boolean enableJmx) {
         this.enableJmx = enableJmx;
-    }
-
-    public String getPoolImplementClassName() {
-        return poolImplementClassName;
-    }
-
-    public void setPoolImplementClassName(String poolImplementClassName) {
-        if (!isBlank(poolImplementClassName)) {
-            this.poolImplementClassName = poolImplementClassName.trim();
-        }
     }
 
 
