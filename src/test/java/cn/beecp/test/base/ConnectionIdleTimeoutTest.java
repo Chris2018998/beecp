@@ -35,8 +35,10 @@ public class ConnectionIdleTimeoutTest extends TestCase {
         config.setUsername(Config.JDBC_USER);
         config.setPassword(Config.JDBC_PASSWORD);
         config.setInitialSize(initSize);
+        config.setMaxActive(initSize);
         config.setConnectionTestSQL("SELECT 1 from dual");
-        config.setIdleTimeout(3000);
+        config.setIdleTimeout(1000);
+        config.setIdleCheckTimeInterval(2000);
         ds = new BeeDataSource(config);
     }
 
@@ -46,15 +48,11 @@ public class ConnectionIdleTimeoutTest extends TestCase {
 
     public void test() throws InterruptedException, Exception {
         FastConnectionPool pool = (FastConnectionPool) TestUtil.getPool(ds);
-
         if (pool.getConnTotalSize() != initSize) TestUtil.assertError("Total connections not as expected:" + initSize);
         if (pool.getConnIdleSize() != initSize) TestUtil.assertError("Idle connections not as expected:" + initSize);
 
-        Connection connection = ds.getConnection();
-        if (pool.getConnUsingSize() != 1) TestUtil.assertError("Idle connections not as expected:" + (initSize - 1));
-        connection.close();
-
-        if (pool.getConnTotalSize() != initSize) TestUtil.assertError("Total connections not as expected:" + initSize);
-        if (pool.getConnIdleSize() != initSize) TestUtil.assertError("Idle connections not a sexpected:" + initSize);
+        Thread.sleep(5000);
+        if (pool.getConnTotalSize() != 0) TestUtil.assertError("Total connections not as expected:" + 0);
+        if (pool.getConnIdleSize() != 0) TestUtil.assertError("Idle connections not a sexpected:" + 0);
     }
 }

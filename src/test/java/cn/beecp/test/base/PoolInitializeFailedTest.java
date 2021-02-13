@@ -40,7 +40,7 @@ public class PoolInitializeFailedTest extends TestCase {
             config.setInitialSize(initSize);
             new BeeDataSource(config);
             TestUtil.assertError("A initializerError need be thrown,but not");
-        } catch (ExceptionInInitializerError e) {
+        } catch (RuntimeException e) {
             System.out.println(e.getCause());
         }
     }
