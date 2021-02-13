@@ -100,14 +100,14 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //milliseconds:delay time for next clear pooled connections when exists using connections and 'forceCloseUsingOnClear' is false
     private long delayTimeForNextClear = 3000L;
 
-    //physical JDBC Connection factory class name
-    private String connectionFactoryClassName;
     //physical JDBC Connection factory
     private ConnectionFactory connectionFactory;
-    //xaConnection Factory ClassName
-    private String xaConnectionFactoryClassName;
+    //physical JDBC Connection factory class name
+    private String connectionFactoryClassName;
     //xaConnectionFactory
     private XaConnectionFactory xaConnectionFactory;
+    //xaConnection Factory ClassName
+    private String xaConnectionFactoryClassName;
     //connection extra properties
     private Properties connectProperties = new Properties();
     //pool implementation class name
@@ -373,6 +373,14 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             this.delayTimeForNextClear = delayTimeForNextClear;
     }
 
+    public ConnectionFactory getConnectionFactory() {
+        return connectionFactory;
+    }
+
+    public void setConnectionFactory(ConnectionFactory connectionFactory) {
+        this.connectionFactory = connectionFactory;
+    }
+
     @Override
     public String getConnectionFactoryClassName() {
         return connectionFactoryClassName;
@@ -383,12 +391,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             this.connectionFactoryClassName = connectionFactoryClassName.trim();
     }
 
-    public ConnectionFactory getConnectionFactory() {
-        return connectionFactory;
+    public XaConnectionFactory getXaConnectionFactory() {
+        return xaConnectionFactory;
     }
 
-    public void setConnectionFactory(ConnectionFactory connectionFactory) {
-        this.connectionFactory = connectionFactory;
+    public void setXaConnectionFactory(XaConnectionFactory xaConnectionFactory) {
+        this.xaConnectionFactory = xaConnectionFactory;
     }
 
     public String getXaConnectionFactoryClassName() {
@@ -398,14 +406,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     public void setXaConnectionFactoryClassName(String xaConnectionFactoryClassName) {
         if (!isBlank(xaConnectionFactoryClassName))
             this.xaConnectionFactoryClassName = xaConnectionFactoryClassName.trim();
-    }
-
-    public XaConnectionFactory getXaConnectionFactory() {
-        return xaConnectionFactory;
-    }
-
-    public void setXaConnectionFactory(XaConnectionFactory xaConnectionFactory) {
-        this.xaConnectionFactory = xaConnectionFactory;
     }
 
     public void removeConnectProperty(String key) {
