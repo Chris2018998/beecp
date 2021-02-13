@@ -16,6 +16,7 @@
 package cn.beecp;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import static java.sql.Connection.*;
@@ -63,7 +64,7 @@ public final class TransactionIsolationLevel {
     }
 
     public final static int getTransactionIsolationCode(String name) {
-        Integer code = IsolationLevelMap.get(name.toUpperCase());
+        Integer code = IsolationLevelMap.get(name.toUpperCase(Locale.ENGLISH));
         return (code != null) ? code : -999;
     }
 
