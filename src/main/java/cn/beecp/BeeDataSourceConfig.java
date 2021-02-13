@@ -57,16 +57,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private String jdbcUrl;
     //jdbc driver class name
     private String driverClassName;
-    //pool name
-    private String poolName;
-    //true:first come first take connection
-    private boolean fairMode;
-    //connection created size at pool initialization
-    private int initialSize;
-    //connection max size in pool
-    private int maxActive = 10;
-    //borrow Semaphore Size
-    private int borrowSemaphoreSize = Math.min(maxActive / 2, Runtime.getRuntime().availableProcessors());
 
     //default set value on raw connection after it created <code>connection.setAutoCommit(String)</code>
     private String defaultCatalog;
@@ -83,6 +73,16 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //a SQL to check connection active,recommend to use a simple query SQL,not contain procedure,function in SQL
     private String connectionTestSQL = "select 1 from dual";
 
+    //pool name
+    private String poolName;
+    //true:first come first take connection
+    private boolean fairMode;
+    //connection created size at pool initialization
+    private int initialSize;
+    //connection max size in pool
+    private int maxActive = 10;
+    //borrow Semaphore Size
+    private int borrowSemaphoreSize = Math.min(maxActive / 2, Runtime.getRuntime().availableProcessors());
     //milliseconds:borrower request timeout
     private long maxWait = SECONDS.toMillis(8);
     //milliseconds:idle timeout connection will be removed from pool
@@ -174,60 +174,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     @Override
-    public String getPoolName() {
-        return poolName;
-    }
-
-    public void setPoolName(String poolName) {
-        if (!isBlank(poolName))
-            this.poolName = poolName.trim();
-    }
-
-    @Override
-    public boolean isFairMode() {
-        return fairMode;
-    }
-
-    public void setFairMode(boolean fairMode) {
-        this.fairMode = fairMode;
-    }
-
-    @Override
-    public int getInitialSize() {
-        return initialSize;
-    }
-
-    public void setInitialSize(int initialSize) {
-        if (initialSize >= 0)
-            this.initialSize = initialSize;
-    }
-
-    @Override
-    public int getMaxActive() {
-        return maxActive;
-    }
-
-    public void setMaxActive(int maxActive) {
-        if (maxActive > 0) {
-            this.maxActive = maxActive;
-            //fix issue:#19 Chris-2020-08-16 begin
-            if (maxActive > 1)
-                this.borrowSemaphoreSize = Math.min(maxActive / 2, Runtime.getRuntime().availableProcessors());
-            //fix issue:#19 Chris-2020-08-16 end
-        }
-    }
-
-    @Override
-    public int getBorrowSemaphoreSize() {
-        return borrowSemaphoreSize;
-    }
-
-    public void setBorrowSemaphoreSize(int borrowSemaphoreSize) {
-        if (borrowSemaphoreSize > 0)
-            this.borrowSemaphoreSize = borrowSemaphoreSize;
-    }
-
-    @Override
     public String getDefaultCatalog() {
         return defaultCatalog;
     }
@@ -293,6 +239,61 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             this.connectionTestSQL = connectionTestSQL.trim();
     }
 
+
+    @Override
+    public String getPoolName() {
+        return poolName;
+    }
+
+    public void setPoolName(String poolName) {
+        if (!isBlank(poolName))
+            this.poolName = poolName.trim();
+    }
+
+    @Override
+    public boolean isFairMode() {
+        return fairMode;
+    }
+
+    public void setFairMode(boolean fairMode) {
+        this.fairMode = fairMode;
+    }
+
+    @Override
+    public int getInitialSize() {
+        return initialSize;
+    }
+
+    public void setInitialSize(int initialSize) {
+        if (initialSize >= 0)
+            this.initialSize = initialSize;
+    }
+
+    @Override
+    public int getMaxActive() {
+        return maxActive;
+    }
+
+    public void setMaxActive(int maxActive) {
+        if (maxActive > 0) {
+            this.maxActive = maxActive;
+            //fix issue:#19 Chris-2020-08-16 begin
+            if (maxActive > 1)
+                this.borrowSemaphoreSize = Math.min(maxActive / 2, Runtime.getRuntime().availableProcessors());
+            //fix issue:#19 Chris-2020-08-16 end
+        }
+    }
+
+    @Override
+    public int getBorrowSemaphoreSize() {
+        return borrowSemaphoreSize;
+    }
+
+    public void setBorrowSemaphoreSize(int borrowSemaphoreSize) {
+        if (borrowSemaphoreSize > 0)
+            this.borrowSemaphoreSize = borrowSemaphoreSize;
+    }
+
     @Override
     public long getMaxWait() {
         return maxWait;
@@ -329,7 +330,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setConnectionTestTimeout(int connectionTestTimeout) {
-        if (connectionTestTimeout > 0)
+        if (connectionTestTimeout >= 0)
             this.connectionTestTimeout = connectionTestTimeout;
     }
 
@@ -339,7 +340,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setConnectionTestInterval(long connectionTestInterval) {
-        if (connectionTestInterval > 0)
+        if (connectionTestInterval >= 0)
             this.connectionTestInterval = connectionTestInterval;
     }
 
@@ -395,7 +396,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setXaConnectionFactoryClassName(String xaConnectionFactoryClassName) {
-        if (!isBlank(connectionFactoryClassName))
+        if (!isBlank(xaConnectionFactoryClassName))
             this.xaConnectionFactoryClassName = xaConnectionFactoryClassName.trim();
     }
 
