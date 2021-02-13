@@ -75,7 +75,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
     //pool name
     private String poolName;
-    //true:first come first take connection
+    //true:fair,first arrive first take
     private boolean fairMode;
     //connection created size at pool initialization
     private int initialSize;
