@@ -27,10 +27,7 @@ import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Pool Static Center
@@ -209,7 +206,7 @@ public class PoolStaticCenter {
             String methodName = method.getName();
             if (methodName.length() > 3 && methodName.startsWith("set") && method.getParameterTypes().length == 1) {
                 methodName = methodName.substring(3);
-                methodName = methodName.substring(0, 1).toLowerCase() + methodName.substring(1);
+                methodName = methodName.substring(0, 1).toLowerCase(Locale.ENGLISH) + methodName.substring(1);
                 methodMap.put(methodName, method);
             }
         }
