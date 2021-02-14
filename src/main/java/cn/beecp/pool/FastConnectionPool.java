@@ -158,15 +158,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     private void checkProxyClasses() throws SQLException {
         try {
+            boolean classInitialize=false;
             ClassLoader classLoader = getClass().getClassLoader();
-            Class.forName("cn.beecp.pool.Borrower", true, classLoader);
-            Class.forName("cn.beecp.pool.PooledConnection", true, classLoader);
-            Class.forName("cn.beecp.pool.ProxyConnection", true, classLoader);
-            Class.forName("cn.beecp.pool.ProxyStatement", true, classLoader);
-            Class.forName("cn.beecp.pool.ProxyPsStatement", true, classLoader);
-            Class.forName("cn.beecp.pool.ProxyCsStatement", true, classLoader);
-            Class.forName("cn.beecp.pool.ProxyDatabaseMetaData", true, classLoader);
-            Class.forName("cn.beecp.pool.ProxyResultSet", true, classLoader);
+            Class.forName("cn.beecp.pool.Borrower", classInitialize, classLoader);
+            Class.forName("cn.beecp.pool.PooledConnection", classInitialize, classLoader);
+            Class.forName("cn.beecp.pool.ProxyConnection", classInitialize, classLoader);
+            Class.forName("cn.beecp.pool.ProxyStatement", classInitialize, classLoader);
+            Class.forName("cn.beecp.pool.ProxyPsStatement", classInitialize, classLoader);
+            Class.forName("cn.beecp.pool.ProxyCsStatement", classInitialize, classLoader);
+            Class.forName("cn.beecp.pool.ProxyDatabaseMetaData", classInitialize, classLoader);
+            Class.forName("cn.beecp.pool.ProxyResultSet", classInitialize, classLoader);
         } catch (ClassNotFoundException e) {
             throw new SQLException("Jdbc proxy classes missed", e);
         }
@@ -390,7 +391,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
 
 
-        final long deadline = nanoTime() + defaultMaxWaitNanos;
+        final long deadlineNanos = nanoTime() + defaultMaxWaitNanos;
         try {
             if (!borrowSemaphore.tryAcquire(this.defaultMaxWaitNanos, NANOSECONDS))
                 throw RequestTimeoutException;
@@ -420,7 +421,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             waitQueue.offer(borrower);
             int spinSize = (waitQueue.peek() == borrower) ? maxTimedSpins : 0;
 
-            //int spinSize =  maxTimedSpins ;
             while (true) {
                 Object state = borrower.state;
                 if (state instanceof PooledConnection) {
@@ -441,7 +441,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     borrower.state = BORROWER_NORMAL;
                     yield();
                 } else {//here:(state == BORROWER_NORMAL)
-                    long timeout = deadline - nanoTime();
+                    long timeout = deadlineNanos - nanoTime();
                     if (timeout > 0L) {
                         if (spinSize > 0) {
                             --spinSize;
