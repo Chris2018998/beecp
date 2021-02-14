@@ -48,7 +48,7 @@ import static cn.beecp.pool.PoolStaticCenter.isBlank;
 //public final class BeeDataSource extends BeeDataSourceConfig implements DataSource {
 public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XADataSource {
     //fix BeeCP-Starter-#6 Chris-2020-09-01 end
-    private final static HashMap<String, String> XaConnectionFactoryMap = new HashMap(5);
+    private static final HashMap<String, String> XaConnectionFactoryMap = new HashMap(5);
     private static final SQLException XaConnectionFactoryNotFound = new SQLException("Can't found matched XaConnectionFactory for driver,please config it");
 
     static {
@@ -61,28 +61,16 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
 
     //pool initialized
     private boolean inited;
-    //connection pool
     private ConnectionPool pool;
-    //failed cause to creating pool
     private SQLException failedCause;
-    //read Write Locker
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
     private ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
-    //xaConnectionFactory
     private XaConnectionFactory xaConnectionFactory;
 
-    /**
-     * constructor
-     */
     public BeeDataSource() {
     }
 
-    /**
-     * constructor
-     *
-     * @param config data source configuration
-     */
     public BeeDataSource(final BeeDataSourceConfig config) {
         try {
             config.copyTo(this);
@@ -224,7 +212,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
      * @throws SQLException if pool under datasource not be initialized
      */
     public void clearAllConnections(boolean force) throws SQLException {
-        if (pool == null)throw new SQLException("Connection pool not initialized");
+        if (pool == null) throw new SQLException("Connection pool not initialized");
         pool.clearAllConnections(force);
     }
 
