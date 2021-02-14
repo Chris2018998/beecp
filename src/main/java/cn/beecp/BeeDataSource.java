@@ -49,7 +49,7 @@ import static cn.beecp.pool.PoolStaticCenter.isBlank;
 public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XADataSource {
     //fix BeeCP-Starter-#6 Chris-2020-09-01 end
     private static final HashMap<String, String> XaConnectionFactoryMap = new HashMap(5);
-    private static final SQLException XaConnectionFactoryNotFound = new SQLException("Can't found matched XaConnectionFactory for driver,please config it");
+    private static final SQLException XaConnectionFactoryNotFound = new SQLException("XaConnectionFactory not config");
 
     static {
         XaConnectionFactoryMap.put("oracle", "cn.beecp.xa.OracleXaConnectionFactory");
