@@ -667,11 +667,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     // close all connections
     public void clearAllConnections(boolean force) {
         if (poolState.compareAndSet(POOL_NORMAL, POOL_RESTING)) {
-            commonLog.info("BeeCP({})begin to reset.", poolName);
+            commonLog.info("BeeCP({})begin to remove connections", poolName);
             removeAllConnections(force, DESC_REMOVE_CLEAR);
-            commonLog.info("All pooledConn were cleared");
+            commonLog.info("BeeCP({})all connections were removed", poolName);
             poolState.set(POOL_NORMAL);// restore state;
-            commonLog.info("BeeCP({})finished resetting", poolName);
+            commonLog.info("BeeCP({})restore to accept new requests", poolName);
         }
     }
 
@@ -838,7 +838,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             try {
                 FastConnectionPool.this.close();
             } catch (SQLException e) {
-                commonLog.error("Error on closing connection pool,cause:", e);
+                commonLog.error("Error at closing connection pool,cause:", e);
             }
         }
     }

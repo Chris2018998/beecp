@@ -147,7 +147,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             try {
                 pool.close();
             } catch (SQLException e) {
-                commonLog.error("Error on closing connection pool,cause:", e);
+                commonLog.error("Error at closing connection pool,cause:", e);
             }
         }
     }
@@ -184,7 +184,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         if (iface.isInstance(this))
             return (T) this;
         else
-            throw new SQLException("Wrapped object is not an instance of " + iface);
+            throw new SQLException("Wrapped object was not an instance of " + iface);
     }
 
     /**
@@ -192,7 +192,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
      * @throws SQLException if pool not be initialized
      */
     public ConnectionPoolMonitorVo getPoolMonitorVo() throws SQLException {
-        if (pool == null) throw new SQLException("Connection pool not initialized");
+        if (pool == null) throw new SQLException("Connection pool not be initialized");
         return pool.getMonitorVo();
     }
 
@@ -212,7 +212,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
      * @throws SQLException if pool under datasource not be initialized
      */
     public void clearAllConnections(boolean force) throws SQLException {
-        if (pool == null) throw new SQLException("Connection pool not initialized");
+        if (pool == null) throw new SQLException("Connection pool not be initialized");
         pool.clearAllConnections(force);
     }
 
@@ -255,7 +255,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
                 return null;
             }
         } catch (SQLException e) {
-            commonLog.warn("Can't get driver by url from driverManager", e);
+            commonLog.warn("Not found matched driver from driverManager by url", e);
             return null;
         }
     }

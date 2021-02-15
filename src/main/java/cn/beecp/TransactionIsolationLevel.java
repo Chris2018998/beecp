@@ -64,7 +64,7 @@ public final class TransactionIsolationLevel {
     }
 
     public final static int getTransactionIsolationCode(String name) {
-        Integer code = IsolationLevelMap.get(name.toUpperCase(Locale.ENGLISH));
+        Integer code = IsolationLevelMap.get(name.toUpperCase(Locale.US));
         return (code != null) ? code : -999;
     }
 

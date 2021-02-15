@@ -458,7 +458,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         if (this.initialSize < 0)
             throw new BeeDataSourceConfigException("initialSize must be greater than zero");
         if (this.initialSize > maxActive)
-            throw new BeeDataSourceConfigException("initialSize must not be greater than 'maxActive'");
+            throw new BeeDataSourceConfigException("initialSize must not be greater than maxActive");
         if (this.borrowSemaphoreSize <= 0)
             throw new BeeDataSourceConfigException("borrowSemaphoreSize must be greater than zero");
         //fix issue:#19 Chris-2020-08-16 begin
@@ -475,7 +475,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         //if (this.validationQuerySQL != null && validationQuerySQL.trim().length() == 0) {
         if (!isBlank(this.connectionTestSQL) && !this.connectionTestSQL.toLowerCase(Locale.US).startsWith("select "))
             //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end
-            throw new BeeDataSourceConfigException("Connection 'connectionTestSQL' must start with 'select '");
+            throw new BeeDataSourceConfigException("connectionTestSQL must be start with 'select '");
         //}
 
         //get transaction Isolation Code

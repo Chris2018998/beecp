@@ -206,7 +206,7 @@ public class PoolStaticCenter {
             String methodName = method.getName();
             if (methodName.length() > 3 && methodName.startsWith("set") && method.getParameterTypes().length == 1) {
                 methodName = methodName.substring(3);
-                methodName = methodName.substring(0, 1).toLowerCase(Locale.ENGLISH) + methodName.substring(1);
+                methodName = methodName.substring(0, 1).toLowerCase(Locale.US) + methodName.substring(1);
                 methodMap.put(methodName, method);
             }
         }
