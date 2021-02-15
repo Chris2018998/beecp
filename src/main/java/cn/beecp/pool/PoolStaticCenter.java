@@ -64,7 +64,7 @@ public class PoolStaticCenter {
 
     public static final SQLTimeoutException RequestTimeoutException = new SQLTimeoutException("Request timeout");
     public static final SQLException RequestInterruptException = new SQLException("Request interrupted");
-    public static final SQLException PoolCloseException = new SQLException("Pool has been closed or in resetting");
+    public static final SQLException PoolCloseException = new SQLException("Pool has shut down or in clearing");
     public static final XAException XaConnectionClosedException = new XAException("No operations allowed after connection closed.");
     public static final SQLException ConnectionClosedException = new SQLException("No operations allowed after connection closed.");
     public static final SQLException StatementClosedException = new SQLException("No operations allowed after statement closed.");
