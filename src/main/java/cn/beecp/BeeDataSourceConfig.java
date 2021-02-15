@@ -49,6 +49,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //Default pool implementation class name
     static final String DefaultImplementClassName = "cn.beecp.pool.FastConnectionPool";
+
     //jdbc user name
     private String username;
     //jdbc password

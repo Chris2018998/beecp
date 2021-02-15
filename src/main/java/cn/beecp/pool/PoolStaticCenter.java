@@ -65,10 +65,10 @@ public class PoolStaticCenter {
     public static final SQLTimeoutException RequestTimeoutException = new SQLTimeoutException("Request timeout");
     public static final SQLException RequestInterruptException = new SQLException("Request interrupted");
     public static final SQLException PoolCloseException = new SQLException("Pool has shut down or in clearing");
-    public static final XAException XaConnectionClosedException = new XAException("No operations allowed after connection closed.");
-    public static final SQLException ConnectionClosedException = new SQLException("No operations allowed after connection closed.");
-    public static final SQLException StatementClosedException = new SQLException("No operations allowed after statement closed.");
-    public static final SQLException ResultSetClosedException = new SQLException("No operations allowed after resultSet closed.");
+    public static final XAException XaConnectionClosedException = new XAException("No operations allowed after connection closed");
+    public static final SQLException ConnectionClosedException = new SQLException("No operations allowed after connection closed");
+    public static final SQLException StatementClosedException = new SQLException("No operations allowed after statement closed");
+    public static final SQLException ResultSetClosedException = new SQLException("No operations allowed after resultSet closed");
     public static final SQLException AutoCommitChangeForbiddenException = new SQLException("Execute 'commit' or 'rollback' before this operation");
     public static final SQLException DriverNotSupportNetworkTimeoutException = new SQLException("Driver not support 'networkTimeout'");
     public static final Logger commonLog = LoggerFactory.getLogger(PoolStaticCenter.class);
