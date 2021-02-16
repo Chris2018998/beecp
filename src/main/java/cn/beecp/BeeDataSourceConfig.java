@@ -120,10 +120,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public BeeDataSourceConfig(String driver, String url, String user, String password) {
-        this.jdbcUrl = url;
-        this.username = user;
-        this.password = password;
-        this.driverClassName = driver;
+        this.jdbcUrl =(url!=null)?url.trim():url;
+        this.username =(user!=null)?user.trim():user;
+        this.password =(password!=null)?password.trim():password;
+        this.driverClassName =(driver!=null)?driver.trim():driver;
     }
 
     @Override
@@ -230,7 +230,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     public void setConnectionTestSQL(String connectionTestSQL) {
         this.connectionTestSQL = (connectionTestSQL != null) ? connectionTestSQL.trim() : connectionTestSQL;
     }
-
 
     @Override
     public String getPoolName() {
