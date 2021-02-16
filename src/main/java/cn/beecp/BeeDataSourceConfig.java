@@ -132,8 +132,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setUsername(String username) {
-        if (!isBlank(username))
-            this.username = username;
+        this.username = (username != null) ? username.trim() : username;
     }
 
     public String getPassword() {
@@ -141,8 +140,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setPassword(String password) {
-        if (!isBlank(password))
-            this.password = password;
+        this.password = (password != null) ? password.trim() : password;
     }
 
     public String getJdbcUrl() {
@@ -150,8 +148,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setJdbcUrl(String jdbcUrl) {
-        if (!isBlank(jdbcUrl))
-            this.jdbcUrl = jdbcUrl;
+        this.jdbcUrl = (jdbcUrl != null) ? jdbcUrl.trim() : jdbcUrl;
     }
 
     @Override
@@ -160,8 +157,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setUrl(String jdbcUrl) {
-        if (!isBlank(jdbcUrl))
-            this.jdbcUrl = jdbcUrl.trim();
+        this.jdbcUrl = (jdbcUrl != null) ? jdbcUrl.trim() : jdbcUrl;
     }
 
     @Override
@@ -170,8 +166,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setDriverClassName(String driverClassName) {
-        if (!isBlank(driverClassName))
-            this.driverClassName = driverClassName.trim();
+        this.driverClassName = (driverClassName != null) ? driverClassName.trim() : driverClassName;
     }
 
     @Override
@@ -180,8 +175,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setDefaultCatalog(String defaultCatalog) {
-        if (!isBlank(defaultCatalog))
-            this.defaultCatalog = defaultCatalog.trim();
+        this.defaultCatalog = (defaultCatalog != null) ? defaultCatalog.trim() : defaultCatalog;
     }
 
     public String getDefaultSchema() {
@@ -189,8 +183,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setDefaultSchema(String defaultSchema) {
-        if (!isBlank(defaultSchema))
-            this.defaultSchema = defaultSchema.trim();
+        this.defaultSchema = (defaultSchema != null) ? defaultSchema.trim() : defaultSchema;
     }
 
     @Override
@@ -226,8 +219,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setDefaultTransactionIsolation(String defaultTransactionIsolation) {
-        if (!isBlank(defaultTransactionIsolation))
-            this.defaultTransactionIsolation = defaultTransactionIsolation.trim();
+        this.defaultTransactionIsolation = (defaultTransactionIsolation != null) ? defaultTransactionIsolation.trim() : defaultTransactionIsolation;
     }
 
     @Override
@@ -236,8 +228,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setConnectionTestSQL(String connectionTestSQL) {
-        if (!isBlank(connectionTestSQL))
-            this.connectionTestSQL = connectionTestSQL.trim();
+        this.connectionTestSQL = (connectionTestSQL != null) ? connectionTestSQL.trim() : connectionTestSQL;
     }
 
 
@@ -247,8 +238,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setPoolName(String poolName) {
-        if (!isBlank(poolName))
-            this.poolName = poolName.trim();
+        this.poolName = (poolName != null) ? poolName.trim() : poolName;
     }
 
     @Override
@@ -388,8 +378,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setConnectionFactoryClassName(String connectionFactoryClassName) {
-        if (!isBlank(connectionFactoryClassName))
-            this.connectionFactoryClassName = connectionFactoryClassName.trim();
+        this.connectionFactoryClassName = (connectionFactoryClassName != null) ? connectionFactoryClassName.trim() : connectionFactoryClassName;
     }
 
     public XaConnectionFactory getXaConnectionFactory() {
@@ -405,8 +394,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setXaConnectionFactoryClassName(String xaConnectionFactoryClassName) {
-        if (!isBlank(xaConnectionFactoryClassName))
-            this.xaConnectionFactoryClassName = xaConnectionFactoryClassName.trim();
+        this.xaConnectionFactoryClassName = (xaConnectionFactoryClassName != null) ? xaConnectionFactoryClassName.trim() : xaConnectionFactoryClassName;
     }
 
     public void removeConnectProperty(String key) {
@@ -423,8 +411,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setPoolImplementClassName(String poolImplementClassName) {
-        if (!isBlank(poolImplementClassName))
-            this.poolImplementClassName = poolImplementClassName.trim();
+        this.poolImplementClassName = (poolImplementClassName != null) ? poolImplementClassName.trim() : poolImplementClassName;
     }
 
     @Override
