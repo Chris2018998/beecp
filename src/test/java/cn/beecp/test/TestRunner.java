@@ -43,11 +43,17 @@ public class TestRunner {
             if (propertiesStream == null) propertiesStream = TestRunner.class.getResourceAsStream(defaultFilename);
             if (propertiesStream == null) throw new IOException("Can't find file:'testCase.properties' in classpath");
 
+            String pass1="true",pass2="Y";
             properties.load(propertiesStream);
-            Enumeration enumtion = properties.keys();
-            while (enumtion.hasMoreElements()) {
-                Class clazz = Class.forName((String) enumtion.nextElement());
-                classList.add(clazz);
+            Iterator<Map.Entry<Object,Object>> iterator = properties.entrySet().iterator();
+            while(iterator.hasNext()){
+                Map.Entry entry=iterator.next();
+                String value=entry.getValue().toString();
+                if(pass1.equalsIgnoreCase(value) || pass2.equalsIgnoreCase(value)){
+                    String key=entry.getKey().toString();
+                    Class clazz = Class.forName(key);
+                    classList.add(clazz);
+                }
             }
 
             return (Class[]) classList.toArray(new Class[0]);
