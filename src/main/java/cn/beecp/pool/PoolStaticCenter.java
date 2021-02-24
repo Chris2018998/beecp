@@ -40,7 +40,7 @@ public class PoolStaticCenter {
     public static final int POOL_UNINIT = 1;
     public static final int POOL_NORMAL = 2;
     public static final int POOL_CLOSED = 3;
-    public static final int POOL_RESTING = 4;
+    public static final int POOL_CLEARING = 4;
     //POOLED CONNECTION STATE
     public static final int CONNECTION_IDLE = 1;
     public static final int CONNECTION_USING = 2;

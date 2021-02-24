@@ -17,6 +17,7 @@ package cn.beecp;
 
 import cn.beecp.pool.ConnectionPool;
 import cn.beecp.pool.ConnectionPoolMonitorVo;
+import cn.beecp.pool.FastConnectionPool;
 import cn.beecp.pool.ProxyConnectionBase;
 import cn.beecp.xa.XaConnectionFactory;
 import cn.beecp.xa.XaConnectionWrapper;
@@ -263,7 +264,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     //try to create connection pool instance by config
     private final ConnectionPool createPoolInstanceByConfig(BeeDataSourceConfig config) throws BeeDataSourceConfigException {
         String poolImplementClassName = config.getPoolImplementClassName();
-        if (isBlank(poolImplementClassName)) poolImplementClassName = BeeDataSourceConfig.DefaultImplementClassName;
+        if (isBlank(poolImplementClassName)) poolImplementClassName = FastConnectionPool.class.getName();
 
         try {
             Class<?> poolClass = Class.forName(poolImplementClassName, true, getClass().getClassLoader());

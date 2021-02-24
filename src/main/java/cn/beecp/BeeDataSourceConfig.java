@@ -47,9 +47,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  * @version 1.0
  */
 public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
-    //Default pool implementation class name
-    static final String DefaultImplementClassName = "cn.beecp.pool.FastConnectionPool";
-
     //jdbc user name
     private String username;
     //jdbc password
@@ -112,7 +109,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //connection extra properties
     private Properties connectProperties = new Properties();
     //pool implementation class name
-    private String poolImplementClassName = DefaultImplementClassName;
+    private String poolImplementClassName;
     //indicator,whether register datasource to jmx
     private boolean enableJmx;
 
@@ -268,8 +265,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         if (maxActive > 0) {
             this.maxActive = maxActive;
             //fix issue:#19 Chris-2020-08-16 begin
-            if (maxActive > 1)
-                this.borrowSemaphoreSize = Math.min(maxActive / 2, Runtime.getRuntime().availableProcessors());
+            this.borrowSemaphoreSize=(maxActive>1)? Math.min(maxActive / 2, Runtime.getRuntime().availableProcessors()):1;
             //fix issue:#19 Chris-2020-08-16 end
         }
     }

@@ -22,8 +22,6 @@ import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 
-import java.sql.Connection;
-
 public class PassedConfigUnchangeableTest extends TestCase {
 
     private BeeDataSource ds;

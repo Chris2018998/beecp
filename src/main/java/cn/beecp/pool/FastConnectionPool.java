@@ -158,7 +158,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     private void checkProxyClasses() throws SQLException {
         try {
-            boolean classInitialize=false;
+            boolean classInitialize = false;
             ClassLoader classLoader = getClass().getClassLoader();
             Class.forName("cn.beecp.pool.Borrower", classInitialize, classLoader);
             Class.forName("cn.beecp.pool.PooledConnection", classInitialize, classLoader);
@@ -666,7 +666,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     // close all connections
     public void clearAllConnections(boolean force) {
-        if (poolState.compareAndSet(POOL_NORMAL, POOL_RESTING)) {
+        if (poolState.compareAndSet(POOL_NORMAL, POOL_CLEARING)) {
             commonLog.info("BeeCP({})begin to remove connections", poolName);
             removeAllConnections(force, DESC_REMOVE_CLEAR);
             commonLog.info("BeeCP({})all connections were removed", poolName);
