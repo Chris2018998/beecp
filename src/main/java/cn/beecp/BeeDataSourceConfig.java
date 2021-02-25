@@ -420,18 +420,20 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
 
     void copyTo(BeeDataSourceConfig config) throws SQLException {
-        int modifiers;
         Field[] fields = BeeDataSourceConfig.class.getDeclaredFields();
         for (Field field : fields) {
-            modifiers = field.getModifiers();
-            if (Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers))
-                continue;
+            if ("connectProperties".equals(field.getName()))continue;
             try {
                 field.set(config, field.get(this));
-            } catch (Exception e) {
+            } catch(Exception e){
                 throw new BeeDataSourceConfigException("Failed to copy field[" + field.getName() + "]", e);
             }
         }
+        Iterator<Map.Entry<Object,Object>>iterator=connectProperties.entrySet().iterator();
+         while(iterator.hasNext()){
+             Map.Entry<Object,Object>entry=iterator.next();
+             config.addConnectProperty((String)entry.getKey(),entry.getValue());
+         }
     }
 
     //check pool configuration
