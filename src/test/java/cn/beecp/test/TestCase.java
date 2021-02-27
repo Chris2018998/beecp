@@ -19,7 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * Test case base
+ * Test case
  *
  * @author chris.liao
  */
@@ -48,14 +48,14 @@ public class TestCase {
         Method[] methods = this.getClass().getMethods();
         System.out.println("Case[" + this.getClass().getName() + "]begin");
 
-        for (int i = 0; i < methods.length; i++) {
-            if (methods[i].getName().startsWith("test") && methods[i].getParameterTypes().length == 0) {
+        for (Method method : methods) {
+            if (method.getName().startsWith("test") && method.getParameterTypes().length == 0) {
                 try {
-                    methods[i].invoke(this, new Object[0]);
+                    method.invoke(this, new Object[0]);
                     successCount++;
                 } catch (Throwable e) {
                     failedCount++;
-                    System.out.println("Failed to run test method:" + methods[i].getName() + " in Class[" + this.getClass().getName() + "]");
+                    System.out.println("Failed to run test method:" + method.getName() + " in Class[" + this.getClass().getName() + "]");
                     if (e instanceof InvocationTargetException) {
                         ((InvocationTargetException) e).getTargetException().printStackTrace();
                     } else {
@@ -66,7 +66,7 @@ public class TestCase {
         }
 
         long endTime = System.currentTimeMillis();
-        System.out.println("took time:" + (endTime - beginTime) + "ms,sucessed(" + successCount + "),failed(" + failedCount + ")");
+        System.out.println("took time:" + (endTime - beginTime) + "ms,success(" + successCount + "),failed(" + failedCount + ")");
         if (failedCount > 0) throw new Exception("Failed in Case[" + this.getClass().getName() + "]");
     }
 }
