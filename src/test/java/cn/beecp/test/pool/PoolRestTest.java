@@ -41,7 +41,7 @@ public class PoolRestTest extends TestCase {
     }
 
     public void test() throws InterruptedException, Exception {
-        FastConnectionPool pool = (FastConnectionPool) TestUtil.getPool(ds);
+        FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds,"pool");
         if (pool.getConnTotalSize() != initSize)
             TestUtil.assertError("Total connections expected:%s,current is:%s", initSize, pool.getConnTotalSize());
         if (pool.getConnIdleSize() != initSize)

@@ -49,7 +49,7 @@ public class ConnectionHoldTimeoutTest extends TestCase {
     public void test() throws InterruptedException, Exception {
         Connection con = null;
         try {
-            FastConnectionPool pool = (FastConnectionPool) TestUtil.getPool(ds);
+            FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds,"pool");
             con = ds.getConnection();
 
             if (pool.getConnTotalSize() != 1)

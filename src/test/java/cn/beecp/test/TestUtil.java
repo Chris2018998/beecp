@@ -34,32 +34,22 @@ import java.sql.Statement;
 public class TestUtil {
     private final static Logger log = LoggerFactory.getLogger(TestUtil.class);
 
-    public static ConnectionPool getPool(final BeeDataSource ds) {
-        try {
-            Field field = ds.getClass().getDeclaredField("pool");
-            field.setAccessible(true);
-            return (ConnectionPool) field.get(ds);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static BeeDataSourceConfig getPoolConfig(FastConnectionPool pool) {
-        try {
-            Field field = pool.getClass().getDeclaredField("poolConfig");
-            field.setAccessible(true);
-            return (BeeDataSourceConfig) field.get(pool);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static void assertError(String message) {
         throw new AssertionError(message);
     }
 
     public static void assertError(String message, Object expect, Object current) {
         throw new AssertionError(String.format(message, String.valueOf(expect), String.valueOf(current)));
+    }
+
+    public static Object getFieldValue(final Object ob,String fieldName) {
+        try {
+            Field field = ob.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            return  field.get(ob);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public final static void oclose(ResultSet r) {

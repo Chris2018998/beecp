@@ -45,7 +45,7 @@ public class ConnectionIdleTimeoutTest extends TestCase {
     }
 
     public void test() throws InterruptedException, Exception {
-        FastConnectionPool pool = (FastConnectionPool) TestUtil.getPool(ds);
+        FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds,"pool");
         if (pool.getConnTotalSize() != initSize) TestUtil.assertError("Total connections not as expected:" + initSize);
         if (pool.getConnIdleSize() != initSize) TestUtil.assertError("Idle connections not as expected:" + initSize);
 
