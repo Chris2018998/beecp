@@ -82,8 +82,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         setPropertiesValue(config, setMethodMap, setValueMap);
 
         //6:try to find 'connectProperties' config value and put to ds config object
-        String connectPropName = "connectProperties";
-        String connectPropVal = getConfigValue(ref, connectPropName);
+        String connectPropVal = getConfigValue(ref, "connectProperties");
         if (!isBlank(connectPropVal)) {
             String[] attributeArray = connectPropVal.split("&");
             for (String attribute : attributeArray) {
