@@ -19,12 +19,15 @@ import cn.beecp.pool.DataSourceConnectionFactory;
 import cn.beecp.pool.DriverConnectionFactory;
 import cn.beecp.xa.XaConnectionFactory;
 
+import javax.naming.RefAddr;
+import javax.naming.Reference;
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -35,8 +38,8 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static cn.beecp.TransactionIsolationLevel.*;
-import static cn.beecp.pool.PoolStaticCenter.isBlank;
-import static cn.beecp.pool.PoolStaticCenter.setPropertiesValue;
+import static cn.beecp.pool.PoolStaticCenter.*;
+import static cn.beecp.pool.PoolStaticCenter.commonLog;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -496,12 +499,59 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         InputStream stream = null;
         try {
             stream = Files.newInputStream(Paths.get(file.toURI()));
-            connectProperties.clear();
-            connectProperties.load(stream);
+            Properties configProperties = new Properties();
+            configProperties.load(stream);
+
+            //1:get all properties set methods
+            Map<String, Method> setMethodMap = getSetMethodMap(BeeDataSourceConfig.class);
+            //2:create properties to collect config value
+            Map<String, Object> setValueMap = new HashMap<String, Object>(setMethodMap.size());
+            //3:loop to find out properties config value by set methods
+            Iterator<String> iterator = setMethodMap.keySet().iterator();
+            while (iterator.hasNext()) {
+                String propertyName = iterator.next();
+                String configVal = getConfigValue(configProperties, propertyName);
+                if (isBlank(configVal)) continue;
+                setValueMap.put(propertyName, configVal);
+            }
+            //4:inject found config value to ds config object
+            setPropertiesValue(this, setMethodMap, setValueMap);
+
+            //5:try to find 'connectProperties' config value and put to ds config object
+            String connectPropName = "connectProperties";
+            String connectPropVal = getConfigValue(configProperties, connectPropName);
+            if (!isBlank(connectPropVal)) {
+                String[] attributeArray = connectPropVal.split("&");
+                for (String attribute : attributeArray) {
+                    String[] pairs = attribute.split("=");
+                    if (pairs.length == 2) {
+                        this.addConnectProperty(pairs[0].trim(), pairs[1].trim());
+                        commonLog.info("beecp.connectProperties.{}={}", pairs[0].trim(), pairs[1].trim());
+                    }
+                }
+            }
         } finally {
             if (stream != null) stream.close();
         }
     }
+    private final String getConfigValue(Properties configProperties,String propertyName) {
+        String value = readConfig(configProperties, propertyName);
+        if (isBlank(value))
+            value = readConfig(configProperties, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_MiddleLine));
+        if (isBlank(value))
+            value = readConfig(configProperties, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_UnderLine));
+        return value;
+    }
+    private final String readConfig(Properties configProperties, String propertyName) {
+        String value = configProperties.getProperty(propertyName);
+        if (!isBlank(value)) {
+            commonLog.info("beecp.{}={}", propertyName, value);
+            return value.trim();
+        }else{
+            return null;
+        }
+    }
+
 
     private String trimString(String value) {
         return (value == null) ? null : value.trim();
