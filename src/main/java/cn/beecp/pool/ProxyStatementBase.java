@@ -65,9 +65,9 @@ abstract class ProxyStatementBase implements Statement {
         isClosed = true;
         if (curRe != null && !curRe.isClosed)
             curRe.setAsClosed();
-        if (results != null && results.size() > 0) {
-            for (ProxyResultSetBase re : results)
-                re.setAsClosed();
+        if (results != null) {
+            for (int i = 0, l = results.size(); i < l; i++)
+                results.get(i).setAsClosed();
             results.clear();
         }
 
@@ -103,9 +103,11 @@ abstract class ProxyStatementBase implements Statement {
             case CLOSE_ALL_RESULTS: {
                 if (curRe != null && !curRe.isClosed)
                     curRe.setAsClosed();
-                if (results != null && results.size() > 0) {
-                    for (ProxyResultSetBase openRe : results)
+                if (results != null) {
+                    for (int i = 0, l = results.size(); i < l; i++) {
+                        ProxyResultSetBase openRe = results.get(i);
                         if (!openRe.isClosed) openRe.setAsClosed();
+                    }
                     results.clear();
                 }
                 break;
