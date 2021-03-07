@@ -183,7 +183,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setDefaultSchema(String defaultSchema) {
-        this.defaultCatalog = trimString(defaultSchema);
+        this.defaultSchema = trimString(defaultSchema);
     }
 
     @Override
