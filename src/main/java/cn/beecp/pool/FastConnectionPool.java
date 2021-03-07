@@ -64,6 +64,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private int conUnCatchStateCode;
     private int connectionTestTimeout;//seconds
     private long connectionTestInterval;//milliseconds
+    private ConnectionTester connectionTester;
     private long delayTimeForNextClearNanos;//nanoseconds
 
     private ConnectionPoolHook exitHook;
@@ -72,7 +73,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private int borrowSemaphoreSize;
     private Semaphore borrowSemaphore;
     private TransferPolicy transferPolicy;
-    private ConnectionTestPolicy testPolicy;
     private ConnectionFactory connFactory;
     private volatile PooledConnection[] connArray = new PooledConnection[0];
     private ScheduledFuture<?> idleCheckSchFuture;
@@ -106,7 +106,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             poolMaxSize = poolConfig.getMaxActive();
             connFactory = poolConfig.getConnectionFactory();
             connectionTestTimeout = poolConfig.getConnectionTestTimeout();
-            testPolicy = new SQLQueryTestPolicy(poolConfig.isDefaultAutoCommit(), poolConfig.getConnectionTestSQL());
+            connectionTester = new SQLQueryTester(poolConfig.isDefaultAutoCommit(), poolConfig.getConnectionTestSQL());
             defaultMaxWaitNanos = MILLISECONDS.toNanos(poolConfig.getMaxWait());
             delayTimeForNextClearNanos = MILLISECONDS.toNanos(poolConfig.getDelayTimeForNextClear());
             connectionTestInterval = poolConfig.getConnectionTestInterval();
@@ -296,7 +296,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         if (this.supportIsValid) {//test isValid
             try {//test Connection.isValid
                 if (rawConn.isValid(connectionTestTimeout)) {
-                    this.testPolicy = new ConnValidTestPolicy();
+                    this.connectionTester = new ConnValidTester();
                 } else {
                     supportIsValid = false;
                     commonLog.warn("BeeCP({})driver not support 'isValid'", poolName);
@@ -326,7 +326,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * false if false then close it
      */
     private final boolean testOnBorrow(PooledConnection pConn) {
-        if (currentTimeMillis() - pConn.lastAccessTime - this.connectionTestInterval >= 0L && !this.testPolicy.isActive(pConn)) {
+        if (currentTimeMillis() - pConn.lastAccessTime - this.connectionTestInterval >= 0L && !this.connectionTester.isAlive(pConn)) {
             this.removePooledConn(pConn, DESC_REMOVE_BAD);
             this.tryToCreateNewConnByAsyn();
             return false;
@@ -766,8 +766,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     // Connection check Policy
-    static interface ConnectionTestPolicy {
-        boolean isActive(PooledConnection pConn);
+    static interface ConnectionTester {
+        boolean isAlive(PooledConnection pConn);
     }
 
     // Transfer Policy
@@ -843,17 +843,17 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    // SQL check Policy
-    class SQLQueryTestPolicy implements ConnectionTestPolicy {
+    // SQL tester
+    class SQLQueryTester implements ConnectionTester {
         private final boolean autoCommit;
         private final String aliveTestSQL;
 
-        public SQLQueryTestPolicy(boolean autoCommit, String aliveTestSQL) {
+        public SQLQueryTester(boolean autoCommit, String aliveTestSQL) {
             this.autoCommit = autoCommit;
             this.aliveTestSQL = aliveTestSQL;
         }
 
-        public boolean isActive(PooledConnection pConn) {
+        public boolean isAlive(PooledConnection pConn) {
             boolean autoCommitChged = false;
             Statement st = null;
             Connection con = pConn.rawConn;
@@ -895,9 +895,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    //check Policy(call connection.isValid)
-    class ConnValidTestPolicy implements ConnectionTestPolicy {
-        public boolean isActive(PooledConnection pConn) {
+    //valid tester(call connection.isValid)
+    class ConnValidTester implements ConnectionTester {
+        public boolean isAlive(PooledConnection pConn) {
             Connection con = pConn.rawConn;
             try {
                 if (con.isValid(connectionTestTimeout)) {
