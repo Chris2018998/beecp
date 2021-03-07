@@ -228,7 +228,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setConnectionTestSQL(String connectionTestSQL) {
-        this.connectionTestSQL = trimString(connectionTestSQL);
+       if(!isBlank(connectionTestSQL))
+          this.connectionTestSQL = trimString(connectionTestSQL);
     }
 
     @Override
