@@ -116,7 +116,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //indicator,whether register datasource to jmx
     private boolean enableJmx;
 
-    public BeeDataSourceConfig() {
+    public BeeDataSourceConfig() { }
+
+    public void BeeDataSourceConfig(Properties configProperties){
+        this.loadFromProperties(configProperties);
     }
 
     public BeeDataSourceConfig(String driver, String url, String user, String password) {
@@ -485,12 +488,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         return configCopy;
     }
 
-    public void loadPropertiesFile(String filename) throws IOException {
+    public void loadFromPropertiesFile(String filename) throws IOException {
         if (isBlank(filename)) throw new IOException("Properties file can't be null");
-        loadPropertiesFile(new File(filename));
+        loadFromPropertiesFile(new File(filename));
     }
-
-    public void loadPropertiesFile(File file) throws IOException {
+    public void loadFromPropertiesFile(File file) throws IOException {
         if (file == null) throw new IOException("Properties file can't be null");
         if (!file.exists()) throw new FileNotFoundException(file.getAbsolutePath());
         if (!file.isFile()) throw new IOException("Target object is not a valid file");
@@ -502,38 +504,44 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             stream = Files.newInputStream(Paths.get(file.toURI()));
             Properties configProperties = new Properties();
             configProperties.load(stream);
-
-            //1:get all properties set methods
-            Map<String, Method> setMethodMap = getSetMethodMap(BeeDataSourceConfig.class);
-            //2:create properties to collect config value
-            Map<String, Object> setValueMap = new HashMap<String, Object>(setMethodMap.size());
-            //3:loop to find out properties config value by set methods
-            Iterator<String> iterator = setMethodMap.keySet().iterator();
-            while (iterator.hasNext()) {
-                String propertyName = iterator.next();
-                String configVal = getConfigValue(configProperties, propertyName);
-                if (isBlank(configVal)) continue;
-                setValueMap.put(propertyName, configVal);
-            }
-            //4:inject found config value to ds config object
-            setPropertiesValue(this, setMethodMap, setValueMap);
-
-            //5:try to find 'connectProperties' config value and put to ds config object
-            String connectPropVal = getConfigValue(configProperties, "connectProperties");
-            if (!isBlank(connectPropVal)) {
-                String[] attributeArray = connectPropVal.split("&");
-                for (String attribute : attributeArray) {
-                    String[] pairs = attribute.split("=");
-                    if (pairs.length == 2) {
-                        this.addConnectProperty(pairs[0].trim(), pairs[1].trim());
-                        commonLog.info("beecp.connectProperties.{}={}", pairs[0].trim(), pairs[1].trim());
-                    }
-                }
-            }
+            loadFromProperties(configProperties);
         } finally {
             if (stream != null) stream.close();
         }
     }
+
+    public void loadFromProperties(Properties configProperties){
+        if (configProperties == null || configProperties.isEmpty()) throw new BeeDataSourceConfigException("Properties can't be null or empty");
+
+        //1:get all properties set methods
+        Map<String, Method> setMethodMap = getSetMethodMap(BeeDataSourceConfig.class);
+        //2:create properties to collect config value
+        Map<String, Object> setValueMap = new HashMap<String, Object>(setMethodMap.size());
+        //3:loop to find out properties config value by set methods
+        Iterator<String> iterator = setMethodMap.keySet().iterator();
+        while (iterator.hasNext()) {
+            String propertyName = iterator.next();
+            String configVal = getConfigValue(configProperties, propertyName);
+            if (isBlank(configVal)) continue;
+            setValueMap.put(propertyName, configVal);
+        }
+        //4:inject found config value to ds config object
+        setPropertiesValue(this, setMethodMap, setValueMap);
+
+        //5:try to find 'connectProperties' config value and put to ds config object
+        String connectPropVal = getConfigValue(configProperties, "connectProperties");
+        if (!isBlank(connectPropVal)) {
+            String[] attributeArray = connectPropVal.split("&");
+            for (String attribute : attributeArray) {
+                String[] pairs = attribute.split("=");
+                if (pairs.length == 2) {
+                    this.addConnectProperty(pairs[0].trim(), pairs[1].trim());
+                    commonLog.info("beecp.connectProperties.{}={}", pairs[0].trim(), pairs[1].trim());
+                }
+            }
+        }
+    }
+
     private final String getConfigValue(Properties configProperties,String propertyName) {
         String value = readConfig(configProperties, propertyName);
         if (isBlank(value))
