@@ -118,10 +118,15 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
     public BeeDataSourceConfig() { }
 
+    public void BeeDataSourceConfig(File propertiesFile){
+        this.loadFromPropertiesFile(propertiesFile);
+    }
+    public void BeeDataSourceConfig(String propertiesFileName){
+        this.loadFromPropertiesFile(propertiesFileName);
+    }
     public void BeeDataSourceConfig(Properties configProperties){
         this.loadFromProperties(configProperties);
     }
-
     public BeeDataSourceConfig(String driver, String url, String user, String password) {
         this.jdbcUrl = trimString(url);
         this.username = trimString(user);
@@ -488,16 +493,16 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         return configCopy;
     }
 
-    public void loadFromPropertiesFile(String filename) throws IOException {
-        if (isBlank(filename)) throw new IOException("Properties file can't be null");
+    public void loadFromPropertiesFile(String filename){
+        if (isBlank(filename)) throw new BeeDataSourceConfigException("Properties file can't be null");
         loadFromPropertiesFile(new File(filename));
     }
-    public void loadFromPropertiesFile(File file) throws IOException {
-        if (file == null) throw new IOException("Properties file can't be null");
-        if (!file.exists()) throw new FileNotFoundException(file.getAbsolutePath());
-        if (!file.isFile()) throw new IOException("Target object is not a valid file");
+    public void loadFromPropertiesFile(File file) {
+        if (file == null) throw new BeeDataSourceConfigException("Properties file can't be null");
+        if (!file.exists()) throw new BeeDataSourceConfigException("File not found:"+file.getAbsolutePath());
+        if (!file.isFile()) throw new BeeDataSourceConfigException("Target object is not a valid file");
         if (!file.getAbsolutePath().toLowerCase(Locale.US).endsWith(".properties"))
-            throw new IOException("Target file is not a properties file");
+            throw new BeeDataSourceConfigException("Target file is not a properties file");
 
         InputStream stream = null;
         try {
@@ -505,8 +510,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             Properties configProperties = new Properties();
             configProperties.load(stream);
             loadFromProperties(configProperties);
+        }catch(Throwable e){
+            throw new BeeDataSourceConfigException("Failed to load properties file:",e);
         } finally {
-            if (stream != null) stream.close();
+            if (stream != null)try{ stream.close();}catch(Throwable e){}
         }
     }
 
