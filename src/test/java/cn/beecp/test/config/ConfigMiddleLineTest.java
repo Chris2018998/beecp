@@ -31,7 +31,7 @@ public class ConfigMiddleLineTest extends TestCase {
         url = ConfigMiddleLineTest.class.getClassLoader().getResource(filename);
 
         BeeDataSourceConfig testConfig = new BeeDataSourceConfig();
-        testConfig.loadPropertiesFile(url.getFile());
+        testConfig.loadFromPropertiesFile(url.getFile());
 
         if(!"test1".equals(testConfig.getDefaultCatalog()))throw new BeeDataSourceConfigException("defaultCatalog error");
         if(!testConfig.isDefaultAutoCommit())throw new BeeDataSourceConfigException("defaultAutoCommit error");

@@ -34,7 +34,7 @@ public class PropertiesFileLoadTest extends TestCase {
         if (url == null) url = PropertiesFileLoadTest.class.getResource(filename);
 
         BeeDataSourceConfig testConfig = new BeeDataSourceConfig();
-        testConfig.loadPropertiesFile(url.getFile());
+        testConfig.loadFromPropertiesFile(url.getFile());
         if(!"root".equals(testConfig.getUsername()))throw new BeeDataSourceConfigException("username error");
         if(!"root".equals(testConfig.getPassword()))throw new BeeDataSourceConfigException("password error");
         if(!"jdbc:mysql://localhost/test".equals(testConfig.getJdbcUrl()))throw new BeeDataSourceConfigException("jdbcUrl error");
