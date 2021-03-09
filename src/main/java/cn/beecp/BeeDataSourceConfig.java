@@ -19,16 +19,11 @@ import cn.beecp.pool.DataSourceConnectionFactory;
 import cn.beecp.pool.DriverConnectionFactory;
 import cn.beecp.xa.XaConnectionFactory;
 
-import javax.naming.RefAddr;
-import javax.naming.Reference;
 import javax.sql.DataSource;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -39,7 +34,6 @@ import java.util.*;
 
 import static cn.beecp.TransactionIsolationLevel.*;
 import static cn.beecp.pool.PoolStaticCenter.*;
-import static cn.beecp.pool.PoolStaticCenter.commonLog;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -116,22 +110,26 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //indicator,whether register datasource to jmx
     private boolean enableJmx;
 
-    public BeeDataSourceConfig() { }
+    public BeeDataSourceConfig() {
+    }
 
-    public void BeeDataSourceConfig(File propertiesFile){
-        this.loadFromPropertiesFile(propertiesFile);
-    }
-    public void BeeDataSourceConfig(String propertiesFileName){
-        this.loadFromPropertiesFile(propertiesFileName);
-    }
-    public void BeeDataSourceConfig(Properties configProperties){
-        this.loadFromProperties(configProperties);
-    }
     public BeeDataSourceConfig(String driver, String url, String user, String password) {
         this.jdbcUrl = trimString(url);
         this.username = trimString(user);
         this.password = trimString(password);
         this.driverClassName = trimString(driver);
+    }
+
+    public void BeeDataSourceConfig(File propertiesFile) {
+        this.loadFromPropertiesFile(propertiesFile);
+    }
+
+    public void BeeDataSourceConfig(String propertiesFileName) {
+        this.loadFromPropertiesFile(propertiesFileName);
+    }
+
+    public void BeeDataSourceConfig(Properties configProperties) {
+        this.loadFromProperties(configProperties);
     }
 
     @Override
@@ -236,8 +234,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setConnectionTestSQL(String connectionTestSQL) {
-       if(!isBlank(connectionTestSQL))
-          this.connectionTestSQL = trimString(connectionTestSQL);
+        if (!isBlank(connectionTestSQL))
+            this.connectionTestSQL = trimString(connectionTestSQL);
     }
 
     @Override
@@ -277,7 +275,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         if (maxActive > 0) {
             this.maxActive = maxActive;
             //fix issue:#19 Chris-2020-08-16 begin
-            this.borrowSemaphoreSize=(maxActive>1)? Math.min(maxActive / 2, Runtime.getRuntime().availableProcessors()):1;
+            this.borrowSemaphoreSize = (maxActive > 1) ? Math.min(maxActive / 2, Runtime.getRuntime().availableProcessors()) : 1;
             //fix issue:#19 Chris-2020-08-16 end
         }
     }
@@ -435,21 +433,21 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         //1:primitive type copy
         Field[] fields = BeeDataSourceConfig.class.getDeclaredFields();
         for (Field field : fields) {
-            if (!"connectProperties".equals(field.getName())){
+            if (!"connectProperties".equals(field.getName())) {
                 try {
                     field.set(config, field.get(this));
-                } catch(Exception e) {
+                } catch (Exception e) {
                     throw new BeeDataSourceConfigException("Failed to copy field[" + field.getName() + "]", e);
                 }
             }
         }
 
         //2:copy 'connectProperties'
-        Iterator<Map.Entry<Object,Object>>iterator=connectProperties.entrySet().iterator();
-         while(iterator.hasNext()){
-             Map.Entry<Object,Object>entry=iterator.next();
-             config.addConnectProperty((String)entry.getKey(),entry.getValue());
-         }
+        Iterator<Map.Entry<Object, Object>> iterator = connectProperties.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<Object, Object> entry = iterator.next();
+            config.addConnectProperty((String) entry.getKey(), entry.getValue());
+        }
     }
 
     //check pool configuration
@@ -493,16 +491,17 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         return configCopy;
     }
 
-    public void loadFromPropertiesFile(String filename){
-        if (isBlank(filename)) throw new BeeDataSourceConfigException("Properties file can't be null");
+    public void loadFromPropertiesFile(String filename) {
+        if (isBlank(filename)) throw new IllegalArgumentException("Properties file can't be null");
         loadFromPropertiesFile(new File(filename));
     }
+
     public void loadFromPropertiesFile(File file) {
-        if (file == null) throw new BeeDataSourceConfigException("Properties file can't be null");
-        if (!file.exists()) throw new BeeDataSourceConfigException("File not found:"+file.getAbsolutePath());
-        if (!file.isFile()) throw new BeeDataSourceConfigException("Target object is not a valid file");
+        if (file == null) throw new IllegalArgumentException("Properties file can't be null");
+        if (!file.exists()) throw new IllegalArgumentException("File not found:" + file.getAbsolutePath());
+        if (!file.isFile()) throw new IllegalArgumentException("Target object is not a valid file");
         if (!file.getAbsolutePath().toLowerCase(Locale.US).endsWith(".properties"))
-            throw new BeeDataSourceConfigException("Target file is not a properties file");
+            throw new IllegalArgumentException("Target file is not a properties file");
 
         InputStream stream = null;
         try {
@@ -510,15 +509,21 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             Properties configProperties = new Properties();
             configProperties.load(stream);
             loadFromProperties(configProperties);
-        }catch(Throwable e){
-            throw new BeeDataSourceConfigException("Failed to load properties file:",e);
+        } catch (BeeDataSourceConfigException e) {
+            throw (BeeDataSourceConfigException) e;
+        } catch (Throwable e) {
+            throw new IllegalArgumentException("Failed to load properties file:", e);
         } finally {
-            if (stream != null)try{ stream.close();}catch(Throwable e){}
+            if (stream != null) try {
+                stream.close();
+            } catch (Throwable e) {
+            }
         }
     }
 
-    public void loadFromProperties(Properties configProperties){
-        if (configProperties == null || configProperties.isEmpty()) throw new BeeDataSourceConfigException("Properties can't be null or empty");
+    public void loadFromProperties(Properties configProperties) {
+        if (configProperties == null || configProperties.isEmpty())
+            throw new IllegalArgumentException("Properties can't be null or empty");
 
         //1:get all properties set methods
         Map<String, Method> setMethodMap = getSetMethodMap(BeeDataSourceConfig.class);
@@ -549,7 +554,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         }
     }
 
-    private final String getConfigValue(Properties configProperties,String propertyName) {
+    private final String getConfigValue(Properties configProperties, String propertyName) {
         String value = readConfig(configProperties, propertyName);
         if (isBlank(value))
             value = readConfig(configProperties, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_MiddleLine));
@@ -557,12 +562,13 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             value = readConfig(configProperties, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_UnderLine));
         return value;
     }
+
     private final String readConfig(Properties configProperties, String propertyName) {
         String value = configProperties.getProperty(propertyName);
         if (!isBlank(value)) {
             commonLog.info("beecp.{}={}", propertyName, value);
             return value.trim();
-        }else{
+        } else {
             return null;
         }
     }
