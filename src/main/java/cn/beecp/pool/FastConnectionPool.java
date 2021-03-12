@@ -245,26 +245,26 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         try {
             rawConn.setAutoCommit(poolConfig.isDefaultAutoCommit());
         } catch (Throwable e) {
-            commonLog.warn("BeeCP({})failed to set default on executing 'setAutoCommit',cause:{}", poolName,e);
+            commonLog.warn("BeeCP({})failed to set default on executing 'setAutoCommit',cause:", poolName,e);
         }
 
         try {
             rawConn.setTransactionIsolation(poolConfig.getDefaultTransactionIsolationCode());
         } catch (Throwable e) {
-            commonLog.warn("BeeCP({}))failed to set default on executing to 'setTransactionIsolation',cause:{}", poolName,e);
+            commonLog.warn("BeeCP({}))failed to set default on executing to 'setTransactionIsolation',cause:", poolName,e);
         }
 
         try {
             rawConn.setReadOnly(poolConfig.isDefaultReadOnly());
         } catch (Throwable e) {
-            commonLog.warn("BeeCP({}))failed to set default on executing to 'setReadOnly',cause:{}", poolName,e);
+            commonLog.warn("BeeCP({}))failed to set default on executing to 'setReadOnly',cause:", poolName,e);
         }
 
         if (!isBlank(poolConfig.getDefaultCatalog())) {
             try {
                 rawConn.setCatalog(poolConfig.getDefaultCatalog());
             } catch (Throwable e) {
-                commonLog.warn("BeeCP({}))failed to set default on executing to 'setCatalog',cause:{}", poolName,e);
+                commonLog.warn("BeeCP({}))failed to set default on executing to 'setCatalog',cause:", poolName,e);
             }
         }
 
@@ -274,7 +274,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 rawConn.setSchema(poolConfig.getDefaultSchema());
             } catch (Throwable e) {
                 supportSchema = false;
-                commonLog.warn("BeeCP({})driver not support 'schema',cause:{}", poolName,e);
+                commonLog.warn("BeeCP({})driver not support 'schema',cause:", poolName,e);
             }
         }
 
@@ -289,7 +289,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 }
             } catch (Throwable e) {
                 supportNetworkTimeout = false;
-                commonLog.warn("BeeCP({})driver not support 'networkTimeout',cause:{}", poolName,e);
+                commonLog.warn("BeeCP({})driver not support 'networkTimeout',cause:", poolName,e);
             }
         }
 
