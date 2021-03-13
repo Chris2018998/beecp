@@ -303,14 +303,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 }
             } catch (Throwable e) {
                 supportIsValid = false;
-                commonLog.warn("BeeCP({})driver not support 'isValid',cause:{}", poolName,e);
+                commonLog.warn("BeeCP({})driver not support 'isValid',cause:", poolName,e);
                 Statement st = null;
                 try {
                     st = rawConn.createStatement();
                     st.setQueryTimeout(connectionTestTimeout);
                 } catch (Throwable ee) {
                     supportQueryTimeout = false;
-                    commonLog.warn("BeeCP({})driver not support 'queryTimeout',cause:{}", poolName,e);
+                    commonLog.warn("BeeCP({})driver not support 'queryTimeout',cause:", poolName,e);
                 } finally {
                     if (st != null) oclose(st);
                 }
