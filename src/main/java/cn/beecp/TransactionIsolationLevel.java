@@ -39,19 +39,17 @@ public final class TransactionIsolationLevel {
 
     public final static String LEVEL_SERIALIZABLE = "SERIALIZABLE";
 
-    public final static String TRANS_LEVEL_DESC_LIST = new StringBuilder()
-            .append(LEVEL_NONE).append(",")
-            .append(LEVEL_READ_COMMITTED).append(",")
-            .append(LEVEL_READ_UNCOMMITTED).append(",")
-            .append(LEVEL_REPEATABLE_READ).append(",")
-            .append(LEVEL_SERIALIZABLE).toString();
+    public final static String TRANS_LEVEL_DESC_LIST = LEVEL_NONE + "," +
+            LEVEL_READ_COMMITTED + "," +
+            LEVEL_READ_UNCOMMITTED + "," +
+            LEVEL_REPEATABLE_READ + "," +
+            LEVEL_SERIALIZABLE;
 
-    public final static String TRANS_LEVEL_CODE_LIST = new StringBuilder()
-            .append(TRANSACTION_NONE).append(",")
-            .append(TRANSACTION_READ_COMMITTED).append(",")
-            .append(TRANSACTION_READ_UNCOMMITTED).append(",")
-            .append(TRANSACTION_REPEATABLE_READ).append(",")
-            .append(TRANSACTION_SERIALIZABLE).toString();
+    public final static String TRANS_LEVEL_CODE_LIST = String.valueOf(TRANSACTION_NONE) + "," +
+            TRANSACTION_READ_COMMITTED + "," +
+            TRANSACTION_READ_UNCOMMITTED + "," +
+            TRANSACTION_REPEATABLE_READ + "," +
+            TRANSACTION_SERIALIZABLE;
 
     private final static Map<String, Integer> IsolationLevelMap = new HashMap<String, Integer>(5);
 
