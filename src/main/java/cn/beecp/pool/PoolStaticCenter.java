@@ -165,6 +165,7 @@ public class PoolStaticCenter {
         if (setValueMap == null) throw new BeeDataSourceConfigException("Properties value map can't be null");
         if (setValueMap.isEmpty()) throw new BeeDataSourceConfigException("Properties value map can't be empty");
 
+        Object value = null;
         Iterator<Map.Entry<String, Object>> iterator = setValueMap.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<String, Object> entry = iterator.next();
@@ -172,9 +173,7 @@ public class PoolStaticCenter {
             Object setValue = entry.getValue();
             Method setMethod = setMethodMap.get(propertyName);
             if (setMethod != null && setValue != null) {
-                Object value = null;
                 Class type = setMethod.getParameterTypes()[0];
-
                 try {//1:convert config value to match type of set method
                     value = convert(propertyName, setValue, type);
                 } catch (BeeDataSourceConfigException e) {
@@ -200,7 +199,7 @@ public class PoolStaticCenter {
     }
 
     public static final Map<String, Method> getSetMethodMap(Class beanClass) {
-        HashMap<String, Method> methodMap = new LinkedHashMap<String, Method>();
+        HashMap<String, Method> methodMap = new LinkedHashMap<String, Method>(32);
         Method[] methods = beanClass.getMethods();
         for (Method method : methods) {
             String methodName = method.getName();
@@ -218,7 +217,7 @@ public class PoolStaticCenter {
         StringBuilder sb = new StringBuilder(chars.length);
         for (char c : chars) {
             if (Character.isUpperCase(c)) {
-                sb.append(separator + Character.toLowerCase(c));
+                sb.append(separator).append(Character.toLowerCase(c));
             } else {
                 sb.append(c);
             }

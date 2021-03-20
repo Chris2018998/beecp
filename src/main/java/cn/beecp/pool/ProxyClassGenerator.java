@@ -74,7 +74,7 @@ final class ProxyClassGenerator {
      * cn.beecp.pool.ProxyResultSet
      * @throws Exception if failed to generate class
      */
-    public CtClass[] createJdbcProxyClasses() throws Exception {
+    private CtClass[] createJdbcProxyClasses() throws Exception {
         try {
             ClassPool classPool = ClassPool.getDefault();
             classPool.importPackage("java.sql");
@@ -237,7 +237,7 @@ final class ProxyClassGenerator {
      */
     private Class createProxyConnectionClass(ClassPool classPool, CtClass ctConnectionClassProxyClass, CtClass ctConnectionClass, CtClass ctConBaseClass) throws Exception {
         CtMethod[] ctSuperClassMethods = ctConBaseClass.getMethods();
-        HashSet notNeedAddProxyMethods = new HashSet();
+        HashSet notNeedAddProxyMethods = new HashSet(16);
         for (int i = 0, l = ctSuperClassMethods.length; i < l; i++) {
             int modifiers = ctSuperClassMethods[i].getModifiers();
             if ((!Modifier.isAbstract(modifiers) && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)))
@@ -287,7 +287,7 @@ final class ProxyClassGenerator {
 
     private Class createProxyStatementClass(ClassPool classPool, CtClass statementProxyClass, CtClass ctStatementClass, CtClass ctStatementSuperClass) throws Exception {
         CtMethod[] ctSuperClassMethods = ctStatementSuperClass.getMethods();
-        HashSet superClassSignatureSet = new HashSet();
+        HashSet superClassSignatureSet = new HashSet(16);
         for (int i = 0, l = ctSuperClassMethods.length; i < l; i++) {
             int modifiers = ctSuperClassMethods[i].getModifiers();
             if ((!Modifier.isAbstract(modifiers) && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)))
@@ -347,7 +347,7 @@ final class ProxyClassGenerator {
     //ctProxyDatabaseMetaDataClass,ctDatabaseMetaDataIntf,ctDatabaseMetaDataSuperClass
     private Class createProxyDatabaseMetaDataClass(ClassPool classPool, CtClass ctProxyDatabaseMetaDataClass, CtClass ctDatabaseMetaDataIntf, CtClass ctDatabaseMetaDataSuperClass) throws Exception {
         CtMethod[] ctSuperClassMethods = ctDatabaseMetaDataSuperClass.getMethods();
-        HashSet superClassSignatureSet = new HashSet();
+        HashSet superClassSignatureSet = new HashSet(16);
         for (int i = 0, l = ctSuperClassMethods.length; i < l; i++) {
             int modifiers = ctSuperClassMethods[i].getModifiers();
             if ((!Modifier.isAbstract(modifiers) && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)))
@@ -386,7 +386,7 @@ final class ProxyClassGenerator {
 
     private Class createProxyResultSetClass(ClassPool classPool, CtClass ctResultSetClassProxyClass, CtClass ctResultSetClass, CtClass ctResultSetClassSuperClass) throws Exception {
         CtMethod[] ctSuperClassMethods = ctResultSetClassSuperClass.getMethods();
-        HashSet superClassSignatureSet = new HashSet();
+        HashSet superClassSignatureSet = new HashSet(16);
         for (int i = 0, l = ctSuperClassMethods.length; i < l; i++) {
             int modifiers = ctSuperClassMethods[i].getModifiers();
             if ((!Modifier.isAbstract(modifiers) && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)))
