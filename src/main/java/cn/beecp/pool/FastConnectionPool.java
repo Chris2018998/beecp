@@ -25,6 +25,7 @@ import java.lang.ref.WeakReference;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Iterator;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
@@ -205,7 +206,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 commonLog.debug("BeeCP({}))begin to create new pooled connection,state:{}", poolName, connState);
                 Connection con = connFactory.create();
                 setDefaultOnRawConn(con);
-                PooledConnection pConn = new PooledConnection(con, connState, this, poolConfig);// add
+                PooledConnection pConn = new PooledConnection(con, connState, this, poolConfig);// registerStatement
                 commonLog.debug("BeeCP({}))has created new pooled connection:{},state:{}", poolName, pConn, connState);
                 PooledConnection[] arrayNew = new PooledConnection[arrayLen + 1];
                 arraycopy(connArray, 0, arrayNew, 0, arrayLen);
@@ -245,26 +246,26 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         try {
             rawConn.setAutoCommit(poolConfig.isDefaultAutoCommit());
         } catch (Throwable e) {
-            commonLog.warn("BeeCP({})failed to set default on executing 'setAutoCommit',cause:", poolName,e);
+            commonLog.warn("BeeCP({})failed to set default on executing 'setAutoCommit',cause:", poolName, e);
         }
 
         try {
             rawConn.setTransactionIsolation(poolConfig.getDefaultTransactionIsolationCode());
         } catch (Throwable e) {
-            commonLog.warn("BeeCP({}))failed to set default on executing to 'setTransactionIsolation',cause:", poolName,e);
+            commonLog.warn("BeeCP({}))failed to set default on executing to 'setTransactionIsolation',cause:", poolName, e);
         }
 
         try {
             rawConn.setReadOnly(poolConfig.isDefaultReadOnly());
         } catch (Throwable e) {
-            commonLog.warn("BeeCP({}))failed to set default on executing to 'setReadOnly',cause:", poolName,e);
+            commonLog.warn("BeeCP({}))failed to set default on executing to 'setReadOnly',cause:", poolName, e);
         }
 
         if (!isBlank(poolConfig.getDefaultCatalog())) {
             try {
                 rawConn.setCatalog(poolConfig.getDefaultCatalog());
             } catch (Throwable e) {
-                commonLog.warn("BeeCP({}))failed to set default on executing to 'setCatalog',cause:", poolName,e);
+                commonLog.warn("BeeCP({}))failed to set default on executing to 'setCatalog',cause:", poolName, e);
             }
         }
 
@@ -274,7 +275,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 rawConn.setSchema(poolConfig.getDefaultSchema());
             } catch (Throwable e) {
                 supportSchema = false;
-                commonLog.warn("BeeCP({})driver not support 'schema',cause:", poolName,e);
+                commonLog.warn("BeeCP({})driver not support 'schema',cause:", poolName, e);
             }
         }
 
@@ -289,7 +290,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 }
             } catch (Throwable e) {
                 supportNetworkTimeout = false;
-                commonLog.warn("BeeCP({})driver not support 'networkTimeout',cause:", poolName,e);
+                commonLog.warn("BeeCP({})driver not support 'networkTimeout',cause:", poolName, e);
             }
         }
 
@@ -303,14 +304,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 }
             } catch (Throwable e) {
                 supportIsValid = false;
-                commonLog.warn("BeeCP({})driver not support 'isValid',cause:", poolName,e);
+                commonLog.warn("BeeCP({})driver not support 'isValid',cause:", poolName, e);
                 Statement st = null;
                 try {
                     st = rawConn.createStatement();
                     st.setQueryTimeout(connectionTestTimeout);
                 } catch (Throwable ee) {
                     supportQueryTimeout = false;
-                    commonLog.warn("BeeCP({})driver not support 'queryTimeout',cause:", poolName,e);
+                    commonLog.warn("BeeCP({})driver not support 'queryTimeout',cause:", poolName, e);
                 } finally {
                     if (st != null) oclose(st);
                 }
@@ -484,7 +485,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     public final void recycle(PooledConnection pConn) {
         transferPolicy.beforeTransfer(pConn);
-        for (Borrower borrower : waitQueue)
+        Iterator<Borrower> iterator = waitQueue.iterator();
+        while (iterator.hasNext()) {
+            Borrower borrower = iterator.next();
             for (Object state = borrower.state; state == BORROWER_NORMAL || state == BORROWER_WAITING; state = borrower.state) {
                 if (pConn.state - conUnCatchStateCode != 0) return;
                 if (BwrStUpd.compareAndSet(borrower, state, pConn)) {//transfer successful
@@ -492,6 +495,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     return;
                 }
             }
+        }
         transferPolicy.onFailedTransfer(pConn);
     }
 
@@ -499,13 +503,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @param exception: transfer Exception to waiter
      */
     private void transferException(SQLException exception) {
-        for (Borrower borrower : waitQueue)
+        Iterator<Borrower> iterator = waitQueue.iterator();
+        while (iterator.hasNext()) {
+            Borrower borrower = iterator.next();
             for (Object state = borrower.state; state == BORROWER_NORMAL || state == BORROWER_WAITING; state = borrower.state) {
                 if (BwrStUpd.compareAndSet(borrower, state, exception)) {//transfer successful
                     if (state == BORROWER_WAITING) unpark(borrower.thread);
                     return;
                 }
             }
+        }
     }
 
     /**

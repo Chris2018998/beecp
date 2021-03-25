@@ -32,14 +32,11 @@ public abstract class ProxyConnectionBase implements Connection {
     protected Connection delegate;
     protected PooledConnection pConn;//called by subclass to update time
     private boolean isClosed;
-    private StatementArray statements;
 
     public ProxyConnectionBase(PooledConnection pConn) {
         this.pConn = pConn;
         pConn.proxyConn = this;
         this.delegate = pConn.rawConn;
-        this.statements = pConn.tracedStatements;//safe?
-        //this.tracedStatements = new StatementArray(pConn.traceStatement ? 10 : 0);
     }
 
     public Connection getDelegate() throws SQLException {
@@ -60,8 +57,8 @@ public abstract class ProxyConnectionBase implements Connection {
             if (isClosed) return;
             isClosed = true;
             delegate = CLOSED_CON;
-            //if(statements.size()>0)
-            statements.clear();
+            if (pConn.statementPos > 0)
+                pConn.clearStatement();
         }
         pConn.recycleSelf();
     }
@@ -75,11 +72,11 @@ public abstract class ProxyConnectionBase implements Connection {
 
     /************* statement trace :logic from mysql driver******************************/
     synchronized final void registerStatement(ProxyStatementBase st) {
-        statements.add(st);
+        pConn.registerStatement(st);
     }
 
     synchronized final void unregisterStatement(ProxyStatementBase st) {
-        statements.remove(st);
+        pConn.unregisterStatement(st);
     }
 
     /************* statement trace ******************************/

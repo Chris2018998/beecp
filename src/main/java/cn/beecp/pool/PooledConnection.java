@@ -47,11 +47,13 @@ class PooledConnection {
     String defaultSchema;
     int defaultNetworkTimeout;
 
-    StatementArray tracedStatements;
     private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
     private FastConnectionPool pool;
     private int resetCnt;// reset count
     private boolean[] resetInd = new boolean[FALSE_ARRAY.length];
+
+    int statementPos;
+    private ProxyStatementBase[] statements;
 
     public PooledConnection(Connection rawConn, int connState, FastConnectionPool connPool, BeeDataSourceConfig config) {
         pool = connPool;
@@ -69,7 +71,7 @@ class PooledConnection {
         curAutoCommit = defaultAutoCommit;
         //default value
 
-        tracedStatements = new StatementArray(10);
+        statements = new ProxyStatementBase[10];
         lastAccessTime = currentTimeMillis();//first time
     }
 
@@ -155,49 +157,36 @@ class PooledConnection {
         //clear warnings
         rawConn.clearWarnings();
     }
-}
 
-//copy from java.util.ArrayList
-final class StatementArray {
-    private int pos;
-    private ProxyStatementBase[] elements;
-
-    public StatementArray(int initSize) {
-        elements = new ProxyStatementBase[initSize];
-    }
-
-    public final int size() {
-        return pos;
-    }
-
-    public final void add(ProxyStatementBase e) {
-        if (pos == elements.length) {
-            ProxyStatementBase[] newArray = new ProxyStatementBase[elements.length << 1];
-            System.arraycopy(elements, 0, newArray, 0, elements.length);
-            elements = newArray;
+    //****************below are some statement trace methods***************************/
+    public final void registerStatement(ProxyStatementBase e) {
+        if (statementPos == statements.length) {
+            ProxyStatementBase[] newArray = new ProxyStatementBase[statements.length << 1];
+            System.arraycopy(statements, 0, newArray, 0, statements.length);
+            statements = newArray;
         }
-        elements[pos++] = e;
+        statements[statementPos++] = e;
     }
 
-    public final void remove(ProxyStatementBase e) {
-        for (int i = 0; i < pos; i++)
-            if (e == elements[i]) {
-                int m = pos - i - 1;
-                if (m > 0) System.arraycopy(elements, i + 1, elements, i, m);//move to ahead
-                elements[--pos] = null; // clear to let GC do its work
+    public final void unregisterStatement(ProxyStatementBase e) {
+        for (int i = 0; i < statementPos; i++)
+            if (e == statements[i]) {
+                int m = statementPos - i - 1;
+                if (m > 0) System.arraycopy(statements, i + 1, statements, i, m);//move to ahead
+                statements[--statementPos] = null; // clear to let GC do its work
                 return;
             }
     }
 
-    public final void clear() {
-        if (pos > 0) {
-            for (int i = 0; i < pos; i++) {
-                if (elements[i] != null) {
-                    elements[i].setAsClosed();
-                    elements[i] = null;// clear to let GC do its work
-                }
+    public final void clearStatement() {
+        // if (pos > 0) {
+        for (int i = 0; i < statementPos; i++) {
+            if (statements[i] != null) {
+                statements[i].setAsClosed();
+                statements[i] = null;// clear to let GC do its work
             }
-            pos = 0;
         }
+        statementPos = 0;
+        //}
     }
 }

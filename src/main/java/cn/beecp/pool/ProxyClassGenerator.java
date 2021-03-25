@@ -226,7 +226,7 @@ final class ProxyClassGenerator {
     }
 
     /**
-     * create connection proxy class, and add JDBC statement methods to it
+     * create connection proxy class, and registerStatement JDBC statement methods to it
      *
      * @param classPool                   javassist class pool
      * @param ctConnectionClassProxyClass connection implemented sub class will be generated
