@@ -159,7 +159,7 @@ class PooledConnection {
     }
 
     //****************below are some statement trace methods***************************/
-    public final void registerStatement(ProxyStatementBase e) {
+    final void registerStatement(ProxyStatementBase e) {
         if (statementPos == statements.length) {
             ProxyStatementBase[] newArray = new ProxyStatementBase[statements.length << 1];
             System.arraycopy(statements, 0, newArray, 0, statements.length);
@@ -168,7 +168,7 @@ class PooledConnection {
         statements[statementPos++] = e;
     }
 
-    public final void unregisterStatement(ProxyStatementBase e) {
+    final void unregisterStatement(ProxyStatementBase e) {
         for (int i = 0; i < statementPos; i++)
             if (e == statements[i]) {
                 int m = statementPos - i - 1;
@@ -178,7 +178,7 @@ class PooledConnection {
             }
     }
 
-    public final void clearStatement() {
+     final void clearStatement() {
         // if (pos > 0) {
         for (int i = 0; i < statementPos; i++) {
             if (statements[i] != null) {
