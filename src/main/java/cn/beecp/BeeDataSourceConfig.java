@@ -120,15 +120,15 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.driverClassName = trimString(driver);
     }
 
-    public void BeeDataSourceConfig(File propertiesFile) {
+    public BeeDataSourceConfig(File propertiesFile) {
         this.loadFromPropertiesFile(propertiesFile);
     }
 
-    public void BeeDataSourceConfig(String propertiesFileName) {
+    public BeeDataSourceConfig(String propertiesFileName) {
         this.loadFromPropertiesFile(propertiesFileName);
     }
 
-    public void BeeDataSourceConfig(Properties configProperties) {
+    public BeeDataSourceConfig(Properties configProperties) {
         this.loadFromProperties(configProperties);
     }
 
