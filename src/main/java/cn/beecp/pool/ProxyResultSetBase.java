@@ -70,13 +70,14 @@ abstract class ProxyResultSetBase implements ResultSet {
             delegate.close();
         } finally {
             delegate = CLOSED_RSLT;
+            owner.removeOpenResultSet(this);
         }
     }
 
     final void setAsClosed() {//call by ProxyStatementBase.close
         try {
             close();
-        } catch (SQLException e) {
+        } catch (Throwable e) {
         }
     }
 
@@ -89,5 +90,9 @@ abstract class ProxyResultSetBase implements ResultSet {
             return (T) this;
         else
             throw new SQLException("Wrapped object is not an instance of " + iface);
+    }
+
+    boolean containsDelegate(ResultSet delegate){
+        return this.delegate==delegate;
     }
 }

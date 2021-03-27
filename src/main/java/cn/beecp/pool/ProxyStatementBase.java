@@ -83,10 +83,17 @@ abstract class ProxyStatementBase implements Statement {
         try {
             registered = false;
             close();
-        } catch (SQLException e) {
+        } catch (Throwable e) {
         }
     }
 
+    final void removeOpenResultSet(ProxyResultSetBase resultSet) {//call by ProxyResultSetBase.constructor
+         if(resultSet==curRe){
+             curRe=null;
+         }else if(results!=null){
+             results.remove(resultSet);
+         }
+    }
     final void setOpenResultSet(ProxyResultSetBase resultSetNew) {//call by ProxyResultSetBase.constructor
         switch (resultOpenCode) {
             case CLOSE_CURRENT_RESULT: {
@@ -130,16 +137,19 @@ abstract class ProxyStatementBase implements Statement {
 
     public ResultSet getResultSet() throws SQLException {
         checkClosed();
-        ResultSet re = delegate.getResultSet();
-        if (re == null) {
-            setOpenResultSet(null);
-            return null;
-        } else {
-            if (curRe != null && curRe.isDelegate(re))
-                return curRe;
+        ResultSet re = delegate.getResultSet();//raw resultSet
+        if(re==null)return null;
 
-            return createProxyResultSet(re, this, pConn);
+        if(curRe!=null && curRe.containsDelegate(re))return curRe;
+        if(results!=null){
+            for(ProxyResultSetBase resultSetBase:results){
+                if(resultSetBase.containsDelegate(re))return resultSetBase;
+            }
         }
+
+        ProxyResultSetBase resultSetBase= (ProxyResultSetBase)createProxyResultSet(re, this, pConn);
+        this.setOpenResultSet(resultSetBase);
+        return resultSetBase;
     }
 
     public void setPoolable(boolean var1) throws SQLException {

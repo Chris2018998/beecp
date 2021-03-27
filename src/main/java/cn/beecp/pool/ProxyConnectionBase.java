@@ -66,7 +66,7 @@ public abstract class ProxyConnectionBase implements Connection {
     final void trySetAsClosed() {//called from FastConnectionPool
         try {
             close();
-        } catch (SQLException e) {
+        } catch (Throwable e) {
         }
     }
 
