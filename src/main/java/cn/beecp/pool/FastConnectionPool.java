@@ -490,16 +490,23 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     public final void recycle(PooledConnection pConn) {
         transferPolicy.beforeTransfer(pConn);
         Iterator<Borrower> iterator = waitQueue.iterator();
+
         while (iterator.hasNext()) {
             Borrower borrower = iterator.next();
-            for (Object state = borrower.state; state == BORROWER_NORMAL || state == BORROWER_WAITING; state = borrower.state) {
-                if (pConn.state - conUnCatchStateCode != 0) return;
+            do {
+                //pooledConnection has hold by another thread
+                if (pConn.state != conUnCatchStateCode) return;
+
+                Object state = borrower.state;
+                //current waiter has received one pooledConnection or timeout
+                if (!(state instanceof BorrowerState)) break;
                 if (BwrStUpd.compareAndSet(borrower, state, pConn)) {//transfer successful
-                    if (state == BORROWER_WAITING) unpark(borrower.thread);
+                    if (BORROWER_WAITING == state) unpark(borrower.thread);
                     return;
                 }
-            }
-        }
+            } while (true);
+        }//first while loop
+
         transferPolicy.onFailedTransfer(pConn);
     }
 
@@ -510,13 +517,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         Iterator<Borrower> iterator = waitQueue.iterator();
         while (iterator.hasNext()) {
             Borrower borrower = iterator.next();
-            for (Object state = borrower.state; state == BORROWER_NORMAL || state == BORROWER_WAITING; state = borrower.state) {
+            do {
+                Object state = borrower.state;
+                //current waiter has received one pooledConnection or timeout
+                if (!(state instanceof BorrowerState)) break;
                 if (BwrStUpd.compareAndSet(borrower, state, exception)) {//transfer successful
-                    if (state == BORROWER_WAITING) unpark(borrower.thread);
+                    if (BORROWER_WAITING == state) unpark(borrower.thread);
                     return;
                 }
-            }
-        }
+            } while (true);
+        }//first while loop
     }
 
     /**

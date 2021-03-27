@@ -46,13 +46,11 @@ class PooledConnection {
     String defaultCatalog;
     String defaultSchema;
     int defaultNetworkTimeout;
-
+    int statementPos;
     private ThreadPoolExecutor defaultNetworkTimeoutExecutor;
     private FastConnectionPool pool;
     private int resetCnt;// reset count
     private boolean[] resetInd = new boolean[FALSE_ARRAY.length];
-
-    int statementPos;
     private ProxyStatementBase[] statements;
 
     public PooledConnection(Connection rawConn, int connState, FastConnectionPool connPool, BeeDataSourceConfig config) {
@@ -94,9 +92,9 @@ class PooledConnection {
             pool.recycle(this);
         } catch (Throwable e) {
             pool.abandonOnReturn(this);
-            if(e instanceof SQLException){
-                throw (SQLException)e;
-            }else{
+            if (e instanceof SQLException) {
+                throw (SQLException) e;
+            } else {
                 throw new SQLException(e);
             }
         }
@@ -182,7 +180,7 @@ class PooledConnection {
             }
     }
 
-     final void clearStatement() {
+    final void clearStatement() {
         // if (pos > 0) {
         for (int i = 0; i < statementPos; i++) {
             if (statements[i] != null) {

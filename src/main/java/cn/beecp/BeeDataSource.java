@@ -245,7 +245,13 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     private String getDriverType(String url) {
         try {
             Driver driver = DriverManager.getDriver(url);
-            url=url.toLowerCase(Locale.US);
+            url = url.toLowerCase(Locale.US);
+            String urlPrefix = "jdbc:";
+            if (url.startsWith(urlPrefix)) {
+                int pos = url.indexOf(":", urlPrefix.length());
+                if (pos > 0) return url.substring(urlPrefix.length(), pos);
+            }
+
             if (url.indexOf("oracle") > 1) {
                 return "oracle";
             } else if (url.indexOf("mysql") > 1) {
@@ -257,8 +263,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             } else {
                 return null;
             }
-        } catch (SQLException e) {
-            commonLog.warn("Not found matched driver from driverManager by url", e);
+        } catch (Throwable e) {
             return null;
         }
     }

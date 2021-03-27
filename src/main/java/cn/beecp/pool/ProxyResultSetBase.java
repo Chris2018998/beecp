@@ -92,7 +92,7 @@ abstract class ProxyResultSetBase implements ResultSet {
             throw new SQLException("Wrapped object is not an instance of " + iface);
     }
 
-    boolean containsDelegate(ResultSet delegate){
-        return this.delegate==delegate;
+    boolean containsDelegate(ResultSet delegate) {
+        return this.delegate == delegate;
     }
 }

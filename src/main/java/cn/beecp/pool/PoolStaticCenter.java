@@ -50,10 +50,8 @@ public class PoolStaticCenter {
     public static final int THREAD_WORKING = 1;
     public static final int THREAD_WAITING = 2;
     public static final int THREAD_DEAD = 3;
-    //BORROWER STATE
-    public static final Object BORROWER_NORMAL = new Object();
-    public static final Object BORROWER_WAITING = new Object();
-
+    public static final Object BORROWER_NORMAL = new BorrowerState();
+    public static final Object BORROWER_WAITING = new BorrowerState();
     //Connection reset pos in array
     public static final int POS_AUTO = 0;
     public static final int POS_TRANS = 1;
@@ -61,7 +59,6 @@ public class PoolStaticCenter {
     public static final int POS_CATALOG = 3;
     public static final int POS_SCHEMA = 4;
     public static final int POS_NETWORK = 5;
-
     public static final SQLTimeoutException RequestTimeoutException = new SQLTimeoutException("Request timeout");
     public static final SQLException RequestInterruptException = new SQLException("Request interrupted");
     public static final SQLException PoolCloseException = new SQLException("Pool has shut down or in clearing");
@@ -151,7 +148,6 @@ public class PoolStaticCenter {
         // return new ProxyResultSet(delegate,pConn);
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
     }
-
 
     public static final void setPropertiesValue(Object bean, Map<String, Object> setValueMap) throws Exception {
         if (bean == null) throw new BeeDataSourceConfigException("Bean can't be null");
@@ -271,5 +267,9 @@ public class PoolStaticCenter {
                 throw new BeeDataSourceConfigException("Failed to instantiated class:" + text, e);
             }
         }
+    }
+
+    //BORROWER STATE
+    static final class BorrowerState {
     }
 }

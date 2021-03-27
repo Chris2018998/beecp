@@ -32,18 +32,20 @@ import static cn.beecp.pool.PoolStaticCenter.*;
 abstract class ProxyStatementBase implements Statement {
     protected Statement delegate;
     protected PooledConnection pConn;//called by subclass to update time
-    private ProxyResultSetBase curRe;
-    private boolean registered = true;
+    private ProxyConnectionBase owner;
+
     private boolean isClosed;
-    private int resultOpenCode = CLOSE_CURRENT_RESULT;
+    private boolean registered;
+    private ProxyResultSetBase curRe;
+    private int resultOpenCode;
     private ArrayList<ProxyResultSetBase> results;
-    private ProxyConnectionBase proxyConn;
 
     public ProxyStatementBase(Statement delegate, PooledConnection pConn) {
         this.delegate = delegate;
         this.pConn = pConn;
-        proxyConn = pConn.proxyConn;
-        proxyConn.registerStatement(this);
+        this.owner = pConn.proxyConn;
+        this.registered = this.owner.registerStatement(this);
+        this.resultOpenCode = CLOSE_CURRENT_RESULT;
     }
 
     private final void checkClosed() throws SQLException {
@@ -52,7 +54,7 @@ abstract class ProxyStatementBase implements Statement {
 
     public Connection getConnection() throws SQLException {
         checkClosed();
-        return proxyConn;
+        return owner;
     }
 
     public final boolean isClosed() throws SQLException {
@@ -61,21 +63,20 @@ abstract class ProxyStatementBase implements Statement {
 
     public final void close() throws SQLException {
         if (isClosed) return;
-
         isClosed = true;
-        if (curRe != null && !curRe.isClosed)
-            curRe.setAsClosed();
+
+        if (curRe != null) curRe.setAsClosed();
         if (results != null) {
             for (int i = 0, l = results.size(); i < l; i++)
                 results.get(i).setAsClosed();
             results.clear();
         }
 
-        if (registered) proxyConn.unregisterStatement(this);
         try {
             delegate.close();
         } finally {
             delegate = CLOSED_CSTM;//why? because Mysql's PreparedStatement just only remark as closed with useServerCache mode
+            if (registered) owner.unregisterStatement(this);
         }
     }
 
@@ -88,12 +89,13 @@ abstract class ProxyStatementBase implements Statement {
     }
 
     final void removeOpenResultSet(ProxyResultSetBase resultSet) {//call by ProxyResultSetBase.constructor
-         if(resultSet==curRe){
-             curRe=null;
-         }else if(results!=null){
-             results.remove(resultSet);
-         }
+        if (resultSet == curRe) {
+            curRe = null;
+        } else if (results != null) {
+            results.remove(resultSet);
+        }
     }
+
     final void setOpenResultSet(ProxyResultSetBase resultSetNew) {//call by ProxyResultSetBase.constructor
         switch (resultOpenCode) {
             case CLOSE_CURRENT_RESULT: {
@@ -138,16 +140,16 @@ abstract class ProxyStatementBase implements Statement {
     public ResultSet getResultSet() throws SQLException {
         checkClosed();
         ResultSet re = delegate.getResultSet();//raw resultSet
-        if(re==null)return null;
+        if (re == null) return null;
 
-        if(curRe!=null && curRe.containsDelegate(re))return curRe;
-        if(results!=null){
-            for(ProxyResultSetBase resultSetBase:results){
-                if(resultSetBase.containsDelegate(re))return resultSetBase;
+        if (curRe != null && curRe.containsDelegate(re)) return curRe;
+        if (results != null) {
+            for (ProxyResultSetBase resultSetBase : results) {
+                if (resultSetBase.containsDelegate(re)) return resultSetBase;
             }
         }
 
-        ProxyResultSetBase resultSetBase= (ProxyResultSetBase)createProxyResultSet(re, this, pConn);
+        ProxyResultSetBase resultSetBase = (ProxyResultSetBase) createProxyResultSet(re, this, pConn);
         this.setOpenResultSet(resultSetBase);
         return resultSetBase;
     }

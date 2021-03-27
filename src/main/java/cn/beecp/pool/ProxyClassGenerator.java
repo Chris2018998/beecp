@@ -227,7 +227,8 @@ final class ProxyClassGenerator {
 
     /**
      * create connection proxy class
-     *      *
+     * *
+     *
      * @param classPool                   javassist class pool
      * @param ctConnectionClassProxyClass connection implemented sub class will be generated
      * @param ctConnectionClass           connection interface in javassist class pool

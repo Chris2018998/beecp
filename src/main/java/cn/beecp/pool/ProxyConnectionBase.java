@@ -71,8 +71,9 @@ public abstract class ProxyConnectionBase implements Connection {
     }
 
     /************* statement trace :logic from mysql driver******************************/
-    synchronized final void registerStatement(ProxyStatementBase st) {
+    synchronized final boolean registerStatement(ProxyStatementBase st) {
         pConn.registerStatement(st);
+        return true;
     }
 
     synchronized final void unregisterStatement(ProxyStatementBase st) {
