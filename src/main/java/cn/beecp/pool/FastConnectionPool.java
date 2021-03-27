@@ -358,10 +358,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             try {
                 for (int i = 0; i < initSize; i++)
                     createPooledConn(CONNECTION_IDLE);
-            } catch (SQLException e) {
+            } catch (Throwable e) {
                 for (PooledConnection pConn : connArray)
                     removePooledConn(pConn, DESC_REMOVE_INIT);
-                throw e;
+                if (e instanceof SQLException) {
+                    throw (SQLException) e;
+                } else {
+                    throw new SQLException(e);
+                }
             }
         }
     }
@@ -653,8 +657,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     try {
                         if ((pConn = createPooledConn(CONNECTION_USING)) != null)
                             recycle(pConn);
-                    } catch (SQLException e) {
-                        transferException(e);
+                    } catch (Throwable e) {
+                        if (e instanceof SQLException) {
+                            transferException((SQLException) e);
+                        } else {
+                            transferException(new SQLException(e));
+                        }
                     }
                 }
             }
@@ -844,7 +852,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         public void run() {
             try {
                 FastConnectionPool.this.close();
-            } catch (SQLException e) {
+            } catch (Throwable e) {
                 commonLog.error("Error at closing connection pool,cause:", e);
             }
         }
