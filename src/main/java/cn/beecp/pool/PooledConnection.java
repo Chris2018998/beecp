@@ -92,9 +92,13 @@ class PooledConnection {
             proxyConn = null;
             resetRawConnOnReturn();
             pool.recycle(this);
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             pool.abandonOnReturn(this);
-            throw e;
+            if(e instanceof SQLException){
+                throw (SQLException)e;
+            }else{
+                throw new SQLException(e);
+            }
         }
     }
 
