@@ -28,6 +28,7 @@ import javax.sql.XADataSource;
 import java.io.PrintWriter;
 import java.sql.*;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
@@ -244,6 +245,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     private String getDriverType(String url) {
         try {
             Driver driver = DriverManager.getDriver(url);
+            url=url.toLowerCase(Locale.US);
             if (url.indexOf("oracle") > 1) {
                 return "oracle";
             } else if (url.indexOf("mysql") > 1) {
