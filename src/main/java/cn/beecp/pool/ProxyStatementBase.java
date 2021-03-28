@@ -148,10 +148,8 @@ abstract class ProxyStatementBase implements Statement {
                 if (resultSetBase.containsDelegate(re)) return resultSetBase;
             }
         }
-
-        ProxyResultSetBase resultSetBase = (ProxyResultSetBase) createProxyResultSet(re, this, pConn);
-        this.setOpenResultSet(resultSetBase);
-        return resultSetBase;
+        
+        return createProxyResultSet(re, this, pConn);
     }
 
     public void setPoolable(boolean var1) throws SQLException {
