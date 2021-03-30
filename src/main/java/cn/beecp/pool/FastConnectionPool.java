@@ -450,7 +450,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     if (timeout > 0L) {
                         if (spinSize > 0) {
                             --spinSize;
-                        } else if (timeout - spinForTimeoutThreshold > 0 && borrower.state == state && BwrStUpd.compareAndSet(borrower, state, BORROWER_WAITING)) {
+                        } else if (timeout - spinForTimeoutThreshold > 0L && borrower.state == state && BwrStUpd.compareAndSet(borrower, state, BORROWER_WAITING)) {
                             parkNanos(timeout);
                             if (cThread.isInterrupted()) {
                                 failed = true;
