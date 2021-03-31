@@ -167,13 +167,3 @@ public class DataSourceConfig {
 |enableJmx                 |JMX boolean indicator for pool                      |default is false                                        |
  
 
----
-##### DB and driver
-|  DB             |   Driver class                      |   jdbc refrence url                    |
-| ----------------| ---------------------------         | ------------------------       |
-|Mariadb         |org.mariadb.jdbc.Driver   				  |  jdbc:mariadb://localhost/test  |
-|MySQL           |org.mysql.jdbc.Driver                 |  jdbc:mysql://localhost/test    |
-|Oracle          |oracle.jdbc.driver.OracleDriver       |  jdbc:oracle:thin:@localhost:1521:orcl|
-|MSSQL           |com.microsoft.sqlserver.jdbc.SQLServerDriver | jdbc:sqlserver://localhost:1433;databaseName=test|
-|Postgresql      |org.postgresql.Driver                 |  jdbc:postgresql://localhost:5432/postgres|
- 
