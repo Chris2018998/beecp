@@ -450,19 +450,19 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     if (timeout > 0L) {
                         if (spinSize > 0) {
                             --spinSize;
-                        } else if (BORROWER_NORMAL==borrower.state && timeout > spinForTimeoutThreshold && BwrStUpd.compareAndSet(borrower, BORROWER_NORMAL, BORROWER_WAITING)) {
+                        } else if (borrower.state==BORROWER_NORMAL && timeout > spinForTimeoutThreshold && BwrStUpd.compareAndSet(borrower, BORROWER_NORMAL, BORROWER_WAITING)) {
                             parkNanos(timeout);
                             if (cThread.isInterrupted()) {
                                 failed = true;
                                 failedCause = RequestInterruptException;
                             }
-                            if (BORROWER_WAITING==borrower.state)
+                            if (borrower.state==BORROWER_WAITING)
                                 BwrStUpd.compareAndSet(borrower, BORROWER_WAITING, failed ? failedCause : BORROWER_NORMAL);//reset to normal
                         }
                     } else {//timeout
                         failed = true;
                         failedCause = RequestTimeoutException;
-                        if (BORROWER_NORMAL==borrower.state)
+                        if (borrower.state==BORROWER_NORMAL)
                             BwrStUpd.compareAndSet(borrower, state, failedCause);//set to fail
                     }
                 }//end (state == BORROWER_NORMAL)
@@ -501,7 +501,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 //current waiter has received one pooledConnection or timeout
                 if (!(state instanceof BorrowerState)) break;
                 if (BwrStUpd.compareAndSet(borrower, state, pConn)) {//transfer successful
-                    if (BORROWER_WAITING == state) unpark(borrower.thread);
+                    if (state==BORROWER_WAITING) unpark(borrower.thread);
                     return;
                 }
             } while (true);
@@ -522,7 +522,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 //current waiter has received one pooledConnection or timeout
                 if (!(state instanceof BorrowerState)) break;
                 if (BwrStUpd.compareAndSet(borrower, state, exception)) {//transfer successful
-                    if (BORROWER_WAITING == state) unpark(borrower.thread);
+                    if (state==BORROWER_WAITING) unpark(borrower.thread);
                     return;
                 }
             } while (true);
