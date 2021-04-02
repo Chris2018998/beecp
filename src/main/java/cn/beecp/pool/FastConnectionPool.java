@@ -246,26 +246,38 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         try {
             rawConn.setAutoCommit(poolConfig.isDefaultAutoCommit());
         } catch (Throwable e) {
-            commonLog.warn("BeeCP({})failed to set default on executing 'setAutoCommit',cause:", poolName, e);
+            if (commonLog.isDebugEnabled())
+                commonLog.debug("BeeCP({})failed to set default on executing 'setAutoCommit',cause:", poolName, e);
+            else
+                commonLog.warn("BeeCP({})failed to set default on executing 'setAutoCommit'", poolName);
         }
 
         try {
             rawConn.setTransactionIsolation(poolConfig.getDefaultTransactionIsolationCode());
         } catch (Throwable e) {
-            commonLog.warn("BeeCP({}))failed to set default on executing to 'setTransactionIsolation',cause:", poolName, e);
+            if (commonLog.isDebugEnabled())
+                commonLog.debug("BeeCP({}))failed to set default on executing to 'setTransactionIsolation',cause:", poolName, e);
+            else
+                commonLog.warn("BeeCP({}))failed to set default on executing to 'setTransactionIsolation'", poolName);
         }
 
         try {
             rawConn.setReadOnly(poolConfig.isDefaultReadOnly());
         } catch (Throwable e) {
-            commonLog.warn("BeeCP({}))failed to set default on executing to 'setReadOnly',cause:", poolName, e);
+            if (commonLog.isDebugEnabled())
+                commonLog.debug("BeeCP({}))failed to set default on executing to 'setReadOnly',cause:", poolName, e);
+            else
+                commonLog.warn("BeeCP({}))failed to set default on executing to 'setReadOnly'", poolName);
         }
 
         if (!isBlank(poolConfig.getDefaultCatalog())) {
             try {
                 rawConn.setCatalog(poolConfig.getDefaultCatalog());
             } catch (Throwable e) {
-                commonLog.warn("BeeCP({}))failed to set default on executing to 'setCatalog',cause:", poolName, e);
+                if (commonLog.isDebugEnabled())
+                    commonLog.debug("BeeCP({}))failed to set default on executing to 'setCatalog',cause:", poolName, e);
+                else
+                    commonLog.warn("BeeCP({}))failed to set default on executing to 'setCatalog'", poolName);
             }
         }
 
@@ -275,7 +287,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 rawConn.setSchema(poolConfig.getDefaultSchema());
             } catch (Throwable e) {
                 supportSchema = false;
-                commonLog.warn("BeeCP({})driver not support 'schema',cause:", poolName, e);
+                if (commonLog.isDebugEnabled())
+                    commonLog.debug("BeeCP({})driver not support 'schema',cause:", poolName, e);
+                else
+                    commonLog.warn("BeeCP({})driver not support 'schema'", poolName);
             }
         }
 
@@ -290,7 +305,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 }
             } catch (Throwable e) {
                 supportNetworkTimeout = false;
-                commonLog.warn("BeeCP({})driver not support 'networkTimeout',cause:", poolName, e);
+                if (commonLog.isDebugEnabled())
+                    commonLog.debug("BeeCP({})driver not support 'networkTimeout',cause:", poolName, e);
+                else
+                    commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
             }
         }
 
@@ -304,14 +322,21 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 }
             } catch (Throwable e) {
                 supportIsValid = false;
-                commonLog.warn("BeeCP({})driver not support 'isValid',cause:", poolName, e);
+                if (commonLog.isDebugEnabled())
+                    commonLog.debug("BeeCP({})driver not support 'isValid',cause:", poolName, e);
+                else
+                    commonLog.warn("BeeCP({})driver not support 'isValid'", poolName);
+
                 Statement st = null;
                 try {
                     st = rawConn.createStatement();
                     st.setQueryTimeout(connectionTestTimeout);
                 } catch (Throwable ee) {
                     supportQueryTimeout = false;
-                    commonLog.warn("BeeCP({})driver not support 'queryTimeout',cause:", poolName, e);
+                    if (commonLog.isDebugEnabled())
+                        commonLog.debug("BeeCP({})driver not support 'queryTimeout',cause:", poolName, e);
+                    else
+                        commonLog.warn("BeeCP({})driver not support 'queryTimeout'", poolName);
                 } finally {
                     if (st != null) oclose(st);
                 }
@@ -450,19 +475,19 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     if (timeout > 0L) {
                         if (spinSize > 0) {
                             --spinSize;
-                        } else if (borrower.state==BORROWER_NORMAL && timeout > spinForTimeoutThreshold && BwrStUpd.compareAndSet(borrower, BORROWER_NORMAL, BORROWER_WAITING)) {
+                        } else if (borrower.state == BORROWER_NORMAL && timeout > spinForTimeoutThreshold && BwrStUpd.compareAndSet(borrower, BORROWER_NORMAL, BORROWER_WAITING)) {
                             parkNanos(timeout);
                             if (cThread.isInterrupted()) {
                                 failed = true;
                                 failedCause = RequestInterruptException;
                             }
-                            if (borrower.state==BORROWER_WAITING)
+                            if (borrower.state == BORROWER_WAITING)
                                 BwrStUpd.compareAndSet(borrower, BORROWER_WAITING, failed ? failedCause : BORROWER_NORMAL);//reset to normal
                         }
                     } else {//timeout
                         failed = true;
                         failedCause = RequestTimeoutException;
-                        if (borrower.state==BORROWER_NORMAL)
+                        if (borrower.state == BORROWER_NORMAL)
                             BwrStUpd.compareAndSet(borrower, state, failedCause);//set to fail
                     }
                 }//end (state == BORROWER_NORMAL)
@@ -501,7 +526,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 //current waiter has received one pooledConnection or timeout
                 if (!(state instanceof BorrowerState)) break;
                 if (BwrStUpd.compareAndSet(borrower, state, pConn)) {//transfer successful
-                    if (state==BORROWER_WAITING) unpark(borrower.thread);
+                    if (state == BORROWER_WAITING) unpark(borrower.thread);
                     return;
                 }
             } while (true);
@@ -522,7 +547,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 //current waiter has received one pooledConnection or timeout
                 if (!(state instanceof BorrowerState)) break;
                 if (BwrStUpd.compareAndSet(borrower, state, exception)) {//transfer successful
-                    if (state==BORROWER_WAITING) unpark(borrower.thread);
+                    if (state == BORROWER_WAITING) unpark(borrower.thread);
                     return;
                 }
             } while (true);
