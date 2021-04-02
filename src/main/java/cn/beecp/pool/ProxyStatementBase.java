@@ -148,7 +148,7 @@ abstract class ProxyStatementBase implements Statement {
                 if (resultSetBase.containsDelegate(re)) return resultSetBase;
             }
         }
-        
+
         return createProxyResultSet(re, this, pConn);
     }
 
