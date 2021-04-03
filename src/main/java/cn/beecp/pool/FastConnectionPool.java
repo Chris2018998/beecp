@@ -451,7 +451,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             waitQueue.offer(borrower);
             int spinSize = (waitQueue.peek() == borrower) ? maxTimedSpins : 0;
 
-            while (true) {
+            do {
                 Object state = borrower.state;
                 if (state instanceof PooledConnection) {
                     pConn = (PooledConnection) state;
@@ -491,7 +491,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                             BwrStUpd.compareAndSet(borrower, state, failedCause);//set to fail
                     }
                 }//end (state == BORROWER_NORMAL)
-            }//while
+            } while (true);//while
         } finally {
             borrowSemaphore.release();
         }
@@ -593,7 +593,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     // shutdown pool
     public void close() throws SQLException {
-        while (true) {
+        do {
             if (poolState.compareAndSet(POOL_NORMAL, POOL_CLOSED)) {
                 commonLog.info("BeeCP({})begin to shutdown", poolName);
                 removeAllConnections(poolConfig.isForceCloseUsingOnClear(), DESC_REMOVE_DESTROY);
@@ -616,7 +616,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             } else {
                 parkNanos(delayTimeForNextClearNanos);// wait 3 seconds
             }
-        }
+        } while (true);
     }
 
     public boolean isClosed() {
@@ -658,7 +658,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     // notify to create connections to pool
     private void tryToCreateNewConnByAsyn() {
-        while (true) {
+        do {
             int curAddSize = needAddConnSize.get();
             int updAddSize = curAddSize + 1;
             if (connArray.length + updAddSize > poolMaxSize) return;
@@ -667,25 +667,25 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     unpark(this);
                 return;
             }
-        }
+        } while (true);
     }
 
     // exit connection creation thread
     private void shutdownCreateConnThread() {
         int curSts;
-        while (true) {
+        do {
             curSts = createConnThreadState.get();
             if ((curSts == THREAD_WORKING || curSts == THREAD_WAITING) && createConnThreadState.compareAndSet(curSts, THREAD_DEAD)) {
                 if (curSts == THREAD_WAITING) unpark(this);
                 break;
             }
-        }
+        } while (true);
     }
 
     // create connection to pool
     public void run() {
         PooledConnection pConn;
-        while (true) {
+        do {
             while (needAddConnSize.get() > 0) {
                 needAddConnSize.decrementAndGet();
                 if (!waitQueue.isEmpty()) {
@@ -705,7 +705,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (needAddConnSize.get() == 0 && createConnThreadState.compareAndSet(THREAD_WORKING, THREAD_WAITING))
                 park(this);
             if (createConnThreadState.get() == THREAD_DEAD) break;
-        }
+        } while (true);
     }
 
     /******************************** JMX **************************************/
