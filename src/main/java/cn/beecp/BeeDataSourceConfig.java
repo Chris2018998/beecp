@@ -435,7 +435,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         for (Field field : fields) {
             if (!"connectProperties".equals(field.getName())) {
                 try {
-                    field.set(config, field.get(this));
+                    Object fieldValue=field.get(this);
+                    commonLog.debug("BeeDataSourceConfig.{}={}",field.getName(),fieldValue);
+                    field.set(config,fieldValue);
                 } catch (Exception e) {
                     throw new BeeDataSourceConfigException("Failed to copy field[" + field.getName() + "]", e);
                 }
@@ -446,6 +448,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         Iterator<Map.Entry<Object, Object>> iterator = connectProperties.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<Object, Object> entry = iterator.next();
+            commonLog.debug("BeeDataSourceConfig.connectProperties.{}={}",entry.getKey(), entry.getValue());
             config.addConnectProperty((String) entry.getKey(), entry.getValue());
         }
     }
