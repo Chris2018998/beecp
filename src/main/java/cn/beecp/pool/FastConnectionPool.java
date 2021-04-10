@@ -71,9 +71,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private ScheduledThreadPoolExecutor idleSchExecutor = new ScheduledThreadPoolExecutor(2, new PoolThreadThreadFactory("IdleConnectionScan"));
     private int networkTimeout;
     private boolean supportSchema = true;
+    private boolean supportIsValid = true;
     private boolean supportNetworkTimeout = true;
     private boolean supportQueryTimeout = true;
-    private boolean supportIsValid = true;
+    private boolean supportIsValidTest;
+    private boolean supportNetworkTimeoutTest;
+
     private String poolName = "";
     private String poolMode = "";
     private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
@@ -195,8 +198,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             int arrayLen = connArray.length;
             if (arrayLen < poolMaxSize) {
                 if (isDebugEnabled)commonLog.debug("BeeCP({}))begin to create new pooled connection,state:{}", poolName, connState);
-                Connection con = connFactory.create();
-                setDefaultOnRawConn(con);
+                Connection con =null;
+                try{con=connFactory.create();}catch(Throwable e){throw new ConnectionCreateFailedException(e);}
+                try{setDefaultOnRawConn(con);}catch(SQLException e){oclose(con);throw e;}
                 PooledConnection pConn = new PooledConnection(con, connState, this, poolConfig);// registerStatement
                 if (isDebugEnabled)commonLog.debug("BeeCP({}))has created new pooled connection:{},state:{}", poolName, pConn, connState);
                 PooledConnection[] arrayNew = new PooledConnection[arrayLen + 1];
@@ -233,14 +237,19 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     //set default attribute on raw connection
-    private void setDefaultOnRawConn(Connection rawConn) {
+    private void setDefaultOnRawConn(Connection rawConn)throws SQLException {
         try {
             rawConn.setAutoCommit(poolConfig.isDefaultAutoCommit());
         } catch (Throwable e) {
             if (isDebugEnabled)
                 commonLog.debug("BeeCP({})failed to set default on executing 'setAutoCommit',cause:", poolName, e);
             else
-                commonLog.warn("BeeCP({})failed to set default on executing 'setAutoCommit'", poolName);
+                commonLog.error("BeeCP({})failed to set default on executing 'setAutoCommit'", poolName);
+
+            if (e instanceof SQLException)
+                throw (SQLException) e;
+            else
+                throw new SQLException(e);
         }
 
         try {
@@ -249,7 +258,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (isDebugEnabled)
                 commonLog.debug("BeeCP({}))failed to set default on executing to 'setTransactionIsolation',cause:", poolName, e);
             else
-                commonLog.warn("BeeCP({}))failed to set default on executing to 'setTransactionIsolation'", poolName);
+                commonLog.error("BeeCP({}))failed to set default on executing to 'setTransactionIsolation'", poolName);
+
+            if (e instanceof SQLException)
+                throw (SQLException) e;
+            else
+                throw new SQLException(e);
         }
 
         try {
@@ -258,7 +272,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (isDebugEnabled)
                 commonLog.debug("BeeCP({}))failed to set default on executing to 'setReadOnly',cause:", poolName, e);
             else
-                commonLog.warn("BeeCP({}))failed to set default on executing to 'setReadOnly'", poolName);
+                commonLog.error("BeeCP({}))failed to set default on executing to 'setReadOnly'", poolName);
+
+            if (e instanceof SQLException)
+                throw (SQLException) e;
+            else
+                throw new SQLException(e);
         }
 
         if (!isBlank(poolConfig.getDefaultCatalog())) {
@@ -268,7 +287,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (isDebugEnabled)
                     commonLog.debug("BeeCP({}))failed to set default on executing to 'setCatalog',cause:", poolName, e);
                 else
-                    commonLog.warn("BeeCP({}))failed to set default on executing to 'setCatalog'", poolName);
+                    commonLog.error("BeeCP({}))failed to set default on executing to 'setCatalog'", poolName);
+
+                if (e instanceof SQLException)
+                    throw (SQLException) e;
+                else
+                    throw new SQLException(e);
             }
         }
 
@@ -282,29 +306,34 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     commonLog.debug("BeeCP({})driver not support 'schema',cause:", poolName, e);
                 else
                     commonLog.warn("BeeCP({})driver not support 'schema'", poolName);
+
+                if (e instanceof SQLException)
+                    throw (SQLException) e;
+                else
+                    throw new SQLException(e);
             }
         }
 
-        if (supportNetworkTimeout) {//test networkTimeout
+        /**************************************test method start ********************************/
+        if (!supportNetworkTimeoutTest) {//test networkTimeout
             try {//set networkTimeout
                 this.networkTimeout = rawConn.getNetworkTimeout();
-                if (networkTimeout < 0) {
+                if (networkTimeout < 0)
                     supportNetworkTimeout = false;
                     commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
-                } else {
-                    rawConn.setNetworkTimeout(this.getNetworkTimeoutExecutor(), networkTimeout);
-                }
             } catch (Throwable e) {
                 supportNetworkTimeout = false;
                 if (isDebugEnabled)
                     commonLog.debug("BeeCP({})driver not support 'networkTimeout',cause:", poolName, e);
                 else
                     commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
+            }finally {
+                supportNetworkTimeoutTest=true;//remark as tested
             }
         }
 
-        if (this.supportIsValid) {//test isValid
-            try {//test Connection.isValid
+        if (!this.supportIsValidTest) {//test isValid
+            try {
                 if (rawConn.isValid(connectionTestTimeout)) {
                     this.connectionTester = new ConnValidTester();
                 } else {
@@ -317,22 +346,29 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     commonLog.debug("BeeCP({})driver not support 'isValid',cause:", poolName, e);
                 else
                     commonLog.warn("BeeCP({})driver not support 'isValid'", poolName);
-
-                Statement st = null;
-                try {
-                    st = rawConn.createStatement();
-                    st.setQueryTimeout(connectionTestTimeout);
-                } catch (Throwable ee) {
-                    supportQueryTimeout = false;
-                    if (isDebugEnabled)
-                        commonLog.debug("BeeCP({})driver not support 'queryTimeout',cause:", poolName, e);
-                    else
-                        commonLog.warn("BeeCP({})driver not support 'queryTimeout'", poolName);
-                } finally {
-                    if (st != null) oclose(st);
+            }finally{
+                supportIsValidTest=true;//remark as tested
+                if(!supportIsValid) {//why?
+                    Statement st = null;
+                    try {
+                        st = rawConn.createStatement();
+                        st.setQueryTimeout(connectionTestTimeout);
+                        /**
+                         * @todo test alive SQL
+                         */
+                    } catch (Throwable ee) {
+                        supportQueryTimeout = false;
+                        if (isDebugEnabled)
+                            commonLog.debug("BeeCP({})driver not support 'queryTimeout',cause:", poolName, ee);
+                        else
+                            commonLog.warn("BeeCP({})driver not support 'queryTimeout'", poolName);
+                    } finally {
+                        if (st != null) oclose(st);
+                    }
                 }
             }
         }
+        /**************************************test method end ********************************/
         //for JDK1.7 end
     }
 
@@ -358,30 +394,22 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @throws SQLException error occurred in creating connections
      */
     private void createInitConnections(int initSize) throws SQLException {
-        if (initSize == 0) {//try to create one
-            PooledConnection pConn = null;
-            try {
-                pConn = createPooledConn(CONNECTION_IDLE);
-            } catch (Throwable e) {
-            } finally {
-                if (pConn != null)
-                    try {
-                        removePooledConn(pConn, DESC_REMOVE_PRE_INIT);
-                    } catch (Throwable e) {
-                    }
-            }
-        } else {
-            try {
-                for (int i = 0; i < initSize; i++)
-                    createPooledConn(CONNECTION_IDLE);
-            } catch (Throwable e) {
-                for (PooledConnection pConn : connArray)
-                    removePooledConn(pConn, DESC_REMOVE_INIT);
-                if (e instanceof SQLException) {
+        boolean normalCreate=initSize>0;
+        try {
+            if(initSize==0)initSize=1;
+            for (int i = 0; i < initSize; i++)
+                createPooledConn(CONNECTION_IDLE);
+        } catch (Throwable e) {
+            for (PooledConnection pConn : connArray)
+                removePooledConn(pConn, DESC_REMOVE_INIT);
+            if (e instanceof SQLException) {
+                if(e instanceof ConnectionCreateFailedException){//may be network bad or database is not ready
+                    if(normalCreate)throw (SQLException) e;
+                }else{
                     throw (SQLException) e;
-                } else {
-                    throw new SQLException(e);
                 }
+            } else {
+                throw new SQLException(e);
             }
         }
     }
@@ -939,9 +967,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     //valid tester(call connection.isValid)
     class ConnValidTester implements ConnectionTester {
         public boolean isAlive(PooledConnection pConn) {
-            Connection con = pConn.rawConn;
             try {
-                if (con.isValid(connectionTestTimeout)) {
+                if (pConn.rawConn.isValid(connectionTestTimeout)) {
                     pConn.lastAccessTime = currentTimeMillis();
                     return true;
                 }
