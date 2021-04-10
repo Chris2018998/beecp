@@ -62,7 +62,7 @@ abstract class ProxyResultSetBase implements ResultSet {
         } finally {
             delegate = CLOSED_RSLT;
             /*** #40-start fix NullPointException(ResultSet from DatabaseMetaData) */
-            if(owner!=null)owner.removeOpenResultSet(this);
+            if (owner != null) owner.removeOpenResultSet(this);
             /*** #40-end *******************/
         }
     }
