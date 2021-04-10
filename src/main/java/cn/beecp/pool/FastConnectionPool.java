@@ -203,11 +203,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         synchronized (connArrayLock) {
             int arrayLen = connArray.length;
             if (arrayLen < poolMaxSize) {
-                commonLog.debug("BeeCP({}))begin to create new pooled connection,state:{}", poolName, connState);
+                if (isDebugEnabled)commonLog.debug("BeeCP({}))begin to create new pooled connection,state:{}", poolName, connState);
                 Connection con = connFactory.create();
                 setDefaultOnRawConn(con);
                 PooledConnection pConn = new PooledConnection(con, connState, this, poolConfig);// registerStatement
-                commonLog.debug("BeeCP({}))has created new pooled connection:{},state:{}", poolName, pConn, connState);
+                if (isDebugEnabled)commonLog.debug("BeeCP({}))has created new pooled connection:{},state:{}", poolName, pConn, connState);
                 PooledConnection[] arrayNew = new PooledConnection[arrayLen + 1];
                 arraycopy(connArray, 0, arrayNew, 0, arrayLen);
                 arrayNew[arrayLen] = pConn;// tail
@@ -221,7 +221,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     //remove Pooled connection
     private void removePooledConn(PooledConnection pConn, String removeType) {
-        commonLog.debug("BeeCP({}))begin to remove pooled connection:{},reason:{}", poolName, pConn, removeType);
+        if (isDebugEnabled)commonLog.debug("BeeCP({}))begin to remove pooled connection:{},reason:{}", poolName, pConn, removeType);
         pConn.state = CONNECTION_CLOSED;
         pConn.closeRawConn();
         synchronized (connArrayLock) {
@@ -236,7 +236,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 }
             }
 
-            commonLog.debug("BeeCP({}))has removed pooled connection:{},reason:{}", poolName, pConn, removeType);
+            if (isDebugEnabled)commonLog.debug("BeeCP({}))has removed pooled connection:{},reason:{}", poolName, pConn, removeType);
             connArray = arrayNew;
         }
     }
@@ -246,7 +246,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         try {
             rawConn.setAutoCommit(poolConfig.isDefaultAutoCommit());
         } catch (Throwable e) {
-            if (commonLog.isDebugEnabled())
+            if (isDebugEnabled)
                 commonLog.debug("BeeCP({})failed to set default on executing 'setAutoCommit',cause:", poolName, e);
             else
                 commonLog.warn("BeeCP({})failed to set default on executing 'setAutoCommit'", poolName);
@@ -255,7 +255,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         try {
             rawConn.setTransactionIsolation(poolConfig.getDefaultTransactionIsolationCode());
         } catch (Throwable e) {
-            if (commonLog.isDebugEnabled())
+            if (isDebugEnabled)
                 commonLog.debug("BeeCP({}))failed to set default on executing to 'setTransactionIsolation',cause:", poolName, e);
             else
                 commonLog.warn("BeeCP({}))failed to set default on executing to 'setTransactionIsolation'", poolName);
@@ -264,7 +264,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         try {
             rawConn.setReadOnly(poolConfig.isDefaultReadOnly());
         } catch (Throwable e) {
-            if (commonLog.isDebugEnabled())
+            if (isDebugEnabled)
                 commonLog.debug("BeeCP({}))failed to set default on executing to 'setReadOnly',cause:", poolName, e);
             else
                 commonLog.warn("BeeCP({}))failed to set default on executing to 'setReadOnly'", poolName);
@@ -274,7 +274,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             try {
                 rawConn.setCatalog(poolConfig.getDefaultCatalog());
             } catch (Throwable e) {
-                if (commonLog.isDebugEnabled())
+                if (isDebugEnabled)
                     commonLog.debug("BeeCP({}))failed to set default on executing to 'setCatalog',cause:", poolName, e);
                 else
                     commonLog.warn("BeeCP({}))failed to set default on executing to 'setCatalog'", poolName);
@@ -287,7 +287,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 rawConn.setSchema(poolConfig.getDefaultSchema());
             } catch (Throwable e) {
                 supportSchema = false;
-                if (commonLog.isDebugEnabled())
+                if (isDebugEnabled)
                     commonLog.debug("BeeCP({})driver not support 'schema',cause:", poolName, e);
                 else
                     commonLog.warn("BeeCP({})driver not support 'schema'", poolName);
@@ -305,7 +305,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 }
             } catch (Throwable e) {
                 supportNetworkTimeout = false;
-                if (commonLog.isDebugEnabled())
+                if (isDebugEnabled)
                     commonLog.debug("BeeCP({})driver not support 'networkTimeout',cause:", poolName, e);
                 else
                     commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
@@ -322,7 +322,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 }
             } catch (Throwable e) {
                 supportIsValid = false;
-                if (commonLog.isDebugEnabled())
+                if (isDebugEnabled)
                     commonLog.debug("BeeCP({})driver not support 'isValid',cause:", poolName, e);
                 else
                     commonLog.warn("BeeCP({})driver not support 'isValid'", poolName);
@@ -333,7 +333,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     st.setQueryTimeout(connectionTestTimeout);
                 } catch (Throwable ee) {
                     supportQueryTimeout = false;
-                    if (commonLog.isDebugEnabled())
+                    if (isDebugEnabled)
                         commonLog.debug("BeeCP({})driver not support 'queryTimeout',cause:", poolName, e);
                     else
                         commonLog.warn("BeeCP({})driver not support 'queryTimeout'", poolName);
