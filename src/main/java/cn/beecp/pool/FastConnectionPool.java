@@ -892,7 +892,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             this.aliveTestSQL = aliveTestSQL;
         }
 
-        public boolean isAlive(PooledConnection pConn) {
+        public final boolean isAlive(PooledConnection pConn) {
             boolean autoCommitChged = false;
             Statement st = null;
             Connection con = pConn.rawConn;
@@ -936,7 +936,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     //valid tester(call connection.isValid)
     class ConnValidTester implements ConnectionTester {
-        public boolean isAlive(PooledConnection pConn) {
+        public final boolean isAlive(PooledConnection pConn) {
             try {
                 if (pConn.rawConn.isValid(connectionTestTimeout)) {
                     pConn.lastAccessTime = currentTimeMillis();
