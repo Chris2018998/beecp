@@ -46,11 +46,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private static final String DESC_REMOVE_CLEAR = "clear";
     private static final String DESC_REMOVE_DESTROY = "destroy";
     private static final AtomicInteger poolNameIndex = new AtomicInteger(1);
+    //set default attribute on raw i
+    private static final String[] setDefaultMethodNames = new String[]{"setAutoCommit", "setTransactionIsolation", "setReadOnly", "setCatalog", "setSchema"};
     private final Object connArrayLock = new Object();
     private final ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
     private final ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
     private final ConnectionPoolMonitorVo monitorVo = new ConnectionPoolMonitorVo();
-
     private int poolMaxSize;
     private long defaultMaxWaitNanos;//nanoseconds
     private int conUnCatchStateCode;
@@ -58,10 +59,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private long connectionTestInterval;//milliseconds
     private ConnectionTester connectionTester;
     private long delayTimeForNextClearNanos;//nanoseconds
-
     private ConnectionPoolHook exitHook;
     private BeeDataSourceConfig poolConfig;
-
     private int borrowSemaphoreSize;
     private Semaphore borrowSemaphore;
     private TransferPolicy transferPolicy;
@@ -76,7 +75,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private boolean supportQueryTimeout = true;
     private boolean supportIsValidTest;
     private boolean supportNetworkTimeoutTest;
-
     private String poolName = "";
     private String poolMode = "";
     private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
@@ -212,6 +210,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     oclose(con);
                     throw e;
                 }
+
                 PooledConnection pConn = new PooledConnection(con, connState, this, poolConfig);// registerStatement
                 if (isDebugEnabled)
                     commonLog.debug("BeeCP({}))has created new pooled connection:{},state:{}", poolName, pConn, connState);
@@ -250,28 +249,27 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    //set default attribute on raw connection
     private final void setDefaultOnRawConn(Connection rawConn) throws SQLException {
-        String setMethodName = "setAutoCommit";
+        int pos = 0;
         try {
             rawConn.setAutoCommit(poolConfig.isDefaultAutoCommit());
-            setMethodName = "setTransactionIsolation";
+            pos = 1;
             rawConn.setTransactionIsolation(poolConfig.getDefaultTransactionIsolationCode());
-            setMethodName = "setReadOnly";
+            pos = 2;
             rawConn.setReadOnly(poolConfig.isDefaultReadOnly());
             if (!isBlank(poolConfig.getDefaultCatalog())) {
-                setMethodName = "setCatalog";
+                pos = 3;
                 rawConn.setCatalog(poolConfig.getDefaultCatalog());
             }
             if (!isBlank(poolConfig.getDefaultSchema())) {//test schema
-                setMethodName = "setSchema";
+                pos = 4;
                 rawConn.setSchema(poolConfig.getDefaultSchema());
             }
         } catch (Throwable e) {
             if (isDebugEnabled)
-                commonLog.debug("BeeCP({})failed to set default value at executing '{}',cause:", poolName, setMethodName, e);
+                commonLog.debug("BeeCP({})failed to set default value at executing '{}',cause:", poolName, setDefaultMethodNames[pos], e);
             else
-                commonLog.error("BeeCP({})failed to set default value at executing '{}'", poolName, setMethodName);
+                commonLog.error("BeeCP({})failed to set default value at executing '{}'", poolName, setDefaultMethodNames[pos]);
 
             if (e instanceof SQLException)
                 throw (SQLException) e;
@@ -335,7 +333,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             }
         }
         /**************************************test method end ********************************/
-        //for JDK1.7 end
     }
 
     /**
@@ -365,17 +362,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (initSize == 0) initSize = 1;
             for (int i = 0; i < initSize; i++)
                 createPooledConn(CONNECTION_IDLE);
-        } catch (Throwable e) {
+        } catch (SQLException e) {
             for (PooledConnection pConn : connArray)
                 removePooledConn(pConn, DESC_REMOVE_INIT);
-            if (e instanceof SQLException) {
-                if (e instanceof ConnectionCreateFailedException) {//may be network bad or database is not ready
-                    if (normalCreate) throw (SQLException) e;
-                } else {
-                    throw (SQLException) e;
-                }
+            if (e instanceof ConnectionCreateFailedException) {//may be network bad or database is not ready
+                if (normalCreate) throw e;
             } else {
-                throw new SQLException(e);
+                throw e;
             }
         }
     }

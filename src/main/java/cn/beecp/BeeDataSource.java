@@ -1,9 +1,9 @@
 /*
-* Copyright(C) Chris2018998
-* Contact:Chris2018998@tom.com
-*
-* Licensed under GNU General Public License version 3.0.
-*/
+ * Copyright(C) Chris2018998
+ * Contact:Chris2018998@tom.com
+ *
+ * Licensed under GNU General Public License version 3.0.
+ */
 package cn.beecp;
 
 import cn.beecp.pool.ConnectionPool;
