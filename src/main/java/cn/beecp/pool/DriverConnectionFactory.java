@@ -45,7 +45,7 @@ public final class DriverConnectionFactory implements ConnectionFactory {
     }
 
     //create one connection
-    public Connection create() throws SQLException {
+    public final Connection create() throws SQLException {
         return connectDriver.connect(connectURL, connectProperties);
     }
 }

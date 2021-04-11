@@ -83,11 +83,7 @@ class PooledConnection {
             pool.recycle(this);
         } catch (Throwable e) {
             pool.abandonOnReturn(this);
-            if (e instanceof SQLException) {
-                throw (SQLException) e;
-            } else {
-                throw new SQLException(e);
-            }
+            throw (e instanceof SQLException) ? (SQLException) e : new SQLException(e);
         }
     }
 

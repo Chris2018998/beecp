@@ -52,7 +52,7 @@ public class DataSourceConnectionFactory implements ConnectionFactory {
     }
 
     //create one connection
-    public Connection create() throws SQLException {
+    public final Connection create() throws SQLException {
         if (usernameIsNotNull) {
             return driverDataSource.getConnection(username, password);
         } else {
