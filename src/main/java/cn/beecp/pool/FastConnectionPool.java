@@ -195,7 +195,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             int arrayLen = connArray.length;
             if (arrayLen < poolMaxSize) {
                 if (isDebugEnabled)
-                    commonLog.debug("BeeCP({}))begin to create new pooled connection,state:{}", poolName, connState);
+                    commonLog.debug("BeeCP({}))begin to create a new pooled connection,state:{}", poolName, connState);
 
                 Connection con = null;
                 try {
@@ -213,7 +213,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
                 PooledConnection pConn = new PooledConnection(con, connState, this, poolConfig);// registerStatement
                 if (isDebugEnabled)
-                    commonLog.debug("BeeCP({}))has created new pooled connection:{},state:{}", poolName, pConn, connState);
+                    commonLog.debug("BeeCP({}))has created a new pooled connection:{},state:{}", poolName, pConn, connState);
                 PooledConnection[] arrayNew = new PooledConnection[arrayLen + 1];
                 arraycopy(connArray, 0, arrayNew, 0, arrayLen);
                 arrayNew[arrayLen] = pConn;// tail
@@ -292,7 +292,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             }
         }
 
-        if (!this.supportIsValidTest) {//test isValid
+        if (!this.supportIsValidTest) {//test 'connection.isValid' method
             try {
                 if (rawConn.isValid(connectionTestTimeout)) {
                     this.connectionTester = new ConnValidTester();
@@ -371,16 +371,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @throws SQLException error occurred in creating connections
      */
     private void createInitConnections(int initSize) throws SQLException {
-        boolean normalCreate = initSize > 0;
         try {
-            if (initSize == 0) initSize = 1;
-            for (int i = 0; i < initSize; i++)
+            int size=(initSize>0)?initSize:1;
+            for (int i = 0; i < size; i++)
                 createPooledConn(CONNECTION_IDLE);
         } catch (SQLException e) {
             for (PooledConnection pConn : connArray)
                 removePooledConn(pConn, DESC_REMOVE_INIT);
             if (e instanceof ConnectionCreateFailedException) {//may be network bad or database is not ready
-                if (normalCreate) throw e;
+                if (initSize>0) throw e;
             } else {
                 throw e;
             }
@@ -424,9 +423,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         try {//borrowSemaphore acquired
             //1:try to search one from array
             PooledConnection pConn;
-            PooledConnection[] tempArray = connArray;
-            for (int i = 0, l = tempArray.length; i < l; i++) {
-                pConn = tempArray[i];
+            PooledConnection[] array = connArray;
+            for (int i = 0, len = array.length; i < len; i++) {
+                pConn = array[i];
                 if (pConn.state == CONNECTION_IDLE && ConnStUpd.compareAndSet(pConn, CONNECTION_IDLE, CONNECTION_USING) && testOnBorrow(pConn))
                     return createProxyConnection(pConn, borrower);
             }
