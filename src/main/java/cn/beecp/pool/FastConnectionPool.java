@@ -313,10 +313,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     try {
                         st = rawConn.createStatement();
                         st.setQueryTimeout(connectionTestTimeout);
-
-                        /**
-                         * @todo test alive SQL
-                         */
                     } catch (Throwable ee) {
                         supportQueryTimeout = false;
                         if (isDebugEnabled)
@@ -324,7 +320,28 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         else
                             commonLog.warn("BeeCP({})driver not support 'queryTimeout'", poolName);
                     } finally {
-                        if (st != null) oclose(st);
+                        if (st != null) {//begin to test sql valid
+                            boolean autoCommitChged = false;
+                            try {
+                                if (poolConfig.isDefaultAutoCommit()) {
+                                    rawConn.setAutoCommit(false);
+                                    autoCommitChged = true;
+                                }
+
+                                st.execute(poolConfig.getConnectionTestSQL());
+                                rawConn.rollback();//why? maybe store procedure in test sql
+                            } finally {//
+                                oclose(st);
+                                if (autoCommitChged) {//reset to default
+                                    try {
+                                        rawConn.setAutoCommit(poolConfig.isDefaultAutoCommit());
+                                    } catch (Throwable e) {
+                                        throw (e instanceof SQLException) ? (SQLException) e : new SQLException(e);
+                                    }
+                                }
+                            }
+                        }//test sql
+
                     }
                 }
             }
@@ -867,7 +884,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     // SQL tester
     class SQLQueryTester implements ConnectionTester {
-        private final boolean autoCommit;
+        private final boolean autoCommit;//connection default value
         private final String aliveTestSQL;
 
         public SQLQueryTester(boolean autoCommit, String aliveTestSQL) {
@@ -906,11 +923,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 return false;
             } finally {
                 if (st != null) oclose(st);
-                if (autoCommit && autoCommitChged) {
+                if (autoCommitChged) {
                     try {
-                        con.setAutoCommit(true);
+                        con.setAutoCommit(autoCommit);//reset to default
                     } catch (Throwable e) {
-                        commonLog.error("BeeCP({})failed to execute 'rollback or setAutoCommit(true)' after connection test", poolName, e);
+                        commonLog.error("BeeCP({})failed to setAutoCommit(true) after connection test", poolName, e);
                     }
                 }
             }
