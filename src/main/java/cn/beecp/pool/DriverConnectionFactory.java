@@ -23,7 +23,7 @@ import java.util.Properties;
 public final class DriverConnectionFactory implements ConnectionFactory {
     //url link
     private String url;
-     //connection driver
+    //connection driver
     private Driver driver;
     //connection extra properties
     private Properties properties;

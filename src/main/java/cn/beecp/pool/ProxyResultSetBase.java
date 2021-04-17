@@ -37,7 +37,7 @@ abstract class ProxyResultSetBase implements ResultSet {
         owner.setOpenResultSet(this);
     }
 
-    boolean isDelegate(ResultSet delegate) {
+    boolean containsDelegate(ResultSet delegate) {
         return this.delegate == delegate;
     }
 
@@ -83,9 +83,5 @@ abstract class ProxyResultSetBase implements ResultSet {
             return (T) this;
         else
             throw new SQLException("Wrapped object is not an instance of " + iface);
-    }
-
-    boolean containsDelegate(ResultSet delegate) {
-        return this.delegate == delegate;
     }
 }

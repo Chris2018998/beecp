@@ -27,7 +27,7 @@ public class DataSourceConnectionFactory implements ConnectionFactory {
     private String password;
     //usernameIsNotNull
     private boolean usernameIsNotNull;
-     //driverDataSource
+    //driverDataSource
     private DataSource driverDataSource;
 
     //Constructor

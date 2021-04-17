@@ -26,7 +26,7 @@ abstract class ProxyStatementBase implements Statement {
     private ProxyConnectionBase owner;
 
     private boolean isClosed;
-    private boolean registered=true;
+    private boolean registered = true;
     private ProxyResultSetBase curRe;
     private int resultOpenCode = CLOSE_CURRENT_RESULT;
     private ArrayList<ProxyResultSetBase> results;

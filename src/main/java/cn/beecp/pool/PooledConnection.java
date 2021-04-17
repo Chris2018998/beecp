@@ -155,7 +155,7 @@ class PooledConnection {
         for (int i = 0; i < traceIdx; i++)
             if (e == statements[i]) {
                 int m = traceIdx - i - 1;
-                if (m > 0)arraycopy(statements, i + 1, statements, i, m);//move to ahead
+                if (m > 0) arraycopy(statements, i + 1, statements, i, m);//move to ahead
                 statements[--traceIdx] = null; // clear to let GC do its work
                 return;
             }
