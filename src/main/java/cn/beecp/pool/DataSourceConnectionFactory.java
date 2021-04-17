@@ -21,25 +21,13 @@ import static cn.beecp.pool.PoolStaticCenter.isBlank;
  * @version 1.0
  */
 public class DataSourceConnectionFactory implements ConnectionFactory {
-
-    /**
-     * username
-     */
+    //username
     private String username;
-
-    /**
-     * password
-     */
+    //password
     private String password;
-
-    /**
-     * usernameIsNotNull
-     */
+    //usernameIsNotNull
     private boolean usernameIsNotNull;
-
-    /**
-     * driverDataSource
-     */
+     //driverDataSource
     private DataSource driverDataSource;
 
     //Constructor

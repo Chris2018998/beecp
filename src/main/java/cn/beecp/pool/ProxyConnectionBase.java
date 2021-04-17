@@ -21,13 +21,13 @@ import static java.lang.System.currentTimeMillis;
  */
 public abstract class ProxyConnectionBase implements Connection {
     protected Connection delegate;
-    protected PooledConnection pConn;//called by subclass to update time
+    protected PooledConnection pCon;//called by subclass to update time
     private boolean isClosed;
 
-    public ProxyConnectionBase(PooledConnection pConn) {
-        this.pConn = pConn;
-        pConn.proxyConn = this;
-        this.delegate = pConn.rawConn;
+    public ProxyConnectionBase(PooledConnection pCon) {
+        this.pCon = pCon;
+        pCon.proxyCon = this;
+        this.delegate = pCon.rawCon;
     }
 
     public Connection getDelegate() throws SQLException {
@@ -48,10 +48,10 @@ public abstract class ProxyConnectionBase implements Connection {
             if (isClosed) return;
             isClosed = true;
             delegate = CLOSED_CON;
-            if (pConn.statementPos > 0)
-                pConn.clearStatement();
+            if (pCon.traceIdx > 0)
+                pCon.clearStatement();
         }
-        pConn.recycleSelf();
+        pCon.recycleSelf();
     }
 
     final void trySetAsClosed() {//called from FastConnectionPool
@@ -62,41 +62,37 @@ public abstract class ProxyConnectionBase implements Connection {
     }
 
     /************* statement trace :logic from mysql driver******************************/
-    synchronized final boolean registerStatement(ProxyStatementBase st) {
-        pConn.registerStatement(st);
-        return true;
+    synchronized final void registerStatement(ProxyStatementBase st) {
+        pCon.registerStatement(st);
     }
-
     synchronized final void unregisterStatement(ProxyStatementBase st) {
-        pConn.unregisterStatement(st);
+        pCon.unregisterStatement(st);
     }
-
     /************* statement trace ******************************/
 
     public void setAutoCommit(boolean autoCommit) throws SQLException {
         checkClosed();
-        if (!pConn.curAutoCommit && pConn.commitDirtyInd)
+        if (!pCon.curAutoCommit && pCon.commitDirtyInd)
             throw AutoCommitChangeForbiddenException;
-
         delegate.setAutoCommit(autoCommit);
-        pConn.curAutoCommit = autoCommit;
-        if (autoCommit) pConn.commitDirtyInd = false;
-        pConn.setResetInd(POS_AUTO, autoCommit != pConn.defaultAutoCommit);
+        pCon.curAutoCommit = autoCommit;
+        if (autoCommit) pCon.commitDirtyInd = false;
+        pCon.setResetInd(PS_AUTO, autoCommit != pCon.defAutoCommit);
     }
 
     public void setTransactionIsolation(int level) throws SQLException {
         delegate.setTransactionIsolation(level);
-        pConn.setResetInd(POS_TRANS, level != pConn.defaultTransactionIsolationCode);
+        pCon.setResetInd(PS_TRANS, level != pCon.defTransactionIsolationCode);
     }
 
     public void setReadOnly(boolean readOnly) throws SQLException {
         delegate.setReadOnly(readOnly);
-        pConn.setResetInd(POS_READONLY, readOnly != pConn.defaultReadOnly);
+        pCon.setResetInd(PS_READONLY, readOnly != pCon.defReadOnly);
     }
 
     public void setCatalog(String catalog) throws SQLException {
         delegate.setCatalog(catalog);
-        pConn.setResetInd(POS_CATALOG, !PoolStaticCenter.equals(catalog, pConn.defaultCatalog));
+        pCon.setResetInd(PS_CATALOG, !PoolStaticCenter.equals(catalog, pCon.defCatalog));
     }
 
     public boolean isValid(int timeout) throws SQLException {
@@ -106,7 +102,7 @@ public abstract class ProxyConnectionBase implements Connection {
     //for JDK1.7 begin
     public void setSchema(String schema) throws SQLException {
         delegate.setSchema(schema);
-        pConn.setResetInd(POS_SCHEMA, !PoolStaticCenter.equals(schema, pConn.defaultSchema));
+        pCon.setResetInd(PS_SCHEMA, !PoolStaticCenter.equals(schema, pCon.defSchema));
     }
 
     public void abort(Executor executor) throws SQLException {
@@ -125,9 +121,9 @@ public abstract class ProxyConnectionBase implements Connection {
 
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
         checkClosed();
-        if (pConn.supportNetworkTimeout()) {
+        if (pCon.supportNetworkTimeout()) {
             delegate.setNetworkTimeout(executor, milliseconds);
-            pConn.setResetInd(POS_NETWORK, milliseconds != pConn.defaultNetworkTimeout);
+            pCon.setResetInd(PS_NETWORK, milliseconds != pCon.defNetworkTimeout);
         } else {
             throw DriverNotSupportNetworkTimeoutException;
         }
@@ -136,14 +132,14 @@ public abstract class ProxyConnectionBase implements Connection {
 
     public void commit() throws SQLException {
         delegate.commit();
-        pConn.lastAccessTime = currentTimeMillis();
-        pConn.commitDirtyInd = false;
+        pCon.lastAccessTime = currentTimeMillis();
+        pCon.commitDirtyInd = false;
     }
 
     public void rollback() throws SQLException {
         delegate.rollback();
-        pConn.lastAccessTime = currentTimeMillis();
-        pConn.commitDirtyInd = false;
+        pCon.lastAccessTime = currentTimeMillis();
+        pCon.commitDirtyInd = false;
     }
 
     public boolean isWrapperFor(Class<?> iface) throws SQLException {

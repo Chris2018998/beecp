@@ -33,23 +33,22 @@ public class PoolStaticCenter {
     public static final int POOL_CLOSED = 3;
     public static final int POOL_CLEARING = 4;
     //POOLED CONNECTION STATE
-    public static final int CONNECTION_IDLE = 1;
-    public static final int CONNECTION_USING = 2;
-    public static final int CONNECTION_CLOSED = 3;
-
+    public static final int CON_IDLE = 1;
+    public static final int CON_USING = 2;
+    public static final int CON_CLOSED = 3;
     //ADD CONNECTION THREAD STATE
     public static final int THREAD_WORKING = 1;
     public static final int THREAD_WAITING = 2;
     public static final int THREAD_DEAD = 3;
-    public static final Object BORROWER_NORMAL = new BorrowerState();
-    public static final Object BORROWER_WAITING = new BorrowerState();
+    public static final BorrowerState BOWER_NORMAL = new BorrowerState();
+    public static final BorrowerState BOWER_WAITING = new BorrowerState();
     //Connection reset pos in array
-    public static final int POS_AUTO = 0;
-    public static final int POS_TRANS = 1;
-    public static final int POS_READONLY = 2;
-    public static final int POS_CATALOG = 3;
-    public static final int POS_SCHEMA = 4;
-    public static final int POS_NETWORK = 5;
+    public static final int PS_AUTO = 0;
+    public static final int PS_TRANS = 1;
+    public static final int PS_READONLY = 2;
+    public static final int PS_CATALOG = 3;
+    public static final int PS_SCHEMA = 4;
+    public static final int PS_NETWORK = 5;
     public static final SQLTimeoutException RequestTimeoutException = new SQLTimeoutException("Request timeout");
     public static final SQLException RequestInterruptException = new SQLException("Request interrupted");
     public static final SQLException PoolCloseException = new SQLException("Pool has shut down or in clearing");
@@ -99,9 +98,8 @@ public class PoolStaticCenter {
         if (str == null) return true;
         int strLen = str.length();
         for (int i = 0; i < strLen; ++i) {
-            if (!Character.isWhitespace(str.charAt(i))) {
+            if (!Character.isWhitespace(str.charAt(i)))
                 return false;
-            }
         }
         return true;
     }
@@ -131,13 +129,10 @@ public class PoolStaticCenter {
     }
 
     static final Connection createProxyConnection(PooledConnection pConn, Borrower borrower) throws SQLException {
-        // borrower.setBorrowedConnection(pConn);
-        // return pConn.proxyConnCurInstance=new ProxyConnection(pConn);
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
     }
 
     static final ResultSet createProxyResultSet(ResultSet delegate, ProxyStatementBase proxyStatement, PooledConnection pConn) throws SQLException {
-        // return new ProxyResultSet(delegate,pConn);
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
     }
 

@@ -21,19 +21,19 @@ import static cn.beecp.pool.PoolStaticCenter.ResultSetClosedException;
  */
 abstract class ProxyResultSetBase implements ResultSet {
     protected ResultSet delegate;
-    protected PooledConnection pConn;//called by subclass to update tim
+    protected PooledConnection pCon;//called by subclass to update tim
     boolean isClosed;
     private ProxyStatementBase owner;//called by subclass to check close state
 
-    public ProxyResultSetBase(ResultSet delegate, PooledConnection pConn) {
+    public ProxyResultSetBase(ResultSet delegate, PooledConnection pCon) {
         this.delegate = delegate;
-        this.pConn = pConn;
+        this.pCon = pCon;
     }
 
-    public ProxyResultSetBase(ResultSet delegate, ProxyStatementBase owner, PooledConnection pConn) {
+    public ProxyResultSetBase(ResultSet delegate, ProxyStatementBase owner, PooledConnection pCon) {
         this.delegate = delegate;
         this.owner = owner;
-        this.pConn = pConn;
+        this.pCon = pCon;
         owner.setOpenResultSet(this);
     }
 

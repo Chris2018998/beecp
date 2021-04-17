@@ -95,7 +95,6 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
      */
     public Connection getConnection() throws SQLException {
         if (inited) return pool.getConnection();
-
         if (writeLock.tryLock()) {
             try {
                 if (!inited) {
@@ -117,7 +116,6 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
                 readLock.unlock();
             }
         }
-
         return pool.getConnection();
     }
 
@@ -226,7 +224,6 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
                 xaConnectionFactory = createXAConnectionFactoryByClassName(xaConnectionFactoryClassName);
             }
         }
-
         //2:create pool instance and init it with config
         ConnectionPool pool = createPoolInstanceByConfig(config);
         pool.init(config);
@@ -242,7 +239,6 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
                 int pos = url.indexOf(":", urlPrefix.length());
                 if (pos > 0) return url.substring(urlPrefix.length(), pos);
             }
-
             if (url.indexOf("oracle") > 1) {
                 return "oracle";
             } else if (url.indexOf("mysql") > 1) {
@@ -263,7 +259,6 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     private final ConnectionPool createPoolInstanceByConfig(BeeDataSourceConfig config) throws BeeDataSourceConfigException {
         String poolImplementClassName = config.getPoolImplementClassName();
         if (isBlank(poolImplementClassName)) poolImplementClassName = FastConnectionPool.class.getName();
-
         try {
             Class<?> poolClass = Class.forName(poolImplementClassName, true, getClass().getClassLoader());
             if (ConnectionPool.class.isAssignableFrom(poolClass)) {
@@ -271,7 +266,6 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             } else {
                 throw new BeeDataSourceConfigException("poolImplementClassName error,must implement '" + ConnectionPool.class.getName() + "' interface");
             }
-
         } catch (ClassNotFoundException e) {
             throw new BeeDataSourceConfigException("Not found connection pool class:" + poolImplementClassName);
         } catch (InstantiationException e) {

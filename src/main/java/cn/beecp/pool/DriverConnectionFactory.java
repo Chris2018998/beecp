@@ -21,31 +21,22 @@ import java.util.Properties;
  */
 
 public final class DriverConnectionFactory implements ConnectionFactory {
-
-    /**
-     * url link
-     */
-    private String connectURL;
-
-    /**
-     * connection driver
-     */
-    private Driver connectDriver;
-
-    /**
-     * connection extra properties
-     */
-    private Properties connectProperties;
+    //url link
+    private String url;
+     //connection driver
+    private Driver driver;
+    //connection extra properties
+    private Properties properties;
 
     //Constructor
-    public DriverConnectionFactory(String connectURL, Driver connectDriver, Properties connectProperties) {
-        this.connectURL = connectURL;
-        this.connectDriver = connectDriver;
-        this.connectProperties = connectProperties;
+    public DriverConnectionFactory(String url, Driver driver, Properties properties) {
+        this.url = url;
+        this.driver = driver;
+        this.properties = properties;
     }
 
     //create one connection
     public final Connection create() throws SQLException {
-        return connectDriver.connect(connectURL, connectProperties);
+        return driver.connect(url, properties);
     }
 }

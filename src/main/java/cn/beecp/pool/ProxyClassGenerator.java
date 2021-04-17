@@ -198,7 +198,7 @@ final class ProxyClassGenerator {
                 }
             }
 
-            createProxyConnectionMethod.setBody("{$2.lastUsedConn=$1; return new ProxyConnection($1);}");
+            createProxyConnectionMethod.setBody("{$2.lastUsedCon=$1; return new ProxyConnection($1);}");
             createProxyResultSetMethod.setBody("{return new ProxyResultSet($$);}");
             //............... ProxyObjectFactory end..................
 
@@ -255,13 +255,13 @@ final class ProxyClassGenerator {
             methodBuffer.delete(0, methodBuffer.length());
             methodBuffer.append("{");
             if (ctMethod.getReturnType() == ctStatementClass) {
-                methodBuffer.append("return new ProxyStatement(delegate." + methodName + "($$),pConn);");
+                methodBuffer.append("return new ProxyStatement(delegate." + methodName + "($$),pCon);");
             } else if (ctMethod.getReturnType() == ctPreparedStatementClass) {
-                methodBuffer.append("return new ProxyPsStatement(delegate." + methodName + "($$),pConn);");
+                methodBuffer.append("return new ProxyPsStatement(delegate." + methodName + "($$),pCon);");
             } else if (ctMethod.getReturnType() == ctCallableStatementClass) {
-                methodBuffer.append("return new ProxyCsStatement(delegate." + methodName + "($$),pConn);");
+                methodBuffer.append("return new ProxyCsStatement(delegate." + methodName + "($$),pCon);");
             } else if (ctMethod.getReturnType() == ctDatabaseMetaDataIntf) {
-                methodBuffer.append("return new ProxyDatabaseMetaData(delegate." + methodName + "($$),pConn);");
+                methodBuffer.append("return new ProxyDatabaseMetaData(delegate." + methodName + "($$),pCon);");
             } else if (methodName.equals("close")) {
                 //methodBuffer.append("super."+methodName + "($$);");
             } else if (ctMethod.getReturnType() == CtClass.voidType) {
@@ -312,19 +312,19 @@ final class ProxyClassGenerator {
             if (ctMethod.getReturnType() == CtClass.voidType) {
                 methodBuffer.append(delegateName + methodName + "($$);");
                 if (methodName.startsWith("execute"))
-                    methodBuffer.append("pConn.updateAccessTime();");
+                    methodBuffer.append("pCon.updateAccessTime();");
             } else {
                 if (methodName.startsWith("execute")) {
                     methodBuffer.append(ctMethod.getReturnType().getName() + " re=" + delegateName + methodName + "($$);")
-                            .append("pConn.updateAccessTime();");
+                            .append("pCon.updateAccessTime();");
                     if (ctMethod.getReturnType() == ctResultSetClass) {
-                        methodBuffer.append("return new ProxyResultSet(re,this,pConn);");
+                        methodBuffer.append("return new ProxyResultSet(re,this,pCon);");
                     } else {
                         methodBuffer.append("return re;");
                     }
                 } else {
                     if (ctMethod.getReturnType() == ctResultSetClass) {
-                        methodBuffer.append("return new ProxyResultSet(delegate." + methodName + "($$),this,pConn);");
+                        methodBuffer.append("return new ProxyResultSet(delegate." + methodName + "($$),this,pCon);");
                     } else
                         methodBuffer.append("return " + delegateName + methodName + "($$);");
                 }
@@ -362,7 +362,7 @@ final class ProxyClassGenerator {
             methodBuffer.append("{")
                     .append("checkClosed();");
             if (ctMethod.getReturnType() == ctResultSetClass) {
-                methodBuffer.append("return new ProxyResultSet(delegate." + methodName + "($$),pConn);");
+                methodBuffer.append("return new ProxyResultSet(delegate." + methodName + "($$),pCon);");
             } else if (ctMethod.getReturnType() == CtClass.voidType) {
                 methodBuffer.append("delegate." + methodName + "($$);");
             } else {
@@ -405,11 +405,11 @@ final class ProxyClassGenerator {
                 if (ctMethod.getReturnType() == CtClass.voidType) {
                     methodBuffer.append("delegate." + methodName + "($$);");
                     if (methodName.startsWith("insertRow") || methodName.startsWith("updateRow") || methodName.startsWith("deleteRow"))
-                        methodBuffer.append(" pConn.updateAccessTime();");
+                        methodBuffer.append(" pCon.updateAccessTime();");
                 } else {
                     if (methodName.startsWith("insertRow") || methodName.startsWith("updateRow") || methodName.startsWith("deleteRow")) {
                         methodBuffer.append(ctMethod.getReturnType().getName() + " re=delegate." + methodName + "($$);")
-                                .append(" pConn.updateAccessTime();")
+                                .append(" pCon.updateAccessTime();")
                                 .append(" return re;");
                     } else {
                         methodBuffer.append("return delegate." + methodName + "($$);");

@@ -22,21 +22,20 @@ import static cn.beecp.pool.PoolStaticCenter.*;
  */
 abstract class ProxyStatementBase implements Statement {
     protected Statement delegate;
-    protected PooledConnection pConn;//called by subclass to update time
+    protected PooledConnection pCon;//called by subclass to update time
     private ProxyConnectionBase owner;
 
     private boolean isClosed;
-    private boolean registered;
+    private boolean registered=true;
     private ProxyResultSetBase curRe;
-    private int resultOpenCode;
+    private int resultOpenCode = CLOSE_CURRENT_RESULT;
     private ArrayList<ProxyResultSetBase> results;
 
-    public ProxyStatementBase(Statement delegate, PooledConnection pConn) {
+    public ProxyStatementBase(Statement delegate, PooledConnection pCon) {
         this.delegate = delegate;
-        this.pConn = pConn;
-        this.owner = pConn.proxyConn;
-        this.registered = this.owner.registerStatement(this);
-        this.resultOpenCode = CLOSE_CURRENT_RESULT;
+        this.pCon = pCon;
+        this.owner = pCon.proxyCon;
+        this.owner.registerStatement(this);
     }
 
     private final void checkClosed() throws SQLException {
@@ -55,14 +54,12 @@ abstract class ProxyStatementBase implements Statement {
     public final void close() throws SQLException {
         if (isClosed) return;
         isClosed = true;
-
         if (curRe != null) curRe.setAsClosed();
         if (results != null) {
             for (int i = 0, l = results.size(); i < l; i++)
                 results.get(i).setAsClosed();
             results.clear();
         }
-
         try {
             delegate.close();
         } finally {
@@ -132,15 +129,13 @@ abstract class ProxyStatementBase implements Statement {
         checkClosed();
         ResultSet re = delegate.getResultSet();//raw resultSet
         if (re == null) return null;
-
         if (curRe != null && curRe.containsDelegate(re)) return curRe;
         if (results != null) {
             for (ProxyResultSetBase resultSetBase : results) {
                 if (resultSetBase.containsDelegate(re)) return resultSetBase;
             }
         }
-
-        return createProxyResultSet(re, this, pConn);
+        return createProxyResultSet(re, this, pCon);
     }
 
     public void setPoolable(boolean var1) throws SQLException {
