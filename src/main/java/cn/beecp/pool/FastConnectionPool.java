@@ -295,43 +295,50 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     commonLog.warn("BeeCP({})driver not support 'isValid'", poolName);
             } finally {
                 supportIsValidTest = true;//remark as tested
-                if (!supportIsValid) {//why?
-                    Statement st = null;
-                    try {
-                        st = rawCon.createStatement();
-                        st.setQueryTimeout(ConTestTimeout);
-                    } catch (Throwable ee) {
-                        supportQueryTimeout = false;
-                        if (isDebugEnabled)
-                            commonLog.debug("BeeCP({})driver not support 'queryTimeout',cause:", poolName, ee);
-                        else
-                            commonLog.warn("BeeCP({})driver not support 'queryTimeout'", poolName);
-                    } finally {
-                        if (st != null) {//begin to test sql valid
-                            boolean autoCommitChged = false;
-                            try {
-                                if (poolConfig.isDefaultAutoCommit()) {
-                                    rawCon.setAutoCommit(false);
-                                    autoCommitChged = true;
-                                }
-                                st.execute(poolConfig.getConnectionTestSQL());
-                                rawCon.rollback();//why? maybe store procedure in test sql
-                            } finally {//
-                                oclose(st);
-                                if (autoCommitChged) {//reset to default
-                                    try {
-                                        rawCon.setAutoCommit(poolConfig.isDefaultAutoCommit());
-                                    } catch (Throwable e) {
-                                        throw (e instanceof SQLException) ? (SQLException) e : new SQLException(e);
-                                    }
-                                }
-                            }
-                        }//test sql
-                    }
+            }
+
+            if (!supportIsValid) {
+                Statement st = null;
+                try {
+                    st = rawCon.createStatement();
+                    testQueryTimeout(st);
+                    validTestSql(rawCon,st);
+                } finally {
+                    if(st!=null)oclose(st);
                 }
             }
         }
         /**************************************test method end ********************************/
+    }
+    private void testQueryTimeout(Statement st){
+        try {
+            st.setQueryTimeout(ConTestTimeout);
+        } catch (Throwable ee) {
+            supportQueryTimeout = false;
+            if (isDebugEnabled)
+                commonLog.debug("BeeCP({})driver not support 'queryTimeout',cause:", poolName, ee);
+            else
+                commonLog.warn("BeeCP({})driver not support 'queryTimeout'", poolName);
+        }
+    }
+    private void validTestSql(Connection rawCon,Statement st)throws SQLException{
+        boolean changed = false;
+        try {
+            if (poolConfig.isDefaultAutoCommit()) {
+                rawCon.setAutoCommit(false);
+                changed = true;
+            }
+            st.execute(poolConfig.getConnectionTestSQL());
+            rawCon.rollback();//why? maybe store procedure in test sql
+        } finally {//
+            if (changed) {//reset to default
+                try {
+                    rawCon.setAutoCommit(poolConfig.isDefaultAutoCommit());
+                } catch (Throwable e) {
+                    throw (e instanceof SQLException) ? (SQLException) e : new SQLException(e);
+                }
+            }
+        }
     }
 
     /**
