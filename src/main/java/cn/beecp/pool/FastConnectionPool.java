@@ -198,7 +198,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 }
                 try {
                     setDefaultOnRawConn(con);
-                } catch (SQLException e) {
+                } catch (Throwable e) {
                     oclose(con);
                     throw e;
                 }
@@ -240,28 +240,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     private final void setDefaultOnRawConn(Connection rawCon) throws SQLException {
-        int p = 0;
-        try {
-            rawCon.setAutoCommit(poolConfig.isDefaultAutoCommit());
-            p = 1;
-            rawCon.setTransactionIsolation(poolConfig.getDefaultTransactionIsolationCode());
-            p = 2;
-            rawCon.setReadOnly(poolConfig.isDefaultReadOnly());
-            if (!isBlank(poolConfig.getDefaultCatalog())) {
-                p = 3;
-                rawCon.setCatalog(poolConfig.getDefaultCatalog());
-            }
-            if (!isBlank(poolConfig.getDefaultSchema())) {
-                p = 4;
-                rawCon.setSchema(poolConfig.getDefaultSchema());
-            }
-        } catch (Throwable e) {
-            if (isDebugEnabled)
-                commonLog.debug("BeeCP({})failed to set default value at executing '{}',cause:", poolName, setDefaultMethodNames[p], e);
-            else
-                commonLog.error("BeeCP({})failed to set default value at executing '{}'", poolName, setDefaultMethodNames[p]);
-            throw (e instanceof SQLException) ? (SQLException) e : new SQLException(e);
-        }
+        rawCon.setAutoCommit(poolConfig.isDefaultAutoCommit());
+        rawCon.setTransactionIsolation(poolConfig.getDefaultTransactionIsolationCode());
+        rawCon.setReadOnly(poolConfig.isDefaultReadOnly());
+        if (!isBlank(poolConfig.getDefaultCatalog()))
+            rawCon.setCatalog(poolConfig.getDefaultCatalog());
+        if (!isBlank(poolConfig.getDefaultSchema()))
+            rawCon.setSchema(poolConfig.getDefaultSchema());
+
         /**************************************test method start ********************************/
         if (!supportNetworkTimeoutTest) {//test networkTimeout
             try {//set networkTimeout
@@ -349,8 +335,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     private final boolean testOnBorrow(PooledConnection pCon) {
         if (currentTimeMillis() - pCon.lastAccessTime - ConTestInterval >= 0L && !conTester.isAlive(pCon)) {
-            this.removePooledConn(pCon, DESC_RM_BAD);
-            this.tryToCreateNewConnByAsyn();
+            removePooledConn(pCon, DESC_RM_BAD);
+            tryToCreateNewConnByAsyn();
             return false;
         } else {
             return true;
@@ -367,7 +353,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             int size = (initSize > 0) ? initSize : 1;
             for (int i = 0; i < size; i++)
                 createPooledConn(CON_IDLE);
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             for (PooledConnection pCon : conArray)
                 removePooledConn(pCon, DESC_RM_INIT);
             if (e instanceof ConnectionCreateFailedException) {//may be network bad or database is not ready
