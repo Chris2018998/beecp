@@ -104,10 +104,6 @@ public abstract class ProxyConnectionBase implements Connection {
         pCon.setResetInd(PS_CATALOG, !PoolStaticCenter.equals(catalog, pCon.cfgCatalog));
     }
 
-    public boolean isValid(int timeout) throws SQLException {
-        return delegate.isValid(timeout);
-    }
-
     //for JDK1.7 begin
     public void setSchema(String schema) throws SQLException {
         delegate.setSchema(schema);
