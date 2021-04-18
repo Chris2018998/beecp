@@ -12,7 +12,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-import static cn.beecp.pool.PoolStaticCenter.*;
+import static cn.beecp.pool.PoolStaticCenter.CLOSED_CSTM;
+import static cn.beecp.pool.PoolStaticCenter.createProxyResultSet;
 
 /**
  * ProxyStatementBase
@@ -38,37 +39,12 @@ abstract class ProxyStatementBase implements Statement {
         this.owner.registerStatement(this);
     }
 
-    private final void checkClosed() throws SQLException {
-        if (isClosed) throw StatementClosedException;
-    }
-
-    public Connection getConnection() throws SQLException {
-        checkClosed();
-        return owner;
-    }
-
-    public final boolean isClosed() throws SQLException {
-        return isClosed;
-    }
-
-    public final void close() throws SQLException {
-        if (isClosed) return;
-        isClosed = true;
-        if (curRe != null) curRe.setAsClosed();
-        if (results != null) {
-            for (int i = 0, l = results.size(); i < l; i++)
-                results.get(i).setAsClosed();
-            results.clear();
-        }
-        try {
-            delegate.close();
-        } finally {
-            delegate = CLOSED_CSTM;//why? because Mysql's PreparedStatement just only remark as closed with useServerCache mode
-            if (registered) owner.unregisterStatement(this);
-        }
-    }
-
-    void setAsClosed() {//call by PooledConnection.cleanOpenStatements
+    /*******************************************************************************************
+     *                                                                                         *
+     *                         Below are self methods                                          *
+     *                                                                                         *
+     ********************************************************************************************/
+    final void setAsClosed() {//call by PooledConnection.cleanOpenStatements
         try {
             registered = false;
             close();
@@ -115,18 +91,46 @@ abstract class ProxyStatementBase implements Statement {
         this.curRe = resultSetNew;
     }
 
+    /*******************************************************************************************
+     *                                                                                         *
+     *                         Below are override methods                                      *
+     *                                                                                         *
+     ********************************************************************************************/
+    public Connection getConnection() throws SQLException {
+        return owner;
+    }
+
+    public final boolean isClosed() throws SQLException {
+        return isClosed;
+    }
+
+    public final void close() throws SQLException {
+        if (isClosed) return;
+        isClosed = true;
+        if (curRe != null) curRe.setAsClosed();
+        if (results != null) {
+            for (int i = 0, l = results.size(); i < l; i++)
+                results.get(i).setAsClosed();
+            results.clear();
+        }
+        try {
+            delegate.close();
+        } finally {
+            delegate = CLOSED_CSTM;//why? because Mysql's PreparedStatement just only remark as closed with useServerCache mode
+            if (registered) owner.unregisterStatement(this);
+        }
+    }
+
     public boolean getMoreResults() throws SQLException {
         return getMoreResults(CLOSE_CURRENT_RESULT);
     }
 
     public boolean getMoreResults(int current) throws SQLException {
-        checkClosed();
         resultOpenCode = current;
         return delegate.getMoreResults(current);
     }
 
     public ResultSet getResultSet() throws SQLException {
-        checkClosed();
         ResultSet re = delegate.getResultSet();//raw resultSet
         if (re == null) return null;
         if (curRe != null && curRe.containsDelegate(re)) return curRe;
@@ -139,7 +143,6 @@ abstract class ProxyStatementBase implements Statement {
     }
 
     public void setPoolable(boolean var1) throws SQLException {
-        checkClosed();
     }
 
     public boolean isWrapperFor(Class<?> iface) throws SQLException {

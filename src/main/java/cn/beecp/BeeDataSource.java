@@ -86,6 +86,12 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         super(driver, url, user, password);
     }
 
+    /*******************************************************************************************
+     *                                                                                         *
+     *                         Below are override methods                                      *
+     *                                                                                         *
+     ********************************************************************************************/
+
     /**
      * borrow a connection from pool
      *
@@ -133,20 +139,6 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         throw new SQLException("Not support");
     }
 
-    public void close() {
-        if (pool != null) {
-            try {
-                pool.close();
-            } catch (SQLException e) {
-                commonLog.error("Error at closing connection pool,cause:", e);
-            }
-        }
-    }
-
-    public boolean isClosed() {
-        return (pool != null) ? pool.isClosed() : true;
-    }
-
     public PrintWriter getLogWriter() throws SQLException {
         throw new SQLFeatureNotSupportedException("Not supported");
     }
@@ -176,6 +168,27 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             return (T) this;
         else
             throw new SQLException("Wrapped object was not an instance of " + iface);
+    }
+
+
+    /*******************************************************************************************
+     *                                                                                         *
+     *                         Below are self methods                                          *
+     *                                                                                         *
+     ********************************************************************************************/
+
+    public boolean isClosed() {
+        return (pool != null) ? pool.isClosed() : true;
+    }
+
+    public void close() {
+        if (pool != null) {
+            try {
+                pool.close();
+            } catch (SQLException e) {
+                commonLog.error("Error at closing connection pool,cause:", e);
+            }
+        }
     }
 
     /**

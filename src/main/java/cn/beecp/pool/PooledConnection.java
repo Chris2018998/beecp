@@ -25,40 +25,41 @@ import static java.lang.System.currentTimeMillis;
  */
 class PooledConnection {
     private static final boolean[] FALSE_ARRAY = new boolean[6];
+    final boolean cfgAutoCommit;
+    final int cfgTransactionIsolationCode;
+    final boolean cfgReadOnly;
+    final String cfgCatalog;
+    final String cfgSchema;
+    final int cfgNetworkTimeout;
+    private final ThreadPoolExecutor networkTimeoutExecutor;
+    private final FastConnectionPool pool;
+    private final boolean[] resetInd = new boolean[FALSE_ARRAY.length];
+
     volatile int state;
     Connection rawCon;
     ProxyConnectionBase proxyCon;
     volatile long lastAccessTime;
     boolean commitDirtyInd;
     boolean curAutoCommit;
-    boolean defAutoCommit;
-    int defTransactionIsolationCode;
-    boolean defReadOnly;
-    String defCatalog;
-    String defSchema;
-    int defNetworkTimeout;
-    int traceIdx;
-    private ThreadPoolExecutor defNetworkTimeoutExecutor;
-    private FastConnectionPool pool;
+    int openStmSize;
     private int resetCnt;// reset count
-    private boolean[] resetInd = new boolean[FALSE_ARRAY.length];
-    private ProxyStatementBase[] statements;
+    private ProxyStatementBase[] openStatements;
 
     public PooledConnection(Connection rawConn, int connState, FastConnectionPool connPool, BeeDataSourceConfig config) {
         pool = connPool;
         state = connState;
         this.rawCon = rawConn;
         //default value
-        defTransactionIsolationCode = config.getDefaultTransactionIsolationCode();
-        defReadOnly = config.isDefaultReadOnly();
-        defCatalog = config.getDefaultCatalog();
-        defSchema = config.getDefaultSchema();
-        defNetworkTimeout = pool.getNetworkTimeout();
-        defNetworkTimeoutExecutor = pool.getNetworkTimeoutExecutor();
-        defAutoCommit = config.isDefaultAutoCommit();
-        curAutoCommit = defAutoCommit;
+        cfgTransactionIsolationCode = config.getDefaultTransactionIsolationCode();
+        cfgReadOnly = config.isDefaultReadOnly();
+        cfgCatalog = config.getDefaultCatalog();
+        cfgSchema = config.getDefaultSchema();
+        cfgNetworkTimeout = pool.getNetworkTimeout();
+        networkTimeoutExecutor = pool.getNetworkTimeoutExecutor();
+        cfgAutoCommit = config.isDefaultAutoCommit();
+        curAutoCommit = cfgAutoCommit;
         //default value
-        statements = new ProxyStatementBase[10];
+        openStatements = new ProxyStatementBase[10];
         lastAccessTime = currentTimeMillis();//first time
     }
 
@@ -119,20 +120,20 @@ class PooledConnection {
         //reset begin
         if (resetCnt > 0) {
             if (resetInd[0]) {//reset autoCommit
-                rawCon.setAutoCommit(defAutoCommit);
-                curAutoCommit = defAutoCommit;
+                rawCon.setAutoCommit(cfgAutoCommit);
+                curAutoCommit = cfgAutoCommit;
             }
             if (resetInd[1])
-                rawCon.setTransactionIsolation(defTransactionIsolationCode);
+                rawCon.setTransactionIsolation(cfgTransactionIsolationCode);
             if (resetInd[2]) //reset readonly
-                rawCon.setReadOnly(defReadOnly);
+                rawCon.setReadOnly(cfgReadOnly);
             if (resetInd[3]) //reset catalog
-                rawCon.setCatalog(defCatalog);
+                rawCon.setCatalog(cfgCatalog);
             //for JDK1.7 begin
             if (resetInd[4]) //reset schema
-                rawCon.setSchema(defSchema);
+                rawCon.setSchema(cfgSchema);
             if (resetInd[5]) //reset networkTimeout
-                rawCon.setNetworkTimeout(defNetworkTimeoutExecutor, defNetworkTimeout);
+                rawCon.setNetworkTimeout(networkTimeoutExecutor, cfgNetworkTimeout);
             //for JDK1.7 end
             resetCnt = 0;
             arraycopy(FALSE_ARRAY, 0, resetInd, 0, 6);
@@ -142,32 +143,32 @@ class PooledConnection {
     }
 
     //****************below are some statement trace methods***************************/
-    final void registerStatement(ProxyStatementBase e) {
-        if (traceIdx == statements.length) {
-            ProxyStatementBase[] newArray = new ProxyStatementBase[statements.length << 1];
-            arraycopy(statements, 0, newArray, 0, statements.length);
-            statements = newArray;
+    final void registerStatement(ProxyStatementBase s) {
+        if (openStmSize == openStatements.length) {//full
+            ProxyStatementBase[] newArray = new ProxyStatementBase[openStatements.length << 1];
+            arraycopy(openStatements, 0, newArray, 0, openStatements.length);
+            openStatements = newArray;
         }
-        statements[traceIdx++] = e;
+        openStatements[openStmSize++] = s;
     }
 
-    final void unregisterStatement(ProxyStatementBase e) {
-        for (int i = 0; i < traceIdx; i++)
-            if (e == statements[i]) {
-                int m = traceIdx - i - 1;
-                if (m > 0) arraycopy(statements, i + 1, statements, i, m);//move to ahead
-                statements[--traceIdx] = null; // clear to let GC do its work
+    final void unregisterStatement(ProxyStatementBase s) {
+        for (int i = 0; i < openStmSize; i++)
+            if (s == openStatements[i]) {
+                int m = openStmSize - i - 1;
+                if (m > 0) arraycopy(openStatements, i + 1, openStatements, i, m);//move to ahead
+                openStatements[--openStmSize] = null; // clear to let GC do its work
                 return;
             }
     }
 
     final void clearStatement() {
-        for (int i = 0; i < traceIdx; i++) {
-            if (statements[i] != null) {
-                statements[i].setAsClosed();
-                statements[i] = null;// clear to let GC do its work
+        for (int i = 0; i < openStmSize; i++) {
+            if (openStatements[i] != null) {
+                openStatements[i].setAsClosed();
+                openStatements[i] = null;// clear to let GC do its work
             }
         }
-        traceIdx = 0;
+        openStmSize = 0;
     }
 }

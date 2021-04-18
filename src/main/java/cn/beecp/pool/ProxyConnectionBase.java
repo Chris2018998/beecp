@@ -30,28 +30,18 @@ public abstract class ProxyConnectionBase implements Connection {
         this.delegate = pCon.rawCon;
     }
 
+    /*******************************************************************************************
+     *                                                                                         *
+     *                         Below are self methods                                          *
+     *                                                                                         *
+     ********************************************************************************************/
     public Connection getDelegate() throws SQLException {
         checkClosed();
         return delegate;
     }
 
-    public final boolean isClosed() throws SQLException {
-        return isClosed;
-    }
-
-    protected final void checkClosed() throws SQLException {
+    final void checkClosed() throws SQLException {
         if (isClosed) throw ConnectionClosedException;
-    }
-
-    public final void close() throws SQLException {
-        synchronized (this) {//safe close
-            if (isClosed) return;
-            isClosed = true;
-            delegate = CLOSED_CON;
-            if (pCon.traceIdx > 0)
-                pCon.clearStatement();
-        }
-        pCon.recycleSelf();
     }
 
     final void trySetAsClosed() {//called from FastConnectionPool
@@ -61,40 +51,57 @@ public abstract class ProxyConnectionBase implements Connection {
         }
     }
 
-    /************* statement trace :logic from mysql driver******************************/
-    synchronized final void registerStatement(ProxyStatementBase st) {
-        pCon.registerStatement(st);
+    synchronized final void registerStatement(ProxyStatementBase s) {
+        pCon.registerStatement(s);
     }
 
-    synchronized final void unregisterStatement(ProxyStatementBase st) {
-        pCon.unregisterStatement(st);
+    synchronized final void unregisterStatement(ProxyStatementBase s) {
+        pCon.unregisterStatement(s);
     }
 
-    /************* statement trace ******************************/
 
-    public void setAutoCommit(boolean autoCommit) throws SQLException {
-        checkClosed();
+    /*******************************************************************************************
+     *                                                                                         *
+     *                         Below are override methods                                      *
+     *                                                                                         *
+     ********************************************************************************************/
+    public final boolean isClosed() throws SQLException {
+        return isClosed;
+    }
+
+    public final void close() throws SQLException {
+        synchronized (this) {//safe close
+            if (isClosed) return;
+            isClosed = true;
+            delegate = CLOSED_CON;
+            if (pCon.openStmSize > 0)
+                pCon.clearStatement();
+        }
+        pCon.recycleSelf();
+    }
+
+    public final void setAutoCommit(boolean autoCommit) throws SQLException {
         if (!pCon.curAutoCommit && pCon.commitDirtyInd)
             throw AutoCommitChangeForbiddenException;
         delegate.setAutoCommit(autoCommit);
         pCon.curAutoCommit = autoCommit;
         if (autoCommit) pCon.commitDirtyInd = false;
-        pCon.setResetInd(PS_AUTO, autoCommit != pCon.defAutoCommit);
+        pCon.setResetInd(PS_AUTO, autoCommit != pCon.cfgAutoCommit);
     }
 
     public void setTransactionIsolation(int level) throws SQLException {
         delegate.setTransactionIsolation(level);
-        pCon.setResetInd(PS_TRANS, level != pCon.defTransactionIsolationCode);
+        pCon.setResetInd(PS_TRANS, level != pCon.cfgTransactionIsolationCode);
     }
 
     public void setReadOnly(boolean readOnly) throws SQLException {
         delegate.setReadOnly(readOnly);
-        pCon.setResetInd(PS_READONLY, readOnly != pCon.defReadOnly);
+        pCon.setResetInd(PS_READONLY, readOnly != pCon.cfgReadOnly);
     }
 
     public void setCatalog(String catalog) throws SQLException {
         delegate.setCatalog(catalog);
-        pCon.setResetInd(PS_CATALOG, !PoolStaticCenter.equals(catalog, pCon.defCatalog));
+        pCon.setResetInd(PS_CATALOG, !PoolStaticCenter.equals(catalog, pCon.cfgCatalog));
     }
 
     public boolean isValid(int timeout) throws SQLException {
@@ -104,11 +111,10 @@ public abstract class ProxyConnectionBase implements Connection {
     //for JDK1.7 begin
     public void setSchema(String schema) throws SQLException {
         delegate.setSchema(schema);
-        pCon.setResetInd(PS_SCHEMA, !PoolStaticCenter.equals(schema, pCon.defSchema));
+        pCon.setResetInd(PS_SCHEMA, !PoolStaticCenter.equals(schema, pCon.cfgSchema));
     }
 
     public void abort(Executor executor) throws SQLException {
-        checkClosed();
         if (executor == null) throw new SQLException("executor can't be null");
         executor.execute(new Runnable() {
             public void run() {
@@ -122,10 +128,9 @@ public abstract class ProxyConnectionBase implements Connection {
     }
 
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-        checkClosed();
         if (pCon.supportNetworkTimeout()) {
             delegate.setNetworkTimeout(executor, milliseconds);
-            pCon.setResetInd(PS_NETWORK, milliseconds != pCon.defNetworkTimeout);
+            pCon.setResetInd(PS_NETWORK, milliseconds != pCon.cfgNetworkTimeout);
         } else {
             throw DriverNotSupportNetworkTimeoutException;
         }

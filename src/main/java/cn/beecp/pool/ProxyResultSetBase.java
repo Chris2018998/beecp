@@ -11,7 +11,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import static cn.beecp.pool.PoolStaticCenter.CLOSED_RSLT;
-import static cn.beecp.pool.PoolStaticCenter.ResultSetClosedException;
 
 /**
  * ResultSet proxy base class
@@ -37,21 +36,33 @@ abstract class ProxyResultSetBase implements ResultSet {
         owner.setOpenResultSet(this);
     }
 
+    /*******************************************************************************************
+     *                                                                                         *
+     *                         Below are self methods                                          *
+     *                                                                                         *
+     ********************************************************************************************/
     boolean containsDelegate(ResultSet delegate) {
         return this.delegate == delegate;
     }
 
+    final void setAsClosed() {//call by ProxyStatementBase.close
+        try {
+            close();
+        } catch (Throwable e) {
+        }
+    }
+
+    /*******************************************************************************************
+     *                                                                                         *
+     *                         Below are override methods                                      *
+     *                                                                                         *
+     ********************************************************************************************/
     public Statement getStatement() throws SQLException {
-        checkClosed();
         return owner;
     }
 
     public final boolean isClosed() throws SQLException {
         return isClosed;
-    }
-
-    private final void checkClosed() throws SQLException {
-        if (isClosed) throw ResultSetClosedException;
     }
 
     public final void close() throws SQLException {
@@ -64,13 +75,6 @@ abstract class ProxyResultSetBase implements ResultSet {
             /*** #40-start fix NullPointException(ResultSet from DatabaseMetaData) */
             if (owner != null) owner.removeOpenResultSet(this);
             /*** #40-end *******************/
-        }
-    }
-
-    final void setAsClosed() {//call by ProxyStatementBase.close
-        try {
-            close();
-        } catch (Throwable e) {
         }
     }
 

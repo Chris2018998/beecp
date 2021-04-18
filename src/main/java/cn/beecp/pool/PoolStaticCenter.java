@@ -40,6 +40,7 @@ public class PoolStaticCenter {
     public static final int THREAD_WORKING = 1;
     public static final int THREAD_WAITING = 2;
     public static final int THREAD_DEAD = 3;
+    //BORROWER STATE
     public static final BorrowerState BOWER_NORMAL = new BorrowerState();
     public static final BorrowerState BOWER_WAITING = new BorrowerState();
     //Connection reset pos in array
@@ -67,7 +68,11 @@ public class PoolStaticCenter {
             new Class[]{Connection.class},
             new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    throw ConnectionClosedException;
+                    if ("isClosed".equals(method.getName())) {
+                        return Boolean.TRUE;
+                    } else {
+                        throw ConnectionClosedException;
+                    }
                 }
             }
     );
@@ -76,7 +81,11 @@ public class PoolStaticCenter {
             new Class[]{CallableStatement.class},
             new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    throw StatementClosedException;
+                    if ("isClosed".equals(method.getName())) {
+                        return Boolean.TRUE;
+                    } else {
+                        throw StatementClosedException;
+                    }
                 }
             }
     );
@@ -85,7 +94,11 @@ public class PoolStaticCenter {
             new Class[]{ResultSet.class},
             new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    throw ResultSetClosedException;
+                    if ("isClosed".equals(method.getName())) {
+                        return Boolean.TRUE;
+                    } else {
+                        throw ResultSetClosedException;
+                    }
                 }
             }
     );
