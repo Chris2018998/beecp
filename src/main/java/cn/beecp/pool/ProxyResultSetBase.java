@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import static cn.beecp.pool.PoolStaticCenter.CLOSED_RSLT;
+import static cn.beecp.pool.PoolStaticCenter.ResultSetClosedException;
 
 /**
  * ResultSet proxy base class
@@ -58,6 +59,7 @@ abstract class ProxyResultSetBase implements ResultSet {
      *                                                                                         *
      ********************************************************************************************/
     public Statement getStatement() throws SQLException {
+        if (isClosed) throw ResultSetClosedException;
         return owner;
     }
 

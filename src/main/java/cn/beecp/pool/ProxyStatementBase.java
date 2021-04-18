@@ -12,8 +12,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-import static cn.beecp.pool.PoolStaticCenter.CLOSED_CSTM;
-import static cn.beecp.pool.PoolStaticCenter.createProxyResultSet;
+import static cn.beecp.pool.PoolStaticCenter.*;
 
 /**
  * ProxyStatementBase
@@ -97,6 +96,7 @@ abstract class ProxyStatementBase implements Statement {
      *                                                                                         *
      ********************************************************************************************/
     public Connection getConnection() throws SQLException {
+        if (isClosed) throw ConnectionClosedException;
         return owner;
     }
 
