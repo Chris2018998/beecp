@@ -1,0 +1,12 @@
+BeeCP-3.1.8
+[INFO]2021-04-23 21:45:20-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:10,total time:222ms,avg time:22.200000ms,min time:21ms,max time:23ms
+[INFO]2021-04-23 21:45:39-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:100,total time:2712ms,avg time:27.120000ms,min time:14ms,max time:38ms
+[INFO]2021-04-23 21:45:59-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:1000,total time:59797ms,avg time:59.797000ms,min time:0ms,max time:243ms
+[INFO]2021-04-23 21:46:11-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:10000,total time:21495ms,avg time:2.149500ms,min time:0ms,max time:316ms
+
+
+HikariCP-4.0.3
+[INFO]2021-04-23 21:49:21-Pool[HikariCP -- Multiple thread query] -- Execution count:10,total time:457ms,avg time:45.700000ms,min time:36ms,max time:65ms
+[INFO]2021-04-23 21:49:28-Pool[HikariCP -- Multiple thread query] -- Execution count:100,total time:10728ms,avg time:107.280000ms,min time:59ms,max time:133ms
+[INFO]2021-04-23 21:49:38-Pool[HikariCP -- Multiple thread query] -- Execution count:1000,total time:199195ms,avg time:199.195000ms,min time:0ms,max time:447ms
+[INFO]2021-04-23 21:49:49-Pool[HikariCP -- Multiple thread query] -- Execution count:10000,total time:268988ms,avg time:26.898800ms,min time:0ms,max time:702ms
