@@ -36,10 +36,9 @@ public class PoolStaticCenter {
     public static final int CON_IDLE = 1;
     public static final int CON_USING = 2;
     public static final int CON_CLOSED = 3;
-    //ADD CONNECTION THREAD STATE
+    //Idle Scan thread state
     public static final int THREAD_WORKING = 1;
-    public static final int THREAD_WAITING = 2;
-    public static final int THREAD_DEAD = 3;
+    public static final int THREAD_EXIT = 2;
     //BORROWER STATE
     public static final BorrowerState BOWER_NORMAL = new BorrowerState();
     public static final BorrowerState BOWER_WAITING = new BorrowerState();

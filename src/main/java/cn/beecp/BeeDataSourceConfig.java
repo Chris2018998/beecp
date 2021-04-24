@@ -80,7 +80,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //milliseconds:connection test interval time from last active time
     private long connectionTestInterval = 500L;
     //milliseconds:interval time to run check task in scheduledThreadPoolExecutor
-    private long idleCheckTimeInterval = MINUTES.toMillis(5);
+    private long idleCheckTimeInterval = MINUTES.toMillis(3);
     //using connection close indicator,true,close directly;false,delay close util them becoming idle or hold timeout
     private boolean forceCloseUsingOnClear;
     //milliseconds:delay time for next clear pooled connections when exists using connections and 'forceCloseUsingOnClear' is false
