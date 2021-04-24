@@ -627,7 +627,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         } while (true);
     }
 
-    /******************************** JMX **************************************/
     // close all connections
     public void clearAllConnections() {
         clearAllConnections(false);
@@ -752,8 +751,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 
     /**********************************************Below are some inner classes******************************************************************/
-
-
+    
     // Connection check Policy
     static interface ConnectionTester {
         boolean isAlive(PooledConnection pCon);
