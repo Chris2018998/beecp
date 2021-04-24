@@ -694,52 +694,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         return monitorVo;
     }
 
-    // register JMX
-    private void registerJmx() {
-        if (poolConfig.isEnableJmx()) {
-            MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-            registerJmxBean(mBeanServer, String.format("cn.beecp.pool.FastConnectionPool:type=BeeCP(%s)", poolName), this);
-            registerJmxBean(mBeanServer, String.format("cn.beecp.BeeDataSourceConfig:type=BeeCP(%s)-config", poolName), poolConfig);
-        }
-    }
-
-    private void registerJmxBean(MBeanServer mBeanServer, String regName, Object bean) {
-        try {
-            ObjectName jmxRegName = new ObjectName(regName);
-            if (!mBeanServer.isRegistered(jmxRegName)) {
-                mBeanServer.registerMBean(bean, jmxRegName);
-            }
-        } catch (Exception e) {
-            commonLog.warn("BeeCP({})failed to register jmx-bean:{}", poolName, regName, e);
-        }
-    }
-
-    // unregister JMX
-    private void unregisterJmx() {
-        if (poolConfig.isEnableJmx()) {
-            MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-            unregisterJmxBean(mBeanServer, String.format("cn.beecp.pool.FastConnectionPool:type=BeeCP(%s)", poolName));
-            unregisterJmxBean(mBeanServer, String.format("cn.beecp.BeeDataSourceConfig:type=BeeCP(%s)-config", poolName));
-        }
-    }
-
-    private void unregisterJmxBean(MBeanServer mBeanServer, String regName) {
-        try {
-            ObjectName jmxRegName = new ObjectName(regName);
-            if (mBeanServer.isRegistered(jmxRegName)) {
-                mBeanServer.unregisterMBean(jmxRegName);
-            }
-        } catch (Exception e) {
-            commonLog.warn("BeeCP({})failed to unregister jmx-bean:{}", poolName, regName, e);
-        }
-    }
-
     private void shutdownIdleScanThread() {
         idleThreadState.set(THREAD_EXIT);
         unpark(this);
     }
 
-    /**********************************************Below are some inner classes******************************************************************/
     public void run() {
         do {
             if (idleThreadState.get() == THREAD_WORKING) {
@@ -753,6 +712,47 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             }
         } while (true);
     }
+
+    //******************************** JMX methods ********************************************************************/
+    private void registerJmx() {
+        if (poolConfig.isEnableJmx()) {
+            MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+            registerJmxBean(mBeanServer, String.format("cn.beecp.pool.FastConnectionPool:type=BeeCP(%s)", poolName), this);
+            registerJmxBean(mBeanServer, String.format("cn.beecp.BeeDataSourceConfig:type=BeeCP(%s)-config", poolName), poolConfig);
+        }
+    }
+    private void registerJmxBean(MBeanServer mBeanServer, String regName, Object bean) {
+        try {
+            ObjectName jmxRegName = new ObjectName(regName);
+            if (!mBeanServer.isRegistered(jmxRegName)) {
+                mBeanServer.registerMBean(bean, jmxRegName);
+            }
+        } catch (Exception e) {
+            commonLog.warn("BeeCP({})failed to register jmx-bean:{}", poolName, regName, e);
+        }
+    }
+    private void unregisterJmx() {
+        if (poolConfig.isEnableJmx()) {
+            MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+            unregisterJmxBean(mBeanServer, String.format("cn.beecp.pool.FastConnectionPool:type=BeeCP(%s)", poolName));
+            unregisterJmxBean(mBeanServer, String.format("cn.beecp.BeeDataSourceConfig:type=BeeCP(%s)-config", poolName));
+        }
+    }
+    private void unregisterJmxBean(MBeanServer mBeanServer, String regName) {
+        try {
+            ObjectName jmxRegName = new ObjectName(regName);
+            if (mBeanServer.isRegistered(jmxRegName)) {
+                mBeanServer.unregisterMBean(jmxRegName);
+            }
+        } catch (Exception e) {
+            commonLog.warn("BeeCP({})failed to unregister jmx-bean:{}", poolName, regName, e);
+        }
+    }
+    //******************************** JMX methods ********************************************************************/
+
+
+    /**********************************************Below are some inner classes******************************************************************/
+
 
     // Connection check Policy
     static interface ConnectionTester {
@@ -783,8 +783,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             return th;
         }
     }
-
-    //******************************** JMX **************************************/
     static final class CompeteTransferPolicy implements TransferPolicy {
         public final int getCheckStateCode() {
             return CON_IDLE;
