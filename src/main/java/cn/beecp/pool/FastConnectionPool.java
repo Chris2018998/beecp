@@ -110,7 +110,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 transferPolicy = new CompeteTransferPolicy();
                 ConUnCatchStateCode = transferPolicy.getCheckStateCode();
             }
-            createInitConnections(poolConfig.getInitialSize());
 
             exitHook = new ConnectionPoolHook();
             Runtime.getRuntime().addShutdownHook(exitHook);
@@ -119,6 +118,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             dynAddPooledConnTask = new DynAddPooledConnTask();
             poolTaskExecutor = new ThreadPoolExecutor(2, 2, 5, SECONDS, new LinkedBlockingQueue<Runnable>(), new PoolThreadThreadFactory("PoolTaskThread"));
             poolTaskExecutor.allowCoreThreadTimeOut(true);
+            createInitConnections(poolConfig.getInitialSize());
+
             registerJmx();
             commonLog.info("BeeCP({})has startup{mode:{},init size:{},max size:{},semaphore size:{},max wait:{}ms,driver:{}}",
                     poolName,
@@ -356,7 +357,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private void createInitConnections(int initSize) throws SQLException {
         try {
             int size = (initSize > 0) ? initSize : 1;
-            for (int i = 0; i < initSize; i++)
+            for (int i = 0; i < size; i++)
                 createPooledConn(CON_IDLE);
         } catch (Throwable e) {
             for (PooledConnection pCon : conArray)
@@ -411,6 +412,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             //2:try to create one directly
             if (conArray.length < PoolMaxSize && (pCon = createPooledConn(CON_USING)) != null)
                 return createProxyConnection(pCon, borrower);
+
+                //return createProxyConnection(pCon, borrower);
             //3:try to get one transferred connection
             boolean failed = false;
             SQLException cause = null;
@@ -751,7 +754,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
 
     /**********************************************Below are some inner classes******************************************************************/
-    
+
     // Connection check Policy
     static interface ConnectionTester {
         boolean isAlive(PooledConnection pCon);
@@ -824,8 +827,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 needAddConSize.decrementAndGet();
                 if (!waitQueue.isEmpty()) {
                     try {
-                        if ((pCon = createPooledConn(CON_USING)) != null)
-                            recycle(pCon);
+                        pCon = createPooledConn(CON_USING);
+                        if (pCon!=null) recycle(pCon);
                     } catch (Throwable e) {
                         transferException((e instanceof SQLException) ? (SQLException) e : new SQLException(e));
                     }
