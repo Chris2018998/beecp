@@ -57,7 +57,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private int ConTestTimeout;//seconds
     private long ConTestInterval;//milliseconds
     private long DelayTimeForNextClearNanos;//nanoseconds
-    private long CheckTimeIntervalNanos;//nanoseconds
     private ConnectionTester conTester;
     private ConnectionPoolHook exitHook;
     private BeeDataSourceConfig poolConfig;
@@ -131,7 +130,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     poolConfig.getDriverClassName());
             poolState.set(POOL_NORMAL);
 
-            this.CheckTimeIntervalNanos = MILLISECONDS.toNanos(poolConfig.getIdleCheckTimeInterval());
             this.setName("IdleTimeoutScanThread");
             this.setDaemon(true);
             this.start();
@@ -702,6 +700,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     public void run() {
+        final long CheckTimeIntervalNanos = MILLISECONDS.toNanos(poolConfig.getIdleCheckTimeInterval());
         do {
             if (idleThreadState.get() == THREAD_WORKING) {
                 try {
