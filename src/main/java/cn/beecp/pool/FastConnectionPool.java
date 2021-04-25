@@ -110,8 +110,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 ConUnCatchStateCode = transferPolicy.getCheckStateCode();
             }
 
-            exitHook = new ConnectionPoolHook();
-            Runtime.getRuntime().addShutdownHook(exitHook);
             semaphoreSize = poolConfig.getBorrowSemaphoreSize();
             semaphore = new Semaphore(semaphoreSize, poolConfig.isFairMode());
             dynAddPooledConnTask = new DynAddPooledConnTask();
@@ -119,6 +117,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             poolTaskExecutor.allowCoreThreadTimeOut(true);
             createInitConnections(poolConfig.getInitialSize());
 
+            exitHook = new ConnectionPoolHook();
+            Runtime.getRuntime().addShutdownHook(exitHook);
             registerJmx();
             commonLog.info("BeeCP({})has startup{mode:{},init size:{},max size:{},semaphore size:{},max wait:{}ms,driver:{}}",
                     poolName,
