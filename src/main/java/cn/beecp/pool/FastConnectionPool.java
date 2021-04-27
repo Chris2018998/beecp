@@ -299,10 +299,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private void testQueryTimeout(Statement st, int timeoutSeconds) {
         try {
             st.setQueryTimeout(timeoutSeconds);
-        } catch (Throwable ee) {
+        } catch (Throwable e) {
             ((SQLQueryTester) conTester).setSupportQueryTimeout(false);
             if (isDebugEnabled)
-                commonLog.debug("BeeCP({})driver not support 'queryTimeout',cause:", poolName, ee);
+                commonLog.debug("BeeCP({})driver not support 'queryTimeout',cause:", poolName, e);
             else
                 commonLog.warn("BeeCP({})driver not support 'queryTimeout'", poolName);
         }
@@ -496,7 +496,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     /**
      * @param e: transfer Exception to waiter
      */
-    private final void transferException(SQLException e) {
+    private void transferException(SQLException e) {
         Iterator<Borrower> iterator = waitQueue.iterator();
         while (iterator.hasNext()) {
             Borrower borrower = iterator.next();
@@ -764,20 +764,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         void onFailedTransfer(PooledConnection p);
     }
 
-    private static final class PoolThreadThreadFactory implements ThreadFactory {
-        private String thName;
-
-        public PoolThreadThreadFactory(String thName) {
-            this.thName = thName;
-        }
-
-        public Thread newThread(Runnable r) {
-            Thread th = new Thread(r, thName);
-            th.setDaemon(true);
-            return th;
-        }
-    }
-
     private static final class CompeteTransferPolicy implements TransferPolicy {
         public final int getCheckStateCode() {
             return CON_IDLE;
@@ -826,15 +812,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     // SQL tester
-    private final static class SQLQueryTester extends ConnectionTester {
+    private static final class SQLQueryTester extends ConnectionTester {
+        private final String testSql;
         private final boolean autoCommit;//connection default value
-        private final String aliveTestSQL;
         private boolean supportQueryTimeout = true;
 
-        public SQLQueryTester(String poolName, int ConTestTimeout, boolean autoCommit, String aliveTestSQL) {
+        public SQLQueryTester(String poolName, int ConTestTimeout, boolean autoCommit, String testSql) {
             super(poolName, ConTestTimeout);
             this.autoCommit = autoCommit;
-            this.aliveTestSQL = aliveTestSQL;
+            this.testSql = testSql;
         }
 
         public void setSupportQueryTimeout(boolean supportQueryTimeout) {
@@ -861,7 +847,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         commonLog.error("BeeCP({})failed to setQueryTimeout", poolName, e);
                     }
                 }
-                st.execute(aliveTestSQL);
+                st.execute(testSql);
                 con.rollback();//why? maybe store procedure in test sql
                 return true;
             } catch (Throwable e) {
@@ -881,7 +867,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     //valid tester(call connection.isValid)
-    private final static class ConnValidTester extends ConnectionTester {
+    private static final class ConnValidTester extends ConnectionTester {
         public ConnValidTester(String poolName, int ConTestTimeout) {
             super(poolName, ConTestTimeout);
         }
@@ -896,6 +882,20 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 commonLog.error("BeeCP({})failed to test connection", poolName, e);
             }
             return false;
+        }
+    }
+
+    private static final class PoolThreadThreadFactory implements ThreadFactory {
+        private String thName;
+
+        public PoolThreadThreadFactory(String thName) {
+            this.thName = thName;
+        }
+
+        public Thread newThread(Runnable r) {
+            Thread th = new Thread(r, thName);
+            th.setDaemon(true);
+            return th;
         }
     }
 
