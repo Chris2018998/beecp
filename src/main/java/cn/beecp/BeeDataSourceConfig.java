@@ -57,7 +57,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //default transaction isolation description,match isolation code can be set to <code>defaultTransactionIsolationCode</code>
     private String defaultTransactionIsolation = TransactionIsolationLevel.LEVEL_READ_COMMITTED;
     //a SQL to check connection active,recommend to use a simple query SQL,not contain procedure,function in SQL
-    private String connectionTestSQL = "select 1 from dual";
+    private String connectionTestSQL = "SELECT 1";
 
     //pool name
     private String poolName;
