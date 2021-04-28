@@ -275,7 +275,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
             if (!supportIsValid) {
                 Statement st = null;
-                this.conTester = new SQLQueryTester(poolName, poolConfig.getConnectionTestTimeout(), poolConfig.isDefaultAutoCommit(), poolConfig.getConnectionTestSql());
+                this.conTester = new SqlQueryTester(poolName, poolConfig.getConnectionTestTimeout(),
+                        poolConfig.isDefaultAutoCommit(), poolConfig.getConnectionTestSql());
+
                 try {
                     st = rawCon.createStatement();
                     testQueryTimeout(st, poolConfig.getConnectionTestTimeout());
@@ -292,7 +294,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         try {
             st.setQueryTimeout(timeoutSeconds);
         } catch (Throwable e) {
-            ((SQLQueryTester) conTester).setSupportQueryTimeout(false);
+            ((SqlQueryTester) conTester).setSupportQueryTimeout(false);
             if (isDebugEnabled)
                 commonLog.debug("BeeCP({})driver not support 'queryTimeout',cause:", poolName, e);
             else
@@ -802,12 +804,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     // SQL tester
-    private static final class SQLQueryTester extends ConnectionTester {
+    private static final class SqlQueryTester extends ConnectionTester {
         private final String testSql;
         private final boolean autoCommit;//connection default value
         private boolean supportQueryTimeout = true;
 
-        public SQLQueryTester(String poolName, int ConTestTimeout, boolean autoCommit, String testSql) {
+        public SqlQueryTester(String poolName, int ConTestTimeout, boolean autoCommit, String testSql) {
             super(poolName, ConTestTimeout);
             this.autoCommit = autoCommit;
             this.testSql = testSql;
@@ -818,18 +820,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
 
         public final boolean isAlive(PooledConnection pCon) {
-            boolean autoCommitChged = false;
             Statement st = null;
+            boolean changed = false;
             Connection con = pCon.rawCon;
             try {
-                //may be a store procedure or a function in this test sql,so need rollback finally
-                //for example: select xxx() from dual
                 if (autoCommit) {
                     con.setAutoCommit(false);
-                    autoCommitChged = true;
+                    changed = true;
                 }
                 st = con.createStatement();
-                pCon.lastAccessTime = currentTimeMillis();
                 if (supportQueryTimeout) {
                     try {
                         st.setQueryTimeout(ConTestTimeout);
@@ -838,6 +837,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     }
                 }
                 st.execute(testSql);
+                pCon.lastAccessTime = currentTimeMillis();
 
                 return true;
             } catch (Throwable e) {
@@ -845,11 +845,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 return false;
             } finally {
                 try {
-                    con.rollback();//why? maybe store procedure in test sql
+                    /**
+                     *  for example: select xxx() from dual
+                     *  a store procedure (insert 100 records to db and failed on 99), if not rollback,what will happen?
+                     */
+                    con.rollback();
                     if (st != null) oclose(st);
-                    if (autoCommitChged) con.setAutoCommit(autoCommit);//reset to default
+                    if (changed) con.setAutoCommit(autoCommit);//reset to default
                 } catch (Throwable e) {
-                    commonLog.error("BeeCP({})failed to setAutoCommit(true) after connection test", poolName, e);
+                    commonLog.error("BeeCP({})failed to rest connection after sql test", poolName, e);
+                    return false;
                 }
             }
         }
