@@ -67,10 +67,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private DynAddPooledConnTask dynAddPooledConnTask;
     private ThreadPoolExecutor poolTaskExecutor;
     private int networkTimeout;
-    private boolean supportSchema = true;
-    private boolean supportIsValid = true;
-    private boolean supportNetworkTimeout = true;
     private boolean supportIsValidTest;
+    private boolean supportNetworkTimeout = true;
     private boolean supportNetworkTimeoutTest;
     private String poolName = "";
     private String poolMode = "";
@@ -153,14 +151,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         } catch (ClassNotFoundException e) {
             throw new SQLException("Jdbc proxy classes missed", e);
         }
-    }
-
-    boolean supportIsValid() {
-        return supportIsValid;
-    }
-
-    boolean supportSchema() {
-        return supportSchema;
     }
 
     boolean supportNetworkTimeout() {
@@ -265,6 +255,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             }
         }
         if (!this.supportIsValidTest) {//test 'connection.isValid' method
+            boolean supportIsValid = false;
             try {
                 if (rawCon.isValid(poolConfig.getConnectionTestTimeout())) {
                     this.conTester = new ConnValidTester(poolName, poolConfig.getConnectionTestTimeout());

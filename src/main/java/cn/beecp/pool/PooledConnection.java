@@ -100,14 +100,6 @@ class PooledConnection {
         //lastAccessTime=currentTimeMillis();
     }
 
-    boolean supportIsValid() {
-        return pool.supportIsValid();
-    }
-
-    boolean supportSchema() {
-        return pool.supportSchema();
-    }
-
     boolean supportNetworkTimeout() {
         return pool.supportNetworkTimeout();
     }
