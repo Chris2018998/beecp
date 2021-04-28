@@ -91,7 +91,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             commonLog.info("BeeCP({})starting....", poolName);
             PoolMaxSize = poolConfig.getMaxActive();
             conFactory = poolConfig.getConnectionFactory();
-            conTester = new SQLQueryTester(poolName, poolConfig.getConnectionTestTimeout(), poolConfig.isDefaultAutoCommit(), poolConfig.getConnectionTestSQL());
             MaxWaitNanos = MILLISECONDS.toNanos(poolConfig.getMaxWait());
             DelayTimeForNextClearNanos = MILLISECONDS.toNanos(poolConfig.getDelayTimeForNextClear());
             ConTestInterval = poolConfig.getConnectionTestInterval();
@@ -255,10 +254,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             }
         }
         if (!this.supportIsValidTest) {//test 'connection.isValid' method
-            boolean supportIsValid = false;
+            boolean supportIsValid = true;
             try {
                 if (rawCon.isValid(poolConfig.getConnectionTestTimeout())) {
                     this.conTester = new ConnValidTester(poolName, poolConfig.getConnectionTestTimeout());
+                    return;
                 } else {
                     supportIsValid = false;
                     commonLog.warn("BeeCP({})driver not support 'isValid'", poolName);
@@ -275,6 +275,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
             if (!supportIsValid) {
                 Statement st = null;
+                this.conTester = new SQLQueryTester(poolName, poolConfig.getConnectionTestTimeout(), poolConfig.isDefaultAutoCommit(), poolConfig.getConnectionTestSql());
                 try {
                     st = rawCon.createStatement();
                     testQueryTimeout(st, poolConfig.getConnectionTestTimeout());
@@ -306,15 +307,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 rawCon.setAutoCommit(false);
                 changed = true;
             }
-            st.execute(poolConfig.getConnectionTestSQL());
-            rawCon.rollback();//why? maybe store procedure in test sql
-        } finally {//
-            if (changed) {//reset to default
-                try {
-                    rawCon.setAutoCommit(poolConfig.isDefaultAutoCommit());
-                } catch (Throwable e) {
-                    throw (e instanceof SQLException) ? (SQLException) e : new SQLException(e);
-                }
+            st.execute(poolConfig.getConnectionTestSql());
+        } finally {
+            try {
+                rawCon.rollback();//why? maybe store procedure in test sql
+                if (changed) rawCon.setAutoCommit(poolConfig.isDefaultAutoCommit());//reset to default
+            } catch (Throwable e) {
+                throw (e instanceof SQLException) ? (SQLException) e : new SQLException(e);
             }
         }
     }
@@ -839,19 +838,18 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     }
                 }
                 st.execute(testSql);
-                con.rollback();//why? maybe store procedure in test sql
+
                 return true;
             } catch (Throwable e) {
                 commonLog.error("BeeCP({})failed to test connection", poolName, e);
                 return false;
             } finally {
-                if (st != null) oclose(st);
-                if (autoCommitChged) {
-                    try {
-                        con.setAutoCommit(autoCommit);//reset to default
-                    } catch (Throwable e) {
-                        commonLog.error("BeeCP({})failed to setAutoCommit(true) after connection test", poolName, e);
-                    }
+                try {
+                    con.rollback();//why? maybe store procedure in test sql
+                    if (st != null) oclose(st);
+                    if (autoCommitChged) con.setAutoCommit(autoCommit);//reset to default
+                } catch (Throwable e) {
+                    commonLog.error("BeeCP({})failed to setAutoCommit(true) after connection test", poolName, e);
                 }
             }
         }

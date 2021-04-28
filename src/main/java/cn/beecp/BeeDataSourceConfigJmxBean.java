@@ -49,7 +49,7 @@ public interface BeeDataSourceConfigJmxBean {
 
     long getHoldTimeout();
 
-    String getConnectionTestSQL();
+    String getConnectionTestSql();
 
     int getConnectionTestTimeout();
 

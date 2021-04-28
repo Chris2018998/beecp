@@ -57,7 +57,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //default transaction isolation description,match isolation code can be set to <code>defaultTransactionIsolationCode</code>
     private String defaultTransactionIsolation = TransactionIsolationLevel.LEVEL_READ_COMMITTED;
     //a SQL to check connection active,recommend to use a simple query SQL,not contain procedure,function in SQL
-    private String connectionTestSQL = "SELECT 1";
+    private String connectionTestSql = "SELECT 1";
 
     //pool name
     private String poolName;
@@ -220,13 +220,13 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     @Override
-    public String getConnectionTestSQL() {
-        return connectionTestSQL;
+    public String getConnectionTestSql() {
+        return connectionTestSql;
     }
 
-    public void setConnectionTestSQL(String connectionTestSQL) {
-        if (!isBlank(connectionTestSQL))
-            this.connectionTestSQL = trimString(connectionTestSQL);
+    public void setConnectionTestSql(String connectionTestSql) {
+        if (!isBlank(connectionTestSql))
+            this.connectionTestSql = trimString(connectionTestSql);
     }
 
     @Override
@@ -466,9 +466,13 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             throw new BeeDataSourceConfigException("maxWait must be greater than zero");
         //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 begin
         //if (this.validationQuerySQL != null && validationQuerySQL.trim().length() == 0) {
-        if (!isBlank(this.connectionTestSQL) && !this.connectionTestSQL.toLowerCase(Locale.US).startsWith("select "))
+        if(isBlank(this.connectionTestSql))
+            throw new BeeDataSourceConfigException("connectionTestSql cant be null or empty");
+        if (!this.connectionTestSql.toLowerCase(Locale.US).startsWith("select ")) {
+            System.out.println("connectionTestSql:"+connectionTestSql);
             //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end
-            throw new BeeDataSourceConfigException("connectionTestSQL must be start with 'select '");
+            throw new BeeDataSourceConfigException("connectionTestSql must be start with 'select '");
+        }
         //}
 
         //get transaction Isolation Code
