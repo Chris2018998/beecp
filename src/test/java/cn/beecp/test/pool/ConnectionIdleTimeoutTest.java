@@ -34,7 +34,7 @@ public class ConnectionIdleTimeoutTest extends TestCase {
         config.setPassword(Config.JDBC_PASSWORD);
         config.setInitialSize(initSize);
         config.setMaxActive(initSize);
-        config.setConnectionTestSQL("SELECT 1 from dual");
+        config.setConnectionTestSql("SELECT 1 from dual");
         config.setIdleTimeout(1000);
         config.setIdleCheckTimeInterval(2000);
         ds = new BeeDataSource(config);

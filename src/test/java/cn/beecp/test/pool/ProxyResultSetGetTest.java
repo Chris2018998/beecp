@@ -17,7 +17,6 @@ package cn.beecp.test.pool;
 
 import cn.beecp.BeeDataSource;
 import cn.beecp.BeeDataSourceConfig;
-import cn.beecp.pool.FastConnectionPool;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
@@ -25,7 +24,6 @@ import cn.beecp.test.TestUtil;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class ProxyResultSetGetTest extends TestCase {
     private BeeDataSource ds;
@@ -37,7 +35,7 @@ public class ProxyResultSetGetTest extends TestCase {
         config.setUsername(Config.JDBC_USER);
         config.setPassword(Config.JDBC_PASSWORD);
         config.setInitialSize(0);
-        config.setConnectionTestSQL("SELECT 1 from dual");
+        config.setConnectionTestSql("SELECT 1 from dual");
         ds = new BeeDataSource(config);
     }
 

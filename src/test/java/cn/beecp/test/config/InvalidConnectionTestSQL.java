@@ -33,11 +33,11 @@ public class InvalidConnectionTestSQL extends TestCase {
         testConfig.setDriverClassName(Config.JDBC_DRIVER);
         testConfig.setUsername(Config.JDBC_USER);
         testConfig.setPassword(Config.JDBC_PASSWORD);
-        testConfig.setConnectionTestSQL("?={call test(}");
+        testConfig.setConnectionTestSql("?={call test(}");
         try {
             testConfig.check();
         } catch (BeeDataSourceConfigException e) {
-            if (!e.getMessage().equals("connectionTestSQL must be start with 'select '"))
+            if (!e.getMessage().equals("connectionTestSql must be start with 'select '"))
                 throw e;
         }
     }

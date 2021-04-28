@@ -18,7 +18,7 @@ public class ProxyObjectUnwrapTest extends TestCase {
         config.setUsername(Config.JDBC_USER);
         config.setPassword(Config.JDBC_PASSWORD);
         config.setInitialSize(5);
-        config.setConnectionTestSQL("SELECT 1 from dual");
+        config.setConnectionTestSql("SELECT 1 from dual");
         config.setIdleTimeout(3000);
         ds = new BeeDataSource(config);
     }
