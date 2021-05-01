@@ -281,7 +281,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 try {
                     st = rawCon.createStatement();
                     testQueryTimeout(st, poolConfig.getConnectionTestTimeout());
-                    validTestSql(rawCon, st);
+                    validateTestSql(rawCon, st);
                 } finally {
                     if (st != null) oclose(st);
                 }
@@ -302,7 +302,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    private void validTestSql(Connection rawCon, Statement st) throws SQLException {
+    private void validateTestSql(Connection rawCon, Statement st) throws SQLException {
         boolean changed = false;
         try {
             if (poolConfig.isDefaultAutoCommit()) {
@@ -838,7 +838,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 }
                 st.execute(testSql);
                 pCon.lastAccessTime = currentTimeMillis();
-
                 return true;
             } catch (Throwable e) {
                 commonLog.error("BeeCP({})failed to test connection", poolName, e);
