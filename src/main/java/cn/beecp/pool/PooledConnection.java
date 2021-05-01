@@ -66,7 +66,10 @@ class PooledConnection {
     //close raw connection
     void closeRawConn() {//called by pool
         try {
-            proxyCon = null;
+            if (proxyCon != null) {
+                proxyCon.setAsClosed();
+                proxyCon = null;
+            }
             resetRawConn();
         } catch (Throwable e) {
             commonLog.error("Connection close error", e);

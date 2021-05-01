@@ -46,10 +46,10 @@ public class TestRunner {
             String pass1 = "true", pass2 = "Y";
             properties.load(propertiesStream);
 
-            Enumeration<Object> keys=properties.keys();
-            while(keys.hasMoreElements()){
-                String key=(String)keys.nextElement();
-                String value=properties.getProperty(key);
+            Enumeration<Object> keys = properties.keys();
+            while (keys.hasMoreElements()) {
+                String key = (String) keys.nextElement();
+                String value = properties.getProperty(key);
                 if (pass1.equalsIgnoreCase(value) || pass2.equalsIgnoreCase(value)) {
                     Class clazz = Class.forName(key);
                     classList.add(clazz);

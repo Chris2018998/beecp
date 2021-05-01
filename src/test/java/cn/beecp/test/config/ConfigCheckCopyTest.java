@@ -42,14 +42,14 @@ public class ConfigCheckCopyTest extends TestCase {
 
         if (config2 == config) throw new Exception("Configuration check copy failed");
 
-        List<String> excludeNames=new LinkedList<>();
+        List<String> excludeNames = new LinkedList<>();
         excludeNames.add("connectProperties");
         excludeNames.add("connectionFactory");
 
         //1:primitive type copy
         Field[] fields = BeeDataSourceConfig.class.getDeclaredFields();
         for (Field field : fields) {
-            if(!excludeNames.contains(field.getName())){
+            if (!excludeNames.contains(field.getName())) {
                 field.setAccessible(true);
                 if (!Objects.deepEquals(field.get(config), field.get(config2))) {
                     throw new BeeDataSourceConfigException("Failed to copy field[" + field.getName() + "],value is not equals");

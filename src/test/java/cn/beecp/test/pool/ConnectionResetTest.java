@@ -46,7 +46,7 @@ public class ConnectionResetTest extends TestCase {
                 TestUtil.oclose(con);
         }
         try {
-            FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds,"pool");
+            FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
             if (pool.getConnTotalSize() != 1) TestUtil.assertError("Total connections not as expected:" + 1);
 
             con = ds.getConnection();

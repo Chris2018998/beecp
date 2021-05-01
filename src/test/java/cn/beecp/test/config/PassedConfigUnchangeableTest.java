@@ -50,8 +50,8 @@ public class PassedConfigUnchangeableTest extends TestCase {
         testConfig.setInitialSize(10);
         testConfig.setMaxActive(50);
 
-        FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds,"pool");
-        BeeDataSourceConfig tempConfig = (BeeDataSourceConfig)TestUtil.getFieldValue(pool,"poolConfig");
+        FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
+        BeeDataSourceConfig tempConfig = (BeeDataSourceConfig) TestUtil.getFieldValue(pool, "poolConfig");
         if (tempConfig.getInitialSize() != initSize) TestUtil.assertError("initSize has changed,expected:" + initSize);
         if (tempConfig.getMaxActive() != maxSize) TestUtil.assertError("maxActive has changed,expected" + maxSize);
     }

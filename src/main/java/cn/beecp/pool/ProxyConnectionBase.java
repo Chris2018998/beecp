@@ -44,10 +44,13 @@ public abstract class ProxyConnectionBase implements Connection {
         if (isClosed) throw ConnectionClosedException;
     }
 
-    final void trySetAsClosed() {//called from FastConnectionPool
-        try {
-            close();
-        } catch (Throwable e) {
+    final void setAsClosed() {
+        synchronized (this) {//safe close
+            if (isClosed) return;
+            isClosed = true;
+            delegate = CLOSED_CON;
+            if (pCon.openStmSize > 0)
+                pCon.clearStatement();
         }
     }
 
@@ -69,14 +72,9 @@ public abstract class ProxyConnectionBase implements Connection {
         return isClosed;
     }
 
+    //call by borrower,then return PooledConnection to pool
     public final void close() throws SQLException {
-        synchronized (this) {//safe close
-            if (isClosed) return;
-            isClosed = true;
-            delegate = CLOSED_CON;
-            if (pCon.openStmSize > 0)
-                pCon.clearStatement();
-        }
+        setAsClosed();
         pCon.recycleSelf();
     }
 
@@ -112,11 +110,7 @@ public abstract class ProxyConnectionBase implements Connection {
 
     public void abort(Executor executor) throws SQLException {
         if (executor == null) throw new SQLException("executor can't be null");
-        executor.execute(new Runnable() {
-            public void run() {
-                ProxyConnectionBase.this.trySetAsClosed();
-            }
-        });
+        executor.execute(new ProxyConnectionCloseTask(this));
     }
 
     public int getNetworkTimeout() throws SQLException {
@@ -154,5 +148,20 @@ public abstract class ProxyConnectionBase implements Connection {
             return (T) this;
         else
             throw new SQLException("Wrapped object is not an instance of " + iface);
+    }
+
+    private static final class ProxyConnectionCloseTask implements Runnable {
+        private ProxyConnectionBase proxyCon;
+
+        public ProxyConnectionCloseTask(ProxyConnectionBase proxyCon) {
+            this.proxyCon = proxyCon;
+        }
+
+        public void run() {
+            try {
+                proxyCon.close();
+            } catch (Throwable e) {
+            }
+        }
     }
 }

@@ -45,16 +45,16 @@ public class ProxyResultSetGetTest extends TestCase {
 
     public void test() throws InterruptedException, Exception {
         Connection con = null;
-        PreparedStatement ps=null;
-        ResultSet rs=null;
-        ResultSet rs2=null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        ResultSet rs2 = null;
         try {
-            con=ds.getConnection();
-            ps=con.prepareStatement("select * from BEECP_TEST");
-            rs=ps.executeQuery();
-            rs2=ps.getResultSet();
-            if(rs2!=rs) TestUtil.assertError("ps.getResultSet() != ps.executeQuery()");
-            if(ps.getResultSet()!=rs2) TestUtil.assertError("ps.getResultSet() != ps.executeQuery()");
+            con = ds.getConnection();
+            ps = con.prepareStatement("select * from BEECP_TEST");
+            rs = ps.executeQuery();
+            rs2 = ps.getResultSet();
+            if (rs2 != rs) TestUtil.assertError("ps.getResultSet() != ps.executeQuery()");
+            if (ps.getResultSet() != rs2) TestUtil.assertError("ps.getResultSet() != ps.executeQuery()");
         } finally {
             if (rs != null) TestUtil.oclose(rs);
             if (ps != null) TestUtil.oclose(ps);

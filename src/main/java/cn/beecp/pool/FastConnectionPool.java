@@ -76,6 +76,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private AtomicInteger needAddConSize = new AtomicInteger(0);
     private AtomicInteger idleThreadState = new AtomicInteger(THREAD_WORKING);
 
+    private static final void tryCloseProxyConnection(ProxyConnectionBase proxyConn) {
+        try {
+            proxyConn.close();
+        } catch (Throwable e) {
+        }
+    }
+
     /**
      * initialize pool with configuration
      *
@@ -525,7 +532,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     boolean isHoldTimeoutInNotUsing = currentTimeMillis() - pCon.lastAccessTime - poolConfig.getHoldTimeout() >= 0;
                     if (isHoldTimeoutInNotUsing) {//recycle connection
                         if (proxyConn != null) {
-                            proxyConn.trySetAsClosed();
+                            tryCloseProxyConnection(proxyConn);
                         } else {
                             removePooledConn(pCon, DESC_RM_BAD);
                             tryToCreateNewConnByAsyn();
@@ -589,10 +596,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     ProxyConnectionBase proxyConn = pCon.proxyCon;
                     if (proxyConn != null) {
                         if (force) {
-                            proxyConn.trySetAsClosed();
+                            tryCloseProxyConnection(proxyConn);
                         } else {
                             boolean isTimeout = (currentTimeMillis() - pCon.lastAccessTime - poolConfig.getHoldTimeout() >= 0);
-                            if (isTimeout) proxyConn.trySetAsClosed();
+                            if (isTimeout) tryCloseProxyConnection(proxyConn);
                         }
                     } else {
                         removePooledConn(pCon, source);

@@ -15,10 +15,6 @@
  */
 package cn.beecp.test;
 
-import cn.beecp.BeeDataSource;
-import cn.beecp.BeeDataSourceConfig;
-import cn.beecp.pool.ConnectionPool;
-import cn.beecp.pool.FastConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,11 +38,11 @@ public class TestUtil {
         throw new AssertionError(String.format(message, String.valueOf(expect), String.valueOf(current)));
     }
 
-    public static Object getFieldValue(final Object ob,String fieldName) {
+    public static Object getFieldValue(final Object ob, String fieldName) {
         try {
             Field field = ob.getClass().getDeclaredField(fieldName);
             field.setAccessible(true);
-            return  field.get(ob);
+            return field.get(ob);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

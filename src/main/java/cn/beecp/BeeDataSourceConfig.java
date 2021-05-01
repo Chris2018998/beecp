@@ -86,7 +86,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //milliseconds:delay time for next clear pooled connections when exists using connections and 'forceCloseUsingOnClear' is false
     private long delayTimeForNextClear = 3000L;
 
-
     //physical JDBC Connection factory
     private ConnectionFactory connectionFactory;
     //physical JDBC Connection factory class name
@@ -467,10 +466,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             throw new BeeDataSourceConfigException("maxWait must be greater than zero");
         //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 begin
         //if (this.validationQuerySQL != null && validationQuerySQL.trim().length() == 0) {
-        if(isBlank(this.connectionTestSql))
+        if (isBlank(this.connectionTestSql))
             throw new BeeDataSourceConfigException("connectionTestSql cant be null or empty");
         if (!this.connectionTestSql.toLowerCase(Locale.US).startsWith("select ")) {
-            System.out.println("connectionTestSql:"+connectionTestSql);
+            System.out.println("connectionTestSql:" + connectionTestSql);
             //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end
             throw new BeeDataSourceConfigException("connectionTestSql must be start with 'select '");
         }

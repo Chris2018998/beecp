@@ -48,8 +48,8 @@ public class ProxyResultSetFromDsMetaCloseTest extends TestCase {
         ResultSet rs = null;
         try {
             con = ds.getConnection();
-            DatabaseMetaData dsMeta=con.getMetaData();
-            rs=dsMeta.getTableTypes();
+            DatabaseMetaData dsMeta = con.getMetaData();
+            rs = dsMeta.getTableTypes();
             TestUtil.oclose(rs);
         } finally {
             if (con != null) TestUtil.oclose(con);

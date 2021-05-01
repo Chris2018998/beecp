@@ -14,29 +14,31 @@
  * limitations under the License.
  */
 package cn.beecp.test.config;
+
 import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.BeeDataSourceConfigException;
 import cn.beecp.test.TestCase;
-import cn.beecp.test.config.PropertiesFileLoadTest;
 
 import java.net.URL;
+
 /**
  * @author Chris.Liao
  * @version 1.0
  */
 public class ConfigMiddleLineTest extends TestCase {
     public void test() throws Exception {
-        String filename= "ConfigMiddleLineTest.properties";
+        String filename = "ConfigMiddleLineTest.properties";
         URL url = ConfigMiddleLineTest.class.getResource(filename);
         url = ConfigMiddleLineTest.class.getClassLoader().getResource(filename);
 
         BeeDataSourceConfig testConfig = new BeeDataSourceConfig();
         testConfig.loadFromPropertiesFile(url.getFile());
 
-        if(!"test1".equals(testConfig.getDefaultCatalog()))throw new BeeDataSourceConfigException("defaultCatalog error");
-        if(!testConfig.isDefaultAutoCommit())throw new BeeDataSourceConfigException("defaultAutoCommit error");
-        if(!testConfig.isFairMode())throw new BeeDataSourceConfigException("fairMode error");
-        if(testConfig.getInitialSize()!=1)throw new BeeDataSourceConfigException("initialSize error");
-        if(testConfig.getMaxActive()!=10)throw new BeeDataSourceConfigException("maxActive error");
+        if (!"test1".equals(testConfig.getDefaultCatalog()))
+            throw new BeeDataSourceConfigException("defaultCatalog error");
+        if (!testConfig.isDefaultAutoCommit()) throw new BeeDataSourceConfigException("defaultAutoCommit error");
+        if (!testConfig.isFairMode()) throw new BeeDataSourceConfigException("fairMode error");
+        if (testConfig.getInitialSize() != 1) throw new BeeDataSourceConfigException("initialSize error");
+        if (testConfig.getMaxActive() != 10) throw new BeeDataSourceConfigException("maxActive error");
     }
 }
