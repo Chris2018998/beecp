@@ -75,9 +75,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private long holdTimeout = MINUTES.toMillis(5);
     //connection test sql
     private String connectionTestSql = "SELECT 1";
-    //seconds:max response time to get active check result from connection
+    //seconds:the time in seconds to wait for connection test result
     private int connectionTestTimeout = 3;
-    //milliseconds:connection test interval time from last active time
+    //milliseconds:connection test interval time to last active time
     private long connectionTestInterval = 500L;
     //milliseconds:interval time to run check task
     private long idleCheckTimeInterval = MINUTES.toMillis(3);
