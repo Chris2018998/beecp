@@ -44,47 +44,48 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //jdbc driver class name
     private String driverClassName;
 
-    //default set value on raw connection after it created <code>connection.setAutoCommit(String)</code>
+    //connection default value:catalog <code>Connection.setAutoCommit(String)</code>
     private String defaultCatalog;
-    //default set value on raw connection after it created <code>connection.setSchema(String)</code>
+    //connection default value:schema <code>Connection.setSchema(String)</code>
     private String defaultSchema;
-    //default set value on raw connection after it created <code>connection.setReadOnly(boolean)</code>
+    //connection default value:readOnly <code>Connection.setReadOnly(boolean)</code>
     private boolean defaultReadOnly;
-    //default set value on raw connection after it created. <code>connection.setAutoCommit(boolean)</code>
+    //connection default value:autoCommit <code>Connection.setAutoCommit(boolean)</code>
     private boolean defaultAutoCommit = true;
-    //default set value on raw connection after it created,<code>connection.setTransactionIsolation(int)</code>
+    //connection default value:transactionIsolation <code>Connection.setTransactionIsolation(int)</code>
     private int defaultTransactionIsolationCode = Connection.TRANSACTION_READ_COMMITTED;
-    //default transaction isolation description,match isolation code can be set to <code>defaultTransactionIsolationCode</code>
+    //connection default value:description of transactionIsolation <code>defaultTransactionIsolationCode</code>
     private String defaultTransactionIsolation = TransactionIsolationLevel.LEVEL_READ_COMMITTED;
-    //a SQL to check connection active,recommend to use a simple query SQL,not contain procedure,function in SQL
-    private String connectionTestSql = "SELECT 1";
 
     //pool name
     private String poolName;
-    //true:fair,first arrive first take
+    //pool mode:fair,compete
     private boolean fairMode;
-    //connection created size at pool initialization
+    //connection size on pool initialize
     private int initialSize;
-    //connection max size in pool
+    //connection can reach max size in pool
     private int maxActive = 10;
-    //borrow Semaphore Size
+    //borrow semaphore size
     private int borrowSemaphoreSize = Math.min(maxActive / 2, Runtime.getRuntime().availableProcessors());
-    //milliseconds:borrower request timeout
+    //milliseconds:max time to get one connection from pool
     private long maxWait = SECONDS.toMillis(8);
-    //milliseconds:idle timeout connection will be removed from pool
+    //milliseconds:connection max idle time in pool,if reach,then remove from pool
     private long idleTimeout = MINUTES.toMillis(3);
     //milliseconds:long time not active connection hold by borrower will closed by pool
     private long holdTimeout = MINUTES.toMillis(5);
-    //seconds:max time to get check active result from connection(socket readout time)
+    //connection test sql
+    private String connectionTestSql = "SELECT 1";
+    //seconds:max response time to get active check result from connection
     private int connectionTestTimeout = 3;
     //milliseconds:connection test interval time from last active time
     private long connectionTestInterval = 500L;
-    //milliseconds:interval time to run check task in scheduledThreadPoolExecutor
+    //milliseconds:interval time to run check task
     private long idleCheckTimeInterval = MINUTES.toMillis(3);
     //using connection close indicator,true,close directly;false,delay close util them becoming idle or hold timeout
     private boolean forceCloseUsingOnClear;
     //milliseconds:delay time for next clear pooled connections when exists using connections and 'forceCloseUsingOnClear' is false
     private long delayTimeForNextClear = 3000L;
+
 
     //physical JDBC Connection factory
     private ConnectionFactory connectionFactory;
@@ -473,7 +474,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end
             throw new BeeDataSourceConfigException("connectionTestSql must be start with 'select '");
         }
-        //}
 
         //get transaction Isolation Code
         int transactionIsolationCode = getTransactionIsolationCode();
