@@ -212,8 +212,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private void removePooledConn(PooledConnection pCon, String removeType) {
         if (isDebugEnabled)
             commonLog.debug("BeeCP({}))begin to remove pooled connection:{},reason:{}", poolName, pCon, removeType);
-        pCon.state = CON_CLOSED;
-        pCon.closeRawConn();
+
+        pCon.onBeforeRemove();
         synchronized (connArrayLock) {
             int oLen = conArray.length;
             PooledConnection[] arrayNew = new PooledConnection[oLen - 1];

@@ -12,8 +12,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static cn.beecp.pool.PoolStaticCenter.commonLog;
-import static cn.beecp.pool.PoolStaticCenter.oclose;
+import static cn.beecp.pool.PoolStaticCenter.*;
 import static java.lang.System.arraycopy;
 import static java.lang.System.currentTimeMillis;
 
@@ -64,8 +63,9 @@ class PooledConnection {
     }
 
     //close raw connection
-    void closeRawConn() {//called by pool
+    void onBeforeRemove() {//called by pool
         try {
+            this.state = CON_CLOSED;
             if (proxyCon != null) {
                 proxyCon.setAsClosed();
                 proxyCon = null;
