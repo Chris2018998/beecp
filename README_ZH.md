@@ -170,7 +170,7 @@ public class DataSourceConfig {
 | maxWait           |连接借用等待最大时间(毫秒)       | 默认8秒，连接请求最大等待时间           |
 | idleTimeout       |连接闲置最大时间(毫秒)          | 默认3分钟，超时会被清理                 |  
 | holdTimeout       |连接被持有不用的最大时间(毫秒)    | 默认5分钟，超时会被清理                 |  
-| connectionTestSQL |连接有效性测试SQL语句           | 一条 select 语句，不建议放入存储过程     |  
+| connectionTestSql |连接有效性测试SQL语句           | 一条 select 语句，不建议放入存储过程     |  
 | connectionTestTimeout |连接有效性测试超时时间(秒)   |默认5秒 执行查询测试语句时间，在指定时间范围内等待反应|  
 | connectionTestInterval |连接测试的间隔时间(毫秒)     |默认500毫秒 连接上次活动时间点与当前时间时间差值小于它，则假定连接是有效的|  
 | forceCloseUsingOnClear|是否直接关闭使用中转连接       |默认false;true:直接关闭使用中连接，false:等待处于使用中归还后再关闭|
