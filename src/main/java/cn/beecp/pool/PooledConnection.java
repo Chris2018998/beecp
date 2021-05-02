@@ -62,8 +62,8 @@ class PooledConnection {
         lastAccessTime = currentTimeMillis();//first time
     }
 
-    //close raw connection
-    void onBeforeRemove() {//called by pool
+    //called by pool before remove from pool
+    final void onBeforeRemove() {
         try {
             this.state = CON_CLOSED;
             if (proxyCon != null) {

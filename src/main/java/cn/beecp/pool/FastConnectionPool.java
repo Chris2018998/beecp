@@ -76,13 +76,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private AtomicInteger needAddConSize = new AtomicInteger(0);
     private AtomicInteger idleThreadState = new AtomicInteger(THREAD_WORKING);
 
-    private static final void tryCloseProxyConnection(ProxyConnectionBase proxyConn) {
-        try {
-            proxyConn.close();
-        } catch (Throwable e) {
-        }
-    }
-
     /**
      * initialize pool with configuration
      *

@@ -102,6 +102,13 @@ public class PoolStaticCenter {
             }
     );
 
+    static final void tryCloseProxyConnection(ProxyConnectionBase proxyConn) {
+        try {
+            proxyConn.close();
+        } catch (Throwable e) {
+        }
+    }
+
     public static final boolean equals(String a, String b) {
         return a == null ? b == null : a.equals(b);
     }
