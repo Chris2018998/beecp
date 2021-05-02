@@ -160,7 +160,7 @@ public class DataSourceConfig {
 |maxWait                    |max wait time to borrow one connection        |time unit is ms,default is 8000 ms                          |                       
 |idleTimeout                |max idle time of connection instance in pool  |time unit is ms,default is 18000 ms                         |  
 |holdTimeout                |max inactive time hold by borrower            |time unit is ms,default is 300000 ms                        |  
-|connectionTestSQL          |connection valid test sql                     |select statement（don't recommand store procedure in select  |  
+|connectionTestSql          |connection valid test sql                     |select statement（don't recommand store procedure in select  |  
 |connectionTestTimeout      |connection test timeout                       |time unit is second, default is 5 seconds                    |  
 |forceCloseUsingOnClear     |using connection close indicator|true,close directly;false,wait util connection becoming idle,then close it |            |delayTimeForNextClear      |delay time to clear pooled connections        |time unit is ms,default is 3000 ms                          |                            |idleCheckTimeInterval      |scan thread time interval to check idle connection |time unit is ms,default is 300000 ms                   |
 |connectionFactoryClassName |object factory class name                           |default is null                                         |
