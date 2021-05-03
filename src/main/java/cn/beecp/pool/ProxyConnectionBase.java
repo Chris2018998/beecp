@@ -44,13 +44,15 @@ public abstract class ProxyConnectionBase implements Connection {
         if (isClosed) throw ConnectionClosedException;
     }
 
-    final void setAsClosed() {
-        synchronized (this) {//safe close
-            if (isClosed) return;
+    synchronized final boolean setAsClosed() {//safe close
+        if (isClosed) {
+            return false;
+        } else {
             isClosed = true;
             delegate = CLOSED_CON;
             if (pCon.openStmSize > 0)
                 pCon.clearStatement();
+            return true;
         }
     }
 
@@ -74,8 +76,7 @@ public abstract class ProxyConnectionBase implements Connection {
 
     //call by borrower,then return PooledConnection to pool
     public final void close() throws SQLException {
-        setAsClosed();
-        pCon.recycleSelf();
+        if (setAsClosed()) pCon.recycleSelf();
     }
 
     public final void setAutoCommit(boolean autoCommit) throws SQLException {
