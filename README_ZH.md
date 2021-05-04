@@ -8,7 +8,7 @@
  2：连接对象单点缓存
  3：独创CAS自旋式算法(池化领域独一无二的创新）
 
-Maven坐标(Java7)
+Maven坐标(Java7及更高版本)
 ```xml
 <dependency>
    <groupId>com.github.chris2018998</groupId>
