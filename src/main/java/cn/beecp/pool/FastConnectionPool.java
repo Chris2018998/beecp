@@ -572,11 +572,26 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         return poolState.get() == POOL_CLOSED;
     }
 
+    // close all connections
+    public void clearAllConnections() {
+        clearAllConnections(false);
+    }
+
+    // close all connections
+    public void clearAllConnections(boolean force) {
+        if (poolState.compareAndSet(POOL_NORMAL, POOL_CLEARING)) {
+            commonLog.info("BeeCP({})begin to remove connections", poolName);
+            removeAllConnections(force, DESC_RM_CLEAR);
+            commonLog.info("BeeCP({})all connections were removed", poolName);
+            poolState.set(POOL_NORMAL);// restore state;
+            commonLog.info("BeeCP({})restore to accept new requests", poolName);
+        }
+    }
+
     // remove all connections
     private void removeAllConnections(boolean force, String source) {
-        while (existBorrower()) {
-            transferException(PoolCloseException);
-        }
+        while (existBorrower()) transferException(PoolCloseException);
+
         while (conArray.length > 0) {
             PooledConnection[] array = conArray;
             for (int i = 0, len = array.length; i < len; i++) {
@@ -616,21 +631,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         } while (true);
     }
 
-    // close all connections
-    public void clearAllConnections() {
-        clearAllConnections(false);
-    }
-
-    // close all connections
-    public void clearAllConnections(boolean force) {
-        if (poolState.compareAndSet(POOL_NORMAL, POOL_CLEARING)) {
-            commonLog.info("BeeCP({})begin to remove connections", poolName);
-            removeAllConnections(force, DESC_RM_CLEAR);
-            commonLog.info("BeeCP({})all connections were removed", poolName);
-            poolState.set(POOL_NORMAL);// restore state;
-            commonLog.info("BeeCP({})restore to accept new requests", poolName);
-        }
-    }
 
     public int getConnTotalSize() {
         return conArray.length;

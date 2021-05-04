@@ -35,25 +35,14 @@ public abstract class ProxyConnectionBase implements Connection {
      *                         Below are self methods                                          *
      *                                                                                         *
      ********************************************************************************************/
-    public Connection getDelegate() throws SQLException {
-        checkClosed();
-        return delegate;
-    }
 
     final void checkClosed() throws SQLException {
         if (isClosed) throw ConnectionClosedException;
     }
 
-    synchronized final boolean setAsClosed() {//safe close
-        if (isClosed) {
-            return false;
-        } else {
-            isClosed = true;
-            delegate = CLOSED_CON;
-            if (pCon.openStmSize > 0)
-                pCon.clearStatement();
-            return true;
-        }
+    public Connection getDelegate() throws SQLException {
+        checkClosed();
+        return delegate;
     }
 
     synchronized final void registerStatement(ProxyStatementBase s) {
@@ -64,19 +53,25 @@ public abstract class ProxyConnectionBase implements Connection {
         pCon.unregisterStatement(s);
     }
 
+    /******************************************************************************************
+     *                                                                                        *
+     *                        Below are override methods                                      *
+     *                                                                                        *
+     ******************************************************************************************/
 
-    /*******************************************************************************************
-     *                                                                                         *
-     *                         Below are override methods                                      *
-     *                                                                                         *
-     ********************************************************************************************/
     public final boolean isClosed() throws SQLException {
         return isClosed;
     }
 
     //call by borrower,then return PooledConnection to pool
     public final void close() throws SQLException {
-        if (setAsClosed()) pCon.recycleSelf();
+        synchronized (this) {//safe close
+            if (isClosed) return;
+            isClosed = true;
+            delegate = CLOSED_CON;
+            if (pCon.openStmSize > 0) pCon.clearStatement();
+        }
+        pCon.recycleSelf();
     }
 
     public final void setAutoCommit(boolean autoCommit) throws SQLException {

@@ -65,11 +65,7 @@ class PooledConnection {
     //called by pool before remove from pool
     final void onBeforeRemove() {
         try {
-            this.state = CON_CLOSED;
-            if (proxyCon != null) {
-                proxyCon.setAsClosed();
-                proxyCon = null;
-            }
+            state = CON_CLOSED;
             resetRawConn();
         } catch (Throwable e) {
             commonLog.error("Connection close error", e);

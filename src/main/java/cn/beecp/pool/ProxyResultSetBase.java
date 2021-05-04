@@ -37,11 +37,12 @@ abstract class ProxyResultSetBase implements ResultSet {
         owner.setOpenResultSet(this);
     }
 
-    /*******************************************************************************************
-     *                                                                                         *
-     *                         Below are self methods                                          *
-     *                                                                                         *
-     ********************************************************************************************/
+    /******************************************************************************************
+     *                                                                                        *
+     *                        Below are override methods                                      *
+     *                                                                                        *
+     ******************************************************************************************/
+
     boolean containsDelegate(ResultSet delegate) {
         return this.delegate == delegate;
     }
@@ -57,7 +58,8 @@ abstract class ProxyResultSetBase implements ResultSet {
      *                                                                                         *
      *                         Below are override methods                                      *
      *                                                                                         *
-     ********************************************************************************************/
+     *******************************************************************************************/
+
     public Statement getStatement() throws SQLException {
         if (isClosed) throw ResultSetClosedException;
         return owner;

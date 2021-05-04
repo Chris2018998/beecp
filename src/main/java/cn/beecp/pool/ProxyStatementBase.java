@@ -42,7 +42,8 @@ abstract class ProxyStatementBase implements Statement {
      *                                                                                         *
      *                         Below are self methods                                          *
      *                                                                                         *
-     ********************************************************************************************/
+     *******************************************************************************************/
+
     final void setAsClosed() {//call by PooledConnection.cleanOpenStatements
         try {
             registered = false;
@@ -90,11 +91,12 @@ abstract class ProxyStatementBase implements Statement {
         this.curRe = resultSetNew;
     }
 
-    /*******************************************************************************************
-     *                                                                                         *
-     *                         Below are override methods                                      *
-     *                                                                                         *
-     ********************************************************************************************/
+    /******************************************************************************************
+     *                                                                                        *
+     *                        Below are override methods                                      *
+     *                                                                                        *
+     ******************************************************************************************/
+
     public Connection getConnection() throws SQLException {
         if (isClosed) throw ConnectionClosedException;
         return owner;
