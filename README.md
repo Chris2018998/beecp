@@ -3,7 +3,7 @@
 
 BeeCP：A lightweight,high-performance JDBC pool
 
-Maven artifact(Java7)
+Maven artifact(Java7 and higher)
 ```xml
 <dependency>
    <groupId>com.github.chris2018998</groupId>
