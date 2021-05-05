@@ -105,13 +105,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (poolConfig.isFairMode()) {
                 poolMode = "fair";
                 transferPolicy = new FairTransferPolicy();
-                ConUnCatchStateCode = transferPolicy.getCheckStateCode();
             } else {
                 poolMode = "compete";
                 transferPolicy = new CompeteTransferPolicy();
-                ConUnCatchStateCode = transferPolicy.getCheckStateCode();
             }
 
+            ConUnCatchStateCode = transferPolicy.getCheckStateCode();
             semaphoreSize = poolConfig.getBorrowSemaphoreSize();
             semaphore = new Semaphore(semaphoreSize, poolConfig.isFairMode());
             dynAddPooledConnTask = new DynAddPooledConnTask();
