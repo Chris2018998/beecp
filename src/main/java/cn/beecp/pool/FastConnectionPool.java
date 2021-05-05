@@ -162,7 +162,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     /**
-     * create initialization connections
+     * create specified size connections at pool initialization,
+     * if zero,then try to create one
      *
      * @throws SQLException error occurred in creating connections
      */
@@ -334,7 +335,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    // notify to create connections to pool
+    /**
+     * notify creator(asyn)to add one connection to pool
+     */
     private void tryToCreateNewConnByAsyn() {
         do {
             int curAddSize = needAddConSize.get();
@@ -367,11 +370,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      ******************************************************************************************/
 
     /**
-     * borrow one connection from pool
+     * Get one idle connection from pool,if not found,then wait util other borrower release one or wait timeout
      *
-     * @return If exists idle connection in pool,then return one;if not, waiting
-     * until other borrower release
-     * @throws SQLException if pool is closed or waiting timeout,then throw exception
+     * @return pooled connection
+     * @throws SQLException if failed(create failed,interrupt,wait timeout),then throw failed cause exception
      */
     public final Connection getConnection() throws SQLException {
         if (poolState.get() != POOL_NORMAL) throw PoolCloseException;
@@ -460,7 +462,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     /**
-     * return one connection to pool
+     * Connection return to pool after it end use,if exist waiter in pool,
+     * then try to transfer the connection to one waiting borrower
      *
      * @param pCon target connection need release
      */
@@ -485,6 +488,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     /**
+     * Connection create failed by creator,then transfer the failed cause exception to one waiting borrower,
+     * which will end wait and throw the exception.
+     *
      * @param e: transfer Exception to waiter
      */
     private void transferException(SQLException e) {
@@ -504,7 +510,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     /**
-     * remove connection
+     * When exception occur on return,then remove it from pool
      *
      * @param pCon target connection need release
      */
@@ -514,10 +520,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     /**
-     * check one connection state
+     * Check one borrowed connection alive state,if not alive,then remove it from pool
      *
-     * @return if the checked connection is active then return true,otherwise
-     * false if false then close it
+     * @return boolean, true:alive
      */
     private final boolean testOnBorrow(PooledConnection pCon) {
         if (currentTimeMillis() - pCon.lastAccessTime - ConTestInterval >= 0L && !conTester.isAlive(pCon)) {
