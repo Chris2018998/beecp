@@ -16,6 +16,7 @@ import java.lang.ref.WeakReference;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -75,6 +76,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
     private AtomicInteger needAddConSize = new AtomicInteger(0);
     private AtomicInteger idleThreadState = new AtomicInteger(THREAD_WORKING);
+
+
+    /******************************************************************************************
+     *                                                                                        *
+     *                 1: Pool initialize and Pooled connection create/remove methods         *
+     *                                                                                        *
+     ******************************************************************************************/
 
     /**
      * initialize pool with configuration
@@ -137,38 +145,45 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     private void checkProxyClasses() throws SQLException {
         try {
-            boolean classInitialize = false;
             ClassLoader classLoader = getClass().getClassLoader();
-            Class.forName("cn.beecp.pool.Borrower", classInitialize, classLoader);
-            Class.forName("cn.beecp.pool.PooledConnection", classInitialize, classLoader);
-            Class.forName("cn.beecp.pool.ProxyConnection", classInitialize, classLoader);
-            Class.forName("cn.beecp.pool.ProxyStatement", classInitialize, classLoader);
-            Class.forName("cn.beecp.pool.ProxyPsStatement", classInitialize, classLoader);
-            Class.forName("cn.beecp.pool.ProxyCsStatement", classInitialize, classLoader);
-            Class.forName("cn.beecp.pool.ProxyDatabaseMetaData", classInitialize, classLoader);
-            Class.forName("cn.beecp.pool.ProxyResultSet", classInitialize, classLoader);
+            ArrayList<String> classNameList = new ArrayList<String>(10);
+            classNameList.add("cn.beecp.pool.Borrower");
+            classNameList.add("cn.beecp.pool.PooledConnection");
+            classNameList.add("cn.beecp.pool.ProxyConnection");
+            classNameList.add("cn.beecp.pool.ProxyStatement");
+            classNameList.add("cn.beecp.pool.ProxyPsStatement");
+            classNameList.add("cn.beecp.pool.ProxyCsStatement");
+            classNameList.add("cn.beecp.pool.ProxyDatabaseMetaData");
+            classNameList.add("cn.beecp.pool.ProxyResultSet");
+            for (int i = 0, l = classNameList.size(); i < l; i++)
+                Class.forName(classNameList.get(i), false, classLoader);
         } catch (ClassNotFoundException e) {
             throw new SQLException("Jdbc proxy classes missed", e);
         }
     }
 
-    boolean supportNetworkTimeout() {
-        return supportNetworkTimeout;
+    /**
+     * create initialization connections
+     *
+     * @throws SQLException error occurred in creating connections
+     */
+    private void createInitConnections(int initSize) throws SQLException {
+        try {
+            int size = (initSize > 0) ? initSize : 1;
+            for (int i = 0; i < size; i++)
+                createPooledConn(CON_IDLE);
+        } catch (Throwable e) {
+            for (PooledConnection pCon : conArray)
+                removePooledConn(pCon, DESC_RM_INIT);
+            if (e instanceof ConnectionCreateFailedException) {//may be network bad or database is not ready
+                if (initSize > 0) throw e;
+            } else {
+                throw e;
+            }
+        }
     }
 
-    int getNetworkTimeout() {
-        return networkTimeout;
-    }
-
-    ThreadPoolExecutor getNetworkTimeoutExecutor() {
-        return poolTaskExecutor;
-    }
-
-    private final boolean existBorrower() {
-        return semaphoreSize > semaphore.availablePermits();
-    }
-
-    //create Pooled connection
+    //create one pooled connection
     private final PooledConnection createPooledConn(int conState) throws SQLException {
         synchronized (connArrayLock) {
             int arrayLen = conArray.length;
@@ -201,7 +216,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    //remove Pooled connection
+    //remove one pooled connection
     private void removePooledConn(PooledConnection pCon, String removeType) {
         if (isDebugEnabled)
             commonLog.debug("BeeCP({}))begin to remove pooled connection:{},reason:{}", poolName, pCon, removeType);
@@ -320,42 +335,37 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    /**
-     * check connection state
-     *
-     * @return if the checked connection is active then return true,otherwise
-     * false if false then close it
-     */
-    private final boolean testOnBorrow(PooledConnection pCon) {
-        if (currentTimeMillis() - pCon.lastAccessTime - ConTestInterval >= 0L && !conTester.isAlive(pCon)) {
-            removePooledConn(pCon, DESC_RM_BAD);
-            tryToCreateNewConnByAsyn();
-            return false;
-        } else {
-            return true;
-        }
+    // notify to create connections to pool
+    private void tryToCreateNewConnByAsyn() {
+        do {
+            int curAddSize = needAddConSize.get();
+            int updAddSize = curAddSize + 1;
+            if (conArray.length + updAddSize > PoolMaxSize) return;
+            if (needAddConSize.compareAndSet(curAddSize, updAddSize)) {
+                poolTaskExecutor.submit(dynAddPooledConnTask);
+                return;
+            }
+        } while (true);
     }
 
-    /**
-     * create initialization connections
-     *
-     * @throws SQLException error occurred in creating connections
-     */
-    private void createInitConnections(int initSize) throws SQLException {
-        try {
-            int size = (initSize > 0) ? initSize : 1;
-            for (int i = 0; i < size; i++)
-                createPooledConn(CON_IDLE);
-        } catch (Throwable e) {
-            for (PooledConnection pCon : conArray)
-                removePooledConn(pCon, DESC_RM_INIT);
-            if (e instanceof ConnectionCreateFailedException) {//may be network bad or database is not ready
-                if (initSize > 0) throw e;
-            } else {
-                throw e;
-            }
-        }
+    int getNetworkTimeout() {
+        return networkTimeout;
     }
+
+    ThreadPoolExecutor getNetworkTimeoutExecutor() {
+        return poolTaskExecutor;
+    }
+
+    boolean supportNetworkTimeout() {
+        return supportNetworkTimeout;
+    }
+
+
+    /******************************************************************************************
+     *                                                                                        *
+     *                 2: Pooled connection borrow and release methods                        *
+     *                                                                                        *
+     ******************************************************************************************/
 
     /**
      * borrow one connection from pool
@@ -451,16 +461,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     /**
-     * remove connection
-     *
-     * @param pCon target connection need release
-     */
-    final void abandonOnReturn(PooledConnection pCon) {
-        removePooledConn(pCon, DESC_RM_BAD);
-        tryToCreateNewConnByAsyn();
-    }
-
-    /**
      * return connection to pool
      *
      * @param pCon target connection need release
@@ -505,6 +505,62 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     /**
+     * remove connection
+     *
+     * @param pCon target connection need release
+     */
+    final void abandonOnReturn(PooledConnection pCon) {
+        removePooledConn(pCon, DESC_RM_BAD);
+        tryToCreateNewConnByAsyn();
+    }
+
+    /**
+     * check connection state
+     *
+     * @return if the checked connection is active then return true,otherwise
+     * false if false then close it
+     */
+    private final boolean testOnBorrow(PooledConnection pCon) {
+        if (currentTimeMillis() - pCon.lastAccessTime - ConTestInterval >= 0L && !conTester.isAlive(pCon)) {
+            removePooledConn(pCon, DESC_RM_BAD);
+            tryToCreateNewConnByAsyn();
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+
+    /******************************************************************************************
+     *                                                                                        *
+     *              3: Pooled connection idle-timeout/hold-timeout scan methods               *
+     *                                                                                        *
+     ******************************************************************************************/
+    private final boolean existBorrower() {
+        return semaphoreSize > semaphore.availablePermits();
+    }
+
+    private void shutdownIdleScanThread() {
+        idleThreadState.set(THREAD_EXIT);
+        unpark(this);
+    }
+
+    public void run() {
+        final long CheckTimeIntervalNanos = MILLISECONDS.toNanos(poolConfig.getIdleCheckTimeInterval());
+        do {
+            if (idleThreadState.get() == THREAD_WORKING) {
+                try {
+                    parkNanos(CheckTimeIntervalNanos);
+                    closeIdleTimeoutConnection();
+                } catch (Throwable e) {
+                }
+            } else {
+                break;
+            }
+        } while (true);
+    }
+
+    /**
      * inner timer will call the method to clear some idle timeout connections
      * or dead connections,or long time not active connections in using state
      */
@@ -542,42 +598,18 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    // shutdown pool
-    public void close() throws SQLException {
-        do {
-            int poolStateCode = poolState.get();
-            if ((poolStateCode == POOL_UNINIT || poolStateCode == POOL_NORMAL) && poolState.compareAndSet(poolStateCode, POOL_CLOSED)) {
-                commonLog.info("BeeCP({})begin to shutdown", poolName);
-                removeAllConnections(poolConfig.isForceCloseUsingOnClear(), DESC_RM_DESTROY);
-                unregisterJmx();
-                shutdownIdleScanThread();
-                poolTaskExecutor.getQueue().clear();
-                poolTaskExecutor.shutdownNow();
+    /******************************************************************************************
+     *                                                                                        *
+     *                       4: Pool clear/close methods                                      *
+     *                                                                                        *
+     ******************************************************************************************/
 
-                try {
-                    Runtime.getRuntime().removeShutdownHook(exitHook);
-                } catch (Throwable e) {
-                }
-                commonLog.info("BeeCP({})has shutdown", poolName);
-                break;
-            } else if (poolState.get() == POOL_CLOSED) {
-                break;
-            } else {
-                parkNanos(DelayTimeForNextClearNanos);// wait 3 seconds
-            }
-        } while (true);
-    }
-
-    public boolean isClosed() {
-        return poolState.get() == POOL_CLOSED;
-    }
-
-    // close all connections
+    // remove all connection from pool
     public void clearAllConnections() {
         clearAllConnections(false);
     }
 
-    // close all connections
+    //remove all connection from pool
     public void clearAllConnections(boolean force) {
         if (poolState.compareAndSet(POOL_NORMAL, POOL_CLEARING)) {
             commonLog.info("BeeCP({})begin to remove connections", poolName);
@@ -588,7 +620,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    // remove all connections
+    //remove all connection from pool
     private void removeAllConnections(boolean force, String source) {
         while (existBorrower()) transferException(PoolCloseException);
 
@@ -618,19 +650,55 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         } // while
     }
 
-    // notify to create connections to pool
-    private void tryToCreateNewConnByAsyn() {
+    public boolean isClosed() {
+        return poolState.get() == POOL_CLOSED;
+    }
+
+    public void close() throws SQLException {
         do {
-            int curAddSize = needAddConSize.get();
-            int updAddSize = curAddSize + 1;
-            if (conArray.length + updAddSize > PoolMaxSize) return;
-            if (needAddConSize.compareAndSet(curAddSize, updAddSize)) {
-                poolTaskExecutor.submit(dynAddPooledConnTask);
-                return;
+            int poolStateCode = poolState.get();
+            if ((poolStateCode == POOL_UNINIT || poolStateCode == POOL_NORMAL) && poolState.compareAndSet(poolStateCode, POOL_CLOSED)) {
+                commonLog.info("BeeCP({})begin to shutdown", poolName);
+                removeAllConnections(poolConfig.isForceCloseUsingOnClear(), DESC_RM_DESTROY);
+                unregisterJmx();
+                shutdownIdleScanThread();
+                poolTaskExecutor.getQueue().clear();
+                poolTaskExecutor.shutdownNow();
+
+                try {
+                    Runtime.getRuntime().removeShutdownHook(exitHook);
+                } catch (Throwable e) {
+                }
+                commonLog.info("BeeCP({})has shutdown", poolName);
+                break;
+            } else if (poolState.get() == POOL_CLOSED) {
+                break;
+            } else {
+                parkNanos(DelayTimeForNextClearNanos);// default wait 3 seconds
             }
         } while (true);
     }
 
+
+    /******************************************************************************************
+     *                                                                                        *
+     *                        5: Pool monitor/jmx methods                                     *
+     *                                                                                        *
+     ******************************************************************************************/
+
+    public ConnectionPoolMonitorVo getMonitorVo() {
+        int totSize = getConnTotalSize();
+        int idleSize = getConnIdleSize();
+        monitorVo.setPoolName(poolName);
+        monitorVo.setPoolMode(poolMode);
+        monitorVo.setPoolState(poolState.get());
+        monitorVo.setMaxActive(PoolMaxSize);
+        monitorVo.setIdleSize(idleSize);
+        monitorVo.setUsingSize(totSize - idleSize);
+        monitorVo.setSemaphoreWaiterSize(getSemaphoreWaitingSize());
+        monitorVo.setTransferWaiterSize(getTransferWaitingSize());
+        return monitorVo;
+    }
 
     public int getConnTotalSize() {
         return conArray.length;
@@ -668,41 +736,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         return size;
     }
 
-    public ConnectionPoolMonitorVo getMonitorVo() {
-        int totSize = getConnTotalSize();
-        int idleSize = getConnIdleSize();
-        monitorVo.setPoolName(poolName);
-        monitorVo.setPoolMode(poolMode);
-        monitorVo.setPoolState(poolState.get());
-        monitorVo.setMaxActive(PoolMaxSize);
-        monitorVo.setIdleSize(idleSize);
-        monitorVo.setUsingSize(totSize - idleSize);
-        monitorVo.setSemaphoreWaiterSize(getSemaphoreWaitingSize());
-        monitorVo.setTransferWaiterSize(getTransferWaitingSize());
-        return monitorVo;
-    }
-
-    private void shutdownIdleScanThread() {
-        idleThreadState.set(THREAD_EXIT);
-        unpark(this);
-    }
-
-    public void run() {
-        final long CheckTimeIntervalNanos = MILLISECONDS.toNanos(poolConfig.getIdleCheckTimeInterval());
-        do {
-            if (idleThreadState.get() == THREAD_WORKING) {
-                try {
-                    parkNanos(CheckTimeIntervalNanos);
-                    closeIdleTimeoutConnection();
-                } catch (Throwable e) {
-                }
-            } else {
-                break;
-            }
-        } while (true);
-    }
-
-    //******************************** JMX methods ********************************************************************/
     private void registerJmx() {
         if (poolConfig.isEnableJmx()) {
             MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
@@ -740,10 +773,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             commonLog.warn("BeeCP({})failed to unregister jmx-bean:{}", poolName, regName, e);
         }
     }
-    //******************************** JMX methods ********************************************************************/
 
 
-    /**********************************************Below are some inner classes******************************************************************/
+    /******************************************************************************************
+     *                                                                                        *
+     *                        6: Pool some inner classes                                      *
+     *                                                                                        *
+     ******************************************************************************************/
 
     // Transfer Policy
     private static interface TransferPolicy {
@@ -790,7 +826,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    // Connection check Policy
     private static abstract class ConnectionTester {
         protected final String poolName;
         protected final int ConTestTimeout;//seconds
@@ -803,7 +838,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         abstract boolean isAlive(PooledConnection pCon);
     }
 
-    // SQL tester
     private static final class SqlQueryTester extends ConnectionTester {
         private final String testSql;
         private final boolean autoCommit;//connection default value
