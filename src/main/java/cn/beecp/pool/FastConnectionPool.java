@@ -461,7 +461,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     /**
-     * return connection to pool
+     * return one connection to pool
      *
      * @param pCon target connection need release
      */
@@ -515,7 +515,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     /**
-     * check connection state
+     * check one connection state
      *
      * @return if the checked connection is active then return true,otherwise
      * false if false then close it
@@ -604,12 +604,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *                                                                                        *
      ******************************************************************************************/
 
-    // remove all connection from pool
+    // remove all connections from pool
     public void clearAllConnections() {
         clearAllConnections(false);
     }
 
-    //remove all connection from pool
+    //remove all connections from pool
     public void clearAllConnections(boolean force) {
         if (poolState.compareAndSet(POOL_NORMAL, POOL_CLEARING)) {
             commonLog.info("BeeCP({})begin to remove connections", poolName);
@@ -620,7 +620,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    //remove all connection from pool
+    //remove all connections from pool
     private void removeAllConnections(boolean force, String source) {
         while (existBorrower()) transferException(PoolCloseException);
 
@@ -797,21 +797,24 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             return CON_IDLE;
         }
 
+        public final void beforeTransfer(PooledConnection p) {
+            p.state = CON_IDLE;
+        }
+
         public final boolean tryCatch(PooledConnection p) {
             return ConStUpd.compareAndSet(p, CON_IDLE, CON_USING);
         }
 
         public final void onFailedTransfer(PooledConnection p) {
         }
-
-        public final void beforeTransfer(PooledConnection p) {
-            p.state = CON_IDLE;
-        }
     }
 
     private static final class FairTransferPolicy implements TransferPolicy {
         public final int getCheckStateCode() {
             return CON_USING;
+        }
+
+        public final void beforeTransfer(PooledConnection p) {
         }
 
         public final boolean tryCatch(PooledConnection p) {
@@ -821,11 +824,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         public final void onFailedTransfer(PooledConnection p) {
             p.state = CON_IDLE;
         }
-
-        public final void beforeTransfer(PooledConnection p) {
-        }
     }
 
+    //Connection alive tester
     private static abstract class ConnectionTester {
         protected final String poolName;
         protected final int ConTestTimeout;//seconds
@@ -893,7 +894,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    //valid tester(call connection.isValid)
+    //test alive with Connection.isValid(xxx) method
     private static final class ConnValidTester extends ConnectionTester {
         public ConnValidTester(String poolName, int ConTestTimeout) {
             super(poolName, ConTestTimeout);
