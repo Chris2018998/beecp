@@ -1,0 +1,856 @@
+[INFO]2021-05-07 18:54:39-[JDBC INFO]
+[INFO]2021-05-07 18:54:39-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 18:54:39-[URL:jdbc:stub]
+[INFO]2021-05-07 18:54:39-
+
+[INFO]2021-05-07 18:54:39-Pool[Tomcat -- Multiple thread borrow] -- Begin{10threads X 1iterate}
+[INFO]2021-05-07 18:54:49-Pool[Tomcat -- Multiple thread borrow] -- Execution count:10,total time:1318ms,avg time:131.800000ms,min time:130ms,max time:133ms
+[INFO]2021-05-07 18:54:49-success count       :10
+[INFO]2021-05-07 18:54:49-fail count          :0
+[INFO]2021-05-07 18:54:49-avr(ms)             :131.800000
+[INFO]2021-05-07 18:54:49-min(ms)             :130
+[INFO]2021-05-07 18:54:49-max(ms)             :133
+[INFO]2021-05-07 18:54:49-time==0ms           :0
+[INFO]2021-05-07 18:54:49-1ms=<time<=10ms     :0
+[INFO]2021-05-07 18:54:49-10ms<time<=50ms     :0
+[INFO]2021-05-07 18:54:49-50ms<time<=100ms    :0
+[INFO]2021-05-07 18:54:49-100ms<time<=200ms   :10
+[INFO]2021-05-07 18:54:49-200ms<time<=500ms   :0
+[INFO]2021-05-07 18:54:49-500ms<time<=1000ms  :0
+[INFO]2021-05-07 18:54:49-1000ms<time<=2000ms :0
+[INFO]2021-05-07 18:54:49-2000ms<time<=8000ms :0
+[INFO]2021-05-07 18:54:49-time>8000ms         :0
+[INFO]2021-05-07 18:54:49-
+
+[INFO]2021-05-07 18:54:56-[JDBC INFO]
+[INFO]2021-05-07 18:54:56-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 18:54:56-[URL:jdbc:stub]
+[INFO]2021-05-07 18:54:56-
+
+[INFO]2021-05-07 18:54:56-Pool[Tomcat -- Multiple thread query] -- Begin{10threads X 1iterate}
+[INFO]2021-05-07 18:55:07-Pool[Tomcat -- Multiple thread query] -- Execution count:10,total time:1605ms,avg time:160.500000ms,min time:157ms,max time:161ms
+[INFO]2021-05-07 18:55:07-success count       :10
+[INFO]2021-05-07 18:55:07-fail count          :0
+[INFO]2021-05-07 18:55:07-avr(ms)             :160.500000
+[INFO]2021-05-07 18:55:07-min(ms)             :157
+[INFO]2021-05-07 18:55:07-max(ms)             :161
+[INFO]2021-05-07 18:55:07-time==0ms           :0
+[INFO]2021-05-07 18:55:07-1ms=<time<=10ms     :0
+[INFO]2021-05-07 18:55:07-10ms<time<=50ms     :0
+[INFO]2021-05-07 18:55:07-50ms<time<=100ms    :0
+[INFO]2021-05-07 18:55:07-100ms<time<=200ms   :10
+[INFO]2021-05-07 18:55:07-200ms<time<=500ms   :0
+[INFO]2021-05-07 18:55:07-500ms<time<=1000ms  :0
+[INFO]2021-05-07 18:55:07-1000ms<time<=2000ms :0
+[INFO]2021-05-07 18:55:07-2000ms<time<=8000ms :0
+[INFO]2021-05-07 18:55:07-time>8000ms         :0
+[INFO]2021-05-07 18:55:07-
+
+[INFO]2021-05-07 18:55:55-[JDBC INFO]
+[INFO]2021-05-07 18:55:55-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 18:55:55-[URL:jdbc:stub]
+[INFO]2021-05-07 18:55:55-
+
+[INFO]2021-05-07 18:55:56-Pool[Druid -- Multiple thread borrow] -- Begin{10threads X 1iterate}
+[INFO]2021-05-07 18:56:06-{dataSource-1} inited
+[INFO]2021-05-07 18:56:06-Pool[Druid -- Multiple thread borrow] -- Execution count:10,total time:1425ms,avg time:142.500000ms,min time:142ms,max time:142ms
+[INFO]2021-05-07 18:56:06-success count       :10
+[INFO]2021-05-07 18:56:06-fail count          :0
+[INFO]2021-05-07 18:56:06-avr(ms)             :142.500000
+[INFO]2021-05-07 18:56:06-min(ms)             :142
+[INFO]2021-05-07 18:56:06-max(ms)             :142
+[INFO]2021-05-07 18:56:06-time==0ms           :0
+[INFO]2021-05-07 18:56:06-1ms=<time<=10ms     :0
+[INFO]2021-05-07 18:56:06-10ms<time<=50ms     :0
+[INFO]2021-05-07 18:56:06-50ms<time<=100ms    :0
+[INFO]2021-05-07 18:56:06-100ms<time<=200ms   :10
+[INFO]2021-05-07 18:56:06-200ms<time<=500ms   :0
+[INFO]2021-05-07 18:56:06-500ms<time<=1000ms  :0
+[INFO]2021-05-07 18:56:06-1000ms<time<=2000ms :0
+[INFO]2021-05-07 18:56:06-2000ms<time<=8000ms :0
+[INFO]2021-05-07 18:56:06-time>8000ms         :0
+[INFO]2021-05-07 18:56:06-
+
+[INFO]2021-05-07 18:56:06-{dataSource-1} closing ...
+[INFO]2021-05-07 18:56:06-{dataSource-1} closed
+[INFO]2021-05-07 18:56:09-[JDBC INFO]
+[INFO]2021-05-07 18:56:09-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 18:56:09-[URL:jdbc:stub]
+[INFO]2021-05-07 18:56:09-
+
+[INFO]2021-05-07 18:56:09-Pool[Druid -- Multiple thread query] -- Begin{10threads X 1iterate}
+[INFO]2021-05-07 18:56:20-{dataSource-1} inited
+[INFO]2021-05-07 18:56:20-Pool[Druid -- Multiple thread query] -- Execution count:10,total time:1596ms,avg time:159.600000ms,min time:157ms,max time:161ms
+[INFO]2021-05-07 18:56:20-success count       :10
+[INFO]2021-05-07 18:56:20-fail count          :0
+[INFO]2021-05-07 18:56:20-avr(ms)             :159.600000
+[INFO]2021-05-07 18:56:20-min(ms)             :157
+[INFO]2021-05-07 18:56:20-max(ms)             :161
+[INFO]2021-05-07 18:56:20-time==0ms           :0
+[INFO]2021-05-07 18:56:20-1ms=<time<=10ms     :0
+[INFO]2021-05-07 18:56:20-10ms<time<=50ms     :0
+[INFO]2021-05-07 18:56:20-50ms<time<=100ms    :0
+[INFO]2021-05-07 18:56:20-100ms<time<=200ms   :10
+[INFO]2021-05-07 18:56:20-200ms<time<=500ms   :0
+[INFO]2021-05-07 18:56:20-500ms<time<=1000ms  :0
+[INFO]2021-05-07 18:56:20-1000ms<time<=2000ms :0
+[INFO]2021-05-07 18:56:20-2000ms<time<=8000ms :0
+[INFO]2021-05-07 18:56:20-time>8000ms         :0
+[INFO]2021-05-07 18:56:20-
+
+[INFO]2021-05-07 18:56:20-{dataSource-1} closing ...
+[INFO]2021-05-07 18:56:20-{dataSource-1} closed
+[INFO]2021-05-07 18:57:17-[JDBC INFO]
+[INFO]2021-05-07 18:57:17-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 18:57:17-[URL:jdbc:stub]
+[INFO]2021-05-07 18:57:17-
+
+[INFO]2021-05-07 18:57:17-HikariPool-1 - Starting...
+[INFO]2021-05-07 18:57:17-HikariPool-1 - Start completed.
+[INFO]2021-05-07 18:57:17-Pool[HikariCP -- Multiple thread borrow] -- Begin{10threads X 1iterate}
+[INFO]2021-05-07 18:57:27-Pool[HikariCP -- Multiple thread borrow] -- Execution count:10,total time:655ms,avg time:65.500000ms,min time:36ms,max time:78ms
+[INFO]2021-05-07 18:57:27-success count       :10
+[INFO]2021-05-07 18:57:27-fail count          :0
+[INFO]2021-05-07 18:57:27-avr(ms)             :65.500000
+[INFO]2021-05-07 18:57:27-min(ms)             :36
+[INFO]2021-05-07 18:57:27-max(ms)             :78
+[INFO]2021-05-07 18:57:27-time==0ms           :0
+[INFO]2021-05-07 18:57:27-1ms=<time<=10ms     :0
+[INFO]2021-05-07 18:57:27-10ms<time<=50ms     :1
+[INFO]2021-05-07 18:57:27-50ms<time<=100ms    :9
+[INFO]2021-05-07 18:57:27-100ms<time<=200ms   :0
+[INFO]2021-05-07 18:57:27-200ms<time<=500ms   :0
+[INFO]2021-05-07 18:57:27-500ms<time<=1000ms  :0
+[INFO]2021-05-07 18:57:27-1000ms<time<=2000ms :0
+[INFO]2021-05-07 18:57:27-2000ms<time<=8000ms :0
+[INFO]2021-05-07 18:57:27-time>8000ms         :0
+[INFO]2021-05-07 18:57:27-
+
+[INFO]2021-05-07 18:57:27-HikariPool-1 - Shutdown initiated...
+[INFO]2021-05-07 18:57:27-HikariPool-1 - Shutdown completed.
+[INFO]2021-05-07 18:59:08-[JDBC INFO]
+[INFO]2021-05-07 18:59:08-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 18:59:08-[URL:jdbc:stub]
+[INFO]2021-05-07 18:59:08-
+
+[INFO]2021-05-07 18:59:08-HikariPool-1 - Starting...
+[INFO]2021-05-07 18:59:08-HikariPool-1 - Start completed.
+[INFO]2021-05-07 18:59:08-Pool[HikariCP -- Multiple thread query] -- Begin{10threads X 1iterate}
+[INFO]2021-05-07 18:59:18-Pool[HikariCP -- Multiple thread query] -- Execution count:10,total time:543ms,avg time:54.300000ms,min time:37ms,max time:62ms
+[INFO]2021-05-07 18:59:18-success count       :10
+[INFO]2021-05-07 18:59:18-fail count          :0
+[INFO]2021-05-07 18:59:18-avr(ms)             :54.300000
+[INFO]2021-05-07 18:59:18-min(ms)             :37
+[INFO]2021-05-07 18:59:18-max(ms)             :62
+[INFO]2021-05-07 18:59:18-time==0ms           :0
+[INFO]2021-05-07 18:59:18-1ms=<time<=10ms     :0
+[INFO]2021-05-07 18:59:18-10ms<time<=50ms     :3
+[INFO]2021-05-07 18:59:18-50ms<time<=100ms    :7
+[INFO]2021-05-07 18:59:18-100ms<time<=200ms   :0
+[INFO]2021-05-07 18:59:18-200ms<time<=500ms   :0
+[INFO]2021-05-07 18:59:18-500ms<time<=1000ms  :0
+[INFO]2021-05-07 18:59:18-1000ms<time<=2000ms :0
+[INFO]2021-05-07 18:59:18-2000ms<time<=8000ms :0
+[INFO]2021-05-07 18:59:18-time>8000ms         :0
+[INFO]2021-05-07 18:59:18-
+
+[INFO]2021-05-07 18:59:18-HikariPool-1 - Shutdown initiated...
+[INFO]2021-05-07 18:59:18-HikariPool-1 - Shutdown completed.
+[INFO]2021-05-07 18:59:50-[JDBC INFO]
+[INFO]2021-05-07 18:59:50-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 18:59:50-[URL:jdbc:stub]
+[INFO]2021-05-07 18:59:50-
+
+[INFO]2021-05-07 18:59:51-BeeCP(FastPool-1)starting....
+[INFO]2021-05-07 18:59:51-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.zaxxer.hikari.benchmark.stubs.StubDriver}
+[INFO]2021-05-07 18:59:51-Pool[BeeCP_Compete -- Multiple thread borrow] -- Begin{10threads X 1iterate}
+[INFO]2021-05-07 19:00:01-Pool[BeeCP_Compete -- Multiple thread borrow] -- Execution count:10,total time:196ms,avg time:19.600000ms,min time:7ms,max time:33ms
+[INFO]2021-05-07 19:00:01-success count       :10
+[INFO]2021-05-07 19:00:01-fail count          :0
+[INFO]2021-05-07 19:00:01-avr(ms)             :19.600000
+[INFO]2021-05-07 19:00:01-min(ms)             :7
+[INFO]2021-05-07 19:00:01-max(ms)             :33
+[INFO]2021-05-07 19:00:01-time==0ms           :0
+[INFO]2021-05-07 19:00:01-1ms=<time<=10ms     :5
+[INFO]2021-05-07 19:00:01-10ms<time<=50ms     :5
+[INFO]2021-05-07 19:00:01-50ms<time<=100ms    :0
+[INFO]2021-05-07 19:00:01-100ms<time<=200ms   :0
+[INFO]2021-05-07 19:00:01-200ms<time<=500ms   :0
+[INFO]2021-05-07 19:00:01-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:00:01-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:00:01-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:00:01-time>8000ms         :0
+[INFO]2021-05-07 19:00:01-
+
+[INFO]2021-05-07 19:00:01-BeeCP(FastPool-1)begin to shutdown
+[INFO]2021-05-07 19:00:01-BeeCP(FastPool-1)has shutdown
+[INFO]2021-05-07 19:00:20-[JDBC INFO]
+[INFO]2021-05-07 19:00:20-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:00:20-[URL:jdbc:stub]
+[INFO]2021-05-07 19:00:20-
+
+[INFO]2021-05-07 19:00:21-BeeCP(FastPool-1)starting....
+[INFO]2021-05-07 19:00:21-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.zaxxer.hikari.benchmark.stubs.StubDriver}
+[INFO]2021-05-07 19:00:21-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{10threads X 1iterate}
+[INFO]2021-05-07 19:00:31-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:10,total time:314ms,avg time:31.400000ms,min time:8ms,max time:43ms
+[INFO]2021-05-07 19:00:31-success count       :10
+[INFO]2021-05-07 19:00:31-fail count          :0
+[INFO]2021-05-07 19:00:31-avr(ms)             :31.400000
+[INFO]2021-05-07 19:00:31-min(ms)             :8
+[INFO]2021-05-07 19:00:31-max(ms)             :43
+[INFO]2021-05-07 19:00:31-time==0ms           :0
+[INFO]2021-05-07 19:00:31-1ms=<time<=10ms     :1
+[INFO]2021-05-07 19:00:31-10ms<time<=50ms     :9
+[INFO]2021-05-07 19:00:31-50ms<time<=100ms    :0
+[INFO]2021-05-07 19:00:31-100ms<time<=200ms   :0
+[INFO]2021-05-07 19:00:31-200ms<time<=500ms   :0
+[INFO]2021-05-07 19:00:31-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:00:31-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:00:31-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:00:31-time>8000ms         :0
+[INFO]2021-05-07 19:00:31-
+
+[INFO]2021-05-07 19:00:31-BeeCP(FastPool-1)begin to shutdown
+[INFO]2021-05-07 19:00:31-BeeCP(FastPool-1)has shutdown
+[INFO]2021-05-07 19:01:18-[JDBC INFO]
+[INFO]2021-05-07 19:01:18-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:01:18-[URL:jdbc:stub]
+[INFO]2021-05-07 19:01:18-
+
+[INFO]2021-05-07 19:01:18-Pool[Tomcat -- Multiple thread borrow] -- Begin{100threads X 1iterate}
+[INFO]2021-05-07 19:01:28-Pool[Tomcat -- Multiple thread borrow] -- Execution count:100,total time:14465ms,avg time:144.650000ms,min time:121ms,max time:165ms
+[INFO]2021-05-07 19:01:28-success count       :100
+[INFO]2021-05-07 19:01:28-fail count          :0
+[INFO]2021-05-07 19:01:28-avr(ms)             :144.650000
+[INFO]2021-05-07 19:01:28-min(ms)             :121
+[INFO]2021-05-07 19:01:28-max(ms)             :165
+[INFO]2021-05-07 19:01:28-time==0ms           :0
+[INFO]2021-05-07 19:01:28-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:01:28-10ms<time<=50ms     :0
+[INFO]2021-05-07 19:01:28-50ms<time<=100ms    :0
+[INFO]2021-05-07 19:01:28-100ms<time<=200ms   :100
+[INFO]2021-05-07 19:01:28-200ms<time<=500ms   :0
+[INFO]2021-05-07 19:01:28-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:01:28-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:01:28-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:01:28-time>8000ms         :0
+[INFO]2021-05-07 19:01:28-
+
+[INFO]2021-05-07 19:01:31-[JDBC INFO]
+[INFO]2021-05-07 19:01:31-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:01:31-[URL:jdbc:stub]
+[INFO]2021-05-07 19:01:31-
+
+[INFO]2021-05-07 19:01:31-Pool[Tomcat -- Multiple thread query] -- Begin{100threads X 1iterate}
+[INFO]2021-05-07 19:01:42-Pool[Tomcat -- Multiple thread query] -- Execution count:100,total time:15847ms,avg time:158.470000ms,min time:140ms,max time:168ms
+[INFO]2021-05-07 19:01:42-success count       :100
+[INFO]2021-05-07 19:01:42-fail count          :0
+[INFO]2021-05-07 19:01:42-avr(ms)             :158.470000
+[INFO]2021-05-07 19:01:42-min(ms)             :140
+[INFO]2021-05-07 19:01:42-max(ms)             :168
+[INFO]2021-05-07 19:01:42-time==0ms           :0
+[INFO]2021-05-07 19:01:42-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:01:42-10ms<time<=50ms     :0
+[INFO]2021-05-07 19:01:42-50ms<time<=100ms    :0
+[INFO]2021-05-07 19:01:42-100ms<time<=200ms   :100
+[INFO]2021-05-07 19:01:42-200ms<time<=500ms   :0
+[INFO]2021-05-07 19:01:42-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:01:42-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:01:42-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:01:42-time>8000ms         :0
+[INFO]2021-05-07 19:01:42-
+
+[INFO]2021-05-07 19:02:44-[JDBC INFO]
+[INFO]2021-05-07 19:02:44-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:02:44-[URL:jdbc:stub]
+[INFO]2021-05-07 19:02:44-
+
+[INFO]2021-05-07 19:02:44-Pool[Druid -- Multiple thread borrow] -- Begin{100threads X 1iterate}
+[INFO]2021-05-07 19:02:54-{dataSource-1} inited
+[INFO]2021-05-07 19:02:54-Pool[Druid -- Multiple thread borrow] -- Execution count:100,total time:13966ms,avg time:139.660000ms,min time:135ms,max time:145ms
+[INFO]2021-05-07 19:02:54-success count       :100
+[INFO]2021-05-07 19:02:54-fail count          :0
+[INFO]2021-05-07 19:02:54-avr(ms)             :139.660000
+[INFO]2021-05-07 19:02:54-min(ms)             :135
+[INFO]2021-05-07 19:02:54-max(ms)             :145
+[INFO]2021-05-07 19:02:54-time==0ms           :0
+[INFO]2021-05-07 19:02:54-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:02:54-10ms<time<=50ms     :0
+[INFO]2021-05-07 19:02:54-50ms<time<=100ms    :0
+[INFO]2021-05-07 19:02:54-100ms<time<=200ms   :100
+[INFO]2021-05-07 19:02:54-200ms<time<=500ms   :0
+[INFO]2021-05-07 19:02:54-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:02:54-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:02:54-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:02:54-time>8000ms         :0
+[INFO]2021-05-07 19:02:54-
+
+[INFO]2021-05-07 19:02:54-{dataSource-1} closing ...
+[INFO]2021-05-07 19:02:54-{dataSource-1} closed
+[INFO]2021-05-07 19:03:32-[JDBC INFO]
+[INFO]2021-05-07 19:03:32-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:03:32-[URL:jdbc:stub]
+[INFO]2021-05-07 19:03:32-
+
+[INFO]2021-05-07 19:03:32-Pool[Druid -- Multiple thread query] -- Begin{100threads X 1iterate}
+[INFO]2021-05-07 19:03:42-{dataSource-1} inited
+[INFO]2021-05-07 19:03:42-Pool[Druid -- Multiple thread query] -- Execution count:100,total time:14314ms,avg time:143.140000ms,min time:131ms,max time:172ms
+[INFO]2021-05-07 19:03:42-success count       :100
+[INFO]2021-05-07 19:03:42-fail count          :0
+[INFO]2021-05-07 19:03:42-avr(ms)             :143.140000
+[INFO]2021-05-07 19:03:42-min(ms)             :131
+[INFO]2021-05-07 19:03:42-max(ms)             :172
+[INFO]2021-05-07 19:03:42-time==0ms           :0
+[INFO]2021-05-07 19:03:42-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:03:42-10ms<time<=50ms     :0
+[INFO]2021-05-07 19:03:42-50ms<time<=100ms    :0
+[INFO]2021-05-07 19:03:42-100ms<time<=200ms   :100
+[INFO]2021-05-07 19:03:42-200ms<time<=500ms   :0
+[INFO]2021-05-07 19:03:42-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:03:42-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:03:42-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:03:42-time>8000ms         :0
+[INFO]2021-05-07 19:03:42-
+
+[INFO]2021-05-07 19:03:42-{dataSource-1} closing ...
+[INFO]2021-05-07 19:03:42-{dataSource-1} closed
+[INFO]2021-05-07 19:04:12-[JDBC INFO]
+[INFO]2021-05-07 19:04:12-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:04:12-[URL:jdbc:stub]
+[INFO]2021-05-07 19:04:12-
+
+[INFO]2021-05-07 19:04:12-HikariPool-1 - Starting...
+[INFO]2021-05-07 19:04:12-HikariPool-1 - Start completed.
+[INFO]2021-05-07 19:04:12-Pool[HikariCP -- Multiple thread borrow] -- Begin{100threads X 1iterate}
+[INFO]2021-05-07 19:04:22-Pool[HikariCP -- Multiple thread borrow] -- Execution count:100,total time:5651ms,avg time:56.510000ms,min time:34ms,max time:90ms
+[INFO]2021-05-07 19:04:22-success count       :100
+[INFO]2021-05-07 19:04:22-fail count          :0
+[INFO]2021-05-07 19:04:22-avr(ms)             :56.510000
+[INFO]2021-05-07 19:04:22-min(ms)             :34
+[INFO]2021-05-07 19:04:22-max(ms)             :90
+[INFO]2021-05-07 19:04:22-time==0ms           :0
+[INFO]2021-05-07 19:04:22-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:04:22-10ms<time<=50ms     :42
+[INFO]2021-05-07 19:04:22-50ms<time<=100ms    :58
+[INFO]2021-05-07 19:04:22-100ms<time<=200ms   :0
+[INFO]2021-05-07 19:04:22-200ms<time<=500ms   :0
+[INFO]2021-05-07 19:04:22-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:04:22-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:04:22-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:04:22-time>8000ms         :0
+[INFO]2021-05-07 19:04:22-
+
+[INFO]2021-05-07 19:04:22-HikariPool-1 - Shutdown initiated...
+[INFO]2021-05-07 19:04:22-HikariPool-1 - Shutdown completed.
+[INFO]2021-05-07 19:04:25-[JDBC INFO]
+[INFO]2021-05-07 19:04:25-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:04:25-[URL:jdbc:stub]
+[INFO]2021-05-07 19:04:25-
+
+[INFO]2021-05-07 19:04:25-HikariPool-1 - Starting...
+[INFO]2021-05-07 19:04:25-HikariPool-1 - Start completed.
+[INFO]2021-05-07 19:04:25-Pool[HikariCP -- Multiple thread query] -- Begin{100threads X 1iterate}
+[INFO]2021-05-07 19:04:35-Pool[HikariCP -- Multiple thread query] -- Execution count:100,total time:6223ms,avg time:62.230000ms,min time:50ms,max time:76ms
+[INFO]2021-05-07 19:04:35-success count       :100
+[INFO]2021-05-07 19:04:35-fail count          :0
+[INFO]2021-05-07 19:04:35-avr(ms)             :62.230000
+[INFO]2021-05-07 19:04:35-min(ms)             :50
+[INFO]2021-05-07 19:04:35-max(ms)             :76
+[INFO]2021-05-07 19:04:35-time==0ms           :0
+[INFO]2021-05-07 19:04:35-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:04:35-10ms<time<=50ms     :5
+[INFO]2021-05-07 19:04:35-50ms<time<=100ms    :95
+[INFO]2021-05-07 19:04:35-100ms<time<=200ms   :0
+[INFO]2021-05-07 19:04:35-200ms<time<=500ms   :0
+[INFO]2021-05-07 19:04:35-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:04:35-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:04:35-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:04:35-time>8000ms         :0
+[INFO]2021-05-07 19:04:35-
+
+[INFO]2021-05-07 19:04:35-HikariPool-1 - Shutdown initiated...
+[INFO]2021-05-07 19:04:35-HikariPool-1 - Shutdown completed.
+[INFO]2021-05-07 19:05:07-[JDBC INFO]
+[INFO]2021-05-07 19:05:07-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:05:07-[URL:jdbc:stub]
+[INFO]2021-05-07 19:05:07-
+
+[INFO]2021-05-07 19:05:07-BeeCP(FastPool-1)starting....
+[INFO]2021-05-07 19:05:07-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.zaxxer.hikari.benchmark.stubs.StubDriver}
+[INFO]2021-05-07 19:05:07-Pool[BeeCP_Compete -- Multiple thread borrow] -- Begin{100threads X 1iterate}
+[INFO]2021-05-07 19:05:17-Pool[BeeCP_Compete -- Multiple thread borrow] -- Execution count:100,total time:1778ms,avg time:17.780000ms,min time:13ms,max time:45ms
+[INFO]2021-05-07 19:05:17-success count       :100
+[INFO]2021-05-07 19:05:17-fail count          :0
+[INFO]2021-05-07 19:05:17-avr(ms)             :17.780000
+[INFO]2021-05-07 19:05:17-min(ms)             :13
+[INFO]2021-05-07 19:05:17-max(ms)             :45
+[INFO]2021-05-07 19:05:17-time==0ms           :0
+[INFO]2021-05-07 19:05:17-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:05:17-10ms<time<=50ms     :100
+[INFO]2021-05-07 19:05:17-50ms<time<=100ms    :0
+[INFO]2021-05-07 19:05:17-100ms<time<=200ms   :0
+[INFO]2021-05-07 19:05:17-200ms<time<=500ms   :0
+[INFO]2021-05-07 19:05:17-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:05:17-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:05:17-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:05:17-time>8000ms         :0
+[INFO]2021-05-07 19:05:17-
+
+[INFO]2021-05-07 19:05:17-BeeCP(FastPool-1)begin to shutdown
+[INFO]2021-05-07 19:05:17-BeeCP(FastPool-1)has shutdown
+[INFO]2021-05-07 19:05:36-[JDBC INFO]
+[INFO]2021-05-07 19:05:36-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:05:36-[URL:jdbc:stub]
+[INFO]2021-05-07 19:05:36-
+
+[INFO]2021-05-07 19:05:36-BeeCP(FastPool-1)starting....
+[INFO]2021-05-07 19:05:36-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.zaxxer.hikari.benchmark.stubs.StubDriver}
+[INFO]2021-05-07 19:05:36-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{100threads X 1iterate}
+[INFO]2021-05-07 19:05:46-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:100,total time:2946ms,avg time:29.460000ms,min time:24ms,max time:60ms
+[INFO]2021-05-07 19:05:46-success count       :100
+[INFO]2021-05-07 19:05:46-fail count          :0
+[INFO]2021-05-07 19:05:46-avr(ms)             :29.460000
+[INFO]2021-05-07 19:05:46-min(ms)             :24
+[INFO]2021-05-07 19:05:46-max(ms)             :60
+[INFO]2021-05-07 19:05:46-time==0ms           :0
+[INFO]2021-05-07 19:05:46-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:05:46-10ms<time<=50ms     :94
+[INFO]2021-05-07 19:05:46-50ms<time<=100ms    :6
+[INFO]2021-05-07 19:05:46-100ms<time<=200ms   :0
+[INFO]2021-05-07 19:05:46-200ms<time<=500ms   :0
+[INFO]2021-05-07 19:05:46-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:05:46-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:05:46-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:05:46-time>8000ms         :0
+[INFO]2021-05-07 19:05:46-
+
+[INFO]2021-05-07 19:05:46-BeeCP(FastPool-1)begin to shutdown
+[INFO]2021-05-07 19:05:46-BeeCP(FastPool-1)has shutdown
+[INFO]2021-05-07 19:06:59-[JDBC INFO]
+[INFO]2021-05-07 19:06:59-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:06:59-[URL:jdbc:stub]
+[INFO]2021-05-07 19:06:59-
+
+[INFO]2021-05-07 19:06:59-Pool[Tomcat -- Multiple thread borrow] -- Begin{1000threads X 1iterate}
+[INFO]2021-05-07 19:07:09-Pool[Tomcat -- Multiple thread borrow] -- Execution count:1000,total time:309405ms,avg time:309.405000ms,min time:156ms,max time:368ms
+[INFO]2021-05-07 19:07:09-success count       :1000
+[INFO]2021-05-07 19:07:09-fail count          :0
+[INFO]2021-05-07 19:07:09-avr(ms)             :309.405000
+[INFO]2021-05-07 19:07:09-min(ms)             :156
+[INFO]2021-05-07 19:07:09-max(ms)             :368
+[INFO]2021-05-07 19:07:09-time==0ms           :0
+[INFO]2021-05-07 19:07:09-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:07:09-10ms<time<=50ms     :0
+[INFO]2021-05-07 19:07:09-50ms<time<=100ms    :0
+[INFO]2021-05-07 19:07:09-100ms<time<=200ms   :75
+[INFO]2021-05-07 19:07:09-200ms<time<=500ms   :925
+[INFO]2021-05-07 19:07:09-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:07:09-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:07:09-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:07:09-time>8000ms         :0
+[INFO]2021-05-07 19:07:09-
+
+[INFO]2021-05-07 19:07:12-[JDBC INFO]
+[INFO]2021-05-07 19:07:12-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:07:12-[URL:jdbc:stub]
+[INFO]2021-05-07 19:07:12-
+
+[INFO]2021-05-07 19:07:12-Pool[Tomcat -- Multiple thread query] -- Begin{1000threads X 1iterate}
+[INFO]2021-05-07 19:07:22-Pool[Tomcat -- Multiple thread query] -- Execution count:1000,total time:352846ms,avg time:352.846000ms,min time:268ms,max time:402ms
+[INFO]2021-05-07 19:07:22-success count       :1000
+[INFO]2021-05-07 19:07:22-fail count          :0
+[INFO]2021-05-07 19:07:22-avr(ms)             :352.846000
+[INFO]2021-05-07 19:07:22-min(ms)             :268
+[INFO]2021-05-07 19:07:22-max(ms)             :402
+[INFO]2021-05-07 19:07:22-time==0ms           :0
+[INFO]2021-05-07 19:07:22-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:07:22-10ms<time<=50ms     :0
+[INFO]2021-05-07 19:07:22-50ms<time<=100ms    :0
+[INFO]2021-05-07 19:07:22-100ms<time<=200ms   :0
+[INFO]2021-05-07 19:07:22-200ms<time<=500ms   :1000
+[INFO]2021-05-07 19:07:22-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:07:22-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:07:22-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:07:22-time>8000ms         :0
+[INFO]2021-05-07 19:07:22-
+
+[INFO]2021-05-07 19:07:52-[JDBC INFO]
+[INFO]2021-05-07 19:07:52-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:07:52-[URL:jdbc:stub]
+[INFO]2021-05-07 19:07:52-
+
+[INFO]2021-05-07 19:07:52-Pool[Druid -- Multiple thread borrow] -- Begin{1000threads X 1iterate}
+[INFO]2021-05-07 19:08:03-{dataSource-1} inited
+[INFO]2021-05-07 19:08:03-Pool[Druid -- Multiple thread borrow] -- Execution count:1000,total time:343102ms,avg time:343.102000ms,min time:296ms,max time:405ms
+[INFO]2021-05-07 19:08:03-success count       :1000
+[INFO]2021-05-07 19:08:03-fail count          :0
+[INFO]2021-05-07 19:08:03-avr(ms)             :343.102000
+[INFO]2021-05-07 19:08:03-min(ms)             :296
+[INFO]2021-05-07 19:08:03-max(ms)             :405
+[INFO]2021-05-07 19:08:03-time==0ms           :0
+[INFO]2021-05-07 19:08:03-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:08:03-10ms<time<=50ms     :0
+[INFO]2021-05-07 19:08:03-50ms<time<=100ms    :0
+[INFO]2021-05-07 19:08:03-100ms<time<=200ms   :0
+[INFO]2021-05-07 19:08:03-200ms<time<=500ms   :1000
+[INFO]2021-05-07 19:08:03-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:08:03-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:08:03-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:08:03-time>8000ms         :0
+[INFO]2021-05-07 19:08:03-
+
+[INFO]2021-05-07 19:08:03-{dataSource-1} closing ...
+[INFO]2021-05-07 19:08:03-{dataSource-1} closed
+[INFO]2021-05-07 19:08:06-[JDBC INFO]
+[INFO]2021-05-07 19:08:06-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:08:06-[URL:jdbc:stub]
+[INFO]2021-05-07 19:08:06-
+
+[INFO]2021-05-07 19:08:06-Pool[Druid -- Multiple thread query] -- Begin{1000threads X 1iterate}
+[INFO]2021-05-07 19:08:16-{dataSource-1} inited
+[INFO]2021-05-07 19:08:16-Pool[Druid -- Multiple thread query] -- Execution count:1000,total time:326715ms,avg time:326.715000ms,min time:270ms,max time:391ms
+[INFO]2021-05-07 19:08:16-success count       :1000
+[INFO]2021-05-07 19:08:16-fail count          :0
+[INFO]2021-05-07 19:08:16-avr(ms)             :326.715000
+[INFO]2021-05-07 19:08:16-min(ms)             :270
+[INFO]2021-05-07 19:08:16-max(ms)             :391
+[INFO]2021-05-07 19:08:16-time==0ms           :0
+[INFO]2021-05-07 19:08:16-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:08:16-10ms<time<=50ms     :0
+[INFO]2021-05-07 19:08:16-50ms<time<=100ms    :0
+[INFO]2021-05-07 19:08:16-100ms<time<=200ms   :0
+[INFO]2021-05-07 19:08:16-200ms<time<=500ms   :1000
+[INFO]2021-05-07 19:08:16-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:08:16-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:08:16-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:08:16-time>8000ms         :0
+[INFO]2021-05-07 19:08:16-
+
+[INFO]2021-05-07 19:08:16-{dataSource-1} closing ...
+[INFO]2021-05-07 19:08:16-{dataSource-1} closed
+[INFO]2021-05-07 19:08:46-[JDBC INFO]
+[INFO]2021-05-07 19:08:46-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:08:46-[URL:jdbc:stub]
+[INFO]2021-05-07 19:08:46-
+
+[INFO]2021-05-07 19:08:46-HikariPool-1 - Starting...
+[INFO]2021-05-07 19:08:46-HikariPool-1 - Start completed.
+[INFO]2021-05-07 19:08:46-Pool[HikariCP -- Multiple thread borrow] -- Begin{1000threads X 1iterate}
+[INFO]2021-05-07 19:08:56-Pool[HikariCP -- Multiple thread borrow] -- Execution count:1000,total time:225700ms,avg time:225.700000ms,min time:129ms,max time:259ms
+[INFO]2021-05-07 19:08:56-success count       :1000
+[INFO]2021-05-07 19:08:56-fail count          :0
+[INFO]2021-05-07 19:08:56-avr(ms)             :225.700000
+[INFO]2021-05-07 19:08:56-min(ms)             :129
+[INFO]2021-05-07 19:08:56-max(ms)             :259
+[INFO]2021-05-07 19:08:56-time==0ms           :0
+[INFO]2021-05-07 19:08:56-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:08:56-10ms<time<=50ms     :0
+[INFO]2021-05-07 19:08:56-50ms<time<=100ms    :0
+[INFO]2021-05-07 19:08:56-100ms<time<=200ms   :65
+[INFO]2021-05-07 19:08:56-200ms<time<=500ms   :935
+[INFO]2021-05-07 19:08:56-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:08:56-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:08:56-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:08:56-time>8000ms         :0
+[INFO]2021-05-07 19:08:56-
+
+[INFO]2021-05-07 19:08:56-HikariPool-1 - Shutdown initiated...
+[INFO]2021-05-07 19:08:56-HikariPool-1 - Shutdown completed.
+[INFO]2021-05-07 19:08:58-[JDBC INFO]
+[INFO]2021-05-07 19:08:58-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:08:58-[URL:jdbc:stub]
+[INFO]2021-05-07 19:08:58-
+
+[INFO]2021-05-07 19:08:59-HikariPool-1 - Starting...
+[INFO]2021-05-07 19:08:59-HikariPool-1 - Start completed.
+[INFO]2021-05-07 19:08:59-Pool[HikariCP -- Multiple thread query] -- Begin{1000threads X 1iterate}
+[INFO]2021-05-07 19:09:09-Pool[HikariCP -- Multiple thread query] -- Execution count:1000,total time:143787ms,avg time:143.787000ms,min time:97ms,max time:241ms
+[INFO]2021-05-07 19:09:09-success count       :1000
+[INFO]2021-05-07 19:09:09-fail count          :0
+[INFO]2021-05-07 19:09:09-avr(ms)             :143.787000
+[INFO]2021-05-07 19:09:09-min(ms)             :97
+[INFO]2021-05-07 19:09:09-max(ms)             :241
+[INFO]2021-05-07 19:09:09-time==0ms           :0
+[INFO]2021-05-07 19:09:09-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:09:09-10ms<time<=50ms     :0
+[INFO]2021-05-07 19:09:09-50ms<time<=100ms    :7
+[INFO]2021-05-07 19:09:09-100ms<time<=200ms   :988
+[INFO]2021-05-07 19:09:09-200ms<time<=500ms   :5
+[INFO]2021-05-07 19:09:09-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:09:09-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:09:09-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:09:09-time>8000ms         :0
+[INFO]2021-05-07 19:09:09-
+
+[INFO]2021-05-07 19:09:09-HikariPool-1 - Shutdown initiated...
+[INFO]2021-05-07 19:09:09-HikariPool-1 - Shutdown completed.
+[INFO]2021-05-07 19:10:16-[JDBC INFO]
+[INFO]2021-05-07 19:10:16-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:10:16-[URL:jdbc:stub]
+[INFO]2021-05-07 19:10:16-
+
+[INFO]2021-05-07 19:10:16-BeeCP(FastPool-1)starting....
+[INFO]2021-05-07 19:10:16-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.zaxxer.hikari.benchmark.stubs.StubDriver}
+[INFO]2021-05-07 19:10:16-Pool[BeeCP_Compete -- Multiple thread borrow] -- Begin{1000threads X 1iterate}
+[INFO]2021-05-07 19:10:26-Pool[BeeCP_Compete -- Multiple thread borrow] -- Execution count:1000,total time:87978ms,avg time:87.978000ms,min time:31ms,max time:120ms
+[INFO]2021-05-07 19:10:26-success count       :1000
+[INFO]2021-05-07 19:10:26-fail count          :0
+[INFO]2021-05-07 19:10:26-avr(ms)             :87.978000
+[INFO]2021-05-07 19:10:26-min(ms)             :31
+[INFO]2021-05-07 19:10:26-max(ms)             :120
+[INFO]2021-05-07 19:10:26-time==0ms           :0
+[INFO]2021-05-07 19:10:26-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:10:26-10ms<time<=50ms     :63
+[INFO]2021-05-07 19:10:26-50ms<time<=100ms    :585
+[INFO]2021-05-07 19:10:26-100ms<time<=200ms   :352
+[INFO]2021-05-07 19:10:26-200ms<time<=500ms   :0
+[INFO]2021-05-07 19:10:26-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:10:26-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:10:26-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:10:26-time>8000ms         :0
+[INFO]2021-05-07 19:10:26-
+
+[INFO]2021-05-07 19:10:26-BeeCP(FastPool-1)begin to shutdown
+[INFO]2021-05-07 19:10:26-BeeCP(FastPool-1)has shutdown
+[INFO]2021-05-07 19:10:31-[JDBC INFO]
+[INFO]2021-05-07 19:10:31-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:10:31-[URL:jdbc:stub]
+[INFO]2021-05-07 19:10:31-
+
+[INFO]2021-05-07 19:10:31-BeeCP(FastPool-1)starting....
+[INFO]2021-05-07 19:10:31-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.zaxxer.hikari.benchmark.stubs.StubDriver}
+[INFO]2021-05-07 19:10:31-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{1000threads X 1iterate}
+[INFO]2021-05-07 19:10:41-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:1000,total time:136865ms,avg time:136.865000ms,min time:69ms,max time:171ms
+[INFO]2021-05-07 19:10:41-success count       :1000
+[INFO]2021-05-07 19:10:41-fail count          :0
+[INFO]2021-05-07 19:10:41-avr(ms)             :136.865000
+[INFO]2021-05-07 19:10:41-min(ms)             :69
+[INFO]2021-05-07 19:10:41-max(ms)             :171
+[INFO]2021-05-07 19:10:41-time==0ms           :0
+[INFO]2021-05-07 19:10:41-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:10:41-10ms<time<=50ms     :0
+[INFO]2021-05-07 19:10:41-50ms<time<=100ms    :142
+[INFO]2021-05-07 19:10:41-100ms<time<=200ms   :858
+[INFO]2021-05-07 19:10:41-200ms<time<=500ms   :0
+[INFO]2021-05-07 19:10:41-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:10:41-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:10:41-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:10:41-time>8000ms         :0
+[INFO]2021-05-07 19:10:41-
+
+[INFO]2021-05-07 19:10:41-BeeCP(FastPool-1)begin to shutdown
+[INFO]2021-05-07 19:10:41-BeeCP(FastPool-1)has shutdown
+[INFO]2021-05-07 19:12:04-[JDBC INFO]
+[INFO]2021-05-07 19:12:04-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:12:04-[URL:jdbc:stub]
+[INFO]2021-05-07 19:12:04-
+
+[INFO]2021-05-07 19:12:04-Pool[Tomcat -- Multiple thread borrow] -- Begin{10000threads X 1iterate}
+[INFO]2021-05-07 19:12:28-Pool[Tomcat -- Multiple thread borrow] -- Execution count:10000,total time:100360219ms,avg time:13160.269997ms,min time:4658ms,max time:14518ms
+[INFO]2021-05-07 19:12:28-success count       :7626
+[INFO]2021-05-07 19:12:28-fail count          :2374
+[INFO]2021-05-07 19:12:28-avr(ms)             :13160.269997
+[INFO]2021-05-07 19:12:28-min(ms)             :4658
+[INFO]2021-05-07 19:12:28-max(ms)             :14518
+[INFO]2021-05-07 19:12:28-time==0ms           :0
+[INFO]2021-05-07 19:12:28-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:12:28-10ms<time<=50ms     :0
+[INFO]2021-05-07 19:12:28-50ms<time<=100ms    :0
+[INFO]2021-05-07 19:12:28-100ms<time<=200ms   :0
+[INFO]2021-05-07 19:12:28-200ms<time<=500ms   :0
+[INFO]2021-05-07 19:12:28-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:12:28-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:12:28-2000ms<time<=8000ms :107
+[INFO]2021-05-07 19:12:28-time>8000ms         :7519
+[INFO]2021-05-07 19:12:28-
+
+[INFO]2021-05-07 19:12:33-[JDBC INFO]
+[INFO]2021-05-07 19:12:33-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:12:33-[URL:jdbc:stub]
+[INFO]2021-05-07 19:12:33-
+
+[INFO]2021-05-07 19:12:33-Pool[Tomcat -- Multiple thread query] -- Begin{10000threads X 1iterate}
+[INFO]2021-05-07 19:12:57-Pool[Tomcat -- Multiple thread query] -- Execution count:10000,total time:99344267ms,avg time:13291.981135ms,min time:4199ms,max time:14663ms
+[INFO]2021-05-07 19:12:57-success count       :7474
+[INFO]2021-05-07 19:12:57-fail count          :2526
+[INFO]2021-05-07 19:12:57-avr(ms)             :13291.981135
+[INFO]2021-05-07 19:12:57-min(ms)             :4199
+[INFO]2021-05-07 19:12:57-max(ms)             :14663
+[INFO]2021-05-07 19:12:57-time==0ms           :0
+[INFO]2021-05-07 19:12:57-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:12:57-10ms<time<=50ms     :0
+[INFO]2021-05-07 19:12:57-50ms<time<=100ms    :0
+[INFO]2021-05-07 19:12:57-100ms<time<=200ms   :0
+[INFO]2021-05-07 19:12:57-200ms<time<=500ms   :0
+[INFO]2021-05-07 19:12:57-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:12:57-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:12:57-2000ms<time<=8000ms :144
+[INFO]2021-05-07 19:12:57-time>8000ms         :7330
+[INFO]2021-05-07 19:12:57-
+
+[INFO]2021-05-07 19:14:13-[JDBC INFO]
+[INFO]2021-05-07 19:14:13-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:14:13-[URL:jdbc:stub]
+[INFO]2021-05-07 19:14:13-
+
+[INFO]2021-05-07 19:14:13-Pool[Druid -- Multiple thread borrow] -- Begin{10000threads X 1iterate}
+[INFO]2021-05-07 19:14:37-{dataSource-1} inited
+[INFO]2021-05-07 19:14:45-Pool[Druid -- Multiple thread borrow] -- Execution count:10000,total time:200256516ms,avg time:20025.651600ms,min time:13987ms,max time:21040ms
+[INFO]2021-05-07 19:14:45-success count       :10000
+[INFO]2021-05-07 19:14:45-fail count          :0
+[INFO]2021-05-07 19:14:45-avr(ms)             :20025.651600
+[INFO]2021-05-07 19:14:45-min(ms)             :13987
+[INFO]2021-05-07 19:14:45-max(ms)             :21040
+[INFO]2021-05-07 19:14:45-time==0ms           :0
+[INFO]2021-05-07 19:14:45-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:14:45-10ms<time<=50ms     :0
+[INFO]2021-05-07 19:14:45-50ms<time<=100ms    :0
+[INFO]2021-05-07 19:14:45-100ms<time<=200ms   :0
+[INFO]2021-05-07 19:14:45-200ms<time<=500ms   :0
+[INFO]2021-05-07 19:14:45-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:14:45-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:14:45-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:14:45-time>8000ms         :10000
+[INFO]2021-05-07 19:14:45-
+
+[INFO]2021-05-07 19:14:45-{dataSource-1} closing ...
+[INFO]2021-05-07 19:14:45-{dataSource-1} closed
+[INFO]2021-05-07 19:14:50-[JDBC INFO]
+[INFO]2021-05-07 19:14:50-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:14:50-[URL:jdbc:stub]
+[INFO]2021-05-07 19:14:50-
+
+[INFO]2021-05-07 19:14:50-Pool[Druid -- Multiple thread query] -- Begin{10000threads X 1iterate}
+[INFO]2021-05-07 19:15:08-{dataSource-1} inited
+[INFO]2021-05-07 19:15:19-Pool[Druid -- Multiple thread query] -- Execution count:10000,total time:173507182ms,avg time:17924.295661ms,min time:8167ms,max time:19137ms
+[INFO]2021-05-07 19:15:19-success count       :9680
+[INFO]2021-05-07 19:15:19-fail count          :320
+[INFO]2021-05-07 19:15:19-avr(ms)             :17924.295661
+[INFO]2021-05-07 19:15:19-min(ms)             :8167
+[INFO]2021-05-07 19:15:19-max(ms)             :19137
+[INFO]2021-05-07 19:15:19-time==0ms           :0
+[INFO]2021-05-07 19:15:19-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:15:19-10ms<time<=50ms     :0
+[INFO]2021-05-07 19:15:19-50ms<time<=100ms    :0
+[INFO]2021-05-07 19:15:19-100ms<time<=200ms   :0
+[INFO]2021-05-07 19:15:19-200ms<time<=500ms   :0
+[INFO]2021-05-07 19:15:19-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:15:19-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:15:19-2000ms<time<=8000ms :0
+[INFO]2021-05-07 19:15:19-time>8000ms         :9680
+[INFO]2021-05-07 19:15:19-
+
+[INFO]2021-05-07 19:15:19-{dataSource-1} closing ...
+[INFO]2021-05-07 19:15:19-{dataSource-1} closed
+[INFO]2021-05-07 19:16:32-[JDBC INFO]
+[INFO]2021-05-07 19:16:32-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:16:32-[URL:jdbc:stub]
+[INFO]2021-05-07 19:16:32-
+
+[INFO]2021-05-07 19:16:32-HikariPool-1 - Starting...
+[INFO]2021-05-07 19:16:32-HikariPool-1 - Start completed.
+[INFO]2021-05-07 19:16:32-Pool[HikariCP -- Multiple thread borrow] -- Begin{10000threads X 1iterate}
+[INFO]2021-05-07 19:16:53-Pool[HikariCP -- Multiple thread borrow] -- Execution count:10000,total time:92024824ms,avg time:9202.482400ms,min time:367ms,max time:10826ms
+[INFO]2021-05-07 19:16:53-success count       :10000
+[INFO]2021-05-07 19:16:53-fail count          :0
+[INFO]2021-05-07 19:16:53-avr(ms)             :9202.482400
+[INFO]2021-05-07 19:16:53-min(ms)             :367
+[INFO]2021-05-07 19:16:53-max(ms)             :10826
+[INFO]2021-05-07 19:16:53-time==0ms           :0
+[INFO]2021-05-07 19:16:53-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:16:53-10ms<time<=50ms     :0
+[INFO]2021-05-07 19:16:53-50ms<time<=100ms    :0
+[INFO]2021-05-07 19:16:53-100ms<time<=200ms   :0
+[INFO]2021-05-07 19:16:53-200ms<time<=500ms   :21
+[INFO]2021-05-07 19:16:53-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:16:53-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:16:53-2000ms<time<=8000ms :2258
+[INFO]2021-05-07 19:16:53-time>8000ms         :7721
+[INFO]2021-05-07 19:16:53-
+
+[INFO]2021-05-07 19:16:53-HikariPool-1 - Shutdown initiated...
+[INFO]2021-05-07 19:16:53-HikariPool-1 - Shutdown completed.
+[INFO]2021-05-07 19:16:56-[JDBC INFO]
+[INFO]2021-05-07 19:16:56-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:16:56-[URL:jdbc:stub]
+[INFO]2021-05-07 19:16:56-
+
+[INFO]2021-05-07 19:16:56-HikariPool-1 - Starting...
+[INFO]2021-05-07 19:16:56-HikariPool-1 - Start completed.
+[INFO]2021-05-07 19:16:56-Pool[HikariCP -- Multiple thread query] -- Begin{10000threads X 1iterate}
+[INFO]2021-05-07 19:17:17-Pool[HikariCP -- Multiple thread query] -- Execution count:10000,total time:93307444ms,avg time:10472.215937ms,min time:5062ms,max time:11392ms
+[INFO]2021-05-07 19:17:17-success count       :8910
+[INFO]2021-05-07 19:17:17-fail count          :1090
+[INFO]2021-05-07 19:17:17-avr(ms)             :10472.215937
+[INFO]2021-05-07 19:17:17-min(ms)             :5062
+[INFO]2021-05-07 19:17:17-max(ms)             :11392
+[INFO]2021-05-07 19:17:17-time==0ms           :0
+[INFO]2021-05-07 19:17:17-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:17:17-10ms<time<=50ms     :0
+[INFO]2021-05-07 19:17:17-50ms<time<=100ms    :0
+[INFO]2021-05-07 19:17:17-100ms<time<=200ms   :0
+[INFO]2021-05-07 19:17:17-200ms<time<=500ms   :0
+[INFO]2021-05-07 19:17:17-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:17:17-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:17:17-2000ms<time<=8000ms :51
+[INFO]2021-05-07 19:17:17-time>8000ms         :8859
+[INFO]2021-05-07 19:17:17-
+
+[INFO]2021-05-07 19:17:17-HikariPool-1 - Shutdown initiated...
+[INFO]2021-05-07 19:17:17-HikariPool-1 - Shutdown completed.
+[INFO]2021-05-07 19:18:15-[JDBC INFO]
+[INFO]2021-05-07 19:18:15-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:18:15-[URL:jdbc:stub]
+[INFO]2021-05-07 19:18:15-
+
+[INFO]2021-05-07 19:18:15-BeeCP(FastPool-1)starting....
+[INFO]2021-05-07 19:18:15-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.zaxxer.hikari.benchmark.stubs.StubDriver}
+[INFO]2021-05-07 19:18:15-Pool[BeeCP_Compete -- Multiple thread borrow] -- Begin{10000threads X 1iterate}
+[INFO]2021-05-07 19:18:28-Pool[BeeCP_Compete -- Multiple thread borrow] -- Execution count:10000,total time:23293082ms,avg time:2329.308200ms,min time:0ms,max time:3706ms
+[INFO]2021-05-07 19:18:28-success count       :10000
+[INFO]2021-05-07 19:18:28-fail count          :0
+[INFO]2021-05-07 19:18:28-avr(ms)             :2329.308200
+[INFO]2021-05-07 19:18:28-min(ms)             :0
+[INFO]2021-05-07 19:18:28-max(ms)             :3706
+[INFO]2021-05-07 19:18:28-time==0ms           :64
+[INFO]2021-05-07 19:18:28-1ms=<time<=10ms     :1
+[INFO]2021-05-07 19:18:28-10ms<time<=50ms     :115
+[INFO]2021-05-07 19:18:28-50ms<time<=100ms    :154
+[INFO]2021-05-07 19:18:28-100ms<time<=200ms   :110
+[INFO]2021-05-07 19:18:28-200ms<time<=500ms   :476
+[INFO]2021-05-07 19:18:28-500ms<time<=1000ms  :744
+[INFO]2021-05-07 19:18:28-1000ms<time<=2000ms :1852
+[INFO]2021-05-07 19:18:28-2000ms<time<=8000ms :6484
+[INFO]2021-05-07 19:18:28-time>8000ms         :0
+[INFO]2021-05-07 19:18:28-
+
+[INFO]2021-05-07 19:18:28-BeeCP(FastPool-1)begin to shutdown
+[INFO]2021-05-07 19:18:28-BeeCP(FastPool-1)has shutdown
+[INFO]2021-05-07 19:18:32-[JDBC INFO]
+[INFO]2021-05-07 19:18:32-[Driver:com.zaxxer.hikari.benchmark.stubs.StubDriver]
+[INFO]2021-05-07 19:18:32-[URL:jdbc:stub]
+[INFO]2021-05-07 19:18:32-
+
+[INFO]2021-05-07 19:18:32-BeeCP(FastPool-1)starting....
+[INFO]2021-05-07 19:18:32-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.zaxxer.hikari.benchmark.stubs.StubDriver}
+[INFO]2021-05-07 19:18:32-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{10000threads X 1iterate}
+[INFO]2021-05-07 19:18:49-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:10000,total time:52704272ms,avg time:5270.427200ms,min time:178ms,max time:6493ms
+[INFO]2021-05-07 19:18:49-success count       :10000
+[INFO]2021-05-07 19:18:49-fail count          :0
+[INFO]2021-05-07 19:18:49-avr(ms)             :5270.427200
+[INFO]2021-05-07 19:18:49-min(ms)             :178
+[INFO]2021-05-07 19:18:49-max(ms)             :6493
+[INFO]2021-05-07 19:18:49-time==0ms           :0
+[INFO]2021-05-07 19:18:49-1ms=<time<=10ms     :0
+[INFO]2021-05-07 19:18:49-10ms<time<=50ms     :0
+[INFO]2021-05-07 19:18:49-50ms<time<=100ms    :0
+[INFO]2021-05-07 19:18:49-100ms<time<=200ms   :59
+[INFO]2021-05-07 19:18:49-200ms<time<=500ms   :197
+[INFO]2021-05-07 19:18:49-500ms<time<=1000ms  :0
+[INFO]2021-05-07 19:18:49-1000ms<time<=2000ms :0
+[INFO]2021-05-07 19:18:49-2000ms<time<=8000ms :9744
+[INFO]2021-05-07 19:18:49-time>8000ms         :0
+[INFO]2021-05-07 19:18:49-
+
+[INFO]2021-05-07 19:18:49-BeeCP(FastPool-1)begin to shutdown
+[INFO]2021-05-07 19:18:49-BeeCP(FastPool-1)has shutdown
