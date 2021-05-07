@@ -75,11 +75,9 @@ public abstract class ProxyConnectionBase implements Connection {
     }
 
     public final void setAutoCommit(boolean autoCommit) throws SQLException {
-        if (!pCon.curAutoCommit && pCon.commitDirtyInd)
-            throw AutoCommitChangeForbiddenException;
+        if (pCon.commitDirtyInd)throw AutoCommitChangeForbiddenException;
         delegate.setAutoCommit(autoCommit);
         pCon.curAutoCommit = autoCommit;
-        if (autoCommit) pCon.commitDirtyInd = false;
         pCon.setResetInd(PS_AUTO, autoCommit != pCon.cfgAutoCommit);
     }
 
