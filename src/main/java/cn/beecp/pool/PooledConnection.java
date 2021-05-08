@@ -105,7 +105,7 @@ class PooledConnection {
     }
 
     final void resetRawConn() throws SQLException {
-        if (!curAutoCommit && commitDirtyInd) { //Roll back when commit dirty
+        if (commitDirtyInd) { //Roll back when commit dirty
             rawCon.rollback();
             commitDirtyInd = false;
         }

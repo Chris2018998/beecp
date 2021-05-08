@@ -310,13 +310,14 @@ final class ProxyClassGenerator {
             methodBuffer.append("{");
 
             if (ctMethod.getReturnType() == CtClass.voidType) {
+                if (methodName.startsWith("execute")) methodBuffer.append("pCon.commitDirtyInd=!pCon.curAutoCommit;");
                 methodBuffer.append(delegateName + methodName + "($$);");
-                if (methodName.startsWith("execute"))
-                    methodBuffer.append("pCon.updateAccessTime();");
+                if (methodName.startsWith("execute")) methodBuffer.append("pCon.lastAccessTime=System.currentTimeMillis();");
             } else {
                 if (methodName.startsWith("execute")) {
-                    methodBuffer.append(ctMethod.getReturnType().getName() + " re=" + delegateName + methodName + "($$);")
-                            .append("pCon.updateAccessTime();");
+                    methodBuffer.append("pCon.commitDirtyInd=!pCon.curAutoCommit;");
+                    methodBuffer.append(ctMethod.getReturnType().getName() + " re=" + delegateName + methodName + "($$);");
+                    methodBuffer.append("pCon.lastAccessTime=System.currentTimeMillis();");
                     if (ctMethod.getReturnType() == ctResultSetClass) {
                         methodBuffer.append("return new ProxyResultSet(re,this,pCon);");
                     } else {
@@ -446,5 +447,4 @@ final class ProxyClassGenerator {
         }
     }
 }
-
 
