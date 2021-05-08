@@ -106,7 +106,7 @@ public class PoolStaticCenter {
         try {
             r.close();
         } catch (Throwable e) {
-            commonLog.warn("Warning:Error at closing resultSet:", e);
+            commonLog.debug("Warning:Error at closing resultSet:", e);
         }
     }
 
@@ -114,7 +114,7 @@ public class PoolStaticCenter {
         try {
             s.close();
         } catch (Throwable e) {
-            commonLog.warn("Warning:Error at closing statement:", e);
+            commonLog.debug("Warning:Error at closing statement:", e);
         }
     }
 
@@ -122,7 +122,7 @@ public class PoolStaticCenter {
         try {
             c.close();
         } catch (Throwable e) {
-            commonLog.warn("Warning:Error at closing connection:", e);
+            commonLog.debug("Warning:Error at closing connection:", e);
         }
     }
 
