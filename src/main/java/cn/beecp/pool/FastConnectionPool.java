@@ -581,10 +581,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         tryToCreateNewConnByAsyn();
                     }
                 } else if (state == CON_USING) {
-                    if (currentTimeMillis() - pCon.lastAccessTime - poolConfig.getHoldTimeout()>= 0L) {//hold timeout
+                    if (currentTimeMillis() - pCon.lastAccessTime - poolConfig.getHoldTimeout() >= 0L) {//hold timeout
                         ProxyConnectionBase proxyConn = pCon.proxyCon;
                         if (proxyConn != null) {
-                            tryCloseProxyConnection(proxyConn);
+                            oclose(proxyConn);
                         } else {
                             removePooledConn(pCon, DESC_RM_BAD);
                             tryToCreateNewConnByAsyn();
@@ -638,12 +638,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 } else if (pCon.state == CON_USING) {
                     ProxyConnectionBase proxyConn = pCon.proxyCon;
                     if (proxyConn != null) {
-                        if (force) {
-                            tryCloseProxyConnection(proxyConn);
-                        } else {
-                            if (currentTimeMillis() - pCon.lastAccessTime - poolConfig.getHoldTimeout()>= 0L)//hold timeout
-                                tryCloseProxyConnection(proxyConn);
-                        }
+                        if (force || currentTimeMillis() - pCon.lastAccessTime - poolConfig.getHoldTimeout() >= 0L)//force close or hold timeout
+                            oclose(proxyConn);
                     } else {
                         removePooledConn(pCon, source);
                     }

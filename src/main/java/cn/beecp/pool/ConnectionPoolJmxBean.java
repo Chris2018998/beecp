@@ -32,15 +32,5 @@ public interface ConnectionPoolJmxBean {
     //return waiter size for transferred connection
     int getTransferWaitingSize();
 
-    //clear all connections from pool
-    public void clearAllConnections();
-
-    /**
-     * Clear all connections from pool
-     *
-     * @param forceCloseUsingConnections close using connection directly
-     */
-    public void clearAllConnections(boolean forceCloseUsingConnections);
-
 }
 

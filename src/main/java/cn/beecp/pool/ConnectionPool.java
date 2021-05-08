@@ -64,14 +64,14 @@ public interface ConnectionPool {
     /**
      * Clear all connections from pool
      */
-    public void clearAllConnections();
+    void clearAllConnections();
 
     /**
      * Clear all connections from pool
      *
      * @param forceCloseUsingOnClear close using connection directly
      */
-    public void clearAllConnections(boolean forceCloseUsingOnClear);
+    void clearAllConnections(boolean forceCloseUsingOnClear);
 
 }
 	

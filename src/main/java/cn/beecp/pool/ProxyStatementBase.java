@@ -23,10 +23,9 @@ import static cn.beecp.pool.PoolStaticCenter.*;
 abstract class ProxyStatementBase implements Statement {
     protected Statement delegate;
     protected PooledConnection pCon;//called by subclass to update time
+    boolean registered = true;
     private ProxyConnectionBase owner;
-
     private boolean isClosed;
-    private boolean registered = true;
     private ProxyResultSetBase curRe;
     private int resultOpenCode = CLOSE_CURRENT_RESULT;
     private ArrayList<ProxyResultSetBase> results;
@@ -44,26 +43,18 @@ abstract class ProxyStatementBase implements Statement {
      *                                                                                         *
      *******************************************************************************************/
 
-    final void setAsClosed() {//call by PooledConnection.cleanOpenStatements
-        try {
-            registered = false;
-            close();
-        } catch (Throwable e) {
-        }
-    }
-
-    final void removeOpenResultSet(ProxyResultSetBase resultSet) {//call by ProxyResultSetBase.constructor
-        if (resultSet == curRe) {
+    final void removeOpenResultSet(ProxyResultSetBase re) {//call by ProxyResultSetBase.constructor
+        if (re == curRe) {
             curRe = null;
         } else if (results != null) {
-            results.remove(resultSet);
+            results.remove(re);
         }
     }
 
-    final void setOpenResultSet(ProxyResultSetBase resultSetNew) {//call by ProxyResultSetBase.constructor
+    final void setOpenResultSet(ProxyResultSetBase re) {//call by ProxyResultSetBase.constructor
         switch (resultOpenCode) {
             case CLOSE_CURRENT_RESULT: {
-                if (curRe != null && !curRe.isClosed) curRe.setAsClosed();
+                if (curRe != null && !curRe.isClosed) oclose(curRe);
                 break;
             }
             case KEEP_CURRENT_RESULT: {
@@ -75,11 +66,11 @@ abstract class ProxyStatementBase implements Statement {
             }
             case CLOSE_ALL_RESULTS: {
                 if (curRe != null && !curRe.isClosed)
-                    curRe.setAsClosed();
+                    oclose(curRe);
                 if (results != null) {
                     for (int i = 0, l = results.size(); i < l; i++) {
                         ProxyResultSetBase openRe = results.get(i);
-                        if (!openRe.isClosed) openRe.setAsClosed();
+                        if (!openRe.isClosed) oclose(openRe);
                     }
                     results.clear();
                 }
@@ -88,7 +79,7 @@ abstract class ProxyStatementBase implements Statement {
             default:
                 break;
         }
-        this.curRe = resultSetNew;
+        this.curRe = re;
     }
 
     /******************************************************************************************
@@ -109,10 +100,10 @@ abstract class ProxyStatementBase implements Statement {
     public final void close() throws SQLException {
         if (isClosed) return;
         isClosed = true;
-        if (curRe != null) curRe.setAsClosed();
+        if (curRe != null) oclose(curRe);
         if (results != null) {
             for (int i = 0, l = results.size(); i < l; i++)
-                results.get(i).setAsClosed();
+                oclose(results.get(i));
             results.clear();
         }
         try {

@@ -102,28 +102,7 @@ public class PoolStaticCenter {
             }
     );
 
-    static final void tryCloseProxyConnection(ProxyConnectionBase proxyConn) {
-        try {
-            proxyConn.close();
-        } catch (Throwable e) {
-        }
-    }
-
-    public static final boolean equals(String a, String b) {
-        return a == null ? b == null : a.equals(b);
-    }
-
-    public static final boolean isBlank(String str) {
-        if (str == null) return true;
-        int strLen = str.length();
-        for (int i = 0; i < strLen; ++i) {
-            if (!Character.isWhitespace(str.charAt(i)))
-                return false;
-        }
-        return true;
-    }
-
-    public static final void oclose(ResultSet r) {
+    static final void oclose(ResultSet r) {
         try {
             r.close();
         } catch (Throwable e) {
@@ -131,7 +110,7 @@ public class PoolStaticCenter {
         }
     }
 
-    public static final void oclose(Statement s) {
+    static final void oclose(Statement s) {
         try {
             s.close();
         } catch (Throwable e) {
@@ -139,7 +118,7 @@ public class PoolStaticCenter {
         }
     }
 
-    public static final void oclose(Connection c) {
+    static final void oclose(Connection c) {
         try {
             c.close();
         } catch (Throwable e) {
@@ -153,6 +132,21 @@ public class PoolStaticCenter {
 
     static final ResultSet createProxyResultSet(ResultSet delegate, ProxyStatementBase proxyStatement, PooledConnection pConn) throws SQLException {
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
+    }
+
+
+    public static final boolean isBlank(String str) {
+        if (str == null) return true;
+        int strLen = str.length();
+        for (int i = 0; i < strLen; ++i) {
+            if (!Character.isWhitespace(str.charAt(i)))
+                return false;
+        }
+        return true;
+    }
+
+    public static final boolean equals(String a, String b) {
+        return a == null ? b == null : a.equals(b);
     }
 
     public static final void setPropertiesValue(Object bean, Map<String, Object> setValueMap) throws Exception {

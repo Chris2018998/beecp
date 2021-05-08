@@ -156,9 +156,11 @@ class PooledConnection {
 
     final void clearStatement() {
         for (int i = 0; i < openStmSize; i++) {
-            if (openStatements[i] != null) {
-                openStatements[i].setAsClosed();
-                openStatements[i] = null;// clear to let GC do its work
+            ProxyStatementBase s = openStatements[i];
+            if (s != null) {
+                openStatements[i] = null;
+                s.registered = false;
+                oclose(s);
             }
         }
         openStmSize = 0;

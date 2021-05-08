@@ -39,19 +39,12 @@ abstract class ProxyResultSetBase implements ResultSet {
 
     /******************************************************************************************
      *                                                                                        *
-     *                        Below are override methods                                      *
+     *                        Below are self methods                                      *
      *                                                                                        *
      ******************************************************************************************/
 
     boolean containsDelegate(ResultSet delegate) {
         return this.delegate == delegate;
-    }
-
-    final void setAsClosed() {//call by ProxyStatementBase.close
-        try {
-            close();
-        } catch (Throwable e) {
-        }
     }
 
     /*******************************************************************************************
