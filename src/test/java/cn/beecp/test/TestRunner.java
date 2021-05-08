@@ -33,7 +33,7 @@ public class TestRunner {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static Class[] getTestCaseClasses(String caseFile) throws Exception {
-        List classList = new ArrayList();
+        List classList = new ArrayList(10);
         InputStream propertiesStream = null;
 
         try {
@@ -89,7 +89,7 @@ public class TestRunner {
 
 @SuppressWarnings("serial")
 class SortKeyProperties extends Properties {
-    private Vector<Object> keyVector = new Vector<Object>();
+    private Vector<Object> keyVector = new Vector<Object>(10);
 
     public synchronized Enumeration<Object> keys() {
         return keyVector.elements();

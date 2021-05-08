@@ -47,11 +47,12 @@ public class TestCase {
         long beginTime = System.currentTimeMillis();
         Method[] methods = this.getClass().getMethods();
         System.out.println("Case[" + this.getClass().getName() + "]begin");
+        Object[]emptyParam= new Object[0];
 
         for (Method method : methods) {
             if (method.getName().startsWith("test") && method.getParameterTypes().length == 0) {
                 try {
-                    method.invoke(this, new Object[0]);
+                    method.invoke(this, emptyParam);
                     successCount++;
                 } catch (Throwable e) {
                     failedCount++;
