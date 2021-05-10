@@ -8,7 +8,7 @@ Maven artifact(Java7 and higher)
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>3.2.0</version>
+   <version>3.2.1</version>
 </dependency>
 ```
 Maven artifact(Java6)
