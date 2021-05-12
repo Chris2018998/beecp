@@ -62,6 +62,15 @@ class PooledConnection {
         lastAccessTime = currentTimeMillis();//first time
     }
 
+    boolean supportNetworkTimeout() {
+        return pool.supportNetworkTimeout();
+    }
+
+    final void updateAccessTime() {//for update,insert.select,delete and so on DML
+        commitDirtyInd = !curAutoCommit;
+        lastAccessTime = currentTimeMillis();
+    }
+
     //called by pool before remove from pool
     final void onBeforeRemove() {
         try {
@@ -86,11 +95,6 @@ class PooledConnection {
         }
     }
 
-    final void updateAccessTime() {//for update,insert.select,delete and so on DML
-        commitDirtyInd = !curAutoCommit;
-        lastAccessTime = currentTimeMillis();
-    }
-
     final void setResetInd(int p, boolean chgd) {
         if (!resetInd[p] && chgd)//false ->true       +1
             resetCnt++;
@@ -98,10 +102,6 @@ class PooledConnection {
             resetCnt--;
         resetInd[p] = chgd;
         //lastAccessTime=currentTimeMillis();
-    }
-
-    boolean supportNetworkTimeout() {
-        return pool.supportNetworkTimeout();
     }
 
     final void resetRawConn() throws SQLException {
