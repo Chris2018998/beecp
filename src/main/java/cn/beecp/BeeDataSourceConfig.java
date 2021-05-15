@@ -449,7 +449,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         if (this.maxActive <= 0)
             throw new BeeDataSourceConfigException("maxActive must be greater than zero");
         if (this.initialSize < 0)
-            throw new BeeDataSourceConfigException("initialSize must be greater than zero");
+            throw new BeeDataSourceConfigException("initialSize must not be less than zero");
         if (this.initialSize > maxActive)
             throw new BeeDataSourceConfigException("initialSize must not be greater than maxActive");
         if (this.borrowSemaphoreSize <= 0)
