@@ -339,9 +339,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * notify creator(asyn)to add one connection to pool
      */
     private void tryToCreateNewConnByAsyn() {
+        int curAddSize, updAddSize;
         do {
-            int curAddSize = needAddConSize.get();
-            int updAddSize = curAddSize + 1;
+            curAddSize = needAddConSize.get();
+            updAddSize = curAddSize + 1;
             if (conArray.length + updAddSize > PoolMaxSize) return;
             if (needAddConSize.compareAndSet(curAddSize, updAddSize)) {
                 poolTaskExecutor.submit(dynAddPooledConnTask);
@@ -470,19 +471,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     public final void recycle(PooledConnection pCon) {
         transferPolicy.beforeTransfer(pCon);
         Iterator<Borrower> iterator = waitQueue.iterator();
-        while (iterator.hasNext()) {
+        W:while (iterator.hasNext()) {
             Borrower borrower = iterator.next();
+            Object state;
             do {
-                //pooledConnection has hold by another thread
                 if (pCon.state != ConUnCatchStateCode) return;
-                Object state = borrower.state;
-                //current waiter has received one pooledConnection or timeout
-                if (!(state instanceof BorrowerState)) break;
-                if (BorrowStUpd.compareAndSet(borrower, state, pCon)) {//transfer successful
-                    if (state == BOWER_WAITING) unpark(borrower.thread);
-                    return;
-                }
-            } while (true);
+                state = borrower.state;
+                if (!(state instanceof BorrowerState)) continue W;
+            } while (!BorrowStUpd.compareAndSet(borrower, state, pCon));
+            if (state == BOWER_WAITING) unpark(borrower.thread);
+            return;
         }//first while loop
         transferPolicy.onFailedTransfer(pCon);
     }
@@ -495,17 +493,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     private void transferException(SQLException e) {
         Iterator<Borrower> iterator = waitQueue.iterator();
-        while (iterator.hasNext()) {
+        W:while (iterator.hasNext()) {
             Borrower borrower = iterator.next();
+            Object state;
             do {
-                Object state = borrower.state;
-                //current waiter has received one pooledConnection or timeout
-                if (!(state instanceof BorrowerState)) break;
-                if (BorrowStUpd.compareAndSet(borrower, state, e)) {//transfer successful
-                    if (state == BOWER_WAITING) unpark(borrower.thread);
-                    return;
-                }
-            } while (true);
+                state = borrower.state;
+                if (!(state instanceof BorrowerState)) continue W;
+            } while (!BorrowStUpd.compareAndSet(borrower, state, e));
+            if (state == BOWER_WAITING) unpark(borrower.thread);
+            return;
         }//first while loop
     }
 
@@ -704,12 +700,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     public int getConnIdleSize() {
-        int idleConnections = 0;
-        for (PooledConnection pCon : this.conArray) {
-            if (pCon.state == CON_IDLE)
-                idleConnections++;
-        }
-        return idleConnections;
+        int idleSize = 0;
+        PooledConnection[] array = conArray;
+        for (int i = 0, l = array.length; i < l; i++)
+            if (array[i].state == CON_IDLE) idleSize++;
+        return idleSize;
     }
 
     public int getConnUsingSize() {
@@ -727,10 +722,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     public int getTransferWaitingSize() {
         int size = 0;
-        for (Borrower borrower : waitQueue) {
-            Object state = borrower.state;
-            if (state == BOWER_NORMAL || state == BOWER_WAITING)
-                size++;
+        Iterator<Borrower> iterator = waitQueue.iterator();
+        while (iterator.hasNext()) {
+            Borrower borrower = iterator.next();
+            if (borrower.state instanceof BorrowerState) size++;
         }
         return size;
     }

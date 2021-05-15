@@ -255,10 +255,13 @@ final class ProxyClassGenerator {
             methodBuffer.delete(0, methodBuffer.length());
             methodBuffer.append("{");
             if (ctMethod.getReturnType() == ctStatementClass) {
+                newCtMethodm.setModifiers(Modifier.PUBLIC|Modifier.FINAL);
                 methodBuffer.append("return new ProxyStatement(delegate." + methodName + "($$),pCon);");
             } else if (ctMethod.getReturnType() == ctPreparedStatementClass) {
+                newCtMethodm.setModifiers(Modifier.PUBLIC|Modifier.FINAL);
                 methodBuffer.append("return new ProxyPsStatement(delegate." + methodName + "($$),pCon);");
             } else if (ctMethod.getReturnType() == ctCallableStatementClass) {
+                newCtMethodm.setModifiers(Modifier.PUBLIC|Modifier.FINAL);
                 methodBuffer.append("return new ProxyCsStatement(delegate." + methodName + "($$),pCon);");
             } else if (ctMethod.getReturnType() == ctDatabaseMetaDataIntf) {
                 methodBuffer.append("return new ProxyDatabaseMetaData(delegate." + methodName + "($$),pCon);");
@@ -304,7 +307,7 @@ final class ProxyClassGenerator {
         for (CtMethod ctMethod : linkedList) {
             String methodName = ctMethod.getName();
             CtMethod newCtMethodm = CtNewMethod.copy(ctMethod, statementProxyClass, null);
-            newCtMethodm.setModifiers(Modifier.PUBLIC);
+            newCtMethodm.setModifiers(methodName.startsWith("execute")? Modifier.PUBLIC|Modifier.FINAL:Modifier.PUBLIC);
 
             methodBuffer.delete(0, methodBuffer.length());
             methodBuffer.append("{");
