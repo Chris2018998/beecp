@@ -71,11 +71,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private long maxWait = SECONDS.toMillis(8);
     //milliseconds:connection max idle time in pool,if reach,then remove from pool
     private long idleTimeout = MINUTES.toMillis(3);
-    //milliseconds:long time not active connection hold by borrower will closed by pool
+    //milliseconds:connection not active time hold in borrower
     private long holdTimeout = MINUTES.toMillis(5);
     //connection test sql
     private String connectionTestSql = "SELECT 1";
-    //seconds:the time in seconds to wait for connection test result
+    //seconds:wait for connection test result
     private int connectionTestTimeout = 3;
     //milliseconds:connection test interval time to last active time
     private long connectionTestInterval = 500L;
@@ -469,7 +469,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         if (isBlank(this.connectionTestSql))
             throw new BeeDataSourceConfigException("connectionTestSql cant be null or empty");
         if (!this.connectionTestSql.toLowerCase(Locale.US).startsWith("select ")) {
-            System.out.println("connectionTestSql:" + connectionTestSql);
             //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end
             throw new BeeDataSourceConfigException("connectionTestSql must be start with 'select '");
         }
