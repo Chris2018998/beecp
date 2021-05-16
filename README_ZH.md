@@ -26,7 +26,7 @@ Maven坐标(Java6)
 ```
 ---
 
-##### 性能测试
+### 性能测试
 
 **1：** 100万次查询测试(10000 线程 x 10 次数)
 |   Pool type      | HikariCP-3.4.5  | beecp-3.0.5_compete|  
@@ -51,7 +51,7 @@ Maven坐标(Java6)
 
 ---
 
-##### 范例1
+#### 范例1
 
 ```java
 BeeDataSourceConfig config = new BeeDataSourceConfig();
@@ -69,7 +69,7 @@ Connection con=ds.getConnection();
 
 ```
 
-##### 范例2（SpringBoot）
+#### 范例2（SpringBoot）
 
 *application.properties*
 
@@ -122,7 +122,7 @@ public class DataSourceConfig {
 
 ---
 
-##### 功能与特性
+### 功能与特性
 
 1：请求超时支持
 
@@ -149,7 +149,7 @@ public class DataSourceConfig {
 12：支持JMX
 
 ---
-##### 配置项说明
+### 配置项说明
 
 |  配置项          |   描述                        |   备注                            |
 | ----------------| ---------------------------  | ------------------------          |
@@ -179,4 +179,7 @@ public class DataSourceConfig {
 | connectionFactoryClassName|自定义的JDBC连接工作类名            | 默认为空                  |
 | enableJmx                 |JMX监控支持开关                    | 默认false                | 
 
+---
+### 捐助
 
+<img height="50%" width="50%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/donate.png"> 
