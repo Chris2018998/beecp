@@ -21,7 +21,7 @@ Maven artifact(Java6)
 ```
 ---
 
-##### Performance
+### Performance
 
 **1：** One million Mutil-thread query (10000 threads x 10 times)
 |   Pool type      | HikariCP-3.4.5  | beecp-3.0.5_compete|  
@@ -42,7 +42,7 @@ Test source：<a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/mast
 
 ---
 
-##### Example-1
+#### Example-1
 
 ```java
 BeeDataSourceConfig config = new BeeDataSourceConfig();
@@ -60,7 +60,7 @@ Connection con=ds.getConnection();
 
 ```
 
-##### Example-2（SpringBoot）
+#### Example-2（SpringBoot）
 
 *application.properties*
 
@@ -113,7 +113,7 @@ public class DataSourceConfig {
 
 ---
 
-##### Features
+### Features
 
 1：Borrow timeout
 
@@ -140,7 +140,7 @@ public class DataSourceConfig {
 12：JMX support
 
 ---
-##### Configuration
+### Configuration
 |     Field name         |       Description                               |   Remark                                                   |
 | ---------------------  | ------------------------------------------------| -----------------------------------------------------------|
 |username                |JDBC User                                       |                                                             |
@@ -165,5 +165,8 @@ public class DataSourceConfig {
 |forceCloseUsingOnClear     |using connection close indicator|true,close directly;false,wait util connection becoming idle,then close it |            |delayTimeForNextClear      |delay time to clear pooled connections        |time unit is ms,default is 3000 ms                          |                            |idleCheckTimeInterval      |scan thread time interval to check idle connection |time unit is ms,default is 300000 ms                   |
 |connectionFactoryClassName |object factory class name                           |default is null                                         |
 |enableJmx                 |JMX boolean indicator for pool                      |default is false                                        |
- 
 
+---
+### Donate
+
+<img height="50%" width="50%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/donate.png"> 
