@@ -169,4 +169,6 @@ public class DataSourceConfig {
 ---
 ### Donate
 
+If the software can help you, please donate fee to us for one coffe,thanks.
+
 <img height="50%" width="50%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/donate.png"> 
