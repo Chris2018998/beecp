@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -22,6 +23,7 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static cn.beecp.TransactionIsolationLevel.*;
 import static cn.beecp.pool.PoolStaticCenter.*;
@@ -35,6 +37,8 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  * @version 1.0
  */
 public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
+    //poolName index
+    private static final AtomicInteger poolNameIndex = new AtomicInteger(1);
     //jdbc user name
     private String username;
     //jdbc password
@@ -85,6 +89,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private boolean forceCloseUsingOnClear;
     //milliseconds:delay time for next clear pooled connections when exists using connections and 'forceCloseUsingOnClear' is false
     private long delayTimeForNextClear = 3000L;
+
 
     //physical JDBC Connection factory
     private ConnectionFactory connectionFactory;
@@ -424,6 +429,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         //1:primitive type copy
         Field[] fields = BeeDataSourceConfig.class.getDeclaredFields();
         for (Field field : fields) {
+            if (Modifier.isFinal(field.getModifiers()) || Modifier.isStatic(field.getModifiers())) continue;
+
             if (!"connectProperties".equals(field.getName())) {
                 try {
                     Object fieldValue = field.get(this);
@@ -472,6 +479,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end
             throw new BeeDataSourceConfigException("connectionTestSql must be start with 'select '");
         }
+
+        if (isBlank(this.poolName))this.poolName = "FastPool-" + poolNameIndex.getAndIncrement();
 
         //get transaction Isolation Code
         int transactionIsolationCode = getTransactionIsolationCode();

@@ -47,7 +47,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private static final String DESC_RM_CLOSED = "closed";
     private static final String DESC_RM_CLEAR = "clear";
     private static final String DESC_RM_DESTROY = "destroy";
-    private static final AtomicInteger poolNameIndex = new AtomicInteger(1);
     private final Object connArrayLock = new Object();
     private final ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
     private final ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
@@ -95,7 +94,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             checkProxyClasses();
             if (config == null) throw new SQLException("Configuration can't be null");
             poolConfig = config.check();//why need a copy here?
-            poolName = !isBlank(config.getPoolName()) ? config.getPoolName() : "FastPool-" + poolNameIndex.getAndIncrement();
+            poolName = config.getPoolName();
+
             commonLog.info("BeeCP({})starting....", poolName);
             PoolMaxSize = poolConfig.getMaxActive();
             conFactory = poolConfig.getConnectionFactory();
@@ -471,7 +471,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     public final void recycle(PooledConnection pCon) {
         transferPolicy.beforeTransfer(pCon);
         Iterator<Borrower> iterator = waitQueue.iterator();
-        W:while (iterator.hasNext()) {
+        W:
+        while (iterator.hasNext()) {
             Borrower borrower = iterator.next();
             Object state;
             do {
@@ -493,7 +494,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     private void transferException(SQLException e) {
         Iterator<Borrower> iterator = waitQueue.iterator();
-        W:while (iterator.hasNext()) {
+        W:
+        while (iterator.hasNext()) {
             Borrower borrower = iterator.next();
             Object state;
             do {
