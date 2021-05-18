@@ -595,7 +595,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             }
             ConnectionPoolMonitorVo vo = this.getMonitorVo();
             if (isDebugEnabled)
-                commonLog.debug("BeeCP({})idle:{},using:{},semaphore-waiter:{},wait-transfer:{}", poolName, vo.getIdleSize(), vo.getUsingSize(), vo.getSemaphoreWaiterSize(), vo.getTransferWaiterSize());
+                commonLog.debug("BeeCP({})-{idle:{},using:{},semaphore-waiter:{},wait-transfer:{}}", poolName, vo.getIdleSize(), vo.getUsingSize(), vo.getSemaphoreWaiterSize(), vo.getTransferWaiterSize());
         }
     }
 
