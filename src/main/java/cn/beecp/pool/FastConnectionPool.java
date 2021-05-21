@@ -401,10 +401,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
         try {//semaphore acquired
             //1:try to search one from array
-            PooledConnection pCon;
             PooledConnection[] array = conArray;
-            for (int i = 0, l = array.length; i < l; i++) {
-                pCon = array[i];
+            int i=0, l = array.length;
+            PooledConnection pCon;
+            while(i<l) {
+                pCon = array[i++];
                 if (pCon.state == CON_IDLE && ConStUpd.compareAndSet(pCon, CON_IDLE, CON_USING) && testOnBorrow(pCon))
                     return createProxyConnection(pCon, borrower);
             }
