@@ -76,7 +76,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //milliseconds:connection max idle time in pool,if reach,then remove from pool
     private long idleTimeout = MINUTES.toMillis(3);
     //milliseconds:connection not active time hold in borrower
-    private long holdTimeout = MINUTES.toMillis(5);
+    private long holdTimeout = MINUTES.toMillis(3);
     //connection test sql
     private String connectionTestSql = "SELECT 1";
     //seconds:wait for connection test result
@@ -84,7 +84,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //milliseconds:connection test interval time to last active time
     private long connectionTestInterval = 500L;
     //milliseconds:interval time to run check task
-    private long idleCheckTimeInterval = MINUTES.toMillis(3);
+    private long idleCheckTimeInterval = MINUTES.toMillis(1);
     //using connection close indicator,true,close directly;false,delay close util them becoming idle or hold timeout
     private boolean forceCloseUsingOnClear;
     //milliseconds:delay time for next clear pooled connections when exists using connections and 'forceCloseUsingOnClear' is false
