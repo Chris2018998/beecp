@@ -75,7 +75,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
     private AtomicInteger needAddConSize = new AtomicInteger(0);
     private AtomicInteger idleThreadState = new AtomicInteger(THREAD_WORKING);
-
+    private boolean defaultCatalogIsNotBlank;
+    private boolean defaultSchemaIsNotBlank;
 
     /******************************************************************************************
      *                                                                                        *
@@ -110,6 +111,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 transferPolicy = new CompeteTransferPolicy();
             }
 
+            defaultCatalogIsNotBlank = !isBlank(poolConfig.getDefaultCatalog());
+            defaultSchemaIsNotBlank = !isBlank(poolConfig.getDefaultSchema());
             ConUnCatchStateCode = transferPolicy.getCheckStateCode();
             semaphoreSize = poolConfig.getBorrowSemaphoreSize();
             semaphore = new Semaphore(semaphoreSize, poolConfig.isFairMode());
@@ -243,9 +246,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         rawCon.setAutoCommit(poolConfig.isDefaultAutoCommit());
         rawCon.setTransactionIsolation(poolConfig.getDefaultTransactionIsolationCode());
         rawCon.setReadOnly(poolConfig.isDefaultReadOnly());
-        if (!isBlank(poolConfig.getDefaultCatalog()))
+        if (defaultCatalogIsNotBlank)
             rawCon.setCatalog(poolConfig.getDefaultCatalog());
-        if (!isBlank(poolConfig.getDefaultSchema()))
+        if (defaultSchemaIsNotBlank)
             rawCon.setSchema(poolConfig.getDefaultSchema());
 
         /**************************************test method start ********************************/
@@ -404,7 +407,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             PooledConnection[] array = conArray;
             int i=0, l = array.length;
             PooledConnection pCon;
-            while(i<l) {
+            while(i<l){
                 pCon = array[i++];
                 if (pCon.state == CON_IDLE && ConStUpd.compareAndSet(pCon, CON_IDLE, CON_USING) && testOnBorrow(pCon))
                     return createProxyConnection(pCon, borrower);

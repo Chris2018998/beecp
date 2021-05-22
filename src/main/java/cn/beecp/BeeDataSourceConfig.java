@@ -480,7 +480,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             throw new BeeDataSourceConfigException("connectionTestSql must be start with 'select '");
         }
 
-        if (isBlank(this.poolName))this.poolName = "FastPool-" + poolNameIndex.getAndIncrement();
+        if (isBlank(this.poolName)) this.poolName = "FastPool-" + poolNameIndex.getAndIncrement();
 
         //get transaction Isolation Code
         int transactionIsolationCode = getTransactionIsolationCode();

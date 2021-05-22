@@ -134,12 +134,11 @@ public class PoolStaticCenter {
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
     }
 
-
     public static final boolean isBlank(String str) {
-        if (str == null) return true;
-        int strLen = str.length();
-        for (int i = 0; i < strLen; ++i) {
-            if (!Character.isWhitespace(str.charAt(i)))
+        if(str == null)return true;
+        int l= str.length();
+        for (int i = 0; i < l; ++i) {
+            if (!Character.isWhitespace((int) str.charAt(i)))
                 return false;
         }
         return true;
