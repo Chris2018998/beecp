@@ -15,13 +15,13 @@ import java.util.concurrent.locks.LockSupport;
 
 public class DbDownTest {
     public static String driver = "com.mysql.jdbc.Driver";
-    public static String url = "jdbc:mysql://localhost/test?connectTimeout=100&socketTimeout=100";
+    public static String url = "jdbc:mysql://localhost/test?connectTimeout=50&socketTimeout=100";
     public static String user = "root";
     public static String password = "";
     public static int size = 5;
     private static DataSource beeDs;
     private static DataSource hikariDs;
-    private static long maxWait=20000;
+    private static long maxWait = Long.MAX_VALUE;
 
     public static void main(String[] args) throws Exception {
         beeDs = createBeeCP();
@@ -31,7 +31,7 @@ public class DbDownTest {
         LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(300));
     }
 
-    public static DataSource createBeeCP() {
+    private static DataSource createBeeCP() {
         BeeDataSourceConfig config = new BeeDataSourceConfig(driver, url, user, password);
         config.setInitialSize(size);
         config.setMaxActive(size);
@@ -40,7 +40,7 @@ public class DbDownTest {
         return new BeeDataSource(config);
     }
 
-    public static DataSource createHikari() {
+    private static DataSource createHikari() {
         HikariConfig config = new HikariConfig();
         config.setDriverClassName(driver);
         config.setJdbcUrl(url);
