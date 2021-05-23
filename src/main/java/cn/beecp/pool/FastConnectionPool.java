@@ -261,56 +261,54 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    private final void testFirstConnection(Connection rawCon) throws SQLException {
-        try {
-            try {//test networkTimeout
-                this.networkTimeout = rawCon.getNetworkTimeout();
-                if (networkTimeout < 0) {
-                    supportNetworkTimeout = false;
-                    commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
-                } else {
-                    rawCon.setNetworkTimeout(poolTaskExecutor, networkTimeout);
-                }
-            } catch (Throwable e) {
+    private void testFirstConnection(Connection rawCon) throws SQLException {
+        try {//test networkTimeout
+            this.networkTimeout = rawCon.getNetworkTimeout();
+            if (networkTimeout < 0) {
                 supportNetworkTimeout = false;
-                if (isDebugEnabled)
-                    commonLog.debug("BeeCP({})driver not support 'networkTimeout',cause:", poolName, e);
-                else
-                    commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
+                commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
+            } else {
+                rawCon.setNetworkTimeout(poolTaskExecutor, networkTimeout);
             }
-            this.ClonePooledConn = new PooledConnection(this, poolConfig);
+        } catch (Throwable e) {
+            supportNetworkTimeout = false;
+            if (isDebugEnabled)
+                commonLog.debug("BeeCP({})driver not support 'networkTimeout',cause:", poolName, e);
+            else
+                commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
+        }
+        this.ClonePooledConn = new PooledConnection(this, poolConfig);
 
-            boolean supportIsValid = true;
-            try {//test isValid Method
-                if (rawCon.isValid(poolConfig.getConnectionTestTimeout())) {
-                    this.conTester = new ConnValidTester(poolName, poolConfig.getConnectionTestTimeout());
-                    return;
-                } else {
-                    supportIsValid = false;
-                    commonLog.warn("BeeCP({})driver not support 'isValid'", poolName);
-                }
-            } catch (Throwable e) {
+        boolean supportIsValid = true;
+        try {//test isValid Method
+            if (rawCon.isValid(poolConfig.getConnectionTestTimeout())) {
+                this.conTester = new ConnValidTester(poolName, poolConfig.getConnectionTestTimeout());
+                return;
+            } else {
                 supportIsValid = false;
-                if (isDebugEnabled)
-                    commonLog.debug("BeeCP({})driver not support 'isValid',cause:", poolName, e);
-                else
-                    commonLog.warn("BeeCP({})driver not support 'isValid'", poolName);
+                commonLog.warn("BeeCP({})driver not support 'isValid'", poolName);
             }
-            if (!supportIsValid) {
-                Statement st = null;
-                this.conTester = new SqlQueryTester(poolName, poolConfig.getConnectionTestTimeout(),
-                        poolConfig.isDefaultAutoCommit(), poolConfig.getConnectionTestSql());
+        } catch (Throwable e) {
+            supportIsValid = false;
+            if (isDebugEnabled)
+                commonLog.debug("BeeCP({})driver not support 'isValid',cause:", poolName, e);
+            else
+                commonLog.warn("BeeCP({})driver not support 'isValid'", poolName);
+         } finally {
+             this.isFirstValidConnection = false;//remark as tested
+         }
 
-                try {
-                    st = rawCon.createStatement();
-                    testQueryTimeout(st, poolConfig.getConnectionTestTimeout());
-                    validateTestSql(rawCon, st);
-                } finally {
-                    if (st != null) oclose(st);
-                }
+        if (!supportIsValid) {
+            Statement st = null;
+            this.conTester = new SqlQueryTester(poolName, poolConfig.getConnectionTestTimeout(),
+                    poolConfig.isDefaultAutoCommit(), poolConfig.getConnectionTestSql());
+            try {
+                st = rawCon.createStatement();
+                testQueryTimeout(st, poolConfig.getConnectionTestTimeout());
+                validateTestSql(rawCon, st);
+            } finally {
+                if (st != null) oclose(st);
             }
-        } finally {
-            this.isFirstValidConnection = false;
         }
     }
 
