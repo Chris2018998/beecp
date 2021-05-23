@@ -78,28 +78,28 @@ public abstract class ProxyConnectionBase implements Connection {
         if (pCon.commitDirtyInd) throw AutoCommitChangeForbiddenException;
         delegate.setAutoCommit(autoCommit);
         pCon.curAutoCommit = autoCommit;
-        pCon.setResetInd(PS_AUTO, autoCommit != pCon.cfgAutoCommit);
+        pCon.setResetInd(PS_AUTO, autoCommit != pCon.defaultAutoCommit);
     }
 
     public void setTransactionIsolation(int level) throws SQLException {
         delegate.setTransactionIsolation(level);
-        pCon.setResetInd(PS_TRANS, level != pCon.cfgTransactionIsolationCode);
+        pCon.setResetInd(PS_TRANS, level != pCon.defaultTransactionIsolation);
     }
 
     public void setReadOnly(boolean readOnly) throws SQLException {
         delegate.setReadOnly(readOnly);
-        pCon.setResetInd(PS_READONLY, readOnly != pCon.cfgReadOnly);
+        pCon.setResetInd(PS_READONLY, readOnly != pCon.defaultReadOnly);
     }
 
     public void setCatalog(String catalog) throws SQLException {
         delegate.setCatalog(catalog);
-        pCon.setResetInd(PS_CATALOG, !PoolStaticCenter.equals(catalog, pCon.cfgCatalog));
+        pCon.setResetInd(PS_CATALOG, !PoolStaticCenter.equals(catalog, pCon.defaultCatalog));
     }
 
     //for JDK1.7 begin
     public void setSchema(String schema) throws SQLException {
         delegate.setSchema(schema);
-        pCon.setResetInd(PS_SCHEMA, !PoolStaticCenter.equals(schema, pCon.cfgSchema));
+        pCon.setResetInd(PS_SCHEMA, !PoolStaticCenter.equals(schema, pCon.defaultSchema));
     }
 
     public void abort(Executor executor) throws SQLException {
@@ -110,7 +110,7 @@ public abstract class ProxyConnectionBase implements Connection {
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
         if (pCon.supportNetworkTimeout()) {
             delegate.setNetworkTimeout(executor, milliseconds);
-            pCon.setResetInd(PS_NETWORK, milliseconds != pCon.cfgNetworkTimeout);
+            pCon.setResetInd(PS_NETWORK, milliseconds != pCon.defaultNetworkTimeout);
         } else {
             throw DriverNotSupportNetworkTimeoutException;
         }

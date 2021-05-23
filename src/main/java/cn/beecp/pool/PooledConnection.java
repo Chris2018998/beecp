@@ -22,44 +22,50 @@ import static java.lang.System.currentTimeMillis;
  * @author Chris.Liao
  * @version 1.0
  */
-class PooledConnection {
+class PooledConnection implements Cloneable{
     private static final boolean[] FALSE_ARRAY = new boolean[6];
-    final boolean cfgAutoCommit;
-    final int cfgTransactionIsolationCode;
-    final boolean cfgReadOnly;
-    final String cfgCatalog;
-    final String cfgSchema;
-    final int cfgNetworkTimeout;
-    private final ThreadPoolExecutor networkTimeoutExecutor;
-    private final FastConnectionPool pool;
-    private final boolean[] resetInd = new boolean[FALSE_ARRAY.length];
+    final boolean defaultAutoCommit;
+    final boolean defaultReadOnly;
+    final String defaultCatalog;
+    final String defaultSchema;
+    final int defaultTransactionIsolation;
+    final int defaultNetworkTimeout;
 
-    volatile int state;
     Connection rawCon;
+    volatile int state;
     ProxyConnectionBase proxyCon;
     volatile long lastAccessTime;
     boolean commitDirtyInd;
     boolean curAutoCommit;
     int openStmSize;
     private int resetCnt;// reset count
+    private boolean[] resetInd;
     private ProxyStatementBase[] openStatements;
+    private ThreadPoolExecutor networkTimeoutExecutor;
+    private FastConnectionPool pool;
 
-    public PooledConnection(Connection rawConn, int connState, FastConnectionPool connPool, BeeDataSourceConfig config) {
-        pool = connPool;
-        state = connState;
+    public PooledConnection(FastConnectionPool pool, BeeDataSourceConfig config) {
+        this.pool = pool;
+        this.defaultReadOnly = config.isDefaultReadOnly();
+        this.defaultCatalog = config.getDefaultCatalog();
+        this.defaultSchema = config.getDefaultSchema();
+        this.defaultAutoCommit = config.isDefaultAutoCommit();
+        this.defaultTransactionIsolation = config.getDefaultTransactionIsolationCode();
+        this.curAutoCommit = defaultAutoCommit;
+        this.defaultNetworkTimeout = pool.getNetworkTimeout();
+        this.networkTimeoutExecutor = pool.getNetworkTimeoutExecutor();
+    }
+
+    public final PooledConnection clone()throws CloneNotSupportedException  {
+        return (PooledConnection) super.clone();
+    }
+
+    final void fillRawConnection(Connection rawConn, int state) {
+        this.state = state;
         this.rawCon = rawConn;
-        //default value
-        cfgTransactionIsolationCode = config.getDefaultTransactionIsolationCode();
-        cfgReadOnly = config.isDefaultReadOnly();
-        cfgCatalog = config.getDefaultCatalog();
-        cfgSchema = config.getDefaultSchema();
-        cfgNetworkTimeout = pool.getNetworkTimeout();
-        networkTimeoutExecutor = pool.getNetworkTimeoutExecutor();
-        cfgAutoCommit = config.isDefaultAutoCommit();
-        curAutoCommit = cfgAutoCommit;
-        //default value
-        openStatements = new ProxyStatementBase[10];
-        lastAccessTime = currentTimeMillis();//first time
+        this.openStatements = new ProxyStatementBase[10];
+        this.resetInd = new boolean[FALSE_ARRAY.length];
+        lastAccessTime = currentTimeMillis();//first tim
     }
 
     boolean supportNetworkTimeout() {
@@ -112,20 +118,20 @@ class PooledConnection {
         //reset begin
         if (resetCnt > 0) {
             if (resetInd[0]) {//reset autoCommit
-                rawCon.setAutoCommit(cfgAutoCommit);
-                curAutoCommit = cfgAutoCommit;
+                rawCon.setAutoCommit(defaultAutoCommit);
+                curAutoCommit = defaultAutoCommit;
             }
             if (resetInd[1])
-                rawCon.setTransactionIsolation(cfgTransactionIsolationCode);
+                rawCon.setTransactionIsolation(defaultTransactionIsolation);
             if (resetInd[2]) //reset readonly
-                rawCon.setReadOnly(cfgReadOnly);
+                rawCon.setReadOnly(defaultReadOnly);
             if (resetInd[3]) //reset catalog
-                rawCon.setCatalog(cfgCatalog);
+                rawCon.setCatalog(defaultCatalog);
             //for JDK1.7 begin
             if (resetInd[4]) //reset schema
-                rawCon.setSchema(cfgSchema);
+                rawCon.setSchema(defaultSchema);
             if (resetInd[5]) //reset networkTimeout
-                rawCon.setNetworkTimeout(networkTimeoutExecutor, cfgNetworkTimeout);
+                rawCon.setNetworkTimeout(networkTimeoutExecutor, defaultNetworkTimeout);
             //for JDK1.7 end
             resetCnt = 0;
             arraycopy(FALSE_ARRAY, 0, resetInd, 0, 6);

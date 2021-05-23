@@ -66,18 +66,23 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private volatile PooledConnection[] conArray = new PooledConnection[0];
     private DynAddPooledConnTask dynAddPooledConnTask;
     private ThreadPoolExecutor poolTaskExecutor;
-    private int networkTimeout;
-    private boolean supportIsValidTest;
-    private boolean supportNetworkTimeout = true;
-    private boolean supportNetworkTimeoutTest;
     private String poolName = "";
     private String poolMode = "";
     private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
     private AtomicInteger needAddConSize = new AtomicInteger(0);
     private AtomicInteger idleThreadState = new AtomicInteger(THREAD_WORKING);
-    private boolean defaultCatalogIsNotBlank;
-    private boolean defaultSchemaIsNotBlank;
 
+    private int networkTimeout;
+    private boolean supportNetworkTimeout = true;
+    private String DefaultCatalog;
+    private String DefaultSchema;
+    private boolean DefaultReadOnly;
+    private boolean DefaultAutoCommit;
+    private int DefaultTransactionIsolation;
+    private boolean DefaultCatalogIsNotBlank;
+    private boolean DefaultSchemaIsNotBlank;
+    private PooledConnection ClonePooledConn;
+    private boolean isFirstValidConnection = true;
     /******************************************************************************************
      *                                                                                        *
      *                 1: Pool initialize and Pooled connection create/remove methods         *
@@ -96,10 +101,17 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (config == null) throw new SQLException("Configuration can't be null");
             poolConfig = config.check();//why need a copy here?
             poolName = poolConfig.getPoolName();
-
             commonLog.info("BeeCP({})starting....", poolName);
             PoolMaxSize = poolConfig.getMaxActive();
             conFactory = poolConfig.getConnectionFactory();
+            DefaultCatalog = poolConfig.getDefaultCatalog();
+            DefaultSchema = poolConfig.getDefaultSchema();
+            DefaultReadOnly = poolConfig.isDefaultReadOnly();
+            DefaultAutoCommit = poolConfig.isDefaultAutoCommit();
+            DefaultTransactionIsolation = poolConfig.getDefaultTransactionIsolationCode();
+            DefaultCatalogIsNotBlank = !isBlank(DefaultCatalog);
+            DefaultSchemaIsNotBlank = !isBlank(DefaultSchema);
+
             MaxWaitNanos = MILLISECONDS.toNanos(poolConfig.getMaxWait());
             DelayTimeForNextClearNanos = MILLISECONDS.toNanos(poolConfig.getDelayTimeForNextClear());
             ConTestInterval = poolConfig.getConnectionTestInterval();
@@ -110,9 +122,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 poolMode = "compete";
                 transferPolicy = new CompeteTransferPolicy();
             }
-
-            defaultCatalogIsNotBlank = !isBlank(poolConfig.getDefaultCatalog());
-            defaultSchemaIsNotBlank = !isBlank(poolConfig.getDefaultSchema());
             ConUnCatchStateCode = transferPolicy.getCheckStateCode();
             semaphoreSize = poolConfig.getBorrowSemaphoreSize();
             semaphore = new Semaphore(semaphoreSize, poolConfig.isFairMode());
@@ -187,32 +196,42 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     //create one pooled connection
-    private final PooledConnection createPooledConn(int conState) throws SQLException {
+    private final PooledConnection createPooledConn(int state) throws SQLException {
         synchronized (connArrayLock) {
             int arrayLen = conArray.length;
             if (arrayLen < PoolMaxSize) {
                 if (isDebugEnabled)
-                    commonLog.debug("BeeCP({}))begin to create a new pooled connection,state:{}", poolName, conState);
+                    commonLog.debug("BeeCP({}))begin to create a new pooled connection,state:{}", poolName, state);
                 Connection con = null;
                 try {
                     con = conFactory.create();
                 } catch (Throwable e) {
                     throw new ConnectionCreateFailedException(e);
                 }
+
                 try {
-                    setDefaultOnRawConn(con);
+                    con.setAutoCommit(DefaultAutoCommit);
+                    con.setTransactionIsolation(DefaultTransactionIsolation);
+                    con.setReadOnly(DefaultReadOnly);
+                    if (DefaultCatalogIsNotBlank)
+                        con.setCatalog(DefaultCatalog);
+                    if (DefaultSchemaIsNotBlank)
+                        con.setSchema(DefaultSchema);
+                    if (isFirstValidConnection) testFirstConnection(con);
+                    PooledConnection pCon = ClonePooledConn.clone();
+                    pCon.fillRawConnection(con, state);
+
+                    if (isDebugEnabled)
+                        commonLog.debug("BeeCP({}))has created a new pooled connection:{},state:{}", poolName, pCon, state);
+                    PooledConnection[] arrayNew = new PooledConnection[arrayLen + 1];
+                    arraycopy(conArray, 0, arrayNew, 0, arrayLen);
+                    arrayNew[arrayLen] = pCon;// tail
+                    conArray = arrayNew;
+                    return pCon;
                 } catch (Throwable e) {
                     oclose(con);
-                    throw e;
+                    throw (e instanceof SQLException) ? (SQLException) e : new SQLException(e);
                 }
-                PooledConnection pCon = new PooledConnection(con, conState, this, poolConfig);// registerStatement
-                if (isDebugEnabled)
-                    commonLog.debug("BeeCP({}))has created a new pooled connection:{},state:{}", poolName, pCon, conState);
-                PooledConnection[] arrayNew = new PooledConnection[arrayLen + 1];
-                arraycopy(conArray, 0, arrayNew, 0, arrayLen);
-                arrayNew[arrayLen] = pCon;// tail
-                conArray = arrayNew;
-                return pCon;
             } else {
                 return null;
             }
@@ -242,18 +261,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    private final void setDefaultOnRawConn(Connection rawCon) throws SQLException {
-        rawCon.setAutoCommit(poolConfig.isDefaultAutoCommit());
-        rawCon.setTransactionIsolation(poolConfig.getDefaultTransactionIsolationCode());
-        rawCon.setReadOnly(poolConfig.isDefaultReadOnly());
-        if (defaultCatalogIsNotBlank)
-            rawCon.setCatalog(poolConfig.getDefaultCatalog());
-        if (defaultSchemaIsNotBlank)
-            rawCon.setSchema(poolConfig.getDefaultSchema());
-
-        /**************************************test method start ********************************/
-        if (!supportNetworkTimeoutTest) {//test networkTimeout
-            try {//set networkTimeout
+    private final void testFirstConnection(Connection rawCon) throws SQLException {
+        try {
+            try {//test networkTimeout
                 this.networkTimeout = rawCon.getNetworkTimeout();
                 if (networkTimeout < 0) {
                     supportNetworkTimeout = false;
@@ -267,13 +277,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     commonLog.debug("BeeCP({})driver not support 'networkTimeout',cause:", poolName, e);
                 else
                     commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
-            } finally {
-                supportNetworkTimeoutTest = true;//remark as tested
             }
-        }
-        if (!this.supportIsValidTest) {//test 'connection.isValid' method
+            this.ClonePooledConn = new PooledConnection(this, poolConfig);
+
             boolean supportIsValid = true;
-            try {
+            try {//test isValid Method
                 if (rawCon.isValid(poolConfig.getConnectionTestTimeout())) {
                     this.conTester = new ConnValidTester(poolName, poolConfig.getConnectionTestTimeout());
                     return;
@@ -287,10 +295,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     commonLog.debug("BeeCP({})driver not support 'isValid',cause:", poolName, e);
                 else
                     commonLog.warn("BeeCP({})driver not support 'isValid'", poolName);
-            } finally {
-                supportIsValidTest = true;//remark as tested
             }
-
             if (!supportIsValid) {
                 Statement st = null;
                 this.conTester = new SqlQueryTester(poolName, poolConfig.getConnectionTestTimeout(),
@@ -304,8 +309,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     if (st != null) oclose(st);
                 }
             }
+        } finally {
+            this.isFirstValidConnection = false;
         }
-        /**************************************test method end ********************************/
     }
 
     private void testQueryTimeout(Statement st, int timeoutSeconds) {
@@ -405,9 +411,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         try {//semaphore acquired
             //1:try to search one from array
             PooledConnection[] array = conArray;
-            int i=0, l = array.length;
+            int i = 0, l = array.length;
             PooledConnection pCon;
-            while(i<l){
+            while (i < l) {
                 pCon = array[i++];
                 if (pCon.state == CON_IDLE && ConStUpd.compareAndSet(pCon, CON_IDLE, CON_USING) && testOnBorrow(pCon))
                     return createProxyConnection(pCon, borrower);
@@ -436,8 +442,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     throw (SQLException) state;
                 }
                 if (failed) {
-                    if (borrower.state == state)
-                        BorrowStUpd.compareAndSet(borrower, state, cause);
+                    BorrowStUpd.compareAndSet(borrower, state, cause);
                 } else if (state instanceof PooledConnection) {
                     borrower.state = BOWER_NORMAL;
                     yield();
