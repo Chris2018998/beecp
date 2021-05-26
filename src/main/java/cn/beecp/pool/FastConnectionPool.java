@@ -72,13 +72,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private AtomicInteger needAddConSize = new AtomicInteger(0);
     private AtomicInteger idleThreadState = new AtomicInteger(THREAD_WORKING);
 
-    private int networkTimeout;
-    private boolean supportNetworkTimeout = true;
+    private boolean DefaultAutoCommit;
+    private boolean DefaultReadOnly;
     private String DefaultCatalog;
     private String DefaultSchema;
-    private boolean DefaultReadOnly;
-    private boolean DefaultAutoCommit;
     private int DefaultTransactionIsolation;
+    private int DefaultNetworkTimeout;
+    private boolean supportNetworkTimeout = true;
     private boolean DefaultCatalogIsNotBlank;
     private boolean DefaultSchemaIsNotBlank;
     private PooledConnection ClonePooledConn;
@@ -210,6 +210,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 }
 
                 try {
+                    if (isFirstValidConnection) testFirstConnection(con);
                     con.setAutoCommit(DefaultAutoCommit);
                     con.setTransactionIsolation(DefaultTransactionIsolation);
                     con.setReadOnly(DefaultReadOnly);
@@ -217,7 +218,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         con.setCatalog(DefaultCatalog);
                     if (DefaultSchemaIsNotBlank)
                         con.setSchema(DefaultSchema);
-                    if (isFirstValidConnection) testFirstConnection(con);
                     PooledConnection pCon = ClonePooledConn.clone();
                     pCon.fillRawConnection(con, state);
 
@@ -262,13 +262,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     private void testFirstConnection(Connection rawCon) throws SQLException {
+        if (DefaultTransactionIsolation == -999)
+            DefaultTransactionIsolation = rawCon.getTransactionIsolation();
+
         try {//test networkTimeout
-            this.networkTimeout = rawCon.getNetworkTimeout();
-            if (networkTimeout < 0) {
+            this.DefaultNetworkTimeout = rawCon.getNetworkTimeout();
+            if (DefaultNetworkTimeout < 0) {
                 supportNetworkTimeout = false;
                 commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
             } else {
-                rawCon.setNetworkTimeout(poolTaskExecutor, networkTimeout);
+                rawCon.setNetworkTimeout(poolTaskExecutor, DefaultNetworkTimeout);
             }
         } catch (Throwable e) {
             supportNetworkTimeout = false;
@@ -277,7 +280,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             else
                 commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
         }
-        this.ClonePooledConn = new PooledConnection(this, poolConfig);
+
+        this.ClonePooledConn = new PooledConnection(this,
+                DefaultAutoCommit,
+                DefaultReadOnly,
+                DefaultCatalog,
+                DefaultSchema,
+                DefaultTransactionIsolation,
+                DefaultNetworkTimeout,
+                poolTaskExecutor,
+                supportNetworkTimeout);
 
         boolean supportIsValid = true;
         try {//test isValid Method
@@ -294,9 +306,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 commonLog.debug("BeeCP({})driver not support 'isValid',cause:", poolName, e);
             else
                 commonLog.warn("BeeCP({})driver not support 'isValid'", poolName);
-         } finally {
-             this.isFirstValidConnection = false;//remark as tested
-         }
+        } finally {
+            this.isFirstValidConnection = false;//remark as tested
+        }
 
         if (!supportIsValid) {
             Statement st = null;
@@ -357,19 +369,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             }
         } while (true);
     }
-
-    int getNetworkTimeout() {
-        return networkTimeout;
-    }
-
-    ThreadPoolExecutor getNetworkTimeoutExecutor() {
-        return poolTaskExecutor;
-    }
-
-    boolean supportNetworkTimeout() {
-        return supportNetworkTimeout;
-    }
-
 
     /******************************************************************************************
      *                                                                                        *

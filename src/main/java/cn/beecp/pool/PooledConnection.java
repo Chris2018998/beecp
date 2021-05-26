@@ -6,8 +6,6 @@
  */
 package cn.beecp.pool;
 
-import cn.beecp.BeeDataSourceConfig;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -22,7 +20,7 @@ import static java.lang.System.currentTimeMillis;
  * @author Chris.Liao
  * @version 1.0
  */
-class PooledConnection implements Cloneable{
+class PooledConnection implements Cloneable {
     private static final boolean[] FALSE_ARRAY = new boolean[6];
     final boolean defaultAutoCommit;
     final boolean defaultReadOnly;
@@ -41,22 +39,32 @@ class PooledConnection implements Cloneable{
     private int resetCnt;// reset count
     private boolean[] resetInd;
     private ProxyStatementBase[] openStatements;
+    private boolean supportNetworkTimeout;
     private ThreadPoolExecutor networkTimeoutExecutor;
     private FastConnectionPool pool;
 
-    public PooledConnection(FastConnectionPool pool, BeeDataSourceConfig config) {
+    public PooledConnection(FastConnectionPool pool,
+                            boolean defaultAutoCommit,
+                            boolean defaultReadOnly,
+                            String defaultCatalog,
+                            String defaultSchema,
+                            int defaultTransactionIsolation,
+                            int defaultNetworkTimeout,
+                            ThreadPoolExecutor networkTimeoutExecutor,
+                            boolean supportNetworkTimeout) {
         this.pool = pool;
-        this.defaultReadOnly = config.isDefaultReadOnly();
-        this.defaultCatalog = config.getDefaultCatalog();
-        this.defaultSchema = config.getDefaultSchema();
-        this.defaultAutoCommit = config.isDefaultAutoCommit();
-        this.defaultTransactionIsolation = config.getDefaultTransactionIsolationCode();
+        this.defaultAutoCommit = defaultAutoCommit;
+        this.defaultReadOnly = defaultReadOnly;
+        this.defaultCatalog = defaultCatalog;
+        this.defaultSchema = defaultSchema;
+        this.defaultTransactionIsolation = defaultTransactionIsolation;
+        this.defaultNetworkTimeout = defaultNetworkTimeout;
+        this.supportNetworkTimeout = supportNetworkTimeout;
+        this.networkTimeoutExecutor = networkTimeoutExecutor;
         this.curAutoCommit = defaultAutoCommit;
-        this.defaultNetworkTimeout = pool.getNetworkTimeout();
-        this.networkTimeoutExecutor = pool.getNetworkTimeoutExecutor();
     }
 
-    public final PooledConnection clone()throws CloneNotSupportedException  {
+    public final PooledConnection clone() throws CloneNotSupportedException {
         return (PooledConnection) super.clone();
     }
 
@@ -69,7 +77,7 @@ class PooledConnection implements Cloneable{
     }
 
     boolean supportNetworkTimeout() {
-        return pool.supportNetworkTimeout();
+        return supportNetworkTimeout;
     }
 
     final void updateAccessTime() {//for update,insert.select,delete and so on DML

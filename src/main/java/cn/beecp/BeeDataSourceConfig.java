@@ -57,9 +57,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //connection default value:autoCommit <code>Connection.setAutoCommit(boolean)</code>
     private boolean defaultAutoCommit = true;
     //connection default value:transactionIsolation <code>Connection.setTransactionIsolation(int)</code>
-    private int defaultTransactionIsolationCode = Connection.TRANSACTION_READ_COMMITTED;
+    private int defaultTransactionIsolationCode = -999;
     //connection default value:description of transactionIsolation <code>defaultTransactionIsolationCode</code>
-    private String defaultTransactionIsolation = TransactionIsolationLevel.LEVEL_READ_COMMITTED;
+    private String defaultTransactionIsolation;
 
     //pool name
     private String poolName;
@@ -585,12 +585,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
     private final int getTransactionIsolationCode() throws BeeDataSourceConfigException {
         if (!isBlank(defaultTransactionIsolation)) {
-            int transactionIsolationCode = TransactionIsolationLevel.getTransactionIsolationCode(defaultTransactionIsolation);
-            if (transactionIsolationCode == -999)
-                throw new BeeDataSourceConfigException("defaultTransactionIsolation error,valid value is one of[" + TRANS_LEVEL_DESC_LIST + "]");
-            return transactionIsolationCode;
+            return TransactionIsolationLevel.getTransactionIsolationCode(defaultTransactionIsolation);
         } else {
-            if (!isValidTransactionIsolationCode(defaultTransactionIsolationCode))
+            if (defaultTransactionIsolationCode!=-999 &&  !isValidTransactionIsolationCode(defaultTransactionIsolationCode))
                 throw new BeeDataSourceConfigException("defaultTransactionIsolationCode error,valid value is one of[" + TRANS_LEVEL_CODE_LIST + "]");
 
             return defaultTransactionIsolationCode;
