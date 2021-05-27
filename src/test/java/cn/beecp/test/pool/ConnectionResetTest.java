@@ -22,7 +22,7 @@ public class ConnectionResetTest extends TestCase {
         config.setUsername(Config.JDBC_USER);
         config.setPassword(Config.JDBC_PASSWORD);
         config.setDefaultAutoCommit(false);
-        config.setDefaultTransactionIsolation(TransactionIsolationLevel.LEVEL_READ_COMMITTED);
+        config.setDefaultTransactionIsolationName(TransactionIsolationLevel.LEVEL_READ_COMMITTED);
         config.setDefaultReadOnly(true);
         config.setDefaultCatalog(catlog);
         config.setDefaultSchema(schema);

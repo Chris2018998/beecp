@@ -18,7 +18,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -59,7 +58,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //connection default value:transactionIsolation <code>Connection.setTransactionIsolation(int)</code>
     private int defaultTransactionIsolationCode = -999;
     //connection default value:description of transactionIsolation <code>defaultTransactionIsolationCode</code>
-    private String defaultTransactionIsolation;
+    private String defaultTransactionIsolationName;
 
     //pool name
     private String poolName;
@@ -216,12 +215,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     @Override
-    public String getDefaultTransactionIsolation() {
-        return defaultTransactionIsolation;
+    public String getDefaultTransactionIsolationName() {
+        return defaultTransactionIsolationName;
     }
 
-    public void setDefaultTransactionIsolation(String defaultTransactionIsolation) {
-        this.defaultTransactionIsolation = trimString(defaultTransactionIsolation);
+    public void setDefaultTransactionIsolationName(String defaultTransactionIsolationName) {
+        this.defaultTransactionIsolationName = trimString(defaultTransactionIsolationName);
     }
 
     @Override
@@ -578,16 +577,15 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         }
     }
 
-
     private String trimString(String value) {
         return (value == null) ? null : value.trim();
     }
 
     private final int getTransactionIsolationCode() throws BeeDataSourceConfigException {
-        if (!isBlank(defaultTransactionIsolation)) {
-            return TransactionIsolationLevel.getTransactionIsolationCode(defaultTransactionIsolation);
+        if (!isBlank(defaultTransactionIsolationName)) {
+            return TransactionIsolationLevel.getTransactionIsolationCode(defaultTransactionIsolationName);
         } else {
-            if (defaultTransactionIsolationCode!=-999 &&  !isValidTransactionIsolationCode(defaultTransactionIsolationCode))
+            if (defaultTransactionIsolationCode!=-999 && !isValidTransactionIsolationCode(defaultTransactionIsolationCode))
                 throw new BeeDataSourceConfigException("defaultTransactionIsolationCode error,valid value is one of[" + TRANS_LEVEL_CODE_LIST + "]");
 
             return defaultTransactionIsolationCode;

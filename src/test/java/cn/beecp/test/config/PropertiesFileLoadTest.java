@@ -49,7 +49,7 @@ public class PropertiesFileLoadTest extends TestCase {
         if (!testConfig.isDefaultAutoCommit()) throw new BeeDataSourceConfigException("defaultAutoCommit error");
         if (testConfig.getDefaultTransactionIsolationCode() != 1)
             throw new BeeDataSourceConfigException("defaultTransactionIsolationCode error");
-        if (!"TRANSACTION_READ_UNCOMMITTED".equals(testConfig.getDefaultTransactionIsolation()))
+        if (!"TRANSACTION_READ_UNCOMMITTED".equals(testConfig.getDefaultTransactionIsolationName()))
             throw new BeeDataSourceConfigException("defaultTransactionIsolation error");
         if (!"SELECT 1".equals(testConfig.getConnectionTestSql()))
             throw new BeeDataSourceConfigException("connectionTestSQL error");

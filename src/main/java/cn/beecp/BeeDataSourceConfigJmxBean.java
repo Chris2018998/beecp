@@ -35,7 +35,7 @@ public interface BeeDataSourceConfigJmxBean {
 
     boolean isDefaultAutoCommit();
 
-    String getDefaultTransactionIsolation();
+    String getDefaultTransactionIsolationName();
 
     int getDefaultTransactionIsolationCode();
 
