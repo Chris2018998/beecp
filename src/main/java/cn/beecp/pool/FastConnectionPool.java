@@ -238,15 +238,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     private void testFirstConnection(Connection rawCon) throws SQLException {
-        int DefaultNetworkTimeout = 0;
+        int defaultNetworkTimeout = 0;
         boolean supportNetworkTimeout = true;
         try {//test networkTimeout
-            DefaultNetworkTimeout = rawCon.getNetworkTimeout();
-            if (DefaultNetworkTimeout < 0) {
+            defaultNetworkTimeout = rawCon.getNetworkTimeout();
+            if (defaultNetworkTimeout < 0) {
                 supportNetworkTimeout = false;
                 commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
             } else {
-                rawCon.setNetworkTimeout(poolTaskExecutor, DefaultNetworkTimeout);
+                rawCon.setNetworkTimeout(poolTaskExecutor, defaultNetworkTimeout);
             }
         } catch (Throwable e) {
             supportNetworkTimeout = false;
@@ -256,22 +256,23 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
         }
 
-        int DefaultTransactionIsolation = poolConfig.getDefaultTransactionIsolationCode();
-        if (DefaultTransactionIsolation == -999) DefaultTransactionIsolation = rawCon.getTransactionIsolation();
+        int defaultTransactionIsolation = poolConfig.getDefaultTransactionIsolationCode();
+        if (defaultTransactionIsolation == -999) defaultTransactionIsolation = rawCon.getTransactionIsolation();
         this.clonePooledConn = new PooledConnection(this,
                 poolConfig.isDefaultAutoCommit(),
                 poolConfig.isDefaultReadOnly(),
                 poolConfig.getDefaultCatalog(),
                 poolConfig.getDefaultSchema(),
-                DefaultTransactionIsolation,
+                defaultTransactionIsolation,
                 supportNetworkTimeout,
-                DefaultNetworkTimeout,
+                defaultNetworkTimeout,
                 poolTaskExecutor);
 
         boolean supportIsValid = true;
+        int connectionTestTimeout=poolConfig.getConnectionTestTimeout();
         try {//test isValid Method
-            if (rawCon.isValid(poolConfig.getConnectionTestTimeout())) {
-                this.conTester = new ConnValidTester(poolName, poolConfig.getConnectionTestTimeout());
+            if (rawCon.isValid(connectionTestTimeout)) {
+                this.conTester = new ConnValidTester(poolName, connectionTestTimeout);
                 return;
             } else {
                 supportIsValid = false;
@@ -289,11 +290,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
         if (!supportIsValid) {
             Statement st = null;
-            this.conTester = new SqlQueryTester(poolName, poolConfig.getConnectionTestTimeout(),
+            this.conTester = new SqlQueryTester(poolName, connectionTestTimeout,
                     poolConfig.isDefaultAutoCommit(), poolConfig.getConnectionTestSql());
             try {
                 st = rawCon.createStatement();
-                testQueryTimeout(st, poolConfig.getConnectionTestTimeout());
+                testQueryTimeout(st, connectionTestTimeout);
                 validateTestSql(rawCon, st);
             } finally {
                 if (st != null) oclose(st);
