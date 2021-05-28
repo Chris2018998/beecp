@@ -24,7 +24,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static cn.beecp.TransactionIsolationLevel.*;
+import static cn.beecp.TransactionIsolationLevel.TRANS_LEVEL_CODE_LIST;
+import static cn.beecp.TransactionIsolationLevel.isValidTransactionIsolationCode;
 import static cn.beecp.pool.PoolStaticCenter.*;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -424,21 +425,19 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
 
-    void copyTo(BeeDataSourceConfig config) throws SQLException {
+    void copyTo(BeeDataSourceConfig config){
         //1:primitive type copy
-        Field[] fields = BeeDataSourceConfig.class.getDeclaredFields();
-        for (Field field : fields) {
-            if (Modifier.isFinal(field.getModifiers()) || Modifier.isStatic(field.getModifiers())) continue;
-
-            if (!"connectProperties".equals(field.getName())) {
-                try {
-                    Object fieldValue = field.get(this);
-                    commonLog.debug("BeeDataSourceConfig.{}={}", field.getName(), fieldValue);
-                    field.set(config, fieldValue);
-                } catch (Exception e) {
-                    throw new BeeDataSourceConfigException("Failed to copy field[" + field.getName() + "]", e);
-                }
+        String fieldName="";
+        try {
+            for(Field field:BeeDataSourceConfig.class.getDeclaredFields()){
+                if (Modifier.isFinal(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) || "connectProperties".equals(field.getName())) continue;
+                Object fieldValue = field.get(this);
+                fieldName=field.getName();
+                commonLog.debug("BeeDataSourceConfig.{}={}",fieldName, fieldValue);
+                field.set(config, fieldValue);
             }
+        } catch (Exception e) {
+            throw new BeeDataSourceConfigException("Failed to copy field[" + fieldName + "]", e);
         }
 
         //2:copy 'connectProperties'
@@ -585,7 +584,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         if (!isBlank(defaultTransactionIsolationName)) {
             return TransactionIsolationLevel.getTransactionIsolationCode(defaultTransactionIsolationName);
         } else {
-            if (defaultTransactionIsolationCode!=-999 && !isValidTransactionIsolationCode(defaultTransactionIsolationCode))
+            if (defaultTransactionIsolationCode != -999 && !isValidTransactionIsolationCode(defaultTransactionIsolationCode))
                 throw new BeeDataSourceConfigException("defaultTransactionIsolationCode error,valid value is one of[" + TRANS_LEVEL_CODE_LIST + "]");
 
             return defaultTransactionIsolationCode;

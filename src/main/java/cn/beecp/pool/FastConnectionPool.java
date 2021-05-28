@@ -51,11 +51,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private final ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
     private final ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
     private final ConnectionPoolMonitorVo monitorVo = new ConnectionPoolMonitorVo();
-    private int PoolMaxSize;
-    private long MaxWaitNanos;//nanoseconds
-    private int ConUnCatchStateCode;
-    private long ConTestInterval;//milliseconds
-    private long DelayTimeForNextClearNanos;//nanoseconds
+    private int poolMaxSize;
+    private long maxWaitNanos;//nanoseconds
+    private int conUnCatchStateCode;
+    private long conTestInterval;//milliseconds
+    private long delayTimeForNextClearNanos;//nanoseconds
     private ConnectionTester conTester;
     private ConnectionPoolHook exitHook;
     private BeeDataSourceConfig poolConfig;
@@ -72,17 +72,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private AtomicInteger needAddConSize = new AtomicInteger(0);
     private AtomicInteger idleThreadState = new AtomicInteger(THREAD_WORKING);
 
-    private boolean DefaultAutoCommit;
-    private boolean DefaultReadOnly;
-    private String DefaultCatalog;
-    private String DefaultSchema;
-    private int DefaultTransactionIsolation;
-    private int DefaultNetworkTimeout;
-    private boolean supportNetworkTimeout = true;
-    private boolean DefaultCatalogIsNotBlank;
-    private boolean DefaultSchemaIsNotBlank;
-    private PooledConnection ClonePooledConn;
     private boolean isFirstValidConnection = true;
+    private PooledConnection clonePooledConn;
     /******************************************************************************************
      *                                                                                        *
      *                 1: Pool initialize and Pooled connection create/remove methods         *
@@ -102,19 +93,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             poolConfig = config.check();//why need a copy here?
             poolName = poolConfig.getPoolName();
             commonLog.info("BeeCP({})starting....", poolName);
-            PoolMaxSize = poolConfig.getMaxActive();
+            poolMaxSize = poolConfig.getMaxActive();
             conFactory = poolConfig.getConnectionFactory();
-            DefaultCatalog = poolConfig.getDefaultCatalog();
-            DefaultSchema = poolConfig.getDefaultSchema();
-            DefaultReadOnly = poolConfig.isDefaultReadOnly();
-            DefaultAutoCommit = poolConfig.isDefaultAutoCommit();
-            DefaultTransactionIsolation = poolConfig.getDefaultTransactionIsolationCode();
-            DefaultCatalogIsNotBlank = !isBlank(DefaultCatalog);
-            DefaultSchemaIsNotBlank = !isBlank(DefaultSchema);
 
-            MaxWaitNanos = MILLISECONDS.toNanos(poolConfig.getMaxWait());
-            DelayTimeForNextClearNanos = MILLISECONDS.toNanos(poolConfig.getDelayTimeForNextClear());
-            ConTestInterval = poolConfig.getConnectionTestInterval();
+            maxWaitNanos = MILLISECONDS.toNanos(poolConfig.getMaxWait());
+            delayTimeForNextClearNanos = MILLISECONDS.toNanos(poolConfig.getDelayTimeForNextClear());
+            conTestInterval = poolConfig.getConnectionTestInterval();
             if (poolConfig.isFairMode()) {
                 poolMode = "fair";
                 transferPolicy = new FairTransferPolicy();
@@ -122,7 +106,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 poolMode = "compete";
                 transferPolicy = new CompeteTransferPolicy();
             }
-            ConUnCatchStateCode = transferPolicy.getCheckStateCode();
+            conUnCatchStateCode = transferPolicy.getCheckStateCode();
             semaphoreSize = poolConfig.getBorrowSemaphoreSize();
             semaphore = new Semaphore(semaphoreSize, poolConfig.isFairMode());
             dynAddPooledConnTask = new DynAddPooledConnTask();
@@ -199,7 +183,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private final PooledConnection createPooledConn(int state) throws SQLException {
         synchronized (connArrayLock) {
             int arrayLen = conArray.length;
-            if (arrayLen < PoolMaxSize) {
+            if (arrayLen < poolMaxSize) {
                 if (isDebugEnabled)
                     commonLog.debug("BeeCP({}))begin to create a new pooled connection,state:{}", poolName, state);
                 Connection con = null;
@@ -211,16 +195,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
                 try {
                     if (isFirstValidConnection) testFirstConnection(con);
-                    con.setAutoCommit(DefaultAutoCommit);
-                    con.setTransactionIsolation(DefaultTransactionIsolation);
-                    con.setReadOnly(DefaultReadOnly);
-                    if (DefaultCatalogIsNotBlank)
-                        con.setCatalog(DefaultCatalog);
-                    if (DefaultSchemaIsNotBlank)
-                        con.setSchema(DefaultSchema);
-                    PooledConnection pCon = ClonePooledConn.clone();
+                    PooledConnection pCon = clonePooledConn.clone();
                     pCon.fillRawConnection(con, state);
-
                     if (isDebugEnabled)
                         commonLog.debug("BeeCP({}))has created a new pooled connection:{},state:{}", poolName, pCon, state);
                     PooledConnection[] arrayNew = new PooledConnection[arrayLen + 1];
@@ -262,11 +238,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     private void testFirstConnection(Connection rawCon) throws SQLException {
-        if (DefaultTransactionIsolation == -999)
-            DefaultTransactionIsolation = rawCon.getTransactionIsolation();
-
+        int DefaultNetworkTimeout = 0;
+        boolean supportNetworkTimeout = true;
         try {//test networkTimeout
-            this.DefaultNetworkTimeout = rawCon.getNetworkTimeout();
+            DefaultNetworkTimeout = rawCon.getNetworkTimeout();
             if (DefaultNetworkTimeout < 0) {
                 supportNetworkTimeout = false;
                 commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
@@ -281,15 +256,17 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
         }
 
-        this.ClonePooledConn = new PooledConnection(this,
-                DefaultAutoCommit,
-                DefaultReadOnly,
-                DefaultCatalog,
-                DefaultSchema,
+        int DefaultTransactionIsolation = poolConfig.getDefaultTransactionIsolationCode();
+        if (DefaultTransactionIsolation == -999) DefaultTransactionIsolation = rawCon.getTransactionIsolation();
+        this.clonePooledConn = new PooledConnection(this,
+                poolConfig.isDefaultAutoCommit(),
+                poolConfig.isDefaultReadOnly(),
+                poolConfig.getDefaultCatalog(),
+                poolConfig.getDefaultSchema(),
                 DefaultTransactionIsolation,
+                supportNetworkTimeout,
                 DefaultNetworkTimeout,
-                poolTaskExecutor,
-                supportNetworkTimeout);
+                poolTaskExecutor);
 
         boolean supportIsValid = true;
         try {//test isValid Method
@@ -362,9 +339,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         do {
             curAddSize = needAddConSize.get();
             updAddSize = curAddSize + 1;
-            if (conArray.length + updAddSize > PoolMaxSize) return;
+            if (conArray.length + updAddSize > poolMaxSize) return;
             if (needAddConSize.compareAndSet(curAddSize, updAddSize)) {
-                poolTaskExecutor.submit(dynAddPooledConnTask);
+                poolTaskExecutor.execute(dynAddPooledConnTask);
                 return;
             }
         } while (true);
@@ -398,9 +375,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             threadLocal.set(new WeakReference<Borrower>(borrower));
         }
 
-        final long deadlineNanos = nanoTime() + MaxWaitNanos;
+        final long deadlineNanos = nanoTime() + maxWaitNanos;
         try {
-            if (!semaphore.tryAcquire(MaxWaitNanos, NANOSECONDS))
+            if (!semaphore.tryAcquire(maxWaitNanos, NANOSECONDS))
                 throw RequestTimeoutException;
         } catch (InterruptedException e) {
             throw RequestInterruptException;
@@ -416,7 +393,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     return createProxyConnection(pCon, borrower);
             }
             //2:try to create one directly
-            if (conArray.length < PoolMaxSize && (pCon = createPooledConn(CON_USING)) != null)
+            if (conArray.length < poolMaxSize && (pCon = createPooledConn(CON_USING)) != null)
                 return createProxyConnection(pCon, borrower);
 
             //3:try to get one transferred connection
@@ -482,7 +459,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             Borrower borrower = iterator.next();
             Object state;
             do {
-                if (pCon.state != ConUnCatchStateCode) return;
+                if (pCon.state != conUnCatchStateCode) return;
                 state = borrower.state;
                 if (!(state instanceof BorrowerState)) continue W;
             } while (!BorrowStUpd.compareAndSet(borrower, state, pCon));
@@ -529,7 +506,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @return boolean, true:alive
      */
     private final boolean testOnBorrow(PooledConnection pCon) {
-        if (currentTimeMillis() - pCon.lastAccessTime - ConTestInterval >= 0L && !conTester.isAlive(pCon)) {
+        if (currentTimeMillis() - pCon.lastAccessTime - conTestInterval >= 0L && !conTester.isAlive(pCon)) {
             removePooledConn(pCon, DESC_RM_BAD);
             tryToCreateNewConnByAsyn();
             return false;
@@ -649,7 +626,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     }
                 }
             } // for
-            if (conArray.length > 0) parkNanos(DelayTimeForNextClearNanos);
+            if (conArray.length > 0) parkNanos(delayTimeForNextClearNanos);
         } // while
     }
 
@@ -677,7 +654,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             } else if (poolState.get() == POOL_CLOSED) {
                 break;
             } else {
-                parkNanos(DelayTimeForNextClearNanos);// default wait 3 seconds
+                parkNanos(delayTimeForNextClearNanos);// default wait 3 seconds
             }
         } while (true);
     }
@@ -695,7 +672,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         monitorVo.setPoolName(poolName);
         monitorVo.setPoolMode(poolMode);
         monitorVo.setPoolState(poolState.get());
-        monitorVo.setMaxActive(PoolMaxSize);
+        monitorVo.setMaxActive(poolMaxSize);
         monitorVo.setIdleSize(idleSize);
         monitorVo.setUsingSize(totSize - idleSize);
         monitorVo.setSemaphoreWaiterSize(getSemaphoreWaitingSize());

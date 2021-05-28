@@ -42,6 +42,8 @@ class PooledConnection implements Cloneable {
     private boolean supportNetworkTimeout;
     private ThreadPoolExecutor networkTimeoutExecutor;
     private FastConnectionPool pool;
+    private boolean defaultCatalogIsNotBlank;
+    private boolean defaultSchemaIsNotBlank;
 
     public PooledConnection(FastConnectionPool pool,
                             boolean defaultAutoCommit,
@@ -49,26 +51,36 @@ class PooledConnection implements Cloneable {
                             String defaultCatalog,
                             String defaultSchema,
                             int defaultTransactionIsolation,
+                            boolean supportNetworkTimeout,
                             int defaultNetworkTimeout,
-                            ThreadPoolExecutor networkTimeoutExecutor,
-                            boolean supportNetworkTimeout) {
+                            ThreadPoolExecutor networkTimeoutExecutor) {
         this.pool = pool;
         this.defaultAutoCommit = defaultAutoCommit;
         this.defaultReadOnly = defaultReadOnly;
         this.defaultCatalog = defaultCatalog;
         this.defaultSchema = defaultSchema;
         this.defaultTransactionIsolation = defaultTransactionIsolation;
-        this.defaultNetworkTimeout = defaultNetworkTimeout;
         this.supportNetworkTimeout = supportNetworkTimeout;
+        this.defaultNetworkTimeout = defaultNetworkTimeout;
         this.networkTimeoutExecutor = networkTimeoutExecutor;
         this.curAutoCommit = defaultAutoCommit;
+        this.defaultCatalogIsNotBlank = !isBlank(defaultCatalog);
+        this.defaultSchemaIsNotBlank = !isBlank(defaultSchema);
     }
 
     public final PooledConnection clone() throws CloneNotSupportedException {
         return (PooledConnection) super.clone();
     }
 
-    final void fillRawConnection(Connection rawConn, int state) {
+    final void fillRawConnection(Connection rawConn, int state) throws SQLException {
+        rawConn.setAutoCommit(defaultAutoCommit);
+        rawConn.setTransactionIsolation(defaultTransactionIsolation);
+        rawConn.setReadOnly(defaultReadOnly);
+        if (defaultCatalogIsNotBlank)
+            rawConn.setCatalog(defaultCatalog);
+        if (defaultSchemaIsNotBlank)
+            rawConn.setSchema(defaultSchema);
+
         this.state = state;
         this.rawCon = rawConn;
         this.openStatements = new ProxyStatementBase[10];
