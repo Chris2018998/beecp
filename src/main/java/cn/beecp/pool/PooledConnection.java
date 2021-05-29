@@ -32,18 +32,18 @@ class PooledConnection implements Cloneable {
     private boolean defaultSchemaIsNotBlank;
     private boolean supportNetworkTimeout;
     private ThreadPoolExecutor networkTimeoutExecutor;
-
-    Connection rawCon;
-    volatile int state;
+    private FastConnectionPool pool;
     ProxyConnectionBase proxyCon;
-    volatile long lastAccessTime;
     boolean commitDirtyInd;
     boolean curAutoCommit;
     int openStmSize;
     private int resetCnt;// reset count
+
+    Connection rawCon;
+    volatile int state;
+    volatile long lastAccessTime;
     private boolean[] resetInd;
     private ProxyStatementBase[] openStatements;
-    private FastConnectionPool pool;
 
     public PooledConnection(FastConnectionPool pool,
                             boolean defaultAutoCommit,
@@ -68,7 +68,7 @@ class PooledConnection implements Cloneable {
         this.defaultSchemaIsNotBlank = !isBlank(defaultSchema);
     }
 
-    public final PooledConnection clone(Connection rawConn, int state) throws CloneNotSupportedException,SQLException {
+    public final PooledConnection clone(Connection rawConn, int state) throws CloneNotSupportedException, SQLException {
         rawConn.setAutoCommit(defaultAutoCommit);
         rawConn.setTransactionIsolation(defaultTransactionIsolation);
         rawConn.setReadOnly(defaultReadOnly);
@@ -77,10 +77,10 @@ class PooledConnection implements Cloneable {
         if (defaultSchemaIsNotBlank)
             rawConn.setSchema(defaultSchema);
 
-        PooledConnection pCon= (PooledConnection) super.clone();
+        PooledConnection pCon = (PooledConnection) super.clone();
         pCon.state = state;
         pCon.rawCon = rawConn;
-		pCon.resetInd = new boolean[6];
+        pCon.resetInd = new boolean[6];
         pCon.openStatements = new ProxyStatementBase[10];
         pCon.lastAccessTime = currentTimeMillis();//first time
         return pCon;

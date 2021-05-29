@@ -153,7 +153,7 @@ public class PoolStaticCenter {
         setPropertiesValue(bean, getSetMethodMap(bean.getClass()), setValueMap);
     }
 
-    public static final void setPropertiesValue(Object bean, Map<String, Method> setMethodMap, Map<String, Object> setValueMap) throws BeeDataSourceConfigException {
+    public static final void setPropertiesValue(Object bean, Map<String, Method> setMethodMap, Map<String, Object> setValueMap) {
         if (bean == null) throw new BeeDataSourceConfigException("Bean can't be null");
         if (setMethodMap == null) throw new BeeDataSourceConfigException("Set method map can't be null");
         if (setMethodMap.isEmpty()) throw new BeeDataSourceConfigException("Set method map can't be empty");
