@@ -40,7 +40,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private static final int maxTimedSpins = (Runtime.getRuntime().availableProcessors() < 2) ? 0 : 32;
     private static final AtomicIntegerFieldUpdater<PooledConnection> ConStUpd = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class, "state");
     private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowStUpd = AtomicReferenceFieldUpdater.newUpdater(Borrower.class, Object.class, "state");
-    private static final String DESC_RM_PRE_INIT = "pre_init";
     private static final String DESC_RM_INIT = "init";
     private static final String DESC_RM_BAD = "bad";
     private static final String DESC_RM_IDLE = "idle";
@@ -71,7 +70,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
     private AtomicInteger needAddConSize = new AtomicInteger(0);
     private AtomicInteger idleThreadState = new AtomicInteger(THREAD_WORKING);
-
     private boolean isFirstValidConnection = true;
     private PooledConnection clonePooledConn;
     /******************************************************************************************
@@ -268,7 +266,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 poolTaskExecutor);
 
         boolean validTestFailed;
-        int connectionTestTimeout=poolConfig.getConnectionTestTimeout();
+        int connectionTestTimeout = poolConfig.getConnectionTestTimeout();
         try {//test isValid Method
             if (rawCon.isValid(connectionTestTimeout)) {
                 this.conTester = new ConnValidTester(poolName, connectionTestTimeout);
