@@ -8,7 +8,7 @@ Maven artifact(Java7 and higher)
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>3.2.2</version>
+   <version>3.2.3</version>
 </dependency>
 ```
 Maven artifact(Java6)
@@ -153,7 +153,7 @@ public class DataSourceConfig {
 |maxActive               |max size for pooled object instances in pool     |default is 10                                               | 
 |borrowSemaphoreSize     |borrow concurrent thread size                    |default val=min(maxActive/2,cpu size)                       |                       
 |defaultAutoCommit       |connection transaction open indicator            |default is true                                             |
-|defaultTransactionIsolationCode|connection default transaction level          |default is Connection.TRANSACTION_READ_COMMITTED             |
+|defaultTransactionIsolationCode|connection default transaction level      |default is not set value                                    |
 |defaultCatalog             |                                              |                                                            |
 |defaultSchema              |                                              |                                                            |
 |defaultReadOnly            |                                              |default is false                                            |
