@@ -12,6 +12,8 @@ import java.sql.*;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+import static cn.beecp.pool.PoolStaticCenter.isBlank;
+
 /**
  * An independent execution toolkit class to generate JDBC proxy classes with javassist,
  * then write to class folder.
@@ -25,17 +27,17 @@ final class ProxyClassGenerator {
     /**
      * default classes output folder in project
      */
-    private static String folder = "BeeCP/target/classes";
+    private String defaultFolder = "BeeCP/target/classes";
 
     /**
      * @param args take the first argument as classes generated output folder,otherwise take default folder
      * @throws Exception throw exception in generating process
      */
     public static void main(String[] args) throws Exception {
-        if (args != null && args.length > 0)
-            folder = args[0];
-
-        writeProxyFile(folder);
+        ProxyClassGenerator generator = new ProxyClassGenerator();
+        String classesFolder="";
+        if (args != null && args.length > 0)classesFolder = args[0];
+        new ProxyClassGenerator().writeProxyFile(classesFolder);
     }
 
     /**
@@ -44,9 +46,9 @@ final class ProxyClassGenerator {
      * @param folder classes generated will write to it
      * @throws Exception if failed to write file to disk
      */
-    public static void writeProxyFile(String folder) throws Exception {
-        ProxyClassGenerator builder = new ProxyClassGenerator();
-        CtClass[] ctClasses = builder.createJdbcProxyClasses();
+    public void writeProxyFile(String folder) throws Exception {
+        if(isBlank(folder))folder=defaultFolder;
+        CtClass[] ctClasses = this.createJdbcProxyClasses();
         for (CtClass ctClass : ctClasses) {
             ctClass.writeFile(folder);
         }

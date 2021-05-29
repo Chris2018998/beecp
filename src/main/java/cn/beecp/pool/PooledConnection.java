@@ -28,6 +28,10 @@ class PooledConnection implements Cloneable {
     final String defaultSchema;
     final int defaultTransactionIsolation;
     final int defaultNetworkTimeout;
+    private boolean defaultCatalogIsNotBlank;
+    private boolean defaultSchemaIsNotBlank;
+    private boolean supportNetworkTimeout;
+    private ThreadPoolExecutor networkTimeoutExecutor;
 
     Connection rawCon;
     volatile int state;
@@ -39,11 +43,7 @@ class PooledConnection implements Cloneable {
     private int resetCnt;// reset count
     private boolean[] resetInd;
     private ProxyStatementBase[] openStatements;
-    private boolean supportNetworkTimeout;
-    private ThreadPoolExecutor networkTimeoutExecutor;
     private FastConnectionPool pool;
-    private boolean defaultCatalogIsNotBlank;
-    private boolean defaultSchemaIsNotBlank;
 
     public PooledConnection(FastConnectionPool pool,
                             boolean defaultAutoCommit,
@@ -68,11 +68,7 @@ class PooledConnection implements Cloneable {
         this.defaultSchemaIsNotBlank = !isBlank(defaultSchema);
     }
 
-    public final PooledConnection clone() throws CloneNotSupportedException {
-        return (PooledConnection) super.clone();
-    }
-
-    final void fillRawConnection(Connection rawConn, int state) throws SQLException {
+    public final PooledConnection clone(Connection rawConn, int state) throws CloneNotSupportedException,SQLException {
         rawConn.setAutoCommit(defaultAutoCommit);
         rawConn.setTransactionIsolation(defaultTransactionIsolation);
         rawConn.setReadOnly(defaultReadOnly);
@@ -81,11 +77,13 @@ class PooledConnection implements Cloneable {
         if (defaultSchemaIsNotBlank)
             rawConn.setSchema(defaultSchema);
 
-        this.state = state;
-        this.rawCon = rawConn;
-        this.openStatements = new ProxyStatementBase[10];
-        this.resetInd = new boolean[FALSE_ARRAY.length];
-        lastAccessTime = currentTimeMillis();//first tim
+        PooledConnection pCon= (PooledConnection) super.clone();
+        pCon.state = state;
+        pCon.rawCon = rawConn;
+        pCon.openStatements = new ProxyStatementBase[10];
+        pCon.resetInd = new boolean[FALSE_ARRAY.length];
+        pCon.lastAccessTime = currentTimeMillis();//first tim
+        return pCon;
     }
 
     boolean supportNetworkTimeout() {

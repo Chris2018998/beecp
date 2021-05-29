@@ -186,7 +186,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (arrayLen < poolMaxSize) {
                 if (isDebugEnabled)
                     commonLog.debug("BeeCP({}))begin to create a new pooled connection,state:{}", poolName, state);
-                Connection con = null;
+                Connection con;
                 try {
                     con = conFactory.create();
                 } catch (Throwable e) {
@@ -195,8 +195,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
                 try {
                     if (isFirstValidConnection) testFirstConnection(con);
-                    PooledConnection pCon = clonePooledConn.clone();
-                    pCon.fillRawConnection(con, state);
+                    PooledConnection pCon = clonePooledConn.clone(con, state);
                     if (isDebugEnabled)
                         commonLog.debug("BeeCP({}))has created a new pooled connection:{},state:{}", poolName, pCon, state);
                     PooledConnection[] arrayNew = new PooledConnection[arrayLen + 1];
@@ -268,18 +267,18 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 defaultNetworkTimeout,
                 poolTaskExecutor);
 
-        boolean supportIsValid = true;
+        boolean validTestFailed;
         int connectionTestTimeout=poolConfig.getConnectionTestTimeout();
         try {//test isValid Method
             if (rawCon.isValid(connectionTestTimeout)) {
                 this.conTester = new ConnValidTester(poolName, connectionTestTimeout);
                 return;
             } else {
-                supportIsValid = false;
+                validTestFailed = true;
                 commonLog.warn("BeeCP({})driver not support 'isValid'", poolName);
             }
         } catch (Throwable e) {
-            supportIsValid = false;
+            validTestFailed = true;
             if (isDebugEnabled)
                 commonLog.debug("BeeCP({})driver not support 'isValid',cause:", poolName, e);
             else
@@ -288,7 +287,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             this.isFirstValidConnection = false;//remark as tested
         }
 
-        if (!supportIsValid) {
+        if (validTestFailed) {
             Statement st = null;
             this.conTester = new SqlQueryTester(poolName, connectionTestTimeout,
                     poolConfig.isDefaultAutoCommit(), poolConfig.getConnectionTestSql());

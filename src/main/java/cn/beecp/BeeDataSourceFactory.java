@@ -12,7 +12,6 @@ import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.spi.NamingManager;
 import javax.naming.spi.ObjectFactory;
-import javax.sql.DataSource;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -28,10 +27,6 @@ import static cn.beecp.pool.PoolStaticCenter.*;
  * @version 1.0
  */
 public final class BeeDataSourceFactory implements ObjectFactory {
-
-    public DataSource create(BeeDataSourceConfig config) {
-        return new BeeDataSource(config);
-    }
 
     /**
      * @param obj         The possibly null object containing location or reference
@@ -89,7 +84,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         return new BeeDataSource(config);
     }
 
-    private final String getConfigValue(Reference ref, String propertyName) {
+    private final static String getConfigValue(Reference ref, String propertyName) {
         String value = readConfig(ref, propertyName);
         if (isBlank(value))
             value = readConfig(ref, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_MiddleLine));
@@ -98,7 +93,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         return value;
     }
 
-    private final String readConfig(Reference ref, String propertyName) {
+    private final static String readConfig(Reference ref, String propertyName) {
         RefAddr refAddr = ref.get(propertyName);
         if (refAddr != null) {
             Object refObject = refAddr.getContent();

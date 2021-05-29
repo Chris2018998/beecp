@@ -243,13 +243,13 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         return pool;
     }
 
-    private String getDriverType(String url) {
+    private static String getDriverType(String url) {
         try {
             Driver driver = DriverManager.getDriver(url);
             url = url.toLowerCase(Locale.US);
             String urlPrefix = "jdbc:";
             if (url.startsWith(urlPrefix)) {
-                int pos = url.indexOf(":", urlPrefix.length());
+                int pos = url.indexOf(':', urlPrefix.length());
                 if (pos > 0) return url.substring(urlPrefix.length(), pos);
             }
             if (url.indexOf("oracle") > 1) {

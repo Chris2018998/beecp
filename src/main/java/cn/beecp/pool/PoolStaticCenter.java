@@ -160,7 +160,7 @@ public class PoolStaticCenter {
         if (setValueMap == null) throw new BeeDataSourceConfigException("Properties value map can't be null");
         if (setValueMap.isEmpty()) throw new BeeDataSourceConfigException("Properties value map can't be empty");
 
-        Object value = null;
+        Object value;
         Iterator<Map.Entry<String, Object>> iterator = setValueMap.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<String, Object> entry = iterator.next();
@@ -178,7 +178,7 @@ public class PoolStaticCenter {
                 }
 
                 try {//2:inject value by set method
-                    setMethod.invoke(bean, new Object[]{value});
+                    setMethod.invoke(bean,value);
                 } catch (IllegalAccessException e) {
                     throw new BeeDataSourceConfigException("Failed to inject config value to property:" + propertyName, e);
                 } catch (InvocationTargetException e) {
@@ -198,7 +198,7 @@ public class PoolStaticCenter {
         Method[] methods = beanClass.getMethods();
         for (Method method : methods) {
             String methodName = method.getName();
-            if (methodName.length() > 3 && methodName.startsWith("set") && method.getParameterTypes().length == 1) {
+            if (method.getParameterTypes().length == 1 && methodName.startsWith("set") && methodName.length() > 3) {
                 methodName = methodName.substring(3);
                 methodName = methodName.substring(0, 1).toLowerCase(Locale.US) + methodName.substring(1);
                 methodMap.put(methodName, method);

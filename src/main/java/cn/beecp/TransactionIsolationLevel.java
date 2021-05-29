@@ -30,12 +30,6 @@ public final class TransactionIsolationLevel {
 
     public final static String LEVEL_SERIALIZABLE = "SERIALIZABLE";
 
-    public final static String TRANS_LEVEL_DESC_LIST = LEVEL_NONE + "," +
-            LEVEL_READ_COMMITTED + "," +
-            LEVEL_READ_UNCOMMITTED + "," +
-            LEVEL_REPEATABLE_READ + "," +
-            LEVEL_SERIALIZABLE;
-
     public final static String TRANS_LEVEL_CODE_LIST = String.valueOf(TRANSACTION_NONE) + "," +
             TRANSACTION_READ_COMMITTED + "," +
             TRANSACTION_READ_UNCOMMITTED + "," +

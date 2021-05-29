@@ -557,7 +557,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         }
     }
 
-    private final String getConfigValue(Properties configProperties, String propertyName) {
+    private final static String getConfigValue(Properties configProperties, String propertyName) {
         String value = readConfig(configProperties, propertyName);
         if (isBlank(value))
             value = readConfig(configProperties, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_MiddleLine));
@@ -566,7 +566,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         return value;
     }
 
-    private final String readConfig(Properties configProperties, String propertyName) {
+    private final static String readConfig(Properties configProperties, String propertyName) {
         String value = configProperties.getProperty(propertyName);
         if (!isBlank(value)) {
             commonLog.info("beecp.{}={}", propertyName, value);
@@ -576,7 +576,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         }
     }
 
-    private String trimString(String value) {
+    private final static String trimString(String value) {
         return (value == null) ? null : value.trim();
     }
 
@@ -591,7 +591,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         }
     }
 
-    private final Driver loadJdbcDriver(String driverClassName) throws BeeDataSourceConfigException {
+    private final static Driver loadJdbcDriver(String driverClassName) throws BeeDataSourceConfigException {
         try {
             Class<?> driverClass = Class.forName(driverClassName, true, BeeDataSourceConfig.class.getClassLoader());
             return (Driver) driverClass.newInstance();
