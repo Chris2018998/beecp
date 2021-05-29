@@ -161,9 +161,9 @@ public class DataSourceConfig {
 | fairMode        | 连接池是否公平模式               | 默认false,竞争模式                 | 
 | initialSize     | 连接池初始大小                  |                                   |
 | maxActive       | 连接池最大个数                  |                                   | 
-| borrowSemaphoreSize  | 信号量请求并发数（借用者线程数）| 不允许大于连接最大数                 |
+| borrowSemaphoreSize  | 信号量请求并发数（借用者线程数）| 不允许大于连接最大数               |
 | defaultAutoCommit|连接是否为自动提交              | 默认true                            |
-| defaultTransactionIsolation|事物等级             | 默认读提交，Connection.TRANSACTION_READ_COMMITTED |
+| defaultTransactionIsolationCode|事物等级          | 默认不未设置                         |
 | defaultCatalog    |                             |                                     |
 | defaultSchema     |                             |                                     |
 | defaultReadOnly   |                             | 默认false                            |
