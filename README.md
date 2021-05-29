@@ -153,7 +153,7 @@ public class DataSourceConfig {
 |maxActive               |max size for pooled object instances in pool     |default is 10                                               | 
 |borrowSemaphoreSize     |borrow concurrent thread size                    |default val=min(maxActive/2,cpu size)                       |                       
 |defaultAutoCommit       |connection transaction open indicator            |default is true                                             |
-|defaultTransactionIsolation|connection default transaction level          |default is Connection.TRANSACTION_READ_COMMITTED             |
+|defaultTransactionIsolationCode|connection default transaction level          |default is Connection.TRANSACTION_READ_COMMITTED             |
 |defaultCatalog             |                                              |                                                            |
 |defaultSchema              |                                              |                                                            |
 |defaultReadOnly            |                                              |default is false                                            |
