@@ -61,12 +61,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private TransferPolicy transferPolicy;
     private ConnectionFactory conFactory;
     private volatile PooledConnection[] conArray = new PooledConnection[0];
-    private DynAddPooledConnTask dynAddPooledConnTask;
-    private ThreadPoolExecutor poolTaskExecutor;
+
+    private PooledConnAsynTask pooledConnAsynTask;
+    private LinkedBlockingQueue pooledConAsynTaskQueue;
+    private ThreadPoolExecutor pooledConTaskExecutor;
+    private ThreadPoolExecutor networkTimeoutExecutor;
     private String poolName = "";
     private String poolMode = "";
     private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
-    private AtomicInteger needAddConSize = new AtomicInteger(0);
     private AtomicInteger idleThreadState = new AtomicInteger(THREAD_WORKING);
     private boolean isFirstValidConnection = true;
     private PooledConnection clonePooledConn;
@@ -105,9 +107,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             conUnCatchStateCode = transferPolicy.getCheckStateCode();
             semaphoreSize = poolConfig.getBorrowSemaphoreSize();
             semaphore = new Semaphore(semaphoreSize, poolConfig.isFairMode());
-            dynAddPooledConnTask = new DynAddPooledConnTask();
-            poolTaskExecutor = new ThreadPoolExecutor(2, 2, 5, SECONDS, new LinkedBlockingQueue<Runnable>(), new PoolThreadThreadFactory("PoolTaskThread"));
-            poolTaskExecutor.allowCoreThreadTimeOut(true);
+            pooledConnAsynTask = new PooledConnAsynTask();
+            pooledConAsynTaskQueue = new LinkedBlockingQueue<Runnable>(poolMaxSize);
+            pooledConTaskExecutor = new ThreadPoolExecutor(1, 1, 10, SECONDS, pooledConAsynTaskQueue, new PoolThreadThreadFactory("PoolTaskThread"));
+            pooledConTaskExecutor.allowCoreThreadTimeOut(true);
+            networkTimeoutExecutor = new ThreadPoolExecutor(1, 1, 10, SECONDS, new LinkedBlockingQueue<Runnable>(poolMaxSize), new PoolThreadThreadFactory("PoolTaskThread"));
+            networkTimeoutExecutor.allowCoreThreadTimeOut(true);
             createInitConnections(poolConfig.getInitialSize());
 
             exitHook = new ConnectionPoolHook();
@@ -235,7 +240,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 supportNetworkTimeout = false;
                 commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
             } else {
-                rawCon.setNetworkTimeout(poolTaskExecutor, defaultNetworkTimeout);
+                rawCon.setNetworkTimeout(networkTimeoutExecutor, defaultNetworkTimeout);
             }
         } catch (Throwable e) {
             supportNetworkTimeout = false;
@@ -255,7 +260,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 defaultTransactionIsolation,
                 supportNetworkTimeout,
                 defaultNetworkTimeout,
-                poolTaskExecutor);
+                networkTimeoutExecutor);
 
         boolean validTestFailed;
         this.isFirstValidConnection = false;//remark as tested
@@ -320,20 +325,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    /**
-     * notify creator(asyn)to add one connection to pool
-     */
+    //push create task to queue
     private final void tryCreateNewConnByAsyn() {
-        int curAddSize, updAddSize;
-        do {
-            curAddSize = needAddConSize.get();
-            updAddSize = curAddSize + 1;
-            if (conArray.length + updAddSize > poolMaxSize) return;
-            if (needAddConSize.compareAndSet(curAddSize, updAddSize)) {
-                poolTaskExecutor.execute(dynAddPooledConnTask);
-                return;
-            }
-        } while (true);
+        if (pooledConAsynTaskQueue.size() < poolMaxSize)
+            pooledConTaskExecutor.execute(pooledConnAsynTask);
     }
 
     /******************************************************************************************
@@ -372,19 +367,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             throw RequestInterruptException;
         }
         try {//semaphore acquired
-            //1:try to search one from array
-            PooledConnection[]elements = conArray;
-            int len = elements.length;
-            PooledConnection pCon;
-            for (int i = 0; i < len; ++i) {
-                pCon =elements[i];
-                if (pCon.state == CON_IDLE && ConStUpd.compareAndSet(pCon, CON_IDLE, CON_USING) && testOnBorrow(pCon))
-                    return createProxyConnection(pCon, borrower);
-            }
-            //2:try to create one directly
-            if (conArray.length < poolMaxSize && (pCon = createPooledConn(CON_USING)) != null)
-                return createProxyConnection(pCon, borrower);
-
+            //2:try search one or create one
+            PooledConnection pCon = this.searchOrCreate();
+            if (pCon != null) return createProxyConnection(pCon, borrower);
             //3:try to get one transferred connection
             boolean failed = false;
             SQLException cause = null;
@@ -392,8 +377,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             borrower.state = BOWER_NORMAL;
             waitQueue.offer(borrower);
             int spinSize = (waitQueue.peek() == borrower) ? maxTimedSpins : 0;
-            /****maybe add some logic here? */
-            //if (conArray.length < poolMaxSize)this.tryCreateNewConnByAsyn();
+            this.tryCreateNewConnByAsyn();//why?
+
             do {
                 Object state = borrower.state;
                 if (state instanceof PooledConnection) {
@@ -434,6 +419,20 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         } finally {
             semaphore.release();
         }
+    }
+
+    private final PooledConnection searchOrCreate() throws SQLException {
+        PooledConnection[] elements = conArray;
+        int len = elements.length;
+        for (int i = 0; i < len; ++i) {
+            PooledConnection pCon = elements[i];
+            if (pCon.state == CON_IDLE && ConStUpd.compareAndSet(pCon, CON_IDLE, CON_USING) && testOnBorrow(pCon)) {
+                return pCon;
+            }
+        }
+        if (conArray.length < poolMaxSize)
+            return createPooledConn(CON_USING);
+        return null;
     }
 
     /**
@@ -506,7 +505,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-
     /******************************************************************************************
      *                                                                                        *
      *              3: Pooled connection idle-timeout/hold-timeout scan methods               *
@@ -550,7 +548,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     boolean isTimeoutInIdle = (currentTimeMillis() - pCon.lastAccessTime - poolConfig.getIdleTimeout() >= 0);
                     if (isTimeoutInIdle && ConStUpd.compareAndSet(pCon, state, CON_CLOSED)) {//need close idle
                         removePooledConn(pCon, DESC_RM_IDLE);
-                        tryCreateNewConnByAsyn();
                     }
                 } else if (state == CON_USING) {
                     if (currentTimeMillis() - pCon.lastAccessTime - poolConfig.getHoldTimeout() >= 0L) {//hold timeout
@@ -559,12 +556,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                             oclose(proxyConn);
                         } else {
                             removePooledConn(pCon, DESC_RM_BAD);
-                            tryCreateNewConnByAsyn();
                         }
                     }
                 } else if (state == CON_CLOSED) {
                     removePooledConn(pCon, DESC_RM_CLOSED);
-                    tryCreateNewConnByAsyn();
                 }
             }
             ConnectionPoolMonitorVo vo = this.getMonitorVo();
@@ -633,9 +628,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 removeAllConnections(poolConfig.isForceCloseUsingOnClear(), DESC_RM_DESTROY);
                 unregisterJmx();
                 shutdownIdleScanThread();
-                poolTaskExecutor.getQueue().clear();
-                poolTaskExecutor.shutdownNow();
-
+                networkTimeoutExecutor.getQueue().clear();
+                networkTimeoutExecutor.shutdownNow();
+                pooledConTaskExecutor.getQueue().clear();
+                pooledConTaskExecutor.shutdownNow();
                 try {
                     Runtime.getRuntime().removeShutdownHook(exitHook);
                 } catch (Throwable e) {
@@ -898,19 +894,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     //create pooled connection by asyn
-    final class DynAddPooledConnTask implements Runnable {
-        // create connection to pool
+    final class PooledConnAsynTask implements Runnable {
         public void run() {
-            PooledConnection pCon;
-            while (needAddConSize.get() > 0) {
-                needAddConSize.decrementAndGet();
-                if (!waitQueue.isEmpty()) {
-                    try {
-                        pCon = createPooledConn(CON_USING);
-                        if (pCon != null) recycle(pCon);
-                    } catch (Throwable e) {
-                        transferException((e instanceof SQLException) ? (SQLException) e : new SQLException(e));
-                    }
+            if (!waitQueue.isEmpty()) {
+                try {
+                    PooledConnection pCon = searchOrCreate();
+                    if (pCon != null) recycle(pCon);
+                } catch (Throwable e) {
+                    transferException((e instanceof SQLException) ? (SQLException) e : new SQLException(e));
                 }
             }
         }
