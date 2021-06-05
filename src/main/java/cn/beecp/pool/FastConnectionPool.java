@@ -426,9 +426,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         int len = elements.length;
         for (int i = 0; i < len; ++i) {
             PooledConnection pCon = elements[i];
-            if (pCon.state == CON_IDLE && ConStUpd.compareAndSet(pCon, CON_IDLE, CON_USING) && testOnBorrow(pCon)) {
+            if (pCon.state == CON_IDLE && ConStUpd.compareAndSet(pCon, CON_IDLE, CON_USING) && testOnBorrow(pCon))
                 return pCon;
-            }
         }
         if (conArray.length < poolMaxSize)
             return createPooledConn(CON_USING);
