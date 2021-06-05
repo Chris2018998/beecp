@@ -391,8 +391,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             Thread cth = borrower.thread;
             borrower.state = BOWER_NORMAL;
             waitQueue.offer(borrower);
-            /****maybe add some logic here? */
             int spinSize = (waitQueue.peek() == borrower) ? maxTimedSpins : 0;
+            /****maybe add some logic here? */
+            //if (conArray.length < poolMaxSize)this.tryCreateNewConnByAsyn();
             do {
                 Object state = borrower.state;
                 if (state instanceof PooledConnection) {
