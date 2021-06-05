@@ -16,7 +16,6 @@ import java.lang.ref.WeakReference;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,7 +45,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private static final String DESC_RM_CLOSED = "closed";
     private static final String DESC_RM_CLEAR = "clear";
     private static final String DESC_RM_DESTROY = "destroy";
-    private final Object connArrayLock = new Object();
     private final ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
     private final ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
     private final ConnectionPoolMonitorVo monitorVo = new ConnectionPoolMonitorVo();
@@ -139,17 +137,17 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private void checkProxyClasses() throws SQLException {
         try {
             ClassLoader classLoader = getClass().getClassLoader();
-            ArrayList<String> classNameList = new ArrayList<String>(10);
-            classNameList.add("cn.beecp.pool.Borrower");
-            classNameList.add("cn.beecp.pool.PooledConnection");
-            classNameList.add("cn.beecp.pool.ProxyConnection");
-            classNameList.add("cn.beecp.pool.ProxyStatement");
-            classNameList.add("cn.beecp.pool.ProxyPsStatement");
-            classNameList.add("cn.beecp.pool.ProxyCsStatement");
-            classNameList.add("cn.beecp.pool.ProxyDatabaseMetaData");
-            classNameList.add("cn.beecp.pool.ProxyResultSet");
-            for (int i = 0, l = classNameList.size(); i < l; i++)
-                Class.forName(classNameList.get(i), false, classLoader);
+            String[] classNames = new String[]{
+                    "cn.beecp.pool.Borrower",
+                    "cn.beecp.pool.PooledConnection",
+                    "cn.beecp.pool.ProxyConnection",
+                    "cn.beecp.pool.ProxyStatement",
+                    "cn.beecp.pool.ProxyPsStatement",
+                    "cn.beecp.pool.ProxyCsStatement",
+                    "cn.beecp.pool.ProxyDatabaseMetaData",
+                    "cn.beecp.pool.ProxyResultSet"};
+            for (String className : classNames)
+                Class.forName(className, false, classLoader);
         } catch (ClassNotFoundException e) {
             throw new SQLException("Jdbc proxy classes missed", e);
         }
@@ -178,60 +176,54 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     //create one pooled connection
-    private final PooledConnection createPooledConn(int state) throws SQLException {
-        synchronized (connArrayLock) {
-            int arrayLen = conArray.length;
-            if (arrayLen < poolMaxSize) {
-                if (isDebugEnabled)
-                    commonLog.debug("BeeCP({}))begin to create a new pooled connection,state:{}", poolName, state);
-                Connection con;
-                try {
-                    con = conFactory.create();
-                } catch (Throwable e) {
-                    throw new ConnectionCreateFailedException(e);
-                }
-
-                try {
-                    if (isFirstValidConnection) testFirstConnection(con);
-                    PooledConnection pCon = clonePooledConn.clone(con, state);
-                    if (isDebugEnabled)
-                        commonLog.debug("BeeCP({}))has created a new pooled connection:{},state:{}", poolName, pCon, state);
-                    PooledConnection[] arrayNew = new PooledConnection[arrayLen + 1];
-                    arraycopy(conArray, 0, arrayNew, 0, arrayLen);
-                    arrayNew[arrayLen] = pCon;// tail
-                    conArray = arrayNew;
-                    return pCon;
-                } catch (Throwable e) {
-                    oclose(con);
-                    throw (e instanceof SQLException) ? (SQLException) e : new SQLException(e);
-                }
-            } else {
-                return null;
+    private synchronized final PooledConnection createPooledConn(int state) throws SQLException {
+        int arrayLen = conArray.length;
+        if (arrayLen < poolMaxSize) {
+            if (isDebugEnabled)
+                commonLog.debug("BeeCP({}))begin to create a new pooled connection,state:{}", poolName, state);
+            Connection con;
+            try {
+                con = conFactory.create();
+            } catch (Throwable e) {
+                throw new ConnectionCreateFailedException(e);
             }
+            try {
+                if (isFirstValidConnection) testFirstConnection(con);
+                PooledConnection pCon = clonePooledConn.clone(con, state);
+                if (isDebugEnabled)
+                    commonLog.debug("BeeCP({}))has created a new pooled connection:{},state:{}", poolName, pCon, state);
+                PooledConnection[] arrayNew = new PooledConnection[arrayLen + 1];
+                arraycopy(conArray, 0, arrayNew, 0, arrayLen);
+                arrayNew[arrayLen] = pCon;// tail
+                conArray = arrayNew;
+                return pCon;
+            } catch (Throwable e) {
+                oclose(con);
+                throw (e instanceof SQLException) ? (SQLException) e : new SQLException(e);
+            }
+        } else {
+            return null;
         }
     }
 
     //remove one pooled connection
-    private void removePooledConn(PooledConnection pCon, String removeType) {
+    private synchronized void removePooledConn(PooledConnection pCon, String removeType) {
         if (isDebugEnabled)
             commonLog.debug("BeeCP({}))begin to remove pooled connection:{},reason:{}", poolName, pCon, removeType);
-
         pCon.onBeforeRemove();
-        synchronized (connArrayLock) {
-            int oLen = conArray.length;
-            PooledConnection[] arrayNew = new PooledConnection[oLen - 1];
-            for (int i = 0; i < oLen; i++) {
-                if (conArray[i] == pCon) {
-                    arraycopy(conArray, 0, arrayNew, 0, i);
-                    int m = oLen - i - 1;
-                    if (m > 0) arraycopy(conArray, i + 1, arrayNew, i, m);
-                    break;
-                }
+        int oLen = conArray.length;
+        PooledConnection[] arrayNew = new PooledConnection[oLen - 1];
+        for (int i = 0; i < oLen; i++) {
+            if (conArray[i] == pCon) {
+                arraycopy(conArray, 0, arrayNew, 0, i);
+                int m = oLen - i - 1;
+                if (m > 0) arraycopy(conArray, i + 1, arrayNew, i, m);
+                break;
             }
-            if (isDebugEnabled)
-                commonLog.debug("BeeCP({}))has removed pooled connection:{},reason:{}", poolName, pCon, removeType);
-            conArray = arrayNew;
         }
+        if (isDebugEnabled)
+            commonLog.debug("BeeCP({}))has removed pooled connection:{},reason:{}", poolName, pCon, removeType);
+        conArray = arrayNew;
     }
 
     private void testFirstConnection(Connection rawCon) throws SQLException {
@@ -266,6 +258,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 poolTaskExecutor);
 
         boolean validTestFailed;
+        this.isFirstValidConnection = false;//remark as tested
         int connectionTestTimeout = poolConfig.getConnectionTestTimeout();
         try {//test isValid Method
             if (rawCon.isValid(connectionTestTimeout)) {
@@ -281,8 +274,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 commonLog.debug("BeeCP({})driver not support 'isValid',cause:", poolName, e);
             else
                 commonLog.warn("BeeCP({})driver not support 'isValid'", poolName);
-        } finally {
-            this.isFirstValidConnection = false;//remark as tested
         }
 
         if (validTestFailed) {
@@ -332,7 +323,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     /**
      * notify creator(asyn)to add one connection to pool
      */
-    private void tryToCreateNewConnByAsyn() {
+    private final void tryCreateNewConnByAsyn() {
         int curAddSize, updAddSize;
         do {
             curAddSize = needAddConSize.get();
@@ -382,11 +373,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
         try {//semaphore acquired
             //1:try to search one from array
-            PooledConnection[] array = conArray;
-            int i = 0, l = array.length;
+            PooledConnection[]elements = conArray;
+            int len = elements.length;
             PooledConnection pCon;
-            while (i < l) {
-                pCon = array[i++];
+            for (int i = 0; i < len; ++i) {
+                pCon =elements[i];
                 if (pCon.state == CON_IDLE && ConStUpd.compareAndSet(pCon, CON_IDLE, CON_USING) && testOnBorrow(pCon))
                     return createProxyConnection(pCon, borrower);
             }
@@ -400,6 +391,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             Thread cth = borrower.thread;
             borrower.state = BOWER_NORMAL;
             waitQueue.offer(borrower);
+            /****maybe add some logic here? */
             int spinSize = (waitQueue.peek() == borrower) ? maxTimedSpins : 0;
             do {
                 Object state = borrower.state;
@@ -495,7 +487,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     final void abandonOnReturn(PooledConnection pCon) {
         removePooledConn(pCon, DESC_RM_BAD);
-        tryToCreateNewConnByAsyn();
+        tryCreateNewConnByAsyn();
     }
 
     /**
@@ -506,7 +498,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private final boolean testOnBorrow(PooledConnection pCon) {
         if (currentTimeMillis() - pCon.lastAccessTime - conTestInterval >= 0L && !conTester.isAlive(pCon)) {
             removePooledConn(pCon, DESC_RM_BAD);
-            tryToCreateNewConnByAsyn();
+            tryCreateNewConnByAsyn();
             return false;
         } else {
             return true;
@@ -557,7 +549,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     boolean isTimeoutInIdle = (currentTimeMillis() - pCon.lastAccessTime - poolConfig.getIdleTimeout() >= 0);
                     if (isTimeoutInIdle && ConStUpd.compareAndSet(pCon, state, CON_CLOSED)) {//need close idle
                         removePooledConn(pCon, DESC_RM_IDLE);
-                        tryToCreateNewConnByAsyn();
+                        tryCreateNewConnByAsyn();
                     }
                 } else if (state == CON_USING) {
                     if (currentTimeMillis() - pCon.lastAccessTime - poolConfig.getHoldTimeout() >= 0L) {//hold timeout
@@ -566,12 +558,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                             oclose(proxyConn);
                         } else {
                             removePooledConn(pCon, DESC_RM_BAD);
-                            tryToCreateNewConnByAsyn();
+                            tryCreateNewConnByAsyn();
                         }
                     }
                 } else if (state == CON_CLOSED) {
                     removePooledConn(pCon, DESC_RM_CLOSED);
-                    tryToCreateNewConnByAsyn();
+                    tryCreateNewConnByAsyn();
                 }
             }
             ConnectionPoolMonitorVo vo = this.getMonitorVo();
