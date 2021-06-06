@@ -34,7 +34,6 @@ final class ProxyClassGenerator {
      * @throws Exception throw exception in generating process
      */
     public static void main(String[] args) throws Exception {
-        ProxyClassGenerator generator = new ProxyClassGenerator();
         String classesFolder = "";
         if (args != null && args.length > 0) classesFolder = args[0];
         new ProxyClassGenerator().writeProxyFile(classesFolder);

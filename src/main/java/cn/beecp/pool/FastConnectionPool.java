@@ -434,7 +434,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             newTaskCount = curTaskCount + 1;
             if (newTaskCount > semaphoreSize) return;
             if (servantThreadWorkCount.compareAndSet(curTaskCount, newTaskCount)) {
-                if (servantThreadState.get() == THREAD_WAITING && servantThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
+                if (servantThreadState.get() == THREAD_WAITING)
                     unpark(servantThread);
                 return;
             }
@@ -899,10 +899,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     //create pooled connection by asyn
     final class PoolServantThread extends Thread {
         public void run() {
-            while (true) {
-                while (servantThreadWorkCount.get() > 0 && !waitQueue.isEmpty()) {
+            while (poolState.get()==POOL_NORMAL) {
+                while (servantThreadState.get() == THREAD_WORKING) {
+                    if (waitQueue.isEmpty() || servantThreadWorkCount.get() == 0) break;
                     servantThreadWorkCount.decrementAndGet();
-                    if (servantThreadState.get() != THREAD_WORKING) break;
                     try {
                         PooledConnection pCon = searchOrCreate();
                         if (pCon != null) recycle(pCon);
@@ -912,11 +912,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 }
 
                 servantThreadWorkCount.set(0);
-                if (servantThreadState.get() == THREAD_WORKING && servantThreadState.compareAndSet(THREAD_WORKING, THREAD_WAITING))
+                if (servantThreadState.get() == THREAD_EXIT)
+                    break;
+                else if (idleThreadState.compareAndSet(THREAD_WORKING, THREAD_WAITING)) {
                     park();
-                int curState = servantThreadState.get();
-                if (curState == THREAD_EXIT) break;
-                if (curState == THREAD_WAITING && idleThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING)) ;
+                    if (idleThreadState.get() == THREAD_WAITING)
+                        idleThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING);
+                }
             }
         }
     }
