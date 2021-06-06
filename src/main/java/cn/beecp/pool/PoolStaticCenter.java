@@ -38,7 +38,9 @@ public class PoolStaticCenter {
     public static final int CON_CLOSED = 3;
     //Idle Scan thread state
     public static final int THREAD_WORKING = 1;
-    public static final int THREAD_EXIT = 2;
+    public static final int THREAD_WAITING = 2;
+    public static final int THREAD_EXIT = 3;
+
     //BORROWER STATE
     public static final BorrowerState BOWER_NORMAL = new BorrowerState();
     public static final BorrowerState BOWER_WAITING = new BorrowerState();
@@ -178,7 +180,7 @@ public class PoolStaticCenter {
                 }
 
                 try {//2:inject value by set method
-                    setMethod.invoke(bean,value);
+                    setMethod.invoke(bean, value);
                 } catch (IllegalAccessException e) {
                     throw new BeeDataSourceConfigException("Failed to inject config value to property:" + propertyName, e);
                 } catch (InvocationTargetException e) {

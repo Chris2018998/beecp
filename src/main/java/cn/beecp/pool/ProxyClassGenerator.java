@@ -35,8 +35,8 @@ final class ProxyClassGenerator {
      */
     public static void main(String[] args) throws Exception {
         ProxyClassGenerator generator = new ProxyClassGenerator();
-        String classesFolder="";
-        if (args != null && args.length > 0)classesFolder = args[0];
+        String classesFolder = "";
+        if (args != null && args.length > 0) classesFolder = args[0];
         new ProxyClassGenerator().writeProxyFile(classesFolder);
     }
 
@@ -47,7 +47,7 @@ final class ProxyClassGenerator {
      * @throws Exception if failed to write file to disk
      */
     public void writeProxyFile(String folder) throws Exception {
-        if(isBlank(folder))folder=defaultFolder;
+        if (isBlank(folder)) folder = defaultFolder;
         CtClass[] ctClasses = this.createJdbcProxyClasses();
         for (CtClass ctClass : ctClasses) {
             ctClass.writeFile(folder);
