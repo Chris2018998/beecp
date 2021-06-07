@@ -902,9 +902,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
                 if (servantThreadState.get() == THREAD_EXIT)
                     break;
-                else if (idleThreadState.compareAndSet(THREAD_WORKING, THREAD_WAITING)) {
+                else if (idleThreadState.compareAndSet(THREAD_WORKING, THREAD_WAITING))
                     park();
-                }
             }
         }
     }
