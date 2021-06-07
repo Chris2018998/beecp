@@ -67,7 +67,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private AtomicInteger idleThreadState = new AtomicInteger(THREAD_WORKING);
     private PoolServantThread servantThread = new PoolServantThread();
     private AtomicInteger servantThreadState = new AtomicInteger(THREAD_WORKING);
-    private AtomicInteger servantThreadWorkCount = new AtomicInteger(0);
     private ThreadPoolExecutor networkTimeoutExecutor;
     private boolean isFirstValidConnection = true;
     private PooledConnection clonePooledConn;
@@ -128,6 +127,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             this.start();
             servantThread.setName("PooledConnectionCreateThread");
             servantThread.setDaemon(true);
+            servantThread.setPriority(Thread.MIN_PRIORITY);
             servantThread.start();
             poolState.set(POOL_NORMAL);
         } else {
@@ -428,8 +428,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     private final void wakeupServantThread() {
-        servantThreadWorkCount.incrementAndGet();
-        if (servantThreadState.get() == THREAD_WAITING)
+        if (servantThreadState.get() == THREAD_WAITING && servantThreadState.compareAndSet(THREAD_WAITING,THREAD_WORKING))
             unpark(servantThread);
     }
 
@@ -892,8 +891,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     final class PoolServantThread extends Thread {
         public void run() {
             while (poolState.get() != POOL_CLOSED) {
-                while (servantThreadState.get() == THREAD_WORKING && servantThreadWorkCount.get() > 0 && !waitQueue.isEmpty()) {
-                    servantThreadWorkCount.decrementAndGet();
+                while (servantThreadState.get() == THREAD_WORKING  && !waitQueue.isEmpty()) {
                     try {
                         PooledConnection pCon = searchOrCreate();
                         if (pCon != null) recycle(pCon);
@@ -902,13 +900,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     }
                 }
 
-                servantThreadWorkCount.set(0);
                 if (servantThreadState.get() == THREAD_EXIT)
                     break;
                 else if (idleThreadState.compareAndSet(THREAD_WORKING, THREAD_WAITING)) {
                     park();
-                    if (idleThreadState.get() == THREAD_WAITING)
-                        idleThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING);
                 }
             }
         }
