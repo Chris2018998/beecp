@@ -840,12 +840,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 return false;
             } finally {
                 try {
+                    if (st != null) oclose(st);
                     /**
                      *  for example: select xxx() from dual
                      *  a store procedure (insert 100 records to db and failed on 99), if not rollback,what will happen?
                      */
                     con.rollback();
-                    if (st != null) oclose(st);
                     if (changed) con.setAutoCommit(autoCommit);//reset to default
                 } catch (Throwable e) {
                     commonLog.error("BeeCP({})failed to rest connection after sql test", poolName, e);
