@@ -428,17 +428,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     private final void wakeupServantThread() {
-        int curTaskCount, newTaskCount;
-        do {
-            curTaskCount = servantThreadWorkCount.get();
-            newTaskCount = curTaskCount + 1;
-            if (newTaskCount > semaphoreSize) return;
-            if (servantThreadWorkCount.compareAndSet(curTaskCount, newTaskCount)) {
-                if (servantThreadState.get() == THREAD_WAITING)
-                    unpark(servantThread);
-                return;
-            }
-        } while (true);
+        servantThreadWorkCount.incrementAndGet();
+        if (servantThreadState.get() == THREAD_WAITING)
+            unpark(servantThread);
     }
 
     /**
@@ -899,9 +891,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     //create pooled connection by asyn
     final class PoolServantThread extends Thread {
         public void run() {
-            while (poolState.get()==POOL_NORMAL) {
-                while (servantThreadState.get() == THREAD_WORKING) {
-                    if (waitQueue.isEmpty() || servantThreadWorkCount.get() == 0) break;
+            while (poolState.get() != POOL_CLOSED) {
+                while (servantThreadState.get() == THREAD_WORKING && servantThreadWorkCount.get() > 0 && !waitQueue.isEmpty()) {
                     servantThreadWorkCount.decrementAndGet();
                     try {
                         PooledConnection pCon = searchOrCreate();
