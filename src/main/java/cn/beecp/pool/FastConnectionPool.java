@@ -839,8 +839,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 commonLog.error("BeeCP({})failed to test connection", poolName, e);
                 return false;
             } finally {
+                if (st != null) oclose(st);
                 try {
-                    if (st != null) oclose(st);
                     /**
                      *  for example: select xxx() from dual
                      *  a store procedure (insert 100 records to db and failed on 99), if not rollback,what will happen?
