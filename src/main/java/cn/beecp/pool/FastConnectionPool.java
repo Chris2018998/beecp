@@ -56,7 +56,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private ConnectionPoolHook exitHook;
     private BeeDataSourceConfig poolConfig;
     private int semaphoreSize;
-    private Semaphore semaphore;
+    private PoolSemaphore semaphore;
     private TransferPolicy transferPolicy;
     private ConnectionFactory conFactory;
     private volatile PooledConnection[] conArray = new PooledConnection[0];
@@ -104,7 +104,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             }
             conUnCatchStateCode = transferPolicy.getCheckStateCode();
             semaphoreSize = poolConfig.getBorrowSemaphoreSize();
-            semaphore = new Semaphore(semaphoreSize, poolConfig.isFairMode());
+            semaphore = new PoolSemaphore(semaphoreSize, poolConfig.isFairMode());
             networkTimeoutExecutor = new ThreadPoolExecutor(1, 1, 10, SECONDS,
                     new LinkedBlockingQueue<Runnable>(), new PoolThreadThreadFactory("networkTimeoutRestThread"));
             networkTimeoutExecutor.allowCoreThreadTimeOut(true);
@@ -129,6 +129,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             servantThread.setDaemon(true);
             servantThread.setPriority(Thread.MIN_PRIORITY);
             servantThread.start();
+            while (!this.isAlive() || !servantThread.isAlive()) ;
             poolState.set(POOL_NORMAL);
         } else {
             throw new SQLException("Pool has initialized");
@@ -428,7 +429,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     private final void wakeupServantThread() {
-        if (servantThreadState.get() == THREAD_WAITING && servantThreadState.compareAndSet(THREAD_WAITING,THREAD_WORKING))
+        if (servantThreadState.get() == THREAD_WAITING && servantThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
             unpark(servantThread);
     }
 
@@ -520,6 +521,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     public void run() {
+
         final long checkTimeIntervalNanos = MILLISECONDS.toNanos(poolConfig.getIdleCheckTimeInterval());
         while (idleThreadState.get() == THREAD_WORKING) {
             parkNanos(checkTimeIntervalNanos);
@@ -541,7 +543,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 PooledConnection pCon = array[i];
                 int state = pCon.state;
                 if (state == CON_IDLE && !existBorrower()) {
-                    boolean isTimeoutInIdle = (currentTimeMillis() - pCon.lastAccessTime - poolConfig.getIdleTimeout() >= 0);
+                    boolean isTimeoutInIdle = currentTimeMillis() - pCon.lastAccessTime - poolConfig.getIdleTimeout() >= 0;
                     if (isTimeoutInIdle && ConStUpd.compareAndSet(pCon, state, CON_CLOSED)) {//need close idle
                         removePooledConn(pCon, DESC_RM_IDLE);
                     }
@@ -588,7 +590,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     //remove all connections from pool
     private void removeAllConnections(boolean force, String source) {
-        while (existBorrower()) transferException(PoolCloseException);
+        semaphore.interruptWaitingThreads();
+        while (!waitQueue.isEmpty()) transferException(PoolCloseException);
 
         while (conArray.length > 0) {
             PooledConnection[] array = conArray;
@@ -887,11 +890,32 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
+    private static final class PoolSemaphore extends Semaphore {
+        public PoolSemaphore(int permits) {
+            super(permits);
+        }
+
+        public PoolSemaphore(int permits, boolean fair) {
+            super(permits, fair);
+        }
+
+        public void interruptWaitingThreads() {
+            Iterator<Thread> iterator = super.getQueuedThreads().iterator();
+            while (iterator.hasNext()) {
+                Thread thread = iterator.next();
+                State state = thread.getState();
+                if (state == State.WAITING || state == State.TIMED_WAITING) {
+                    thread.interrupt();
+                }
+            }
+        }
+    }
+
     //create pooled connection by asyn
-    final class PoolServantThread extends Thread {
+    private final class PoolServantThread extends Thread {
         public void run() {
             while (poolState.get() != POOL_CLOSED) {
-                while (servantThreadState.get() == THREAD_WORKING  && !waitQueue.isEmpty()) {
+                while (servantThreadState.get() == THREAD_WORKING && !waitQueue.isEmpty()) {
                     try {
                         PooledConnection pCon = searchOrCreate();
                         if (pCon != null) recycle(pCon);
