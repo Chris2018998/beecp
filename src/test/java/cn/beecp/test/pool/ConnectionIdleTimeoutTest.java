@@ -22,6 +22,9 @@ import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
+
 public class ConnectionIdleTimeoutTest extends TestCase {
     private BeeDataSource ds;
     private int initSize = 5;
@@ -49,7 +52,8 @@ public class ConnectionIdleTimeoutTest extends TestCase {
         if (pool.getConnTotalSize() != initSize) TestUtil.assertError("Total connections not as expected:" + initSize);
         if (pool.getConnIdleSize() != initSize) TestUtil.assertError("Idle connections not as expected:" + initSize);
 
-        Thread.sleep(5000);
+        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(5));
+
         if (pool.getConnTotalSize() != 0) TestUtil.assertError("Total connections not as expected:" + 0);
         if (pool.getConnIdleSize() != 0) TestUtil.assertError("Idle connections not a sexpected:" + 0);
     }

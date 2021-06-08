@@ -24,6 +24,8 @@ import cn.beecp.test.TestUtil;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 public class ConnectionHoldTimeoutTest extends TestCase {
     private BeeDataSource ds;
@@ -37,7 +39,7 @@ public class ConnectionHoldTimeoutTest extends TestCase {
         config.setInitialSize(0);
         config.setConnectionTestSql("SELECT 1 from dual");
 
-        config.setHoldTimeout(1000);// hold and not using connection;
+        config.setHoldTimeout(1000L);// hold and not using connection;
         config.setIdleCheckTimeInterval(1000L);// two seconds interval
         ds = new BeeDataSource(config);
     }
@@ -51,13 +53,12 @@ public class ConnectionHoldTimeoutTest extends TestCase {
         try {
             FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
             con = ds.getConnection();
-
             if (pool.getConnTotalSize() != 1)
                 TestUtil.assertError("Total connections not as expected 1");
             if (pool.getConnUsingSize() != 1)
                 TestUtil.assertError("Using connections not as expected 1");
 
-            Thread.sleep(4000);
+            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(5));
             if (pool.getConnUsingSize() != 0)
                 TestUtil.assertError("Using connections not as expected 0 after hold timeout");
 
@@ -68,7 +69,7 @@ public class ConnectionHoldTimeoutTest extends TestCase {
                 System.out.println(e);
             }
 
-            Thread.sleep(4000);
+            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(5));
         } finally {
             if (con != null)
                 TestUtil.oclose(con);
