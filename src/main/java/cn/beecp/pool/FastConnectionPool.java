@@ -915,17 +915,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     //create pooled connection by asyn
     private final class PoolServantThread extends Thread {
         public void run() {
-            PooledConnection pCon;
             while (poolState.get() != POOL_CLOSED) {
                 while (servantThreadState.get() == THREAD_WORKING && servantThreadWorkCount.get() > 0) {
                     servantThreadWorkCount.decrementAndGet();
                     if (waitQueue.isEmpty()) break;
                     try {
-                        pCon = searchOrCreate();
+                        PooledConnection pCon = searchOrCreate();
                         if (pCon != null)
                             recycle(pCon);
                         else
-                            break;//yield();
+                            yield();
                     } catch (Throwable e) {
                         transferException(e instanceof SQLException ? (SQLException) e : new SQLException(e));
                     }
