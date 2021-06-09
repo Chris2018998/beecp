@@ -372,7 +372,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             borrower.state = BOWER_NORMAL;
             waitQueue.offer(borrower);
             int spinSize = (waitQueue.peek() == borrower) ? maxTimedSpins : 0;
-
+            wakeupServantThread();
             do {
                 Object state = borrower.state;
                 if (state instanceof PooledConnection) {
@@ -396,7 +396,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         if (spinSize > 0) {
                             --spinSize;
                         } else if (borrower.state == BOWER_NORMAL && timeout > spinForTimeoutThreshold && BorrowStUpd.compareAndSet(borrower, BOWER_NORMAL, BOWER_WAITING)) {
-                            wakeupServantThread();
                             parkNanos(timeout);
                             if (cth.isInterrupted()) {
                                 failed = true;
@@ -916,20 +915,22 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     //create pooled connection by asyn
     private final class PoolServantThread extends Thread {
         public void run() {
+            PooledConnection pCon;
             while (poolState.get() != POOL_CLOSED) {
                 while (servantThreadState.get() == THREAD_WORKING && servantThreadWorkCount.get() > 0) {
                     servantThreadWorkCount.decrementAndGet();
                     if (waitQueue.isEmpty()) break;
                     try {
-                        PooledConnection pCon = searchOrCreate();
+                        pCon = searchOrCreate();
                         if (pCon != null)
                             recycle(pCon);
                         else
-                            yield();
+                            break;//yield();
                     } catch (Throwable e) {
-                        transferException(e instanceof SQLException?(SQLException) e : new SQLException(e));
+                        transferException(e instanceof SQLException ? (SQLException) e : new SQLException(e));
                     }
                 }
+
                 servantThreadWorkCount.set(0);
                 if (servantThreadState.get() == THREAD_EXIT)
                     break;
