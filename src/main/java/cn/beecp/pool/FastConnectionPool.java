@@ -130,7 +130,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             servantThread.setDaemon(true);
             servantThread.setPriority(Thread.MIN_PRIORITY);
             servantThread.start();
-            while (!this.isAlive() || !servantThread.isAlive());
+            while (!this.isAlive() || !servantThread.isAlive()) ;
             poolState.set(POOL_NORMAL);
         } else {
             throw new SQLException("Pool has initialized");
@@ -487,7 +487,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     final void abandonOnReturn(PooledConnection pCon) {
         removePooledConn(pCon, DESC_RM_BAD);
-        if(!waitQueue.isEmpty())wakeupServantThread();
+        if (!waitQueue.isEmpty()) wakeupServantThread();
     }
 
     /**
@@ -498,7 +498,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private final boolean testOnBorrow(PooledConnection pCon) {
         if (currentTimeMillis() - pCon.lastAccessTime - conTestInterval >= 0L && !conTester.isAlive(pCon)) {
             removePooledConn(pCon, DESC_RM_BAD);
-            if(!waitQueue.isEmpty())wakeupServantThread();
+            if (!waitQueue.isEmpty()) wakeupServantThread();
             return false;
         } else {
             return true;
@@ -549,7 +549,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     boolean isTimeoutInIdle = currentTimeMillis() - pCon.lastAccessTime - poolConfig.getIdleTimeout() >= 0;
                     if (isTimeoutInIdle && ConStUpd.compareAndSet(pCon, state, CON_CLOSED)) {//need close idle
                         removePooledConn(pCon, DESC_RM_IDLE);
-                        if(!waitQueue.isEmpty())wakeupServantThread();
+                        if (!waitQueue.isEmpty()) wakeupServantThread();
                     }
                 } else if (state == CON_USING) {
                     if (currentTimeMillis() - pCon.lastAccessTime - poolConfig.getHoldTimeout() >= 0L) {//hold timeout
@@ -558,12 +558,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                             oclose(proxyConn);
                         } else {
                             removePooledConn(pCon, DESC_RM_BAD);
-                            if(!waitQueue.isEmpty())wakeupServantThread();
+                            if (!waitQueue.isEmpty()) wakeupServantThread();
                         }
                     }
                 } else if (state == CON_CLOSED) {
                     removePooledConn(pCon, DESC_RM_CLOSED);
-                    if(!waitQueue.isEmpty())wakeupServantThread();
+                    if (!waitQueue.isEmpty()) wakeupServantThread();
                 }
             }
             ConnectionPoolMonitorVo vo = this.getMonitorVo();
@@ -900,6 +900,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         public PoolSemaphore(int permits, boolean fair) {
             super(permits, fair);
         }
+
         public void interruptWaitingThreads() {
             Iterator<Thread> iterator = super.getQueuedThreads().iterator();
             while (iterator.hasNext()) {
@@ -923,7 +924,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         PooledConnection pCon = searchOrCreate();
                         if (pCon != null) recycle(pCon);
                     } catch (Throwable e) {
-                        transferException((e instanceof SQLException) ? (SQLException) e : new SQLException(e));
+                        transferException(e instanceof SQLException?(SQLException) e : new SQLException(e));
                     }
                 }
                 servantThreadWorkCount.set(0);
