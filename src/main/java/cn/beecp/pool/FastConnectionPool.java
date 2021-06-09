@@ -922,7 +922,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     if (waitQueue.isEmpty()) break;
                     try {
                         PooledConnection pCon = searchOrCreate();
-                        if (pCon != null) recycle(pCon);
+                        if (pCon != null)
+                            recycle(pCon);
+                        else
+                            yield();
                     } catch (Throwable e) {
                         transferException(e instanceof SQLException?(SQLException) e : new SQLException(e));
                     }
