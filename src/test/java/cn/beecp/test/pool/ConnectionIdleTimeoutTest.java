@@ -18,12 +18,15 @@ package cn.beecp.test.pool;
 import cn.beecp.BeeDataSource;
 import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.pool.FastConnectionPool;
+import cn.beecp.pool.PoolStaticCenter;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
+
+import static cn.beecp.pool.PoolStaticCenter.POOL_UNINIT;
 
 public class ConnectionIdleTimeoutTest extends TestCase {
     private BeeDataSource ds;
@@ -49,6 +52,8 @@ public class ConnectionIdleTimeoutTest extends TestCase {
 
     public void test() throws InterruptedException, Exception {
         FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
+        while(pool.getPoolState() == PoolStaticCenter.POOL_UNINIT)
+            Thread.sleep(1000);
         if (pool.getConnTotalSize() != initSize) TestUtil.assertError("Total connections not as expected:" + initSize);
         if (pool.getConnIdleSize() != initSize) TestUtil.assertError("Idle connections not as expected:" + initSize);
 
