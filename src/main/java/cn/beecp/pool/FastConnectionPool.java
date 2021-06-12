@@ -63,11 +63,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     private String poolName = "";
     private String poolMode = "";
+    private PoolServantThread servantThread = new PoolServantThread();
     private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
     private AtomicInteger idleThreadState = new AtomicInteger(THREAD_WORKING);
-    private PoolServantThread servantThread = new PoolServantThread();
-    private AtomicInteger servantThreadWorkCount = new AtomicInteger(0);
     private AtomicInteger servantThreadState = new AtomicInteger(THREAD_WORKING);
+    private AtomicInteger servantThreadWorkCount = new AtomicInteger(0);
     private ThreadPoolExecutor networkTimeoutExecutor;
     private boolean isFirstValidConnection = true;
     private PooledConnection clonePooledConn;
@@ -123,12 +123,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     poolConfig.getMaxWait(),
                     poolConfig.getDriverClassName());
 
-            this.setName("IdleTimeoutScanThread");
+            this.setName(this.poolName + "-idleCheck");
             this.setDaemon(true);
             this.start();
-            servantThread.setName("PooledConnectionCreateThread");
+            servantThread.setName(this.poolName + "-workServant");
             servantThread.setDaemon(true);
-            servantThread.setPriority(Thread.MIN_PRIORITY);
             servantThread.start();
             while (!this.isAlive() || !servantThread.isAlive()) ;
             poolState.set(POOL_NORMAL);
@@ -445,17 +444,18 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         Iterator<Borrower> iterator = waitQueue.iterator();
         W:
         while (iterator.hasNext()) {
-            Borrower borrower = iterator.next();
-            Object state;
-            do {
-                if (pCon.state != conUnCatchStateCode) return;
-                state = borrower.state;
+            Borrower borrower = (Borrower) iterator.next();
+            while (pCon.state == this.conUnCatchStateCode) {
+                Object state = borrower.state;
                 if (!(state instanceof BorrowerState)) continue W;
-            } while (!BorrowStUpd.compareAndSet(borrower, state, pCon));
-            if (state == BOWER_WAITING) unpark(borrower.thread);
+                if (BorrowStUpd.compareAndSet(borrower, state, pCon)) {
+                    if (state == BOWER_WAITING) unpark(borrower.thread);
+                    return;
+                }
+            }
             return;
-        }//first while loop
-        transferPolicy.onFailedTransfer(pCon);
+        }
+        this.transferPolicy.onFailedTransfer(pCon);
     }
 
     /**
@@ -468,15 +468,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         Iterator<Borrower> iterator = waitQueue.iterator();
         W:
         while (iterator.hasNext()) {
-            Borrower borrower = iterator.next();
-            Object state;
+            Borrower borrower = (Borrower) iterator.next();
             do {
-                state = borrower.state;
+                Object state = borrower.state;
                 if (!(state instanceof BorrowerState)) continue W;
-            } while (!BorrowStUpd.compareAndSet(borrower, state, e));
-            if (state == BOWER_WAITING) unpark(borrower.thread);
-            return;
-        }//first while loop
+                if (BorrowStUpd.compareAndSet(borrower, state, e)) {
+                    if (state == BOWER_WAITING) unpark(borrower.thread);
+                    return;
+                }
+            } while (true);
+        }
     }
 
     /**
@@ -668,6 +669,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         monitorVo.setSemaphoreWaiterSize(getSemaphoreWaitingSize());
         monitorVo.setTransferWaiterSize(getTransferWaitingSize());
         return monitorVo;
+    }
+
+    public int getPoolState() {
+        return poolState.get();
     }
 
     public int getConnTotalSize() {
@@ -911,25 +916,27 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     //create pooled connection by asyn
     private final class PoolServantThread extends Thread {
         public void run() {
+            final FastConnectionPool pool = FastConnectionPool.this;
+            final AtomicInteger poolState = pool.poolState;
+            final ConcurrentLinkedQueue<Borrower> waitQueue = pool.waitQueue;
+            final AtomicInteger servantThreadState = pool.servantThreadState;
+            final AtomicInteger servantThreadWorkCount = pool.servantThreadWorkCount;
+
             while (poolState.get() != POOL_CLOSED) {
-                while (servantThreadState.get() == THREAD_WORKING && servantThreadWorkCount.get() > 0) {
+                while (servantThreadState.get() == THREAD_WORKING && servantThreadWorkCount.get() > 0 && !waitQueue.isEmpty()) {
                     servantThreadWorkCount.decrementAndGet();
-                    if (waitQueue.isEmpty()) break;
                     try {
-                        PooledConnection pCon = searchOrCreate();
-                        if (pCon != null)
-                            recycle(pCon);
-                        else
-                            yield();
+                        PooledConnection pCon = pool.searchOrCreate();
+                        if (pCon != null) pool.recycle(pCon);
                     } catch (Throwable e) {
-                        transferException(e instanceof SQLException ? (SQLException) e : new SQLException(e));
+                        pool.transferException(e instanceof SQLException ? (SQLException) e : new SQLException(e));
                     }
                 }
 
                 servantThreadWorkCount.set(0);
                 if (servantThreadState.get() == THREAD_EXIT)
                     break;
-                else if (idleThreadState.compareAndSet(THREAD_WORKING, THREAD_WAITING))
+                else if (servantThreadState.compareAndSet(THREAD_WORKING, THREAD_WAITING))
                     park();
             }
         }
