@@ -370,9 +370,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             Thread cth = borrower.thread;
             borrower.state = BOWER_NORMAL;
             waitQueue.offer(borrower);
-            wakeupServantThread();
             int spinSize = (waitQueue.peek() == borrower) ? maxTimedSpins : 0;
-
+			if(spinSize>0)wakeupServantThread();
+			
             do {
                 Object state = borrower.state;
                 if (state instanceof PooledConnection) {
