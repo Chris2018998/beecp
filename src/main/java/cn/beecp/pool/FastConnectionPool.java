@@ -49,7 +49,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private final ConnectionPoolMonitorVo monitorVo = new ConnectionPoolMonitorVo();
     private int poolMaxSize;
     private long maxWaitNanos;//nanoseconds
-    private int conUnCatchStateCode;
+    private int unCatchStateCode;
     private long conTestInterval;//milliseconds
     private long delayTimeForNextClearNanos;//nanoseconds
     private ConnectionTester conTester;
@@ -104,7 +104,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 poolMode = "compete";
                 transferPolicy = new CompeteTransferPolicy();
             }
-            conUnCatchStateCode = transferPolicy.getCheckStateCode();
+            unCatchStateCode = transferPolicy.getCheckStateCode();
             semaphoreSize = poolConfig.getBorrowSemaphoreSize();
             semaphore = new PoolSemaphore(semaphoreSize, poolConfig.isFairMode());
             networkTimeoutExecutor = new ThreadPoolExecutor(1, 1, 10, SECONDS,
@@ -445,7 +445,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         W:
         while (iterator.hasNext()) {
             Borrower borrower = (Borrower) iterator.next();
-            while (pCon.state == this.conUnCatchStateCode) {
+            while (pCon.state == this.unCatchStateCode) {
                 Object state = borrower.state;
                 if (!(state instanceof BorrowerState)) continue W;
                 if (BorrowStUpd.compareAndSet(borrower, state, pCon)) {
