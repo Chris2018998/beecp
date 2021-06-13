@@ -353,7 +353,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             threadLocal.set(new WeakReference<Borrower>(borrower));
         }
 
-        final long deadlineNanos = nanoTime() + maxWaitNanos;
+        long acquireTime = nanoTime();
         try {
             if (!semaphore.tryAcquire(maxWaitNanos, NANOSECONDS))
                 throw RequestTimeoutException;
@@ -361,6 +361,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             throw RequestInterruptException;
         }
         try {//semaphore acquired
+            final long deadlineNanos = acquireTime + maxWaitNanos;
             //2:try search one or create one
             PooledConnection pCon = this.searchOrCreate();
             if (pCon != null) return createProxyConnection(pCon, borrower);
