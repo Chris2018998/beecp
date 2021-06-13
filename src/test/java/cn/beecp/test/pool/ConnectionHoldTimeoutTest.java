@@ -24,6 +24,7 @@ import cn.beecp.test.TestUtil;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
@@ -52,6 +53,9 @@ public class ConnectionHoldTimeoutTest extends TestCase {
         Connection con = null;
         try {
             FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
+            CountDownLatch poolThreadLatch=(CountDownLatch) TestUtil.getFieldValue(pool, "poolThreadLatch");
+            if(poolThreadLatch.getCount()>0)poolThreadLatch.await();
+
             con = ds.getConnection();
             if (pool.getConnTotalSize() != 1)
                 TestUtil.assertError("Total connections not as expected 1");

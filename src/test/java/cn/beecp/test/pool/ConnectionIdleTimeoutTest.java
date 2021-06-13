@@ -23,6 +23,7 @@ import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
@@ -52,8 +53,9 @@ public class ConnectionIdleTimeoutTest extends TestCase {
 
     public void test() throws InterruptedException, Exception {
         FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
-        while(pool.getPoolState() == PoolStaticCenter.POOL_UNINIT)
-            Thread.sleep(1000);
+        CountDownLatch poolThreadLatch=(CountDownLatch) TestUtil.getFieldValue(pool, "poolThreadLatch");
+        if(poolThreadLatch.getCount()>0)poolThreadLatch.await();
+
         if (pool.getConnTotalSize() != initSize) TestUtil.assertError("Total connections not as expected:" + initSize);
         if (pool.getConnIdleSize() != initSize) TestUtil.assertError("Idle connections not as expected:" + initSize);
 
