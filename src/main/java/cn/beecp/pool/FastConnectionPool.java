@@ -63,6 +63,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     private String poolName = "";
     private String poolMode = "";
+    private CountDownLatch poolThreadLatch = new CountDownLatch(2);
     private PoolServantThread servantThread = new PoolServantThread();
     private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
     private AtomicInteger idleThreadState = new AtomicInteger(THREAD_WORKING);
@@ -129,7 +130,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             servantThread.setName(this.poolName + "-workServant");
             servantThread.setDaemon(true);
             servantThread.start();
-            while (!this.isAlive() || !servantThread.isAlive()) ;
             poolState.set(POOL_NORMAL);
         } else {
             throw new SQLException("Pool has initialized");
@@ -366,7 +366,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (pCon != null) return createProxyConnection(pCon, borrower);
             //3:try to get one transferred connection
             boolean failed = false;
-            SQLException cause = null;
+            Throwable cause = null;
             Thread cth = borrower.thread;
             borrower.state = BOWER_NORMAL;
             waitQueue.offer(borrower);
@@ -380,9 +380,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         waitQueue.remove(borrower);
                         return createProxyConnection(pCon, borrower);
                     }
-                } else if (state instanceof SQLException) {
+                } else if (state instanceof Throwable) {
                     waitQueue.remove(borrower);
-                    throw (SQLException) state;
+                    throw state instanceof SQLException ? (SQLException) state : new SQLException((Throwable) state);
                 }
                 if (failed) {
                     BorrowStUpd.compareAndSet(borrower, state, cause);
@@ -464,7 +464,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *
      * @param e: transfer Exception to waiter
      */
-    private void transferException(SQLException e) {
+    private void transferException(Throwable e) {
         Iterator<Borrower> iterator = waitQueue.iterator();
         W:
         while (iterator.hasNext()) {
@@ -525,6 +525,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     public void run() {
+        poolThreadLatch.countDown();
         final long checkTimeIntervalNanos = MILLISECONDS.toNanos(poolConfig.getIdleCheckTimeInterval());
         while (idleThreadState.get() == THREAD_WORKING) {
             parkNanos(checkTimeIntervalNanos);
@@ -669,10 +670,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         monitorVo.setSemaphoreWaiterSize(getSemaphoreWaitingSize());
         monitorVo.setTransferWaiterSize(getTransferWaitingSize());
         return monitorVo;
-    }
-
-    public int getPoolState() {
-        return poolState.get();
     }
 
     public int getConnTotalSize() {
@@ -922,6 +919,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             final AtomicInteger servantThreadState = pool.servantThreadState;
             final AtomicInteger servantThreadWorkCount = pool.servantThreadWorkCount;
 
+            pool.poolThreadLatch.countDown();
             while (poolState.get() != POOL_CLOSED) {
                 while (servantThreadState.get() == THREAD_WORKING && servantThreadWorkCount.get() > 0 && !waitQueue.isEmpty()) {
                     servantThreadWorkCount.decrementAndGet();
@@ -929,7 +927,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         PooledConnection pCon = pool.searchOrCreate();
                         if (pCon != null) pool.recycle(pCon);
                     } catch (Throwable e) {
-                        pool.transferException(e instanceof SQLException ? (SQLException) e : new SQLException(e));
+                        pool.transferException(e);
                     }
                 }
 
