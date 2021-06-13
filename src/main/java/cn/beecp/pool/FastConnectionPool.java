@@ -361,7 +361,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             throw RequestInterruptException;
         }
         try {//semaphore acquired
-            final long deadlineNanos = acquireTime + maxWaitNanos;
             //2:try search one or create one
             PooledConnection pCon = this.searchOrCreate();
             if (pCon != null) return createProxyConnection(pCon, borrower);
@@ -373,6 +372,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             waitQueue.offer(borrower);
             int spinSize = (waitQueue.peek() == borrower) ? maxTimedSpins : 0;
             if (spinSize > 0) wakeupServantThread();
+            final long deadlineNanos = acquireTime + maxWaitNanos;
             do {
                 Object state = borrower.state;
                 if (state instanceof PooledConnection) {
@@ -922,7 +922,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
             pool.poolThreadLatch.countDown();
             while (poolState.get() != POOL_CLOSED) {
-                while (servantThreadState.get() == THREAD_WORKING &&!waitQueue.isEmpty()&&servantThreadWorkCount.get() > 0) {
+                while (servantThreadState.get() == THREAD_WORKING && !waitQueue.isEmpty() && servantThreadWorkCount.get() > 0) {
                     servantThreadWorkCount.decrementAndGet();
                     try {
                         PooledConnection pCon = pool.searchOrCreate();
