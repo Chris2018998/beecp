@@ -921,7 +921,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
             pool.poolThreadLatch.countDown();
             while (poolState.get() != POOL_CLOSED) {
-                while (servantThreadState.get() == THREAD_WORKING && servantThreadWorkCount.get() > 0 && !waitQueue.isEmpty()) {
+                while (servantThreadState.get() == THREAD_WORKING &&!waitQueue.isEmpty()&&servantThreadWorkCount.get() > 0) {
                     servantThreadWorkCount.decrementAndGet();
                     try {
                         PooledConnection pCon = pool.searchOrCreate();
