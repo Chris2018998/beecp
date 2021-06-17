@@ -406,13 +406,23 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         connectProperties.put(key, value);
     }
 
-    public void addConnectProperty(String connectPropertyValue){
-        if (!isBlank(connectPropertyValue)) {
-            String[] attributeArray = connectPropertyValue.split("&");
+    /**
+     * format1: name1=value1&name2=value2
+     * format2: name1:value1&name2:value2
+     */
+    public void addConnectProperty(String connectPropertyText){
+        if (!isBlank(connectPropertyText)) {
+            String[] attributeArray = connectPropertyText.split("&");
             for (String attribute : attributeArray) {
                 String[] pairs = attribute.split("=");
-                if (pairs.length == 2)
+                if (pairs.length == 2){
                     this.addConnectProperty(pairs[0].trim(), pairs[1].trim());
+                }else{
+                    pairs = attribute.split(":");
+                    if (pairs.length == 2){
+                        this.addConnectProperty(pairs[0].trim(), pairs[1].trim());
+                    }
+                }
             }
         }
     }
