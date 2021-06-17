@@ -407,8 +407,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     /**
-     * format1: name1=value1&name2=value2
-     * format2: name1:value1&name2:value2
+     * format1: name1=value1
+     * format2: name1:value1
+     * format3: name1=value1&name2=value2
+     * format4: name1:value1&name2:value2
      */
     public void addConnectProperty(String connectPropertyText){
         if (!isBlank(connectPropertyText)) {
