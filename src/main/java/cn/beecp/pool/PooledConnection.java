@@ -160,8 +160,8 @@ class PooledConnection implements Cloneable {
     //****************below are some statement trace methods***************************/
     final void registerStatement(ProxyStatementBase s) {
         if (openStmSize == openStatements.length) {//full
-            ProxyStatementBase[] newArray = new ProxyStatementBase[openStatements.length << 1];
-            arraycopy(openStatements, 0, newArray, 0, openStatements.length);
+            ProxyStatementBase[] newArray = new ProxyStatementBase[openStmSize << 1];
+            arraycopy(openStatements, 0, newArray, 0, openStmSize);
             openStatements = newArray;
         }
         openStatements[openStmSize++] = s;
