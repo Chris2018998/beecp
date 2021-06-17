@@ -406,6 +406,17 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         connectProperties.put(key, value);
     }
 
+    public void addConnectProperty(String connectPropertyValue){
+        if (!isBlank(connectPropertyValue)) {
+            String[] attributeArray = connectPropertyValue.split("&");
+            for (String attribute : attributeArray) {
+                String[] pairs = attribute.split("=");
+                if (pairs.length == 2)
+                    this.addConnectProperty(pairs[0].trim(), pairs[1].trim());
+            }
+        }
+    }
+
     @Override
     public String getPoolImplementClassName() {
         return poolImplementClassName;
@@ -544,26 +555,13 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         setPropertiesValue(this, setMethodMap, setValueMap);
 
         //5:try to find 'connectProperties' config value and put to ds config object
-        addConnectProperties(getConfigValue(configProperties, "connectProperties"));
+        addConnectProperty(getConfigValue(configProperties, "connectProperties"));
         String connectPropertiesCount = getConfigValue(configProperties, "connectProperties.count");
         if (!isBlank(connectPropertiesCount)) {
             int count =0;
             try{count = Integer.parseInt(connectPropertiesCount.trim());}catch (Throwable e){}
             for(int i=1;i<=count;i++)
-                addConnectProperties(getConfigValue(configProperties, "connectProperties."+i));
-        }
-    }
-
-    private final void addConnectProperties(String connectPropertyValue){
-        if (!isBlank(connectPropertyValue)) {
-            String[] attributeArray = connectPropertyValue.split("&");
-            for (String attribute : attributeArray) {
-                String[] pairs = attribute.split("=");
-                if (pairs.length == 2) {
-                    this.addConnectProperty(pairs[0].trim(), pairs[1].trim());
-                    commonLog.info("beecp.connectProperties.{}={}", pairs[0].trim(), pairs[1].trim());
-                }
-            }
+                addConnectProperty(getConfigValue(configProperties, "connectProperties."+i));
         }
     }
 

@@ -68,30 +68,17 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         setPropertiesValue(config, setMethodMap, setValueMap);
 
         //5:try to find 'connectProperties' config value and put to ds config object
-        addConnectProperties(getConfigValue(ref, "connectProperties"),config);
+        config.addConnectProperty(getConfigValue(ref, "connectProperties"));
         String connectPropertiesCount =getConfigValue(ref, "connectProperties.count");
         if (!isBlank(connectPropertiesCount)) {
             int count =0;
             try{count = Integer.parseInt(connectPropertiesCount.trim());}catch (Throwable e){}
             for(int i=1;i<=count;i++)
-                addConnectProperties(getConfigValue(ref, "connectProperties."+i),config);
+                config.addConnectProperty(getConfigValue(ref, "connectProperties."+i));
         }
 
         //7:create dataSource by config
         return new BeeDataSource(config);
-    }
-
-    private final static void addConnectProperties(String connectPropertyValue,BeeDataSourceConfig config){
-        if (!isBlank(connectPropertyValue)) {
-            String[] attributeArray = connectPropertyValue.split("&");
-            for (String attribute : attributeArray) {
-                String[] pairs = attribute.split("=");
-                if (pairs.length == 2) {
-                    config.addConnectProperty(pairs[0].trim(), pairs[1].trim());
-                    commonLog.info("beecp.connectProperties.{}={}", pairs[0].trim(), pairs[1].trim());
-                }
-            }
-        }
     }
 
     private final static String getConfigValue(Reference ref, String propertyName) {
