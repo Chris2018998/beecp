@@ -72,7 +72,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         String connectPropertiesCount =getConfigValue(ref, "connectProperties.count");
         if (!isBlank(connectPropertiesCount)) {
             int count =0;
-            try{count = Integer.parseInt(connectPropertiesCount);}catch (Throwable e){}
+            try{count = Integer.parseInt(connectPropertiesCount.trim());}catch (Throwable e){}
             for(int i=1;i<=count;i++)
                 addConnectProperties(getConfigValue(ref, "connectProperties."+i),config);
         }

@@ -548,7 +548,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         String connectPropertiesCount = getConfigValue(configProperties, "connectProperties.count");
         if (!isBlank(connectPropertiesCount)) {
             int count =0;
-            try{count = Integer.parseInt(connectPropertiesCount);}catch (Throwable e){}
+            try{count = Integer.parseInt(connectPropertiesCount.trim());}catch (Throwable e){}
             for(int i=1;i<=count;i++)
                 addConnectProperties(getConfigValue(configProperties, "connectProperties."+i));
         }
