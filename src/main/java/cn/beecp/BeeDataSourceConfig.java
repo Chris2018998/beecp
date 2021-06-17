@@ -544,9 +544,19 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         setPropertiesValue(this, setMethodMap, setValueMap);
 
         //5:try to find 'connectProperties' config value and put to ds config object
-        String connectPropVal = getConfigValue(configProperties, "connectProperties");
-        if (!isBlank(connectPropVal)) {
-            String[] attributeArray = connectPropVal.split("&");
+        addConnectProperties(getConfigValue(configProperties, "connectProperties"));
+        String connectPropertiesCount = getConfigValue(configProperties, "connectProperties.count");
+        if (!isBlank(connectPropertiesCount)) {
+            int count =0;
+            try{count = Integer.parseInt(connectPropertiesCount);}catch (Throwable e){}
+            for(int i=1;i<=count;i++)
+                addConnectProperties(getConfigValue(configProperties, "connectProperties."+i));
+        }
+    }
+
+    private final void addConnectProperties(String connectPropertyValue){
+        if (!isBlank(connectPropertyValue)) {
+            String[] attributeArray = connectPropertyValue.split("&");
             for (String attribute : attributeArray) {
                 String[] pairs = attribute.split("=");
                 if (pairs.length == 2) {

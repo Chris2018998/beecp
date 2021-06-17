@@ -67,10 +67,23 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         //5:inject found config value to ds config object
         setPropertiesValue(config, setMethodMap, setValueMap);
 
-        //6:try to find 'connectProperties' config value and put to ds config object
-        String connectPropVal = getConfigValue(ref, "connectProperties");
-        if (!isBlank(connectPropVal)) {
-            String[] attributeArray = connectPropVal.split("&");
+        //5:try to find 'connectProperties' config value and put to ds config object
+        addConnectProperties(getConfigValue(ref, "connectProperties"),config);
+        String connectPropertiesCount =getConfigValue(ref, "connectProperties.count");
+        if (!isBlank(connectPropertiesCount)) {
+            int count =0;
+            try{count = Integer.parseInt(connectPropertiesCount);}catch (Throwable e){}
+            for(int i=1;i<=count;i++)
+                addConnectProperties(getConfigValue(ref, "connectProperties."+i),config);
+        }
+
+        //7:create dataSource by config
+        return new BeeDataSource(config);
+    }
+
+    private final static void addConnectProperties(String connectPropertyValue,BeeDataSourceConfig config){
+        if (!isBlank(connectPropertyValue)) {
+            String[] attributeArray = connectPropertyValue.split("&");
             for (String attribute : attributeArray) {
                 String[] pairs = attribute.split("=");
                 if (pairs.length == 2) {
@@ -79,9 +92,6 @@ public final class BeeDataSourceFactory implements ObjectFactory {
                 }
             }
         }
-
-        //7:create dataSource by config
-        return new BeeDataSource(config);
     }
 
     private final static String getConfigValue(Reference ref, String propertyName) {
