@@ -416,13 +416,13 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         if (!isBlank(connectPropertyText)) {
             String[] attributeArray = connectPropertyText.split("&");
             for (String attribute : attributeArray) {
-                String[] pairs = attribute.split("=");
-                if (pairs.length == 2){
-                    this.addConnectProperty(pairs[0].trim(), pairs[1].trim());
+                String[] pair = attribute.split("=");
+                if (pair.length == 2){
+                    addConnectProperty(pair[0].trim(), pair[1].trim());
                 }else{
-                    pairs = attribute.split(":");
-                    if (pairs.length == 2){
-                        this.addConnectProperty(pairs[0].trim(), pairs[1].trim());
+                    pair = attribute.split(":");
+                    if (pair.length == 2){
+                        addConnectProperty(pair[0].trim(), pair[1].trim());
                     }
                 }
             }
