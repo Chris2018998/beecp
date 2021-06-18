@@ -64,7 +64,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private String poolName = "";
     private String poolMode = "";
     private CountDownLatch poolThreadLatch = new CountDownLatch(2);
-    private PoolServantThread servantThread = new PoolServantThread();
+    private PoolServantThread servantThread = new PoolServantThread(this);
     private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
     private AtomicInteger idleThreadState = new AtomicInteger(THREAD_WORKING);
     private AtomicInteger servantThreadState = new AtomicInteger(THREAD_WORKING);
@@ -112,7 +112,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             networkTimeoutExecutor.allowCoreThreadTimeOut(true);
             createInitConnections(poolConfig.getInitialSize());
 
-            exitHook = new ConnectionPoolHook();
+            exitHook = new ConnectionPoolHook(this);
             Runtime.getRuntime().addShutdownHook(exitHook);
             registerJmx();
             commonLog.info("BeeCP({})has startup{mode:{},init size:{},max size:{},semaphore size:{},max wait:{}ms,driver:{}}",
@@ -372,7 +372,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             borrower.state = BOWER_NORMAL;
             waitQueue.offer(borrower);
             wakeupServantThread();
-            deadline +=maxWaitNanos;
+            deadline += maxWaitNanos;
             int spinSize = waitQueue.peek() == borrower ? maxTimedSpins : 0;
             do {
                 Object state = borrower.state;
@@ -447,7 +447,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         W:
         while (iterator.hasNext()) {
             Borrower borrower = (Borrower) iterator.next();
-            while (pCon.state == this.unCatchStateCode) {
+            while (pCon.state == unCatchStateCode) {
                 Object state = borrower.state;
                 if (!(state instanceof BorrowerState)) continue W;
                 if (BorrowStUpd.compareAndSet(borrower, state, pCon)) {
@@ -913,9 +913,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     //create pooled connection by asyn
-    private final class PoolServantThread extends Thread {
+    private static final class PoolServantThread extends Thread {
+        private FastConnectionPool pool;
+
+        public PoolServantThread(FastConnectionPool pool) {
+            this.pool = pool;
+        }
+
         public void run() {
-            final FastConnectionPool pool = FastConnectionPool.this;
             final AtomicInteger poolState = pool.poolState;
             final ConcurrentLinkedQueue<Borrower> waitQueue = pool.waitQueue;
             final AtomicInteger servantThreadState = pool.servantThreadState;
@@ -945,11 +950,17 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     /**
      * Hook when JVM exit
      */
-    private class ConnectionPoolHook extends Thread {
+    private static class ConnectionPoolHook extends Thread {
+        private FastConnectionPool pool;
+
+        public ConnectionPoolHook(FastConnectionPool pool) {
+            this.pool = pool;
+        }
+
         public void run() {
             try {
                 commonLog.info("ConnectionPoolHook Running");
-                FastConnectionPool.this.close();
+                pool.close();
             } catch (Throwable e) {
                 commonLog.error("Error at closing connection pool,cause:", e);
             }
