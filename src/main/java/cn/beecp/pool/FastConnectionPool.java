@@ -453,6 +453,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (BorrowStUpd.compareAndSet(borrower, state, pCon)) {
                     if (state == BOWER_WAITING) unpark(borrower.thread);
                     return;
+                }else{
+                    yield();
                 }
             }
             return;
@@ -477,6 +479,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (BorrowStUpd.compareAndSet(borrower, state, e)) {
                     if (state == BOWER_WAITING) unpark(borrower.thread);
                     return;
+                }else{
+                    yield();
                 }
             } while (true);
         }
