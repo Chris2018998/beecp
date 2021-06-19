@@ -28,6 +28,12 @@ class PooledConnection implements Cloneable {
     final String defaultSchema;
     final int defaultTransactionIsolation;
     final int defaultNetworkTimeout;
+    private final boolean defaultCatalogIsNotBlank;
+    private final boolean defaultSchemaIsNotBlank;
+    private final boolean supportNetworkTimeout;
+    private final ThreadPoolExecutor networkTimeoutExecutor;
+    private final FastConnectionPool pool;
+
     ProxyConnectionBase proxyCon;
     boolean commitDirtyInd;
     boolean curAutoCommit;
@@ -35,11 +41,6 @@ class PooledConnection implements Cloneable {
     Connection rawCon;
     volatile int state;
     volatile long lastAccessTime;
-    private boolean defaultCatalogIsNotBlank;
-    private boolean defaultSchemaIsNotBlank;
-    private boolean supportNetworkTimeout;
-    private ThreadPoolExecutor networkTimeoutExecutor;
-    private FastConnectionPool pool;
     private int resetCnt;// reset count
     private boolean[] resetInd;
     private ProxyStatementBase[] openStatements;
