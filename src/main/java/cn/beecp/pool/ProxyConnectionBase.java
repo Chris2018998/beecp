@@ -139,19 +139,4 @@ public abstract class ProxyConnectionBase implements Connection {
         else
             throw new SQLException("Wrapped object is not an instance of " + iface);
     }
-
-    private static final class ProxyConnectionCloseTask implements Runnable {
-        private ProxyConnectionBase proxyCon;
-
-        public ProxyConnectionCloseTask(ProxyConnectionBase proxyCon) {
-            this.proxyCon = proxyCon;
-        }
-
-        public void run() {
-            try {
-                proxyCon.close();
-            } catch (Throwable e) {
-            }
-        }
-    }
 }

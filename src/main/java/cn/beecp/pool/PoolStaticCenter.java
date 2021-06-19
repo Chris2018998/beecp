@@ -279,4 +279,19 @@ public class PoolStaticCenter {
     //BORROWER STATE
     static final class BorrowerState {
     }
+
+    static final class ProxyConnectionCloseTask implements Runnable {
+        private ProxyConnectionBase proxyCon;
+
+        public ProxyConnectionCloseTask(ProxyConnectionBase proxyCon) {
+            this.proxyCon = proxyCon;
+        }
+
+        public void run() {
+            try {
+                proxyCon.close();
+            } catch (Throwable e) {
+            }
+        }
+    }
 }
