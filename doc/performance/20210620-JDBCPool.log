@@ -1,0 +1,286 @@
+[INFO]2021-06-20 09:47:33-[JDBC INFO]
+[INFO]2021-06-20 09:47:33-[Driver:com.mysql.jdbc.Driver]
+[INFO]2021-06-20 09:47:33-[URL:JDBC:MYSQL://localhost/test]
+[INFO]2021-06-20 09:47:33-
+
+[INFO]2021-06-20 09:47:33-HikariPool-1 - Starting...
+[INFO]2021-06-20 09:47:34-HikariPool-1 - Start completed.
+[INFO]2021-06-20 09:47:34-Pool[HikariCP -- Multiple thread query] -- Begin{10threads X 1iterate}
+[INFO]2021-06-20 09:47:34-Pool[HikariCP -- Multiple thread query] -- Execution count:10,total time:486ms,avg time:48.600000ms,min time:40ms,max time:56ms
+[INFO]2021-06-20 09:47:34-success count       :10
+[INFO]2021-06-20 09:47:34-fail count          :0
+[INFO]2021-06-20 09:47:34-avr(ms)             :48.600000
+[INFO]2021-06-20 09:47:34-min(ms)             :40
+[INFO]2021-06-20 09:47:34-max(ms)             :56
+[INFO]2021-06-20 09:47:34-time==0ms           :0
+[INFO]2021-06-20 09:47:34-1ms=<time<=10ms     :0
+[INFO]2021-06-20 09:47:34-10ms<time<=50ms     :4
+[INFO]2021-06-20 09:47:34-50ms<time<=100ms    :6
+[INFO]2021-06-20 09:47:34-100ms<time<=200ms   :0
+[INFO]2021-06-20 09:47:34-200ms<time<=500ms   :0
+[INFO]2021-06-20 09:47:34-500ms<time<=1000ms  :0
+[INFO]2021-06-20 09:47:34-1000ms<time<=2000ms :0
+[INFO]2021-06-20 09:47:34-2000ms<time<=8000ms :0
+[INFO]2021-06-20 09:47:34-time>8000ms         :0
+[INFO]2021-06-20 09:47:34-
+
+[INFO]2021-06-20 09:47:34-HikariPool-1 - Shutdown initiated...
+[INFO]2021-06-20 09:47:34-HikariPool-1 - Shutdown completed.
+[INFO]2021-06-20 09:47:39-BeeCP(FastPool-1)starting....
+[INFO]2021-06-20 09:47:39-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.mysql.jdbc.Driver}
+[INFO]2021-06-20 09:47:39-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{10threads X 1iterate}
+[INFO]2021-06-20 09:47:39-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:10,total time:42ms,avg time:4.200000ms,min time:2ms,max time:5ms
+[INFO]2021-06-20 09:47:39-success count       :10
+[INFO]2021-06-20 09:47:39-fail count          :0
+[INFO]2021-06-20 09:47:39-avr(ms)             :4.200000
+[INFO]2021-06-20 09:47:39-min(ms)             :2
+[INFO]2021-06-20 09:47:39-max(ms)             :5
+[INFO]2021-06-20 09:47:39-time==0ms           :0
+[INFO]2021-06-20 09:47:39-1ms=<time<=10ms     :10
+[INFO]2021-06-20 09:47:39-10ms<time<=50ms     :0
+[INFO]2021-06-20 09:47:39-50ms<time<=100ms    :0
+[INFO]2021-06-20 09:47:39-100ms<time<=200ms   :0
+[INFO]2021-06-20 09:47:39-200ms<time<=500ms   :0
+[INFO]2021-06-20 09:47:39-500ms<time<=1000ms  :0
+[INFO]2021-06-20 09:47:39-1000ms<time<=2000ms :0
+[INFO]2021-06-20 09:47:39-2000ms<time<=8000ms :0
+[INFO]2021-06-20 09:47:39-time>8000ms         :0
+[INFO]2021-06-20 09:47:39-
+
+[INFO]2021-06-20 09:47:39-BeeCP(FastPool-1)begin to shutdown
+[INFO]2021-06-20 09:47:39-BeeCP(FastPool-1)has shutdown
+[INFO]2021-06-20 09:47:44-[Multiple thread query]Performance analysis:Bee_C(4.200000) > HikariCP(48.600000)
+[INFO]2021-06-20 09:47:44-|Sumary|HikariCP|Bee_C|
+[INFO]2021-06-20 09:47:44-| --- | --- | --- |
+[INFO]2021-06-20 09:47:44-|success Count|10|10|
+[INFO]2021-06-20 09:47:44-|fail count|0|0|
+[INFO]2021-06-20 09:47:44-|avr(ms)|48.600000|4.200000|
+[INFO]2021-06-20 09:47:44-|min(ms)|40|2|
+[INFO]2021-06-20 09:47:44-|max(ms)|56|5|
+[INFO]2021-06-20 09:47:44-|time=0ms|0|0|
+[INFO]2021-06-20 09:47:44-|1ms=<time<=10ms|0|10|
+[INFO]2021-06-20 09:47:44-|10ms<time<=50ms|4|0|
+[INFO]2021-06-20 09:47:44-|50ms<time<=100ms|6|0|
+[INFO]2021-06-20 09:47:44-|100ms<time<=200ms|0|0|
+[INFO]2021-06-20 09:47:44-|200ms<time<=500ms|0|0|
+[INFO]2021-06-20 09:47:44-|500ms<time<=1000ms|0|0|
+[INFO]2021-06-20 09:47:44-|1000ms<time<=2000ms|0|0|
+[INFO]2021-06-20 09:47:44-|2000ms<time<=800ms|0|0|
+[INFO]2021-06-20 09:47:44-|8000ms<time|0|0||
+[INFO]2021-06-20 09:47:44-
+
+
+[INFO]2021-06-20 09:47:58-[JDBC INFO]
+[INFO]2021-06-20 09:47:58-[Driver:com.mysql.jdbc.Driver]
+[INFO]2021-06-20 09:47:58-[URL:JDBC:MYSQL://localhost/test]
+[INFO]2021-06-20 09:47:58-
+
+[INFO]2021-06-20 09:47:59-HikariPool-1 - Starting...
+[INFO]2021-06-20 09:47:59-HikariPool-1 - Start completed.
+[INFO]2021-06-20 09:47:59-Pool[HikariCP -- Multiple thread query] -- Begin{100threads X 1iterate}
+[INFO]2021-06-20 09:47:59-Pool[HikariCP -- Multiple thread query] -- Execution count:100,total time:5654ms,avg time:56.540000ms,min time:38ms,max time:71ms
+[INFO]2021-06-20 09:47:59-success count       :100
+[INFO]2021-06-20 09:47:59-fail count          :0
+[INFO]2021-06-20 09:47:59-avr(ms)             :56.540000
+[INFO]2021-06-20 09:47:59-min(ms)             :38
+[INFO]2021-06-20 09:47:59-max(ms)             :71
+[INFO]2021-06-20 09:47:59-time==0ms           :0
+[INFO]2021-06-20 09:47:59-1ms=<time<=10ms     :0
+[INFO]2021-06-20 09:47:59-10ms<time<=50ms     :38
+[INFO]2021-06-20 09:47:59-50ms<time<=100ms    :62
+[INFO]2021-06-20 09:47:59-100ms<time<=200ms   :0
+[INFO]2021-06-20 09:47:59-200ms<time<=500ms   :0
+[INFO]2021-06-20 09:47:59-500ms<time<=1000ms  :0
+[INFO]2021-06-20 09:47:59-1000ms<time<=2000ms :0
+[INFO]2021-06-20 09:47:59-2000ms<time<=8000ms :0
+[INFO]2021-06-20 09:47:59-time>8000ms         :0
+[INFO]2021-06-20 09:47:59-
+
+[INFO]2021-06-20 09:47:59-HikariPool-1 - Shutdown initiated...
+[INFO]2021-06-20 09:47:59-HikariPool-1 - Shutdown completed.
+[INFO]2021-06-20 09:48:04-BeeCP(FastPool-1)starting....
+[INFO]2021-06-20 09:48:04-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.mysql.jdbc.Driver}
+[INFO]2021-06-20 09:48:04-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{100threads X 1iterate}
+[INFO]2021-06-20 09:48:04-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:100,total time:2210ms,avg time:22.100000ms,min time:17ms,max time:27ms
+[INFO]2021-06-20 09:48:04-success count       :100
+[INFO]2021-06-20 09:48:04-fail count          :0
+[INFO]2021-06-20 09:48:04-avr(ms)             :22.100000
+[INFO]2021-06-20 09:48:04-min(ms)             :17
+[INFO]2021-06-20 09:48:04-max(ms)             :27
+[INFO]2021-06-20 09:48:04-time==0ms           :0
+[INFO]2021-06-20 09:48:04-1ms=<time<=10ms     :0
+[INFO]2021-06-20 09:48:04-10ms<time<=50ms     :100
+[INFO]2021-06-20 09:48:04-50ms<time<=100ms    :0
+[INFO]2021-06-20 09:48:04-100ms<time<=200ms   :0
+[INFO]2021-06-20 09:48:04-200ms<time<=500ms   :0
+[INFO]2021-06-20 09:48:04-500ms<time<=1000ms  :0
+[INFO]2021-06-20 09:48:04-1000ms<time<=2000ms :0
+[INFO]2021-06-20 09:48:04-2000ms<time<=8000ms :0
+[INFO]2021-06-20 09:48:04-time>8000ms         :0
+[INFO]2021-06-20 09:48:04-
+
+[INFO]2021-06-20 09:48:04-BeeCP(FastPool-1)begin to shutdown
+[INFO]2021-06-20 09:48:04-BeeCP(FastPool-1)has shutdown
+[INFO]2021-06-20 09:48:09-[Multiple thread query]Performance analysis:Bee_C(22.100000) > HikariCP(56.540000)
+[INFO]2021-06-20 09:48:09-|Sumary|HikariCP|Bee_C|
+[INFO]2021-06-20 09:48:09-| --- | --- | --- |
+[INFO]2021-06-20 09:48:09-|success Count|100|100|
+[INFO]2021-06-20 09:48:09-|fail count|0|0|
+[INFO]2021-06-20 09:48:09-|avr(ms)|56.540000|22.100000|
+[INFO]2021-06-20 09:48:09-|min(ms)|38|17|
+[INFO]2021-06-20 09:48:09-|max(ms)|71|27|
+[INFO]2021-06-20 09:48:09-|time=0ms|0|0|
+[INFO]2021-06-20 09:48:09-|1ms=<time<=10ms|0|0|
+[INFO]2021-06-20 09:48:09-|10ms<time<=50ms|38|100|
+[INFO]2021-06-20 09:48:09-|50ms<time<=100ms|62|0|
+[INFO]2021-06-20 09:48:09-|100ms<time<=200ms|0|0|
+[INFO]2021-06-20 09:48:09-|200ms<time<=500ms|0|0|
+[INFO]2021-06-20 09:48:09-|500ms<time<=1000ms|0|0|
+[INFO]2021-06-20 09:48:09-|1000ms<time<=2000ms|0|0|
+[INFO]2021-06-20 09:48:09-|2000ms<time<=800ms|0|0|
+[INFO]2021-06-20 09:48:09-|8000ms<time|0|0||
+[INFO]2021-06-20 09:48:09-
+
+
+[INFO]2021-06-20 09:49:27-[JDBC INFO]
+[INFO]2021-06-20 09:49:27-[Driver:com.mysql.jdbc.Driver]
+[INFO]2021-06-20 09:49:27-[URL:JDBC:MYSQL://localhost/test]
+[INFO]2021-06-20 09:49:27-
+
+[INFO]2021-06-20 09:49:28-HikariPool-1 - Starting...
+[INFO]2021-06-20 09:49:28-HikariPool-1 - Start completed.
+[INFO]2021-06-20 09:49:28-Pool[HikariCP -- Multiple thread query] -- Begin{1000threads X 1iterate}
+[INFO]2021-06-20 09:49:28-Pool[HikariCP -- Multiple thread query] -- Execution count:1000,total time:92454ms,avg time:92.454000ms,min time:0ms,max time:266ms
+[INFO]2021-06-20 09:49:28-success count       :1000
+[INFO]2021-06-20 09:49:28-fail count          :0
+[INFO]2021-06-20 09:49:28-avr(ms)             :92.454000
+[INFO]2021-06-20 09:49:28-min(ms)             :0
+[INFO]2021-06-20 09:49:28-max(ms)             :266
+[INFO]2021-06-20 09:49:28-time==0ms           :87
+[INFO]2021-06-20 09:49:28-1ms=<time<=10ms     :45
+[INFO]2021-06-20 09:49:28-10ms<time<=50ms     :128
+[INFO]2021-06-20 09:49:28-50ms<time<=100ms    :201
+[INFO]2021-06-20 09:49:28-100ms<time<=200ms   :524
+[INFO]2021-06-20 09:49:28-200ms<time<=500ms   :15
+[INFO]2021-06-20 09:49:28-500ms<time<=1000ms  :0
+[INFO]2021-06-20 09:49:28-1000ms<time<=2000ms :0
+[INFO]2021-06-20 09:49:28-2000ms<time<=8000ms :0
+[INFO]2021-06-20 09:49:28-time>8000ms         :0
+[INFO]2021-06-20 09:49:28-
+
+[INFO]2021-06-20 09:49:28-HikariPool-1 - Shutdown initiated...
+[INFO]2021-06-20 09:49:28-HikariPool-1 - Shutdown completed.
+[INFO]2021-06-20 09:49:33-BeeCP(FastPool-1)starting....
+[INFO]2021-06-20 09:49:33-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.mysql.jdbc.Driver}
+[INFO]2021-06-20 09:49:33-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{1000threads X 1iterate}
+[INFO]2021-06-20 09:49:34-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:1000,total time:40470ms,avg time:40.470000ms,min time:0ms,max time:179ms
+[INFO]2021-06-20 09:49:34-success count       :1000
+[INFO]2021-06-20 09:49:34-fail count          :0
+[INFO]2021-06-20 09:49:34-avr(ms)             :40.470000
+[INFO]2021-06-20 09:49:34-min(ms)             :0
+[INFO]2021-06-20 09:49:34-max(ms)             :179
+[INFO]2021-06-20 09:49:34-time==0ms           :715
+[INFO]2021-06-20 09:49:34-1ms=<time<=10ms     :13
+[INFO]2021-06-20 09:49:34-10ms<time<=50ms     :19
+[INFO]2021-06-20 09:49:34-50ms<time<=100ms    :15
+[INFO]2021-06-20 09:49:34-100ms<time<=200ms   :238
+[INFO]2021-06-20 09:49:34-200ms<time<=500ms   :0
+[INFO]2021-06-20 09:49:34-500ms<time<=1000ms  :0
+[INFO]2021-06-20 09:49:34-1000ms<time<=2000ms :0
+[INFO]2021-06-20 09:49:34-2000ms<time<=8000ms :0
+[INFO]2021-06-20 09:49:34-time>8000ms         :0
+[INFO]2021-06-20 09:49:34-
+
+[INFO]2021-06-20 09:49:34-BeeCP(FastPool-1)begin to shutdown
+[INFO]2021-06-20 09:49:34-BeeCP(FastPool-1)has shutdown
+[INFO]2021-06-20 09:49:39-[Multiple thread query]Performance analysis:Bee_C(40.470000) > HikariCP(92.454000)
+[INFO]2021-06-20 09:49:39-|Sumary|HikariCP|Bee_C|
+[INFO]2021-06-20 09:49:39-| --- | --- | --- |
+[INFO]2021-06-20 09:49:39-|success Count|1000|1000|
+[INFO]2021-06-20 09:49:39-|fail count|0|0|
+[INFO]2021-06-20 09:49:39-|avr(ms)|92.454000|40.470000|
+[INFO]2021-06-20 09:49:39-|min(ms)|0|0|
+[INFO]2021-06-20 09:49:39-|max(ms)|266|179|
+[INFO]2021-06-20 09:49:39-|time=0ms|87|715|
+[INFO]2021-06-20 09:49:39-|1ms=<time<=10ms|45|13|
+[INFO]2021-06-20 09:49:39-|10ms<time<=50ms|128|19|
+[INFO]2021-06-20 09:49:39-|50ms<time<=100ms|201|15|
+[INFO]2021-06-20 09:49:39-|100ms<time<=200ms|524|238|
+[INFO]2021-06-20 09:49:39-|200ms<time<=500ms|15|0|
+[INFO]2021-06-20 09:49:39-|500ms<time<=1000ms|0|0|
+[INFO]2021-06-20 09:49:39-|1000ms<time<=2000ms|0|0|
+[INFO]2021-06-20 09:49:39-|2000ms<time<=800ms|0|0|
+[INFO]2021-06-20 09:49:39-|8000ms<time|0|0||
+
+[INFO]2021-06-20 09:50:43-[JDBC INFO]
+[INFO]2021-06-20 09:50:43-[Driver:com.mysql.jdbc.Driver]
+[INFO]2021-06-20 09:50:43-[URL:JDBC:MYSQL://localhost/test]
+[INFO]2021-06-20 09:50:43-
+
+[INFO]2021-06-20 09:50:43-HikariPool-1 - Starting...
+[INFO]2021-06-20 09:50:43-HikariPool-1 - Start completed.
+[INFO]2021-06-20 09:50:43-Pool[HikariCP -- Multiple thread query] -- Begin{10000threads X 1iterate}
+[INFO]2021-06-20 09:50:45-Pool[HikariCP -- Multiple thread query] -- Execution count:10000,total time:74710ms,avg time:7.471000ms,min time:0ms,max time:279ms
+[INFO]2021-06-20 09:50:45-success count       :10000
+[INFO]2021-06-20 09:50:45-fail count          :0
+[INFO]2021-06-20 09:50:45-avr(ms)             :7.471000
+[INFO]2021-06-20 09:50:45-min(ms)             :0
+[INFO]2021-06-20 09:50:45-max(ms)             :279
+[INFO]2021-06-20 09:50:45-time==0ms           :9381
+[INFO]2021-06-20 09:50:45-1ms=<time<=10ms     :105
+[INFO]2021-06-20 09:50:45-10ms<time<=50ms     :53
+[INFO]2021-06-20 09:50:45-50ms<time<=100ms    :139
+[INFO]2021-06-20 09:50:45-100ms<time<=200ms   :179
+[INFO]2021-06-20 09:50:45-200ms<time<=500ms   :143
+[INFO]2021-06-20 09:50:45-500ms<time<=1000ms  :0
+[INFO]2021-06-20 09:50:45-1000ms<time<=2000ms :0
+[INFO]2021-06-20 09:50:45-2000ms<time<=8000ms :0
+[INFO]2021-06-20 09:50:45-time>8000ms         :0
+[INFO]2021-06-20 09:50:45-
+
+[INFO]2021-06-20 09:50:45-HikariPool-1 - Shutdown initiated...
+[INFO]2021-06-20 09:50:45-HikariPool-1 - Shutdown completed.
+[INFO]2021-06-20 09:50:50-BeeCP(FastPool-1)starting....
+[INFO]2021-06-20 09:50:50-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.mysql.jdbc.Driver}
+[INFO]2021-06-20 09:50:50-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{10000threads X 1iterate}
+[INFO]2021-06-20 09:50:52-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:10000,total time:6027ms,avg time:0.602700ms,min time:0ms,max time:67ms
+[INFO]2021-06-20 09:50:52-success count       :10000
+[INFO]2021-06-20 09:50:52-fail count          :0
+[INFO]2021-06-20 09:50:52-avr(ms)             :0.602700
+[INFO]2021-06-20 09:50:52-min(ms)             :0
+[INFO]2021-06-20 09:50:52-max(ms)             :67
+[INFO]2021-06-20 09:50:52-time==0ms           :9753
+[INFO]2021-06-20 09:50:52-1ms=<time<=10ms     :130
+[INFO]2021-06-20 09:50:52-10ms<time<=50ms     :88
+[INFO]2021-06-20 09:50:52-50ms<time<=100ms    :29
+[INFO]2021-06-20 09:50:52-100ms<time<=200ms   :0
+[INFO]2021-06-20 09:50:52-200ms<time<=500ms   :0
+[INFO]2021-06-20 09:50:52-500ms<time<=1000ms  :0
+[INFO]2021-06-20 09:50:52-1000ms<time<=2000ms :0
+[INFO]2021-06-20 09:50:52-2000ms<time<=8000ms :0
+[INFO]2021-06-20 09:50:52-time>8000ms         :0
+[INFO]2021-06-20 09:50:52-
+
+[INFO]2021-06-20 09:50:52-BeeCP(FastPool-1)begin to shutdown
+[INFO]2021-06-20 09:50:52-BeeCP(FastPool-1)has shutdown
+[INFO]2021-06-20 09:50:57-[Multiple thread query]Performance analysis:Bee_C(0.602700) > HikariCP(7.471000)
+[INFO]2021-06-20 09:50:57-|Sumary|HikariCP|Bee_C|
+[INFO]2021-06-20 09:50:57-| --- | --- | --- |
+[INFO]2021-06-20 09:50:57-|success Count|10000|10000|
+[INFO]2021-06-20 09:50:57-|fail count|0|0|
+[INFO]2021-06-20 09:50:57-|avr(ms)|7.471000|0.602700|
+[INFO]2021-06-20 09:50:57-|min(ms)|0|0|
+[INFO]2021-06-20 09:50:57-|max(ms)|279|67|
+[INFO]2021-06-20 09:50:57-|time=0ms|9381|9753|
+[INFO]2021-06-20 09:50:57-|1ms=<time<=10ms|105|130|
+[INFO]2021-06-20 09:50:57-|10ms<time<=50ms|53|88|
+[INFO]2021-06-20 09:50:57-|50ms<time<=100ms|139|29|
+[INFO]2021-06-20 09:50:57-|100ms<time<=200ms|179|0|
+[INFO]2021-06-20 09:50:57-|200ms<time<=500ms|143|0|
+[INFO]2021-06-20 09:50:57-|500ms<time<=1000ms|0|0|
+[INFO]2021-06-20 09:50:57-|1000ms<time<=2000ms|0|0|
+[INFO]2021-06-20 09:50:57-|2000ms<time<=800ms|0|0|
+[INFO]2021-06-20 09:50:57-|8000ms<time|0|0||
+[INFO]2021-06-20 09:50:57-
+
+
