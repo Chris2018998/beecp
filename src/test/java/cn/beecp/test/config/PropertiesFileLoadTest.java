@@ -89,5 +89,11 @@ public class PropertiesFileLoadTest extends TestCase {
             throw new BeeDataSourceConfigException("connectProperties error");
         if (!"50".equals(connectProperties.getProperty("prepStmtCacheSize")))
             throw new BeeDataSourceConfigException("connectProperties error");
+		if (!"2048".equals(connectProperties.getProperty("prepStmtCacheSqlLimit")))
+            throw new BeeDataSourceConfigException("connectProperties error");
+        if (!"true".equals(connectProperties.getProperty("useServerPrepStmts")))
+            throw new BeeDataSourceConfigException("connectProperties error");
+		
+		
     }
 }
