@@ -47,6 +47,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private final ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
     private final ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
     private final ConnectionPoolMonitorVo monitorVo = new ConnectionPoolMonitorVo();
+    private final AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
+    private final AtomicInteger idleThreadState = new AtomicInteger(THREAD_WORKING);
+    private final AtomicInteger servantThreadState = new AtomicInteger(THREAD_WORKING);
+    private final AtomicInteger servantThreadWorkCount = new AtomicInteger(0);
+    private final PoolServantThread servantThread = new PoolServantThread(this);
+
     private int poolMaxSize;
     private long maxWaitNs;//nanoseconds
     private long idleTimeoutMs;//milliseconds
@@ -66,11 +72,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private String poolName;
     private String poolMode;
     private CountDownLatch poolThreadLatch = new CountDownLatch(2);
-    private PoolServantThread servantThread = new PoolServantThread(this);
-    private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
-    private AtomicInteger idleThreadState = new AtomicInteger(THREAD_WORKING);
-    private AtomicInteger servantThreadState = new AtomicInteger(THREAD_WORKING);
-    private AtomicInteger servantThreadWorkCount = new AtomicInteger(0);
     private ThreadPoolExecutor networkTimeoutExecutor;
     private boolean isFirstValidConnection = true;
     private PooledConnection clonePooledConn;
@@ -457,7 +458,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (BorrowStUpd.compareAndSet(borrower, state, pCon)) {
                     if (state == BOWER_WAITING) unpark(borrower.thread);
                     return;
-                }else{
+                } else {
                     yield();
                 }
             }
@@ -483,7 +484,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (BorrowStUpd.compareAndSet(borrower, state, e)) {
                     if (state == BOWER_WAITING) unpark(borrower.thread);
                     return;
-                }else{
+                } else {
                     yield();
                 }
             } while (true);

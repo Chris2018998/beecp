@@ -128,6 +128,42 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.loadFromProperties(configProperties);
     }
 
+    private final static String getConfigValue(Properties configProperties, String propertyName) {
+        String value = readConfig(configProperties, propertyName);
+        if (isBlank(value))
+            value = readConfig(configProperties, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_MiddleLine));
+        if (isBlank(value))
+            value = readConfig(configProperties, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_UnderLine));
+        return value;
+    }
+
+    private final static String readConfig(Properties configProperties, String propertyName) {
+        String value = configProperties.getProperty(propertyName);
+        if (!isBlank(value)) {
+            commonLog.info("beecp.{}={}", propertyName, value);
+            return value.trim();
+        } else {
+            return null;
+        }
+    }
+
+    private final static String trimString(String value) {
+        return (value == null) ? null : value.trim();
+    }
+
+    private final static Driver loadJdbcDriver(String driverClassName) throws BeeDataSourceConfigException {
+        try {
+            Class<?> driverClass = Class.forName(driverClassName, true, BeeDataSourceConfig.class.getClassLoader());
+            return (Driver) driverClass.newInstance();
+        } catch (ClassNotFoundException e) {
+            throw new BeeDataSourceConfigException("Not found driver class:" + driverClassName);
+        } catch (InstantiationException e) {
+            throw new BeeDataSourceConfigException("Failed to instantiate driver class:" + driverClassName, e);
+        } catch (IllegalAccessException e) {
+            throw new BeeDataSourceConfigException("Failed to instantiate driver class:" + driverClassName, e);
+        }
+    }
+
     @Override
     public String getUsername() {
         return username;
@@ -406,16 +442,16 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         connectProperties.put(key, value);
     }
 
-    public void addConnectProperty(String connectPropertyText){
+    public void addConnectProperty(String connectPropertyText) {
         if (!isBlank(connectPropertyText)) {
             String[] attributeArray = connectPropertyText.split("&");
             for (String attribute : attributeArray) {
                 String[] pair = attribute.split("=");
-                if (pair.length == 2){
+                if (pair.length == 2) {
                     addConnectProperty(pair[0].trim(), pair[1].trim());
-                }else{
+                } else {
                     pair = attribute.split(":");
-                    if (pair.length == 2){
+                    if (pair.length == 2) {
                         addConnectProperty(pair[0].trim(), pair[1].trim());
                     }
                 }
@@ -441,16 +477,16 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.enableJmx = enableJmx;
     }
 
-
-    void copyTo(BeeDataSourceConfig config){
+    void copyTo(BeeDataSourceConfig config) {
         //1:primitive type copy
-        String fieldName="";
+        String fieldName = "";
         try {
-            for(Field field:BeeDataSourceConfig.class.getDeclaredFields()){
-                if (Modifier.isFinal(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) || "connectProperties".equals(field.getName())) continue;
+            for (Field field : BeeDataSourceConfig.class.getDeclaredFields()) {
+                if (Modifier.isFinal(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) || "connectProperties".equals(field.getName()))
+                    continue;
                 Object fieldValue = field.get(this);
-                fieldName=field.getName();
-                commonLog.debug("BeeDataSourceConfig.{}={}",fieldName, fieldValue);
+                fieldName = field.getName();
+                commonLog.debug("BeeDataSourceConfig.{}={}", fieldName, fieldValue);
                 field.set(config, fieldValue);
             }
         } catch (Exception e) {
@@ -564,34 +600,14 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         addConnectProperty(getConfigValue(configProperties, "connectProperties"));
         String connectPropertiesCount = getConfigValue(configProperties, "connectProperties.count");
         if (!isBlank(connectPropertiesCount)) {
-            int count =0;
-            try{count = Integer.parseInt(connectPropertiesCount.trim());}catch (Throwable e){}
-            for(int i=1;i<=count;i++)
-                addConnectProperty(getConfigValue(configProperties, "connectProperties."+i));
+            int count = 0;
+            try {
+                count = Integer.parseInt(connectPropertiesCount.trim());
+            } catch (Throwable e) {
+            }
+            for (int i = 1; i <= count; i++)
+                addConnectProperty(getConfigValue(configProperties, "connectProperties." + i));
         }
-    }
-
-    private final static String getConfigValue(Properties configProperties, String propertyName) {
-        String value = readConfig(configProperties, propertyName);
-        if (isBlank(value))
-            value = readConfig(configProperties, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_MiddleLine));
-        if (isBlank(value))
-            value = readConfig(configProperties, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_UnderLine));
-        return value;
-    }
-
-    private final static String readConfig(Properties configProperties, String propertyName) {
-        String value = configProperties.getProperty(propertyName);
-        if (!isBlank(value)) {
-            commonLog.info("beecp.{}={}", propertyName, value);
-            return value.trim();
-        } else {
-            return null;
-        }
-    }
-
-    private final static String trimString(String value) {
-        return (value == null) ? null : value.trim();
     }
 
     private final int getTransactionIsolationCode() throws BeeDataSourceConfigException {
@@ -602,19 +618,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                 throw new BeeDataSourceConfigException("defaultTransactionIsolationCode error,valid value is one of[" + TRANS_LEVEL_CODE_LIST + "]");
 
             return defaultTransactionIsolationCode;
-        }
-    }
-
-    private final static Driver loadJdbcDriver(String driverClassName) throws BeeDataSourceConfigException {
-        try {
-            Class<?> driverClass = Class.forName(driverClassName, true, BeeDataSourceConfig.class.getClassLoader());
-            return (Driver) driverClass.newInstance();
-        } catch (ClassNotFoundException e) {
-            throw new BeeDataSourceConfigException("Not found driver class:" + driverClassName);
-        } catch (InstantiationException e) {
-            throw new BeeDataSourceConfigException("Failed to instantiate driver class:" + driverClassName, e);
-        } catch (IllegalAccessException e) {
-            throw new BeeDataSourceConfigException("Failed to instantiate driver class:" + driverClassName, e);
         }
     }
 

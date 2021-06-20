@@ -92,6 +92,31 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
      *                                                                                         *
      ********************************************************************************************/
 
+    private static String getDriverType(String url) {
+        try {
+            Driver driver = DriverManager.getDriver(url);
+            url = url.toLowerCase(Locale.US);
+            String urlPrefix = "jdbc:";
+            if (url.startsWith(urlPrefix)) {
+                int pos = url.indexOf(':', urlPrefix.length());
+                if (pos > 0) return url.substring(urlPrefix.length(), pos);
+            }
+            if (url.indexOf("oracle") > 1) {
+                return "oracle";
+            } else if (url.indexOf("mysql") > 1) {
+                return "mysql" + driver.getMajorVersion();
+            } else if (url.indexOf("mariadb") > 1) {
+                return "mariadb";
+            } else if (url.indexOf("postgresql") > 1) {
+                return "postgresql";
+            } else {
+                return null;
+            }
+        } catch (Throwable e) {
+            return null;
+        }
+    }
+
     /**
      * borrow a connection from pool
      *
@@ -170,7 +195,6 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             throw new SQLException("Wrapped object was not an instance of " + iface);
     }
 
-
     /*******************************************************************************************
      *                                                                                         *
      *                         Below are self methods                                          *
@@ -241,31 +265,6 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         ConnectionPool pool = createPoolInstanceByConfig(config);
         pool.init(config);
         return pool;
-    }
-
-    private static String getDriverType(String url) {
-        try {
-            Driver driver = DriverManager.getDriver(url);
-            url = url.toLowerCase(Locale.US);
-            String urlPrefix = "jdbc:";
-            if (url.startsWith(urlPrefix)) {
-                int pos = url.indexOf(':', urlPrefix.length());
-                if (pos > 0) return url.substring(urlPrefix.length(), pos);
-            }
-            if (url.indexOf("oracle") > 1) {
-                return "oracle";
-            } else if (url.indexOf("mysql") > 1) {
-                return "mysql" + driver.getMajorVersion();
-            } else if (url.indexOf("mariadb") > 1) {
-                return "mariadb";
-            } else if (url.indexOf("postgresql") > 1) {
-                return "postgresql";
-            } else {
-                return null;
-            }
-        } catch (Throwable e) {
-            return null;
-        }
     }
 
     //try to create connection pool instance by config

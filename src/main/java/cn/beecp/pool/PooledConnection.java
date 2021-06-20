@@ -77,7 +77,7 @@ class PooledConnection implements Cloneable {
         if (defaultSchemaIsNotBlank)
             rawConn.setSchema(defaultSchema);
 
-        PooledConnection pCon = (PooledConnection)clone();
+        PooledConnection pCon = (PooledConnection) clone();
         pCon.state = state;
         pCon.rawCon = rawConn;
         pCon.resetInd = new boolean[6];

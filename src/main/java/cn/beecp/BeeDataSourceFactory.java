@@ -28,6 +28,29 @@ import static cn.beecp.pool.PoolStaticCenter.*;
  */
 public final class BeeDataSourceFactory implements ObjectFactory {
 
+    private final static String getConfigValue(Reference ref, String propertyName) {
+        String value = readConfig(ref, propertyName);
+        if (isBlank(value))
+            value = readConfig(ref, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_MiddleLine));
+        if (isBlank(value))
+            value = readConfig(ref, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_UnderLine));
+        return value;
+    }
+
+    private final static String readConfig(Reference ref, String propertyName) {
+        RefAddr refAddr = ref.get(propertyName);
+        if (refAddr != null) {
+            Object refObject = refAddr.getContent();
+            if (refObject == null) return null;
+            String value = refObject.toString().trim();
+            if (!isBlank(value)) {
+                commonLog.info("beecp.{}={}", propertyName, value);
+                return value;
+            }
+        }
+        return null;
+    }
+
     /**
      * @param obj         The possibly null object containing location or reference
      *                    information that can be used in creating an object.
@@ -69,38 +92,18 @@ public final class BeeDataSourceFactory implements ObjectFactory {
 
         //5:try to find 'connectProperties' config value and put to ds config object
         config.addConnectProperty(getConfigValue(ref, "connectProperties"));
-        String connectPropertiesCount =getConfigValue(ref, "connectProperties.count");
+        String connectPropertiesCount = getConfigValue(ref, "connectProperties.count");
         if (!isBlank(connectPropertiesCount)) {
-            int count =0;
-            try{count = Integer.parseInt(connectPropertiesCount.trim());}catch (Throwable e){}
-            for(int i=1;i<=count;i++)
-                config.addConnectProperty(getConfigValue(ref, "connectProperties."+i));
+            int count = 0;
+            try {
+                count = Integer.parseInt(connectPropertiesCount.trim());
+            } catch (Throwable e) {
+            }
+            for (int i = 1; i <= count; i++)
+                config.addConnectProperty(getConfigValue(ref, "connectProperties." + i));
         }
 
         //7:create dataSource by config
         return new BeeDataSource(config);
-    }
-
-    private final static String getConfigValue(Reference ref, String propertyName) {
-        String value = readConfig(ref, propertyName);
-        if (isBlank(value))
-            value = readConfig(ref, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_MiddleLine));
-        if (isBlank(value))
-            value = readConfig(ref, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_UnderLine));
-        return value;
-    }
-
-    private final static String readConfig(Reference ref, String propertyName) {
-        RefAddr refAddr = ref.get(propertyName);
-        if (refAddr != null) {
-            Object refObject = refAddr.getContent();
-            if (refObject == null) return null;
-            String value = refObject.toString().trim();
-            if (!isBlank(value)) {
-                commonLog.info("beecp.{}={}", propertyName, value);
-                return value;
-            }
-        }
-        return null;
     }
 }
