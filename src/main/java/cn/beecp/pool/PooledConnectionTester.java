@@ -7,13 +7,11 @@
 package cn.beecp.pool;
 
 /**
- * Pool Connection borrower
+ * Pooled Connection Tester
  *
  * @author Chris.Liao
  * @version 1.0
  */
-final class Borrower {
-    public volatile Object state;
-    public PooledConnection lastUsedCon;
-    public Thread thread = Thread.currentThread();
+interface PooledConnectionTester {
+    boolean isAlive(PooledConnection pCon);
 }
