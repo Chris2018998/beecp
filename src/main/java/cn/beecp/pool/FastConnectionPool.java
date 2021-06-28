@@ -373,12 +373,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (pCon != null) return createProxyConnection(pCon, borrower);
             //3:try to get one transferred connection
             boolean failed = false;
-            boolean firstWait=true;
+            boolean firstWait = true;
             Throwable cause = null;
+            deadline += maxWaitNs;
             Thread cth = borrower.thread;
             borrower.state = BOWER_NORMAL;
             waitQueue.offer(borrower);
-            deadline += maxWaitNs;
             int spinSize = waitQueue.peek() == borrower ? maxTimedSpins : 0;
             do {
                 Object state = borrower.state;
@@ -403,10 +403,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         if (spinSize > 0) {
                             --spinSize;
                         } else if (borrower.state == BOWER_NORMAL && timeout > spinForTimeoutThreshold && BorrowStUpd.compareAndSet(borrower, BOWER_NORMAL, BOWER_WAITING)) {
-                           if(firstWait){
-                               firstWait=false;
-                               wakeupServantThread();
-                           }
+                            if (firstWait) {
+                                firstWait = false;
+                                wakeupServantThread();
+                            }
                             parkNanos(timeout);
                             if (cth.isInterrupted()) {
                                 failed = true;

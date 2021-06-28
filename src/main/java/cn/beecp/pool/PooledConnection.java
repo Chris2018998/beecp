@@ -20,7 +20,7 @@ import static java.lang.System.currentTimeMillis;
  * @author Chris.Liao
  * @version 1.0
  */
-class PooledConnection implements Cloneable {
+final class PooledConnection implements Cloneable {
     private static final boolean[] FALSE_ARRAY = new boolean[6];
     public final boolean defaultAutoCommit;
     public final boolean defaultReadOnly;
