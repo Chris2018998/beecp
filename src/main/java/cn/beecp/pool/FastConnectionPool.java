@@ -371,8 +371,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             //2:try search one or create one
             PooledConnection pCon = this.searchOrCreate();
             if (pCon != null) return createProxyConnection(pCon, borrower);
+
             //3:try to get one transferred connection
-			
             boolean failed = false;
             Throwable cause = null;
             deadline += maxWaitNs;
