@@ -372,14 +372,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             PooledConnection pCon = this.searchOrCreate();
             if (pCon != null) return createProxyConnection(pCon, borrower);
             //3:try to get one transferred connection
+			
             boolean failed = false;
             Throwable cause = null;
             deadline += maxWaitNs;
             Thread cth = borrower.thread;
             borrower.state = BOWER_NORMAL;
             waitQueue.offer(borrower);
-            int spinSize = waitQueue.peek() == borrower ? maxTimedSpins : 0;
-			wakeupServantThread();
+            int spinSize=waitQueue.peek() == borrower? maxTimedSpins : 0;
+            wakeupServantThread();
 			
             do {
                 Object state = borrower.state;
