@@ -35,7 +35,6 @@ import static java.util.concurrent.locks.LockSupport.*;
  */
 public final class FastConnectionPool extends Thread implements ConnectionPool, ConnectionPoolJmxBean, PooledConnectionTransferPolicy, PooledConnectionTester {
     private static final long spinForTimeoutThreshold = 1000L;
-    private static final int maxTimedSpins = (Runtime.getRuntime().availableProcessors() < 2) ? 0 : 32;
     private static final AtomicIntegerFieldUpdater<PooledConnection> ConStUpd = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class, "state");
     private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowStUpd = AtomicReferenceFieldUpdater.newUpdater(Borrower.class, Object.class, "state");
     private static final String DESC_RM_INIT = "init";
@@ -369,7 +368,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
         try {//semaphore acquired
             //2:try search one or create one
-            PooledConnection pCon = this.searchOrCreate();
+            PooledConnection pCon = searchOrCreate();
             if (pCon != null) return createProxyConnection(pCon, borrower);
 
             //3:try to get one transferred connection
@@ -379,9 +378,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             Thread cth = borrower.thread;
             borrower.state = BOWER_NORMAL;
             waitQueue.offer(borrower);
-            int spinSize=waitQueue.peek() == borrower? maxTimedSpins : 0;
             wakeupServantThread();
-			
+
             do {
                 Object state = borrower.state;
                 if (state instanceof PooledConnection) {
@@ -402,9 +400,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 } else {//here:(state == BOWER_NORMAL)
                     long timeout = deadline - nanoTime();
                     if (timeout > 0L) {
-                        if (spinSize > 0) {
-                            --spinSize;
-                        } else if (borrower.state == BOWER_NORMAL && timeout > spinForTimeoutThreshold && BorrowStUpd.compareAndSet(borrower, BOWER_NORMAL, BOWER_WAITING)) {                       
+                        if (timeout > spinForTimeoutThreshold && borrower.state == BOWER_NORMAL && BorrowStUpd.compareAndSet(borrower, BOWER_NORMAL, BOWER_WAITING)) {
                             parkNanos(timeout);
                             if (cth.isInterrupted()) {
                                 failed = true;
