@@ -504,7 +504,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @return boolean, true:alive
      */
     private final boolean testOnBorrow(PooledConnection pCon) {
-        if (currentTimeMillis() - pCon.lastAccessTime - conTestInterval >= 0L && !conTester.isAlive(pCon)) {
+        if (currentTimeMillis() - pCon.lastAccessTime - conTestInterval > 0L && !conTester.isAlive(pCon)) {
             removePooledConn(pCon, DESC_RM_BAD);
             wakeupServantThread();
             return false;
