@@ -400,7 +400,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 } else {//here:(state == BOWER_NORMAL)
                     long timeout = deadline - nanoTime();
                     if (timeout > 0L) {
-                        if (timeout > spinForTimeoutThreshold && borrower.state == BOWER_NORMAL && BorrowStUpd.compareAndSet(borrower, BOWER_NORMAL, BOWER_WAITING)) {
+                        if (timeout > spinForTimeoutThreshold && borrower.state==BOWER_NORMAL&& BorrowStUpd.compareAndSet(borrower, BOWER_NORMAL, BOWER_WAITING)) {
                             parkNanos(timeout);
                             if (cth.isInterrupted()) {
                                 failed = true;
@@ -448,17 +448,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     public final void recycle(PooledConnection pCon) {
         transferPolicy.beforeTransfer(pCon);
         Iterator<Borrower> iterator = waitQueue.iterator();
-        W:
+        tryNext:
         while (iterator.hasNext()) {
             Borrower borrower = (Borrower) iterator.next();
-            while (pCon.state == unCatchStateCode) {
+            while(pCon.state == unCatchStateCode) {
                 Object state = borrower.state;
-                if (!(state instanceof BorrowerState)) continue W;
+                if (!(state instanceof BorrowerState)) continue tryNext;
                 if (BorrowStUpd.compareAndSet(borrower, state, pCon)) {
                     if (state == BOWER_WAITING) unpark(borrower.thread);
                     return;
                 }
-                yield();
             }
             return;
         }
@@ -473,17 +472,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     private void transferException(Throwable e) {
         Iterator<Borrower> iterator = waitQueue.iterator();
-        W:
+        tryNext:
         while (iterator.hasNext()) {
             Borrower borrower = (Borrower) iterator.next();
             do {
                 Object state = borrower.state;
-                if (!(state instanceof BorrowerState)) continue W;
+                if (!(state instanceof BorrowerState)) continue tryNext;
                 if (BorrowStUpd.compareAndSet(borrower, state, e)) {
                     if (state == BOWER_WAITING) unpark(borrower.thread);
                     return;
                 }
-                yield();
             } while (true);
         }
     }
