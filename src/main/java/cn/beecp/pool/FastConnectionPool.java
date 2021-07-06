@@ -378,7 +378,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             Thread cth = borrower.thread;
             borrower.state = BOWER_NORMAL;
             waitQueue.offer(borrower);
-            wakeupServantThread();
 
             do {
                 Object state = borrower.state;
@@ -401,6 +400,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     long timeout = deadline - nanoTime();
                     if (timeout > 0L) {
                         if (timeout > spinForTimeoutThreshold && borrower.state==BOWER_NORMAL&& BorrowStUpd.compareAndSet(borrower, BOWER_NORMAL, BOWER_WAITING)) {
+                            wakeupServantThread();
                             parkNanos(timeout);
                             if (cth.isInterrupted()) {
                                 failed = true;
@@ -434,9 +434,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     private final void wakeupServantThread() {
-        servantThreadWorkCount.incrementAndGet();
-        if (servantThreadState.get() == THREAD_WAITING && servantThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
-            unpark(servantThread);
+        if(servantThreadWorkCount.get()<this.semaphoreSize) {
+            servantThreadWorkCount.incrementAndGet();
+            if (servantThreadState.get() == THREAD_WAITING && servantThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
+                unpark(servantThread);
+        }
     }
 
     /**
@@ -457,7 +459,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (BorrowStUpd.compareAndSet(borrower, state, pCon)) {
                     if (state == BOWER_WAITING) unpark(borrower.thread);
                     return;
-                }
+                }else if(state == BOWER_WAITING) continue tryNext;
             }
             return;
         }
@@ -481,7 +483,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (BorrowStUpd.compareAndSet(borrower, state, e)) {
                     if (state == BOWER_WAITING) unpark(borrower.thread);
                     return;
-                }
+                }else if(state == BOWER_WAITING) continue tryNext;
             } while (true);
         }
     }
