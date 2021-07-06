@@ -135,7 +135,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             this.start();
             servantThread.setName(this.poolName + "-workServant");
             servantThread.setDaemon(true);
-            servantThread.setPriority(Thread.MIN_PRIORITY);
             servantThread.start();
             poolState.set(POOL_NORMAL);
         } else {
@@ -400,7 +399,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     long timeout = deadline - nanoTime();
                     if (timeout > 0L) {
                         if (timeout > spinForTimeoutThreshold && borrower.state==BOWER_NORMAL&& BorrowStUpd.compareAndSet(borrower, BOWER_NORMAL, BOWER_WAITING)) {
-                            wakeupServantThread();
+                            if (servantThreadWorkCount.get()>0 && servantThreadState.get() == THREAD_WAITING && servantThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
+                                unpark(servantThread);
                             parkNanos(timeout);
                             if (cth.isInterrupted()) {
                                 failed = true;
@@ -464,6 +464,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             return;
         }
         transferPolicy.onFailedTransfer(pCon);
+        if(servantThreadWorkCount.get()<semaphoreSize) servantThreadWorkCount.incrementAndGet();
     }
 
     /**
