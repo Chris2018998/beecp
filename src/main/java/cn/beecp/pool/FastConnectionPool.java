@@ -766,7 +766,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     public final boolean tryCatch(PooledConnection p) {
-        return ConStUpd.compareAndSet(p, CON_IDLE, CON_USING);
+        return p.state == CON_IDLE && ConStUpd.compareAndSet(p, CON_IDLE, CON_USING);
     }
 
     public final void onFailedTransfer(PooledConnection p) {
