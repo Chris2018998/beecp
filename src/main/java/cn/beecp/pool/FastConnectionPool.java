@@ -136,6 +136,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             servantThread.setName(this.poolName + "-workServant");
             servantThread.setDaemon(true);
             servantThread.start();
+            servantThread.setPriority(Thread.MIN_PRIORITY);
             poolState.set(POOL_NORMAL);
         } else {
             throw new SQLException("Pool has initialized");
@@ -398,8 +399,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 } else {//here:(state == BOWER_NORMAL)
                     long timeout = deadline - nanoTime();
                     if (timeout > 0L) {
-                        if (timeout > spinForTimeoutThreshold && borrower.state==BOWER_NORMAL&& BorrowStUpd.compareAndSet(borrower, BOWER_NORMAL, BOWER_WAITING)) {
-                            if (servantThreadWorkCount.get()>0 && servantThreadState.get() == THREAD_WAITING && servantThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
+                        if (timeout > spinForTimeoutThreshold && borrower.state == BOWER_NORMAL && BorrowStUpd.compareAndSet(borrower, BOWER_NORMAL, BOWER_WAITING)) {
+                            if (servantThreadWorkCount.get() > 0 && servantThreadState.get() == THREAD_WAITING && servantThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
                                 unpark(servantThread);
                             parkNanos(timeout);
                             if (cth.isInterrupted()) {
@@ -433,12 +434,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         return null;
     }
 
-    private final void wakeupServantThread() {
-        if(servantThreadWorkCount.get()<this.semaphoreSize) {
+    private final void addServantWorkCount() {
+        if (servantThreadWorkCount.get() < semaphoreSize)
             servantThreadWorkCount.incrementAndGet();
-            if (servantThreadState.get() == THREAD_WAITING && servantThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
-                unpark(servantThread);
-        }
     }
 
     /**
@@ -448,23 +446,22 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @param pCon target connection need release
      */
     public final void recycle(PooledConnection pCon) {
-        transferPolicy.beforeTransfer(pCon);
         Iterator<Borrower> iterator = waitQueue.iterator();
-        tryNext:
+        transferPolicy.beforeTransfer(pCon);
         while (iterator.hasNext()) {
             Borrower borrower = (Borrower) iterator.next();
-            while(pCon.state == unCatchStateCode) {
+            do {
                 Object state = borrower.state;
-                if (!(state instanceof BorrowerState)) continue tryNext;
+                if (!(state instanceof BorrowerState)) break;
+                if (pCon.state != unCatchStateCode) return;
                 if (BorrowStUpd.compareAndSet(borrower, state, pCon)) {
                     if (state == BOWER_WAITING) unpark(borrower.thread);
                     return;
-                }else if(state == BOWER_WAITING) continue tryNext;
-            }
-            return;
+                }
+            } while (true);
         }
         transferPolicy.onFailedTransfer(pCon);
-        if(servantThreadWorkCount.get()<semaphoreSize) servantThreadWorkCount.incrementAndGet();
+        if (servantThreadWorkCount.get() < semaphoreSize) servantThreadWorkCount.incrementAndGet();
     }
 
     /**
@@ -475,16 +472,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     private void transferException(Throwable e) {
         Iterator<Borrower> iterator = waitQueue.iterator();
-        tryNext:
         while (iterator.hasNext()) {
             Borrower borrower = (Borrower) iterator.next();
             do {
                 Object state = borrower.state;
-                if (!(state instanceof BorrowerState)) continue tryNext;
+                if (!(state instanceof BorrowerState)) break;
                 if (BorrowStUpd.compareAndSet(borrower, state, e)) {
                     if (state == BOWER_WAITING) unpark(borrower.thread);
                     return;
-                }else if(state == BOWER_WAITING) continue tryNext;
+                }
             } while (true);
         }
     }
@@ -496,7 +492,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     final void abandonOnReturn(PooledConnection pCon) {
         removePooledConn(pCon, DESC_RM_BAD);
-        wakeupServantThread();
+        addServantWorkCount();
     }
 
     /**
@@ -507,7 +503,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private final boolean testOnBorrow(PooledConnection pCon) {
         if (currentTimeMillis() - pCon.lastAccessTime - conTestInterval > 0L && !conTester.isAlive(pCon)) {
             removePooledConn(pCon, DESC_RM_BAD);
-            wakeupServantThread();
+            addServantWorkCount();
             return false;
         } else {
             return true;
@@ -559,7 +555,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     boolean isTimeoutInIdle = currentTimeMillis() - pCon.lastAccessTime - idleTimeoutMs >= 0L;
                     if (isTimeoutInIdle && ConStUpd.compareAndSet(pCon, state, CON_CLOSED)) {//need close idle
                         removePooledConn(pCon, DESC_RM_IDLE);
-                        wakeupServantThread();
+                        addServantWorkCount();
                     }
                 } else if (state == CON_USING) {
                     if (currentTimeMillis() - pCon.lastAccessTime - holdTimeoutMs >= 0L) {//hold timeout
@@ -568,12 +564,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                             oclose(proxyConn);
                         } else {
                             removePooledConn(pCon, DESC_RM_BAD);
-                            wakeupServantThread();
+                            addServantWorkCount();
                         }
                     }
                 } else if (state == CON_CLOSED) {
                     removePooledConn(pCon, DESC_RM_CLOSED);
-                    wakeupServantThread();
+                    addServantWorkCount();
                 }
             }
             ConnectionPoolMonitorVo vo = this.getMonitorVo();
@@ -926,6 +922,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             }
         }
     }
+
 
     /**
      * Hook when JVM exit
