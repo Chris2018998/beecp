@@ -440,8 +440,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void addConnectProperty(String key, Object value) {
-        if (!isBlank(key) && value!=null)
-          connectProperties.put(key, value);
+        if (!isBlank(key) && value != null)
+            connectProperties.put(key, value);
     }
 
     public void addConnectProperty(String connectPropertyText) {

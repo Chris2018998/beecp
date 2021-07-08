@@ -33,8 +33,9 @@ import static java.util.concurrent.locks.LockSupport.*;
  * @author Chris.Liao
  * @version 1.0
  */
-public final class FastConnectionPool extends Thread implements ConnectionPool, ConnectionPoolJmxBean, PooledConnectionTransferPolicy, PooledConnectionTester {
+public final class FastConnectionPool extends Thread implements ConnectionPool, ConnectionPoolJmxBean {
     private static final long spinForTimeoutThreshold = 1000L;
+    private static final int maxTimedSpins = (Runtime.getRuntime().availableProcessors() < 2) ? 0 : 32;
     private static final AtomicIntegerFieldUpdater<PooledConnection> ConStUpd = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class, "state");
     private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowStUpd = AtomicReferenceFieldUpdater.newUpdater(Borrower.class, Object.class, "state");
     private static final String DESC_RM_INIT = "init";
@@ -47,10 +48,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private final ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
     private final ConnectionPoolMonitorVo monitorVo = new ConnectionPoolMonitorVo();
     private final AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
+    private final AtomicInteger idleThreadState = new AtomicInteger(THREAD_WORKING);
     private final AtomicInteger servantThreadState = new AtomicInteger(THREAD_WORKING);
     private final AtomicInteger servantThreadWorkCount = new AtomicInteger(0);
-    private final AtomicInteger idleScanThreadState = new AtomicInteger(THREAD_WORKING);
-    private final IdleTimeoutScanThread idleScanThread = new IdleTimeoutScanThread(this);
+    private final PoolServantThread servantThread = new PoolServantThread(this);
 
     private int poolMaxSize;
     private long maxWaitNs;//nanoseconds
@@ -58,14 +59,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private long holdTimeoutMs;//milliseconds
     private int unCatchStateCode;
     private long conTestInterval;//milliseconds
-    private int connectionTestTimeout;//seconds
     private long delayTimeForNextClearNs;//nanoseconds
-    private PooledConnectionTester conTester;
-    private PooledConnectionTransferPolicy transferPolicy;
+    private ConnectionTester conTester;
     private ConnectionPoolHook exitHook;
     private BeeDataSourceConfig poolConfig;
     private int semaphoreSize;
     private PoolSemaphore semaphore;
+    private TransferPolicy transferPolicy;
     private ConnectionFactory conFactory;
     private volatile PooledConnection[] conArray = new PooledConnection[0];
 
@@ -102,13 +102,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             maxWaitNs = MILLISECONDS.toNanos(poolConfig.getMaxWait());
             delayTimeForNextClearNs = MILLISECONDS.toNanos(poolConfig.getDelayTimeForNextClear());
             conTestInterval = poolConfig.getConnectionTestInterval();
-            connectionTestTimeout = poolConfig.getConnectionTestTimeout();
             if (poolConfig.isFairMode()) {
                 poolMode = "fair";
                 transferPolicy = new FairTransferPolicy();
             } else {
                 poolMode = "compete";
-                transferPolicy = this;
+                transferPolicy = new CompeteTransferPolicy();
             }
             unCatchStateCode = transferPolicy.getCheckStateCode();
             semaphoreSize = poolConfig.getBorrowSemaphoreSize();
@@ -130,13 +129,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     poolConfig.getMaxWait(),
                     poolConfig.getDriverClassName());
 
-            this.setDaemon(true);
             this.setName(this.poolName + "-idleCheck");
+            this.setDaemon(true);
             this.start();
-
-            idleScanThread.setDaemon(true);
-            idleScanThread.setName(this.poolName + "-workServant");
-            idleScanThread.start();
+            servantThread.setName(this.poolName + "-workServant");
+            servantThread.setDaemon(true);
+            servantThread.setPriority(Thread.MIN_PRIORITY);
+            servantThread.start();
             poolState.set(POOL_NORMAL);
         } else {
             throw new SQLException("Pool has initialized");
@@ -271,9 +270,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
         boolean validTestFailed;
         this.isFirstValidConnection = false;//remark as tested
+        int connectionTestTimeout = poolConfig.getConnectionTestTimeout();
         try {//test isValid Method
             if (rawCon.isValid(connectionTestTimeout)) {
-                this.conTester = this;
+                this.conTester = new ConnValidTester(poolName, connectionTestTimeout);
                 return;
             } else {
                 validTestFailed = true;
@@ -368,17 +368,17 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
         try {//semaphore acquired
             //2:try search one or create one
-            PooledConnection pCon = searchOrCreate();
+            PooledConnection pCon = this.searchOrCreate();
             if (pCon != null) return createProxyConnection(pCon, borrower);
-
             //3:try to get one transferred connection
             boolean failed = false;
             Throwable cause = null;
-            deadline += maxWaitNs;
             Thread cth = borrower.thread;
             borrower.state = BOWER_NORMAL;
             waitQueue.offer(borrower);
-
+            wakeupServantThread();
+            deadline += maxWaitNs;
+            int spinSize = waitQueue.peek() == borrower ? maxTimedSpins : 0;
             do {
                 Object state = borrower.state;
                 if (state instanceof PooledConnection) {
@@ -399,9 +399,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 } else {//here:(state == BOWER_NORMAL)
                     long timeout = deadline - nanoTime();
                     if (timeout > 0L) {
-                        if (timeout > spinForTimeoutThreshold && borrower.state == BOWER_NORMAL && BorrowStUpd.compareAndSet(borrower, BOWER_NORMAL, BOWER_WAITING)) {
-                            if (servantThreadWorkCount.get() > 0 && servantThreadState.get() == THREAD_WAITING && servantThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
-                                unpark(this);
+                        if (spinSize > 0) {
+                            --spinSize;
+                        } else if (borrower.state == BOWER_NORMAL && timeout > spinForTimeoutThreshold && BorrowStUpd.compareAndSet(borrower, BOWER_NORMAL, BOWER_WAITING)) {
                             parkNanos(timeout);
                             if (cth.isInterrupted()) {
                                 failed = true;
@@ -434,9 +434,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         return null;
     }
 
-    private final void addServantWorkCount() {
-        if (servantThreadWorkCount.get() < semaphoreSize)
-            servantThreadWorkCount.incrementAndGet();
+    private final void wakeupServantThread() {
+        servantThreadWorkCount.incrementAndGet();
+        if (servantThreadState.get() == THREAD_WAITING && servantThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
+            unpark(servantThread);
     }
 
     /**
@@ -446,22 +447,24 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @param pCon target connection need release
      */
     public final void recycle(PooledConnection pCon) {
-        Iterator<Borrower> iterator = waitQueue.iterator();
         transferPolicy.beforeTransfer(pCon);
+        Iterator<Borrower> iterator = waitQueue.iterator();
+        W:
         while (iterator.hasNext()) {
             Borrower borrower = (Borrower) iterator.next();
-            do {
+            while (pCon.state == unCatchStateCode) {
                 Object state = borrower.state;
-                if (!(state instanceof BorrowerState)) break;
-                if (pCon.state != unCatchStateCode) return;
+                if (!(state instanceof BorrowerState)) continue W;
                 if (BorrowStUpd.compareAndSet(borrower, state, pCon)) {
                     if (state == BOWER_WAITING) unpark(borrower.thread);
                     return;
+                } else {
+                    yield();
                 }
-            } while (true);
+            }
+            return;
         }
-        transferPolicy.onFailedTransfer(pCon);
-        if (servantThreadWorkCount.get() < semaphoreSize) servantThreadWorkCount.incrementAndGet();
+        this.transferPolicy.onFailedTransfer(pCon);
     }
 
     /**
@@ -472,14 +475,17 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     private void transferException(Throwable e) {
         Iterator<Borrower> iterator = waitQueue.iterator();
+        W:
         while (iterator.hasNext()) {
             Borrower borrower = (Borrower) iterator.next();
             do {
                 Object state = borrower.state;
-                if (!(state instanceof BorrowerState)) break;
+                if (!(state instanceof BorrowerState)) continue W;
                 if (BorrowStUpd.compareAndSet(borrower, state, e)) {
                     if (state == BOWER_WAITING) unpark(borrower.thread);
                     return;
+                } else {
+                    yield();
                 }
             } while (true);
         }
@@ -492,7 +498,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     final void abandonOnReturn(PooledConnection pCon) {
         removePooledConn(pCon, DESC_RM_BAD);
-        addServantWorkCount();
+        wakeupServantThread();
     }
 
     /**
@@ -501,9 +507,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @return boolean, true:alive
      */
     private final boolean testOnBorrow(PooledConnection pCon) {
-        if (currentTimeMillis() - pCon.lastAccessTime - conTestInterval > 0L && !conTester.isAlive(pCon)) {
+        if (currentTimeMillis() - pCon.lastAccessTime - conTestInterval >= 0L && !conTester.isAlive(pCon)) {
             removePooledConn(pCon, DESC_RM_BAD);
-            addServantWorkCount();
+            wakeupServantThread();
             return false;
         } else {
             return true;
@@ -520,33 +526,24 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     private void shutdownPoolThread() {
-        int curState = idleScanThreadState.get();
-        idleScanThreadState.set(THREAD_EXIT);
-        if (curState == THREAD_WAITING) unpark(idleScanThread);
+        int curState = idleThreadState.get();
+        idleThreadState.set(THREAD_EXIT);
+        if (curState == THREAD_WAITING) unpark(this);
 
         curState = servantThreadState.get();
         servantThreadState.set(THREAD_EXIT);
-        if (curState == THREAD_WAITING) unpark(this);
+        if (curState == THREAD_WAITING) unpark(servantThread);
     }
 
     public void run() {
         poolThreadLatch.countDown();
-        while (poolState.get() != POOL_CLOSED) {
-            while (servantThreadState.get() == THREAD_WORKING && !waitQueue.isEmpty() && servantThreadWorkCount.get() > 0) {
-                servantThreadWorkCount.decrementAndGet();
-                try {
-                    PooledConnection pCon = searchOrCreate();
-                    if (pCon != null) recycle(pCon);
-                } catch (Throwable e) {
-                    transferException(e);
-                }
+        final long checkTimeIntervalNanos = MILLISECONDS.toNanos(poolConfig.getIdleCheckTimeInterval());
+        while (idleThreadState.get() == THREAD_WORKING) {
+            parkNanos(checkTimeIntervalNanos);
+            try {
+                closeIdleTimeoutConnection();
+            } catch (Throwable e) {
             }
-
-            servantThreadWorkCount.set(0);
-            if (servantThreadState.get() == THREAD_EXIT)
-                break;
-            else if (servantThreadState.compareAndSet(THREAD_WORKING, THREAD_WAITING))
-                park();
         }
     }
 
@@ -564,7 +561,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     boolean isTimeoutInIdle = currentTimeMillis() - pCon.lastAccessTime - idleTimeoutMs >= 0L;
                     if (isTimeoutInIdle && ConStUpd.compareAndSet(pCon, state, CON_CLOSED)) {//need close idle
                         removePooledConn(pCon, DESC_RM_IDLE);
-                        addServantWorkCount();
+                        wakeupServantThread();
                     }
                 } else if (state == CON_USING) {
                     if (currentTimeMillis() - pCon.lastAccessTime - holdTimeoutMs >= 0L) {//hold timeout
@@ -573,12 +570,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                             oclose(proxyConn);
                         } else {
                             removePooledConn(pCon, DESC_RM_BAD);
-                            addServantWorkCount();
+                            wakeupServantThread();
                         }
                     }
                 } else if (state == CON_CLOSED) {
                     removePooledConn(pCon, DESC_RM_CLOSED);
-                    addServantWorkCount();
+                    wakeupServantThread();
                 }
             }
             ConnectionPoolMonitorVo vo = this.getMonitorVo();
@@ -765,36 +762,35 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *                                                                                        *
      ******************************************************************************************/
 
-    //private static final class CompeteTransferPolicy implements TransferPolicy {
-    public final int getCheckStateCode() {
-        return CON_IDLE;
+    // Transfer Policy
+    private static interface TransferPolicy {
+        int getCheckStateCode();
+
+        void beforeTransfer(PooledConnection p);
+
+        boolean tryCatch(PooledConnection p);
+
+        void onFailedTransfer(PooledConnection p);
     }
 
-    public final void beforeTransfer(PooledConnection p) {
-        p.state = CON_IDLE;
-    }
-
-    public final boolean tryCatch(PooledConnection p) {
-        return p.state == CON_IDLE && ConStUpd.compareAndSet(p, CON_IDLE, CON_USING);
-    }
-
-    public final void onFailedTransfer(PooledConnection p) {
-    }
-    //}
-
-    public final boolean isAlive(PooledConnection pCon) {
-        try {
-            if (pCon.rawCon.isValid(connectionTestTimeout)) {
-                pCon.lastAccessTime = currentTimeMillis();
-                return true;
-            }
-        } catch (Throwable e) {
-            commonLog.error("BeeCP({})failed to test connection", poolName, e);
+    private static final class CompeteTransferPolicy implements TransferPolicy {
+        public final int getCheckStateCode() {
+            return CON_IDLE;
         }
-        return false;
+
+        public final void beforeTransfer(PooledConnection p) {
+            p.state = CON_IDLE;
+        }
+
+        public final boolean tryCatch(PooledConnection p) {
+            return ConStUpd.compareAndSet(p, CON_IDLE, CON_USING);
+        }
+
+        public final void onFailedTransfer(PooledConnection p) {
+        }
     }
 
-    private static final class FairTransferPolicy implements PooledConnectionTransferPolicy {
+    private static final class FairTransferPolicy implements TransferPolicy {
         public final int getCheckStateCode() {
             return CON_USING;
         }
@@ -811,16 +807,26 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    private static final class SqlQueryTester implements PooledConnectionTester {
-        private final String poolName;
-        private final int conTestTimeout;//seconds
+    //Connection alive tester
+    private static abstract class ConnectionTester {
+        protected final String poolName;
+        protected final int ConTestTimeout;//seconds
+
+        public ConnectionTester(String poolName, int ConTestTimeout) {
+            this.poolName = poolName;
+            this.ConTestTimeout = ConTestTimeout;
+        }
+
+        abstract boolean isAlive(PooledConnection pCon);
+    }
+
+    private static final class SqlQueryTester extends ConnectionTester {
         private final String testSql;
         private final boolean autoCommit;//connection default value
         private boolean supportQueryTimeout = true;
 
         public SqlQueryTester(String poolName, int ConTestTimeout, boolean autoCommit, String testSql) {
-            this.poolName = poolName;
-            this.conTestTimeout = ConTestTimeout;
+            super(poolName, ConTestTimeout);
             this.autoCommit = autoCommit;
             this.testSql = testSql;
         }
@@ -841,7 +847,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 st = con.createStatement();
                 if (supportQueryTimeout) {
                     try {
-                        st.setQueryTimeout(conTestTimeout);
+                        st.setQueryTimeout(ConTestTimeout);
                     } catch (Throwable e) {
                         commonLog.error("BeeCP({})failed to setQueryTimeout", poolName, e);
                     }
@@ -865,6 +871,24 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
+    //test alive with Connection.isValid(xxx) method
+    private static final class ConnValidTester extends ConnectionTester {
+        public ConnValidTester(String poolName, int ConTestTimeout) {
+            super(poolName, ConTestTimeout);
+        }
+
+        public final boolean isAlive(PooledConnection pCon) {
+            try {
+                if (pCon.rawCon.isValid(ConTestTimeout)) {
+                    pCon.lastAccessTime = currentTimeMillis();
+                    return true;
+                }
+            } catch (Throwable e) {
+                commonLog.error("BeeCP({})failed to test connection", poolName, e);
+            }
+            return false;
+        }
+    }
 
     private static final class PoolThreadThreadFactory implements ThreadFactory {
         private String thName;
@@ -898,27 +922,39 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     //create pooled connection by asyn
-    private static final class IdleTimeoutScanThread extends Thread {
+    private static final class PoolServantThread extends Thread {
         private FastConnectionPool pool;
 
-        public IdleTimeoutScanThread(FastConnectionPool pool) {
+        public PoolServantThread(FastConnectionPool pool) {
             this.pool = pool;
         }
 
         public void run() {
+            final AtomicInteger poolState = pool.poolState;
+            final ConcurrentLinkedQueue<Borrower> waitQueue = pool.waitQueue;
+            final AtomicInteger servantThreadState = pool.servantThreadState;
+            final AtomicInteger servantThreadWorkCount = pool.servantThreadWorkCount;
+
             pool.poolThreadLatch.countDown();
-            final long checkTimeIntervalNanos = MILLISECONDS.toNanos(pool.poolConfig.getIdleCheckTimeInterval());
-            final AtomicInteger idleScanThreadState = pool.idleScanThreadState;
-            while (idleScanThreadState.get() == THREAD_WORKING) {
-                parkNanos(checkTimeIntervalNanos);
-                try {
-                    pool.closeIdleTimeoutConnection();
-                } catch (Throwable e) {
+            while (poolState.get() != POOL_CLOSED) {
+                while (servantThreadState.get() == THREAD_WORKING && !waitQueue.isEmpty() && servantThreadWorkCount.get() > 0) {
+                    servantThreadWorkCount.decrementAndGet();
+                    try {
+                        PooledConnection pCon = pool.searchOrCreate();
+                        if (pCon != null) pool.recycle(pCon);
+                    } catch (Throwable e) {
+                        pool.transferException(e);
+                    }
                 }
+
+                servantThreadWorkCount.set(0);
+                if (servantThreadState.get() == THREAD_EXIT)
+                    break;
+                else if (servantThreadState.compareAndSet(THREAD_WORKING, THREAD_WAITING))
+                    park();
             }
         }
     }
-
 
     /**
      * Hook when JVM exit

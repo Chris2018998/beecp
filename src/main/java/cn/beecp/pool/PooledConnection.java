@@ -20,27 +20,27 @@ import static java.lang.System.currentTimeMillis;
  * @author Chris.Liao
  * @version 1.0
  */
-final class PooledConnection implements Cloneable {
+class PooledConnection implements Cloneable {
     private static final boolean[] FALSE_ARRAY = new boolean[6];
-    public final boolean defaultAutoCommit;
-    public final boolean defaultReadOnly;
-    public final String defaultCatalog;
-    public final String defaultSchema;
-    public final int defaultTransactionIsolation;
-    public final int defaultNetworkTimeout;
+    final boolean defaultAutoCommit;
+    final boolean defaultReadOnly;
+    final String defaultCatalog;
+    final String defaultSchema;
+    final int defaultTransactionIsolation;
+    final int defaultNetworkTimeout;
     private final boolean defaultCatalogIsNotBlank;
     private final boolean defaultSchemaIsNotBlank;
     private final boolean supportNetworkTimeout;
     private final ThreadPoolExecutor networkTimeoutExecutor;
     private final FastConnectionPool pool;
 
-    public ProxyConnectionBase proxyCon;
-    public boolean commitDirtyInd;
-    public boolean curAutoCommit;
-    public int openStmSize;
-    public Connection rawCon;
-    public volatile int state;
-    public volatile long lastAccessTime;
+    ProxyConnectionBase proxyCon;
+    boolean commitDirtyInd;
+    boolean curAutoCommit;
+    int openStmSize;
+    Connection rawCon;
+    volatile int state;
+    volatile long lastAccessTime;
     private int resetCnt;// reset count
     private boolean[] resetInd;
     private ProxyStatementBase[] openStatements;
