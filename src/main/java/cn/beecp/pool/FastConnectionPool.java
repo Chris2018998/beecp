@@ -47,10 +47,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private final ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
     private final ConnectionPoolMonitorVo monitorVo = new ConnectionPoolMonitorVo();
     private final AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
-    private final AtomicInteger idleThreadState = new AtomicInteger(THREAD_WORKING);
     private final AtomicInteger servantThreadState = new AtomicInteger(THREAD_WORKING);
     private final AtomicInteger servantThreadWorkCount = new AtomicInteger(0);
-    private final PoolServantThread servantThread = new PoolServantThread(this);
+    private final AtomicInteger idleScanThreadState = new AtomicInteger(THREAD_WORKING);
+    private final IdleTimeoutScanThread idleScanThread = new IdleTimeoutScanThread(this);
 
     private int poolMaxSize;
     private long maxWaitNs;//nanoseconds
@@ -130,13 +130,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     poolConfig.getMaxWait(),
                     poolConfig.getDriverClassName());
 
-            this.setName(this.poolName + "-idleCheck");
             this.setDaemon(true);
+            this.setName(this.poolName + "-idleCheck");
             this.start();
-            servantThread.setName(this.poolName + "-workServant");
-            servantThread.setDaemon(true);
-            servantThread.start();
-            servantThread.setPriority(Thread.MIN_PRIORITY);
+
+            idleScanThread.setDaemon(true);
+            idleScanThread.setName(this.poolName + "-workServant");
+            idleScanThread.start();
             poolState.set(POOL_NORMAL);
         } else {
             throw new SQLException("Pool has initialized");
@@ -401,7 +401,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     if (timeout > 0L) {
                         if (timeout > spinForTimeoutThreshold && borrower.state == BOWER_NORMAL && BorrowStUpd.compareAndSet(borrower, BOWER_NORMAL, BOWER_WAITING)) {
                             if (servantThreadWorkCount.get() > 0 && servantThreadState.get() == THREAD_WAITING && servantThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
-                                unpark(servantThread);
+                                unpark(this);
                             parkNanos(timeout);
                             if (cth.isInterrupted()) {
                                 failed = true;
@@ -520,24 +520,33 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     private void shutdownPoolThread() {
-        int curState = idleThreadState.get();
-        idleThreadState.set(THREAD_EXIT);
-        if (curState == THREAD_WAITING) unpark(this);
+        int curState = idleScanThreadState.get();
+        idleScanThreadState.set(THREAD_EXIT);
+        if (curState == THREAD_WAITING) unpark(idleScanThread);
 
         curState = servantThreadState.get();
         servantThreadState.set(THREAD_EXIT);
-        if (curState == THREAD_WAITING) unpark(servantThread);
+        if (curState == THREAD_WAITING) unpark(this);
     }
 
     public void run() {
         poolThreadLatch.countDown();
-        final long checkTimeIntervalNanos = MILLISECONDS.toNanos(poolConfig.getIdleCheckTimeInterval());
-        while (idleThreadState.get() == THREAD_WORKING) {
-            parkNanos(checkTimeIntervalNanos);
-            try {
-                closeIdleTimeoutConnection();
-            } catch (Throwable e) {
+        while (poolState.get() != POOL_CLOSED) {
+            while (servantThreadState.get() == THREAD_WORKING && !waitQueue.isEmpty() && servantThreadWorkCount.get() > 0) {
+                servantThreadWorkCount.decrementAndGet();
+                try {
+                    PooledConnection pCon = searchOrCreate();
+                    if (pCon != null) recycle(pCon);
+                } catch (Throwable e) {
+                    transferException(e);
+                }
             }
+
+            servantThreadWorkCount.set(0);
+            if (servantThreadState.get() == THREAD_EXIT)
+                break;
+            else if (servantThreadState.compareAndSet(THREAD_WORKING, THREAD_WAITING))
+                park();
         }
     }
 
@@ -889,36 +898,23 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     //create pooled connection by asyn
-    private static final class PoolServantThread extends Thread {
+    private static final class IdleTimeoutScanThread extends Thread {
         private FastConnectionPool pool;
 
-        public PoolServantThread(FastConnectionPool pool) {
+        public IdleTimeoutScanThread(FastConnectionPool pool) {
             this.pool = pool;
         }
 
         public void run() {
-            final AtomicInteger poolState = pool.poolState;
-            final ConcurrentLinkedQueue<Borrower> waitQueue = pool.waitQueue;
-            final AtomicInteger servantThreadState = pool.servantThreadState;
-            final AtomicInteger servantThreadWorkCount = pool.servantThreadWorkCount;
-
             pool.poolThreadLatch.countDown();
-            while (poolState.get() != POOL_CLOSED) {
-                while (servantThreadState.get() == THREAD_WORKING && !waitQueue.isEmpty() && servantThreadWorkCount.get() > 0) {
-                    servantThreadWorkCount.decrementAndGet();
-                    try {
-                        PooledConnection pCon = pool.searchOrCreate();
-                        if (pCon != null) pool.recycle(pCon);
-                    } catch (Throwable e) {
-                        pool.transferException(e);
-                    }
+            final long checkTimeIntervalNanos = MILLISECONDS.toNanos(pool.poolConfig.getIdleCheckTimeInterval());
+            final AtomicInteger idleScanThreadState = pool.idleScanThreadState;
+            while (idleScanThreadState.get() == THREAD_WORKING) {
+                parkNanos(checkTimeIntervalNanos);
+                try {
+                    pool.closeIdleTimeoutConnection();
+                } catch (Throwable e) {
                 }
-
-                servantThreadWorkCount.set(0);
-                if (servantThreadState.get() == THREAD_EXIT)
-                    break;
-                else if (servantThreadState.compareAndSet(THREAD_WORKING, THREAD_WAITING))
-                    park();
             }
         }
     }
