@@ -36,11 +36,12 @@ public interface ConnectionPool {
     Connection getConnection() throws SQLException;
 
     /**
-     * return connection to pool after used
+     * Connection return to pool after it end use,if exist waiter in pool,
+     * then try to transfer the connection to one waiting borrower
      *
-     * @param pConn target connection need release
+     * @param pCon target connection need release
      */
-    void recycle(PooledConnection pConn);
+    public void recycle(PooledConnection pCon);
 
     /**
      * close pool

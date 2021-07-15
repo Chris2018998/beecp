@@ -92,11 +92,12 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
     }
 
     /**
-     * return connection to pool
+     * Connection return to pool after it end use,if exist waiter in pool,
+     * then try to transfer the connection to one waiting borrower
      *
-     * @param pConn target connection need release
+     * @param pCon target connection need release
      */
-    public void recycle(PooledConnection pConn) {
+    public void recycle(PooledConnection pCon) {
     }
 
     /**

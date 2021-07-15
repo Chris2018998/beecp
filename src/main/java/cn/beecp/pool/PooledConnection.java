@@ -20,27 +20,27 @@ import static java.lang.System.currentTimeMillis;
  * @author Chris.Liao
  * @version 1.0
  */
-class PooledConnection implements Cloneable {
+final class PooledConnection implements Cloneable {
     private static final boolean[] FALSE_ARRAY = new boolean[6];
-    final boolean defaultAutoCommit;
-    final boolean defaultReadOnly;
-    final String defaultCatalog;
-    final String defaultSchema;
-    final int defaultTransactionIsolation;
-    final int defaultNetworkTimeout;
+    public final boolean defaultAutoCommit;
+    public final boolean defaultReadOnly;
+    public final String defaultCatalog;
+    public final String defaultSchema;
+    public final int defaultTransactionIsolation;
+    public final int defaultNetworkTimeout;
     private final boolean defaultCatalogIsNotBlank;
     private final boolean defaultSchemaIsNotBlank;
     private final boolean supportNetworkTimeout;
     private final ThreadPoolExecutor networkTimeoutExecutor;
     private final FastConnectionPool pool;
 
-    ProxyConnectionBase proxyCon;
-    boolean commitDirtyInd;
-    boolean curAutoCommit;
-    int openStmSize;
-    Connection rawCon;
-    volatile int state;
-    volatile long lastAccessTime;
+    public ProxyConnectionBase proxyCon;
+    public boolean commitDirtyInd;
+    public boolean curAutoCommit;
+    public int openStmSize;
+    public Connection rawCon;
+    public volatile int state;
+    public volatile long lastAccessTime;
     private int resetCnt;// reset count
     private boolean[] resetInd;
     private ProxyStatementBase[] openStatements;
@@ -68,7 +68,7 @@ class PooledConnection implements Cloneable {
         this.defaultSchemaIsNotBlank = !isBlank(defaultSchema);
     }
 
-    public final PooledConnection clone(Connection rawConn, int state) throws CloneNotSupportedException, SQLException {
+    public final PooledConnection copy(Connection rawConn, int state) throws CloneNotSupportedException, SQLException {
         rawConn.setAutoCommit(defaultAutoCommit);
         rawConn.setTransactionIsolation(defaultTransactionIsolation);
         rawConn.setReadOnly(defaultReadOnly);
@@ -76,14 +76,13 @@ class PooledConnection implements Cloneable {
             rawConn.setCatalog(defaultCatalog);
         if (defaultSchemaIsNotBlank)
             rawConn.setSchema(defaultSchema);
-
-        PooledConnection pCon = (PooledConnection) clone();
-        pCon.state = state;
-        pCon.rawCon = rawConn;
-        pCon.resetInd = new boolean[6];
-        pCon.openStatements = new ProxyStatementBase[10];
-        pCon.lastAccessTime = currentTimeMillis();//first time
-        return pCon;
+        PooledConnection p = (PooledConnection) clone();
+        p.state = state;
+        p.rawCon = rawConn;
+        p.resetInd = new boolean[6];
+        p.openStatements = new ProxyStatementBase[10];
+        p.lastAccessTime = currentTimeMillis();//first time
+        return p;
     }
 
     boolean supportNetworkTimeout() {
