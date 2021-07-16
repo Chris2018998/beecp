@@ -398,7 +398,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 } else {//here:(state == BOWER_NORMAL)
                     long timeout = deadline - nanoTime();
                     if (timeout > 0L) {
-                        if (timeout > spinForTimeoutThreshold && borrower.state == BOWER_NORMAL && BorrowStUpd.compareAndSet(borrower, BOWER_NORMAL, BOWER_WAITING)) {
+                        if (timeout > spinForTimeoutThreshold && BorrowStUpd.compareAndSet(borrower, BOWER_NORMAL, BOWER_WAITING)) {
                             if (servantThreadTryCount.get() > 0 && servantThreadState.get() == THREAD_WAITING && servantThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
                                 unpark(this);
                             parkNanos(timeout);
@@ -448,11 +448,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @param p target connection need release
      */
     public final void recycle(PooledConnection p) {
-        transferPolicy.beforeTransfer(p);
         Iterator<Borrower> iterator = waitQueue.iterator();
+        transferPolicy.beforeTransfer(p);
         tryNext:
         while (iterator.hasNext()) {
-            Borrower b = (Borrower) iterator.next();
+            Borrower b = iterator.next();
             Object state;
             do {
                 state = b.state;
@@ -477,7 +477,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         Iterator<Borrower> iterator = waitQueue.iterator();
         tryNext:
         while (iterator.hasNext()) {
-            Borrower b = (Borrower) iterator.next();
+            Borrower b = iterator.next();
             Object state;
             do {
                 state = b.state;
