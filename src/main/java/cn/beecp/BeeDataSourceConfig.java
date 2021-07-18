@@ -105,6 +105,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private String poolImplementClassName;
     //indicator,whether register datasource to jmx
     private boolean enableJmx;
+    //indicator,whether print pool config info
+    private boolean printConfigInfo;
+    //indicator,whether print pool runtime info
+    private boolean printRuntimeLog;
 
     public BeeDataSourceConfig() {
     }
@@ -479,6 +483,18 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.enableJmx = enableJmx;
     }
 
+    public void setPrintConfigInfo(boolean printConfigInfo) {
+        this.printConfigInfo = printConfigInfo;
+    }
+
+    public boolean isPrintRuntimeLog() {
+        return printRuntimeLog;
+    }
+
+    public void setPrintRuntimeLog(boolean printRuntimeLog) {
+        this.printRuntimeLog = printRuntimeLog;
+    }
+
     void copyTo(BeeDataSourceConfig config) {
         //1:primitive type copy
         String fieldName = "";
@@ -488,7 +504,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                     continue;
                 Object fieldValue = field.get(this);
                 fieldName = field.getName();
-                commonLog.debug("BeeDataSourceConfig.{}={}", fieldName, fieldValue);
+
+                if (printConfigInfo) commonLog.info("{}.{}={}", poolName, fieldName, fieldValue);
                 field.set(config, fieldValue);
             }
         } catch (Exception e) {
@@ -496,10 +513,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         }
 
         //2:copy 'connectProperties'
+        //2:copy 'connectProperties'
         Iterator<Map.Entry<Object, Object>> iterator = connectProperties.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<Object, Object> entry = iterator.next();
-            commonLog.debug("BeeDataSourceConfig.connectProperties.{}={}", entry.getKey(), entry.getValue());
+            if (printConfigInfo)
+                commonLog.info("{}.connectProperties.{}={}", poolName, entry.getKey(), entry.getValue());
             config.addConnectProperty((String) entry.getKey(), entry.getValue());
         }
     }
@@ -537,6 +556,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
         //get transaction Isolation Code
         int transactionIsolationCode = getTransactionIsolationCode();
+        this.setDefaultTransactionIsolationCode(transactionIsolationCode);
 
         //try to create connection factory
         ConnectionFactory connectionFactory = tryCreateConnectionFactory();

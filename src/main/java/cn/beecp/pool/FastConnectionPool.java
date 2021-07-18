@@ -51,6 +51,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private final AtomicInteger servantThreadTryCount = new AtomicInteger(0);
     private final AtomicInteger idleScanThreadState = new AtomicInteger(THREAD_WORKING);
     private final IdleTimeoutScanThread idleScanThread = new IdleTimeoutScanThread(this);
+    private boolean printRuntimeLog;
 
     private int poolMaxSize;
     private long maxWaitNs;//nanoseconds
@@ -110,6 +111,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 poolMode = "compete";
                 transferPolicy = this;
             }
+
+            printRuntimeLog = poolConfig.isPrintRuntimeLog();
             unCatchStateCode = transferPolicy.getCheckStateCode();
             semaphoreSize = poolConfig.getBorrowSemaphoreSize();
             semaphore = new PoolSemaphore(semaphoreSize, poolConfig.isFairMode());
@@ -190,8 +193,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private synchronized final PooledConnection createPooledConn(int state) throws SQLException {
         int len = conArray.length;
         if (len < poolMaxSize) {
-            if (isDebugEnabled)
-                commonLog.debug("BeeCP({}))begin to create a new pooled connection,state:{}", poolName, state);
+            if (printRuntimeLog)
+                commonLog.info("BeeCP({}))begin to create a new pooled connection,state:{}", poolName, state);
             Connection con;
             try {
                 con = conFactory.create();
@@ -201,8 +204,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             try {
                 if (isFirstValidConnection) testFirstConnection(con);
                 PooledConnection pCon = clonePooledConn.copy(con, state);
-                if (isDebugEnabled)
-                    commonLog.debug("BeeCP({}))has created a new pooled connection:{},state:{}", poolName, pCon, state);
+                if (printRuntimeLog)
+                    commonLog.info("BeeCP({}))has created a new pooled connection:{},state:{}", poolName, pCon, state);
                 PooledConnection[] arrayNew = new PooledConnection[len + 1];
                 arraycopy(conArray, 0, arrayNew, 0, len);
                 arrayNew[len] = pCon;// tail
@@ -219,8 +222,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     //remove one pooled connection
     private synchronized void removePooledConn(PooledConnection pCon, String removeType) {
-        if (isDebugEnabled)
-            commonLog.debug("BeeCP({}))begin to remove pooled connection:{},reason:{}", poolName, pCon, removeType);
+        if (printRuntimeLog)
+            commonLog.info("BeeCP({}))begin to remove pooled connection:{},reason:{}", poolName, pCon, removeType);
         pCon.onBeforeRemove();
         int len = conArray.length;
         PooledConnection[] arrayNew = new PooledConnection[len - 1];
@@ -232,8 +235,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 break;
             }
         }
-        if (isDebugEnabled)
-            commonLog.debug("BeeCP({}))has removed pooled connection:{},reason:{}", poolName, pCon, removeType);
+        if (printRuntimeLog)
+            commonLog.info("BeeCP({}))has removed pooled connection:{},reason:{}", poolName, pCon, removeType);
         conArray = arrayNew;
     }
 
@@ -250,8 +253,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             }
         } catch (Throwable e) {
             supportNetworkTimeout = false;
-            if (isDebugEnabled)
-                commonLog.debug("BeeCP({})driver not support 'networkTimeout',cause:", poolName, e);
+            if (printRuntimeLog)
+                commonLog.info("BeeCP({})driver not support 'networkTimeout',cause:", poolName, e);
             else
                 commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
         }
@@ -280,8 +283,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             }
         } catch (Throwable e) {
             validTestFailed = true;
-            if (isDebugEnabled)
-                commonLog.debug("BeeCP({})driver not support 'isValid',cause:", poolName, e);
+            if (printRuntimeLog)
+                commonLog.info("BeeCP({})driver not support 'isValid',cause:", poolName, e);
             else
                 commonLog.warn("BeeCP({})driver not support 'isValid'", poolName);
         }
@@ -305,8 +308,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             st.setQueryTimeout(timeoutSeconds);
         } catch (Throwable e) {
             ((SqlQueryTester) conTester).setSupportQueryTimeout(false);
-            if (isDebugEnabled)
-                commonLog.debug("BeeCP({})driver not support 'queryTimeout',cause:", poolName, e);
+            if (printRuntimeLog)
+                commonLog.info("BeeCP({})driver not support 'queryTimeout',cause:", poolName, e);
             else
                 commonLog.warn("BeeCP({})driver not support 'queryTimeout'", poolName);
         }
@@ -586,8 +589,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 }
             }
             ConnectionPoolMonitorVo vo = this.getMonitorVo();
-            if (isDebugEnabled)
-                commonLog.debug("BeeCP({})-{idle:{},using:{},semaphore-waiter:{},wait-transfer:{}}", poolName, vo.getIdleSize(), vo.getUsingSize(), vo.getSemaphoreWaiterSize(), vo.getTransferWaiterSize());
+            if (printRuntimeLog)
+                commonLog.info("BeeCP({})-{idle:{},using:{},semaphore-waiter:{},wait-transfer:{}}", poolName, vo.getIdleSize(), vo.getUsingSize(), vo.getSemaphoreWaiterSize(), vo.getTransferWaiterSize());
         }
     }
 
@@ -723,6 +726,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (borrower.state instanceof BorrowerState) size++;
         }
         return size;
+    }
+
+    //set pool info debug switch
+    public void printRuntimeLog(boolean indicator) {
+        this.printRuntimeLog = indicator;
     }
 
     private void registerJmx() {

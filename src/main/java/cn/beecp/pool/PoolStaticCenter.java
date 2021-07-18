@@ -61,7 +61,6 @@ public class PoolStaticCenter {
     public static final SQLException AutoCommitChangeForbiddenException = new SQLException("Execute 'commit' or 'rollback' before this operation");
     public static final SQLException DriverNotSupportNetworkTimeoutException = new SQLException("Driver not support 'networkTimeout'");
     public static final Logger commonLog = LoggerFactory.getLogger(PoolStaticCenter.class);
-    public static final boolean isDebugEnabled = commonLog.isDebugEnabled();
     public static final String DS_Config_Prop_Separator_MiddleLine = "-";
     public static final String DS_Config_Prop_Separator_UnderLine = "_";
     static final Connection CLOSED_CON = (Connection) Proxy.newProxyInstance(

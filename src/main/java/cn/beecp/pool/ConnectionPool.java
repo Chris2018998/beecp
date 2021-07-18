@@ -74,5 +74,6 @@ public interface ConnectionPool {
      */
     void clearAllConnections(boolean forceCloseUsingOnClear);
 
+
 }
 	

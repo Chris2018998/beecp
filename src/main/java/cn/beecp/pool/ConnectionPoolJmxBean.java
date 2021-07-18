@@ -32,5 +32,8 @@ public interface ConnectionPoolJmxBean {
     //return waiter size for transferred connection
     int getTransferWaitingSize();
 
+    //set pool info debug switch
+    void printRuntimeLog(boolean indicator);
+
 }
 

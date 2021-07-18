@@ -154,6 +154,10 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
         return 0;
     }
 
+    //set pool info debug switch
+    public void printRuntimeLog(boolean enabledDebug) {
+    }
+
     public ConnectionPoolMonitorVo getMonitorVo() {
         int totSize = getConnTotalSize();
         int idleSize = getConnIdleSize();
