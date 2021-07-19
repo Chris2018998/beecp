@@ -106,9 +106,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //indicator,whether register datasource to jmx
     private boolean enableJmx;
     //indicator,whether print pool config info
-    private boolean printConfigInfo;
+    private boolean enableConfigInfo;
     //indicator,whether print pool runtime info
-    private boolean printRuntimeLog;
+    private boolean enableRuntimeLog;
 
     public BeeDataSourceConfig() {
     }
@@ -483,16 +483,16 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.enableJmx = enableJmx;
     }
 
-    public void setPrintConfigInfo(boolean printConfigInfo) {
-        this.printConfigInfo = printConfigInfo;
+    public void setEnableConfigInfo(boolean enableConfigInfo) {
+        this.enableConfigInfo = enableConfigInfo;
     }
 
-    public boolean isPrintRuntimeLog() {
-        return printRuntimeLog;
+    public boolean isEnableRuntimeLog() {
+        return enableRuntimeLog;
     }
 
-    public void setPrintRuntimeLog(boolean printRuntimeLog) {
-        this.printRuntimeLog = printRuntimeLog;
+    public void setEnableRuntimeLog(boolean enableRuntimeLog) {
+        this.enableRuntimeLog = enableRuntimeLog;
     }
 
     void copyTo(BeeDataSourceConfig config) {
@@ -505,7 +505,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                 Object fieldValue = field.get(this);
                 fieldName = field.getName();
 
-                if (printConfigInfo) commonLog.info("{}.{}={}", poolName, fieldName, fieldValue);
+                if (enableConfigInfo) commonLog.info("{}.{}={}", poolName, fieldName, fieldValue);
                 field.set(config, fieldValue);
             }
         } catch (Exception e) {
@@ -517,7 +517,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         Iterator<Map.Entry<Object, Object>> iterator = connectProperties.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<Object, Object> entry = iterator.next();
-            if (printConfigInfo)
+            if (enableConfigInfo)
                 commonLog.info("{}.connectProperties.{}={}", poolName, entry.getKey(), entry.getValue());
             config.addConnectProperty((String) entry.getKey(), entry.getValue());
         }

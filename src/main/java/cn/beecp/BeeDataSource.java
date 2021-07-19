@@ -215,6 +215,10 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         }
     }
 
+    public void setEnableRuntimeLog(boolean enableRuntimeLog) {
+        if (pool != null) pool.setEnableRuntimeLog(enableRuntimeLog);
+    }
+
     /**
      * @return pool monitor vo
      * @throws SQLException if pool not be initialized

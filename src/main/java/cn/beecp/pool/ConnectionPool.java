@@ -28,6 +28,14 @@ public interface ConnectionPool {
     void init(BeeDataSourceConfig config) throws SQLException;
 
     /**
+     * enable Runtime Log
+     *
+     * @param indicator indicator,whether print pool runtime info
+     * @throws SQLException
+     */
+    void setEnableRuntimeLog(boolean indicator);
+
+    /**
      * borrow a connection from pool
      *
      * @return If exists idle connection in pool,then return one;if not, waiting until other borrower release
@@ -73,7 +81,6 @@ public interface ConnectionPool {
      * @param forceCloseUsingOnClear close using connection directly
      */
     void clearAllConnections(boolean forceCloseUsingOnClear);
-
 
 }
 	

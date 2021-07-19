@@ -155,7 +155,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
     }
 
     //set pool info debug switch
-    public void printRuntimeLog(boolean enabledDebug) {
+    public void setEnableRuntimeLog(boolean enabledDebug) {
     }
 
     public ConnectionPoolMonitorVo getMonitorVo() {

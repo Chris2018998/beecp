@@ -112,7 +112,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 transferPolicy = this;
             }
 
-            printRuntimeLog = poolConfig.isPrintRuntimeLog();
+            printRuntimeLog = poolConfig.isEnableRuntimeLog();
             unCatchStateCode = transferPolicy.getCheckStateCode();
             semaphoreSize = poolConfig.getBorrowSemaphoreSize();
             semaphore = new PoolSemaphore(semaphoreSize, poolConfig.isFairMode());
@@ -729,7 +729,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     //set pool info debug switch
-    public void printRuntimeLog(boolean indicator) {
+    public void setEnableRuntimeLog(boolean indicator) {
         this.printRuntimeLog = indicator;
     }
 

@@ -33,7 +33,7 @@ public interface ConnectionPoolJmxBean {
     int getTransferWaitingSize();
 
     //set pool info debug switch
-    void printRuntimeLog(boolean indicator);
+    void setEnableRuntimeLog(boolean indicator);
 
 }
 
