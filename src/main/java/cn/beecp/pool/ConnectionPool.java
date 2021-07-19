@@ -27,13 +27,6 @@ public interface ConnectionPool {
      */
     void init(BeeDataSourceConfig config) throws SQLException;
 
-    /**
-     * enable Runtime Log
-     *
-     * @param indicator indicator,whether print pool runtime info
-     * @throws SQLException
-     */
-    void setEnableRuntimeLog(boolean indicator);
 
     /**
      * borrow a connection from pool
@@ -69,6 +62,13 @@ public interface ConnectionPool {
      * @return Pool Monitor Vo
      */
     ConnectionPoolMonitorVo getMonitorVo();
+
+    /**
+     * enable Runtime Log
+     *
+     * @param indicator indicator,whether print pool runtime info
+     */
+    void setEnableRuntimeLog(boolean indicator);
 
     /**
      * Clear all connections from pool
