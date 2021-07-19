@@ -106,7 +106,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //indicator,whether register datasource to jmx
     private boolean enableJmx;
     //indicator,whether print pool config info
-    private boolean enableConfigInfo;
+    private boolean enableConfigLog;
     //indicator,whether print pool runtime info
     private boolean enableRuntimeLog;
 
@@ -483,8 +483,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.enableJmx = enableJmx;
     }
 
-    public void setEnableConfigInfo(boolean enableConfigInfo) {
-        this.enableConfigInfo = enableConfigInfo;
+    public void setEnableConfigLog(boolean enableConfigLog) {
+        this.enableConfigLog = enableConfigLog;
     }
 
     public boolean isEnableRuntimeLog() {
@@ -505,7 +505,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                 Object fieldValue = field.get(this);
                 fieldName = field.getName();
 
-                if (enableConfigInfo) commonLog.info("{}.{}={}", poolName, fieldName, fieldValue);
+                if (enableConfigLog) commonLog.info("{}.{}={}", poolName, fieldName, fieldValue);
                 field.set(config, fieldValue);
             }
         } catch (Exception e) {
@@ -517,7 +517,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         Iterator<Map.Entry<Object, Object>> iterator = connectProperties.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<Object, Object> entry = iterator.next();
-            if (enableConfigInfo)
+            if (enableConfigLog)
                 commonLog.info("{}.connectProperties.{}={}", poolName, entry.getKey(), entry.getValue());
             config.addConnectProperty((String) entry.getKey(), entry.getValue());
         }
