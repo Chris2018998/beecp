@@ -610,9 +610,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         if (poolState.compareAndSet(POOL_NORMAL, POOL_CLEARING)) {
             commonLog.info("BeeCP({})begin to remove connections", poolName);
             removeAllConnections(force, DESC_RM_CLEAR);
-            commonLog.info("BeeCP({})all connections were removed", poolName);
             poolState.set(POOL_NORMAL);// restore state;
-            commonLog.info("BeeCP({})restore to accept new requests", poolName);
+            commonLog.info("BeeCP({})all connections were removed and restored to accept new requests", poolName);
         }
     }
 
