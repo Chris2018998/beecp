@@ -405,12 +405,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                             if (servantThreadTryCount.get() > 0 && servantThreadState.get() == THREAD_WAITING && servantThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
                                 unpark(this);
                             parkNanos(timeout);
-                            if (cth.isInterrupted()) {
+                            if (borrower.state == BOWER_WAITING) {
                                 failed = true;
-                                cause = RequestInterruptException;
+                                cause = cth.isInterrupted() ? RequestInterruptException : RequestTimeoutException;
+                                BorrowStUpd.compareAndSet(borrower,BOWER_WAITING, cause);
                             }
-                            if (borrower.state == BOWER_WAITING)
-                                BorrowStUpd.compareAndSet(borrower, BOWER_WAITING, failed ? cause : BOWER_NORMAL);//reset to normal
                         }
                     } else {//timeout
                         failed = true;
