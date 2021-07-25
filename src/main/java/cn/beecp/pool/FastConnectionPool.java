@@ -929,7 +929,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    private final class FairTransferPolicy implements PooledConnectionTransferPolicy {
+    private static final class FairTransferPolicy implements PooledConnectionTransferPolicy {
         public final int getCheckStateCode() {
             return CON_USING;
         }
