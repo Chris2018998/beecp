@@ -17,23 +17,23 @@ import java.sql.SQLException;
  * @version 1.0
  */
 abstract class ProxyDatabaseMetaDataBase implements DatabaseMetaData {
-    protected DatabaseMetaData delegate;
-    protected PooledConnection pCon;//called by subclass to update time
-    private ProxyConnectionBase proxyCon;//called by subclass to check close state
+    protected DatabaseMetaData raw;
+    protected PooledConnection p;//called by subclass to update time
+    private ProxyConnectionBase owner;//called by subclass to check close state
 
     public ProxyDatabaseMetaDataBase(DatabaseMetaData metaData, PooledConnection pCon) {
-        this.pCon = pCon;
-        this.delegate = metaData;
-        this.proxyCon = pCon.proxyCon;
+        this.p = pCon;
+        this.raw = metaData;
+        this.owner = pCon.proxyCon;
     }
 
     protected final void checkClosed() throws SQLException {
-        proxyCon.checkClosed();
+        owner.checkClosed();
     }
 
     public Connection getConnection() throws SQLException {
         checkClosed();
-        return proxyCon;
+        return owner;
     }
 
     public boolean isWrapperFor(Class<?> iface) throws SQLException {

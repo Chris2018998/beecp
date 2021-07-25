@@ -85,17 +85,17 @@ final class PooledConnection implements Cloneable {
         return p;
     }
 
-    boolean supportNetworkTimeout() {
+    public boolean supportNetworkTimeout() {
         return supportNetworkTimeout;
     }
 
-    final void updateAccessTime() {//for update,insert.select,delete and so on DML
+    public final void updateAccessTime() {//for update,insert.select,delete and so on DML
         commitDirtyInd = !curAutoCommit;
         lastAccessTime = currentTimeMillis();
     }
 
     //called by pool before remove from pool
-    final void onBeforeRemove() {
+    public final void onBeforeRemove() {
         try {
             state = CON_CLOSED;
             resetRawConn();
@@ -107,7 +107,7 @@ final class PooledConnection implements Cloneable {
     }
 
     //***************called by connection proxy ********//
-    final void recycleSelf() throws SQLException {
+    public final void recycleSelf() throws SQLException {
         try {
             proxyCon = null;
             resetRawConn();
@@ -118,16 +118,16 @@ final class PooledConnection implements Cloneable {
         }
     }
 
-    final void setResetInd(int p, boolean chgd) {
-        if (!resetInd[p] && chgd)//false ->true       +1
+    public final void setResetInd(int p, boolean c) {
+        if (!resetInd[p] && c)//false ->true       +1
             resetCnt++;
-        else if (resetInd[p] && !chgd)//true-->false  -1
+        else if (resetInd[p] && !c)//true-->false  -1
             resetCnt--;
-        resetInd[p] = chgd;
+        resetInd[p] = c;
         //lastAccessTime=currentTimeMillis();
     }
 
-    final void resetRawConn() throws SQLException {
+    public final void resetRawConn() throws SQLException {
         if (commitDirtyInd) { //Roll back when commit dirty
             rawCon.rollback();
             commitDirtyInd = false;
@@ -158,7 +158,7 @@ final class PooledConnection implements Cloneable {
     }
 
     //****************below are some statement trace methods***************************/
-    final void registerStatement(ProxyStatementBase s) {
+    public final void registerStatement(ProxyStatementBase s) {
         if (openStmSize == openStatements.length) {//full
             ProxyStatementBase[] newArray = new ProxyStatementBase[openStmSize << 1];
             arraycopy(openStatements, 0, newArray, 0, openStmSize);
@@ -167,7 +167,7 @@ final class PooledConnection implements Cloneable {
         openStatements[openStmSize++] = s;
     }
 
-    final void unregisterStatement(ProxyStatementBase s) {
+    public final void unregisterStatement(ProxyStatementBase s) {
         for (int i = 0; i < openStmSize; i++)
             if (s == openStatements[i]) {
                 int m = openStmSize - i - 1;
@@ -177,7 +177,7 @@ final class PooledConnection implements Cloneable {
             }
     }
 
-    final void clearStatement() {
+    public final void clearStatement() {
         for (int i = 0; i < openStmSize; i++) {
             ProxyStatementBase s = openStatements[i];
             if (s != null) {

@@ -27,7 +27,6 @@ public interface ConnectionPool {
      */
     void init(BeeDataSourceConfig config) throws SQLException;
 
-
     /**
      * borrow a connection from pool
      *
@@ -40,9 +39,9 @@ public interface ConnectionPool {
      * Connection return to pool after it end use,if exist waiter in pool,
      * then try to transfer the connection to one waiting borrower
      *
-     * @param pCon target connection need release
+     * @param p target connection need release
      */
-    public void recycle(PooledConnection pCon);
+    void recycle(PooledConnection p);
 
     /**
      * close pool

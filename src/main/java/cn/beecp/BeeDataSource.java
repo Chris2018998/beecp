@@ -57,8 +57,8 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     private ConnectionPool pool;
     private SQLException failedCause;
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-    private ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
-    private ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
+    private ReentrantReadWriteLock.ReadLock rLock = lock.readLock();
+    private ReentrantReadWriteLock.WriteLock wLock = lock.writeLock();
     private XaConnectionFactory xaConnectionFactory;
 
     public BeeDataSource() {
@@ -90,32 +90,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
      *                                                                                         *
      *                         Below are override methods                                      *
      *                                                                                         *
-     ********************************************************************************************/
-
-    private static String getDriverType(String url) {
-        try {
-            Driver driver = DriverManager.getDriver(url);
-            url = url.toLowerCase(Locale.US);
-            String urlPrefix = "jdbc:";
-            if (url.startsWith(urlPrefix)) {
-                int pos = url.indexOf(':', urlPrefix.length());
-                if (pos > 0) return url.substring(urlPrefix.length(), pos);
-            }
-            if (url.indexOf("oracle") > 1) {
-                return "oracle";
-            } else if (url.indexOf("mysql") > 1) {
-                return "mysql" + driver.getMajorVersion();
-            } else if (url.indexOf("mariadb") > 1) {
-                return "mariadb";
-            } else if (url.indexOf("postgresql") > 1) {
-                return "postgresql";
-            } else {
-                return null;
-            }
-        } catch (Throwable e) {
-            return null;
-        }
-    }
+     ******************************************************************************************/
 
     /**
      * borrow a connection from pool
@@ -124,9 +99,9 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
      * until other borrower release
      * @throws SQLException if pool is closed or waiting timeout,then throw exception
      */
-    public Connection getConnection() throws SQLException {
+    public final Connection getConnection() throws SQLException {
         if (inited) return pool.getConnection();
-        if (writeLock.tryLock()) {
+        if (wLock.tryLock()) {
             try {
                 if (!inited) {
                     failedCause = null;
@@ -134,17 +109,17 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
                     inited = true;
                 }
             } catch (Throwable e) {//why?
-                failedCause = (e instanceof SQLException) ? (SQLException) e : new SQLException(e);
+                failedCause = e instanceof SQLException ? (SQLException) e : new SQLException(e);
                 throw failedCause;
             } finally {
-                writeLock.unlock();
+                wLock.unlock();
             }
         } else {
             try {
-                readLock.lock();
+                rLock.lock();
                 if (failedCause != null) throw failedCause;
             } finally {
-                readLock.unlock();
+                rLock.unlock();
             }
         }
         return pool.getConnection();
@@ -153,7 +128,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     public XAConnection getXAConnection() throws SQLException {
         if (xaConnectionFactory == null) throw XaConnectionFactoryNotFound;
         ProxyConnectionBase proxyCon = (ProxyConnectionBase) this.getConnection();
-        return new XaConnectionWrapper(xaConnectionFactory.create(proxyCon.getDelegate()), proxyCon);
+        return new XaConnectionWrapper(xaConnectionFactory.create(proxyCon.getRaw()), proxyCon);
     }
 
     public Connection getConnection(String username, String password) throws SQLException {
@@ -197,10 +172,13 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
 
     /*******************************************************************************************
      *                                                                                         *
-     *                         Below are self methods                                          *
+     *                        Below are self define methods                                    *
      *                                                                                         *
      ********************************************************************************************/
 
+    /**
+     * @return bool, true pool closed.
+     */
     public boolean isClosed() {
         return (pool != null) ? pool.isClosed() : true;
     }
@@ -315,5 +293,30 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             }
         }
         return null;
+    }
+
+    private String getDriverType(String url) {
+        try {
+            Driver driver = DriverManager.getDriver(url);
+            url = url.toLowerCase(Locale.US);
+            String urlPrefix = "jdbc:";
+            if (url.startsWith(urlPrefix)) {
+                int pos = url.indexOf(':', urlPrefix.length());
+                if (pos > 0) return url.substring(urlPrefix.length(), pos);
+            }
+            if (url.indexOf("oracle") > 1) {
+                return "oracle";
+            } else if (url.indexOf("mysql") > 1) {
+                return "mysql" + driver.getMajorVersion();
+            } else if (url.indexOf("mariadb") > 1) {
+                return "mariadb";
+            } else if (url.indexOf("postgresql") > 1) {
+                return "postgresql";
+            } else {
+                return null;
+            }
+        } catch (Throwable e) {
+            return null;
+        }
     }
 }

@@ -13,5 +13,5 @@ package cn.beecp.pool;
  * @version 1.0
  */
 interface PooledConnectionTester {
-    boolean isAlive(PooledConnection pCon);
+    boolean isAlive(PooledConnection p);
 }

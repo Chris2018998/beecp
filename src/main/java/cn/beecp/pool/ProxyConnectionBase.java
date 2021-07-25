@@ -20,19 +20,19 @@ import static java.lang.System.currentTimeMillis;
  * @version 1.0
  */
 public abstract class ProxyConnectionBase implements Connection {
-    protected Connection delegate;
-    protected PooledConnection pCon;//called by subclass to update time
+    protected Connection raw;
+    protected PooledConnection p;//called by subclass to update time
     private boolean isClosed;
 
-    public ProxyConnectionBase(PooledConnection pCon) {
-        this.pCon = pCon;
-        pCon.proxyCon = this;
-        this.delegate = pCon.rawCon;
+    public ProxyConnectionBase(PooledConnection p) {
+        this.p = p;
+        this.raw = p.rawCon;
+        p.proxyCon = this;
     }
 
     /*******************************************************************************************
      *                                                                                         *
-     *                         Below are self methods                                          *
+     *                         Below are self define methods                                          *
      *                                                                                         *
      ********************************************************************************************/
 
@@ -40,17 +40,17 @@ public abstract class ProxyConnectionBase implements Connection {
         if (isClosed) throw ConnectionClosedException;
     }
 
-    public Connection getDelegate() throws SQLException {
+    public Connection getRaw() throws SQLException {
         checkClosed();
-        return delegate;
+        return raw;
     }
 
     synchronized final void registerStatement(ProxyStatementBase s) {
-        pCon.registerStatement(s);
+        p.registerStatement(s);
     }
 
     synchronized final void unregisterStatement(ProxyStatementBase s) {
-        pCon.unregisterStatement(s);
+        p.unregisterStatement(s);
     }
 
     /******************************************************************************************
@@ -68,38 +68,38 @@ public abstract class ProxyConnectionBase implements Connection {
         synchronized (this) {//safe close
             if (isClosed) return;
             isClosed = true;
-            delegate = CLOSED_CON;
-            if (pCon.openStmSize > 0) pCon.clearStatement();
+            raw = CLOSED_CON;
+            if (p.openStmSize > 0) p.clearStatement();
         }
-        pCon.recycleSelf();
+        p.recycleSelf();
     }
 
     public final void setAutoCommit(boolean autoCommit) throws SQLException {
-        if (pCon.commitDirtyInd) throw AutoCommitChangeForbiddenException;
-        delegate.setAutoCommit(autoCommit);
-        pCon.curAutoCommit = autoCommit;
-        pCon.setResetInd(PS_AUTO, autoCommit != pCon.defaultAutoCommit);
+        if (p.commitDirtyInd) throw AutoCommitChangeForbiddenException;
+        raw.setAutoCommit(autoCommit);
+        p.curAutoCommit = autoCommit;
+        p.setResetInd(PS_AUTO, autoCommit != p.defaultAutoCommit);
     }
 
     public void setTransactionIsolation(int level) throws SQLException {
-        delegate.setTransactionIsolation(level);
-        pCon.setResetInd(PS_TRANS, level != pCon.defaultTransactionIsolation);
+        raw.setTransactionIsolation(level);
+        p.setResetInd(PS_TRANS, level != p.defaultTransactionIsolation);
     }
 
     public void setReadOnly(boolean readOnly) throws SQLException {
-        delegate.setReadOnly(readOnly);
-        pCon.setResetInd(PS_READONLY, readOnly != pCon.defaultReadOnly);
+        raw.setReadOnly(readOnly);
+        p.setResetInd(PS_READONLY, readOnly != p.defaultReadOnly);
     }
 
     public void setCatalog(String catalog) throws SQLException {
-        delegate.setCatalog(catalog);
-        pCon.setResetInd(PS_CATALOG, !PoolStaticCenter.equals(catalog, pCon.defaultCatalog));
+        raw.setCatalog(catalog);
+        p.setResetInd(PS_CATALOG, !PoolStaticCenter.equals(catalog, p.defaultCatalog));
     }
 
     //for JDK1.7 begin
     public void setSchema(String schema) throws SQLException {
-        delegate.setSchema(schema);
-        pCon.setResetInd(PS_SCHEMA, !PoolStaticCenter.equals(schema, pCon.defaultSchema));
+        raw.setSchema(schema);
+        p.setResetInd(PS_SCHEMA, !PoolStaticCenter.equals(schema, p.defaultSchema));
     }
 
     public void abort(Executor executor) throws SQLException {
@@ -108,9 +108,9 @@ public abstract class ProxyConnectionBase implements Connection {
     }
 
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-        if (pCon.supportNetworkTimeout()) {
-            delegate.setNetworkTimeout(executor, milliseconds);
-            pCon.setResetInd(PS_NETWORK, milliseconds != pCon.defaultNetworkTimeout);
+        if (p.supportNetworkTimeout()) {
+            raw.setNetworkTimeout(executor, milliseconds);
+            p.setResetInd(PS_NETWORK, milliseconds != p.defaultNetworkTimeout);
         } else {
             throw DriverNotSupportNetworkTimeoutException;
         }
@@ -118,15 +118,15 @@ public abstract class ProxyConnectionBase implements Connection {
     //for JDK1.7 end
 
     public void commit() throws SQLException {
-        delegate.commit();
-        pCon.lastAccessTime = currentTimeMillis();
-        pCon.commitDirtyInd = false;
+        raw.commit();
+        p.lastAccessTime = currentTimeMillis();
+        p.commitDirtyInd = false;
     }
 
     public void rollback() throws SQLException {
-        delegate.rollback();
-        pCon.lastAccessTime = currentTimeMillis();
-        pCon.commitDirtyInd = false;
+        raw.rollback();
+        p.lastAccessTime = currentTimeMillis();
+        p.commitDirtyInd = false;
     }
 
     public boolean isWrapperFor(Class<?> iface) throws SQLException {

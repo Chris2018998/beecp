@@ -20,31 +20,31 @@ import static cn.beecp.pool.PoolStaticCenter.ResultSetClosedException;
  * @version 1.0
  */
 abstract class ProxyResultSetBase implements ResultSet {
-    protected ResultSet delegate;
-    protected PooledConnection pCon;//called by subclass to update tim
+    protected ResultSet raw;
+    protected PooledConnection p;//called by subclass to update tim
     boolean isClosed;
     private ProxyStatementBase owner;//called by subclass to check close state
 
-    public ProxyResultSetBase(ResultSet delegate, PooledConnection pCon) {
-        this.delegate = delegate;
-        this.pCon = pCon;
+    public ProxyResultSetBase(ResultSet raw, PooledConnection pCon) {
+        this.raw = raw;
+        this.p = pCon;
     }
 
-    public ProxyResultSetBase(ResultSet delegate, ProxyStatementBase owner, PooledConnection pCon) {
-        this.delegate = delegate;
+    public ProxyResultSetBase(ResultSet raw, ProxyStatementBase owner, PooledConnection p) {
+        this.raw = raw;
         this.owner = owner;
-        this.pCon = pCon;
+        this.p = p;
         owner.setOpenResultSet(this);
     }
 
     /******************************************************************************************
      *                                                                                        *
-     *                        Below are self methods                                          *
+     *                        Below are self define methods                                          *
      *                                                                                        *
      ******************************************************************************************/
 
-    boolean containsDelegate(ResultSet delegate) {
-        return this.delegate == delegate;
+    boolean containsRaw(ResultSet raw) {
+        return this.raw == raw;
     }
 
     /*******************************************************************************************
@@ -66,9 +66,9 @@ abstract class ProxyResultSetBase implements ResultSet {
         if (isClosed) return;
         try {
             isClosed = true;
-            delegate.close();
+            raw.close();
         } finally {
-            delegate = CLOSED_RSLT;
+            raw = CLOSED_RSLT;
             /*** #40-start fix NullPointException(ResultSet from DatabaseMetaData) */
             if (owner != null) owner.removeOpenResultSet(this);
             /*** #40-end *******************/

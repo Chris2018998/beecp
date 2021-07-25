@@ -21,25 +21,25 @@ import static cn.beecp.pool.PoolStaticCenter.*;
  * @version 1.0
  */
 abstract class ProxyStatementBase implements Statement {
-    protected Statement delegate;
-    protected PooledConnection pCon;//called by subclass to update time
+    protected Statement raw;
+    protected PooledConnection p;//called by subclass to update time
     boolean registered = true;
-    private ProxyConnectionBase owner;
     private boolean isClosed;
+    private ProxyConnectionBase owner;
     private ProxyResultSetBase curRe;
-    private int resultOpenCode = CLOSE_CURRENT_RESULT;
     private ArrayList<ProxyResultSetBase> results;
+    private int resultOpenCode = CLOSE_CURRENT_RESULT;
 
-    public ProxyStatementBase(Statement delegate, PooledConnection pCon) {
-        this.delegate = delegate;
-        this.pCon = pCon;
-        this.owner = pCon.proxyCon;
-        this.owner.registerStatement(this);
+    public ProxyStatementBase(Statement raw, PooledConnection p) {
+        this.raw = raw;
+        this.p = p;
+        owner = p.proxyCon;
+        owner.registerStatement(this);
     }
 
     /*******************************************************************************************
      *                                                                                         *
-     *                         Below are self methods                                          *
+     *                         Below are self define methods                                          *
      *                                                                                         *
      *******************************************************************************************/
 
@@ -107,9 +107,9 @@ abstract class ProxyStatementBase implements Statement {
             results.clear();
         }
         try {
-            delegate.close();
+            raw.close();
         } finally {
-            delegate = CLOSED_CSTM;//why? because Mysql's PreparedStatement just only remark as closed with useServerCache mode
+            raw = CLOSED_CSTM;//why? because Mysql's PreparedStatement just only remark as closed with useServerCache mode
             if (registered) owner.unregisterStatement(this);
         }
     }
@@ -120,19 +120,19 @@ abstract class ProxyStatementBase implements Statement {
 
     public boolean getMoreResults(int current) throws SQLException {
         resultOpenCode = current;
-        return delegate.getMoreResults(current);
+        return raw.getMoreResults(current);
     }
 
     public ResultSet getResultSet() throws SQLException {
-        ResultSet re = delegate.getResultSet();//raw resultSet
+        ResultSet re = raw.getResultSet();//raw resultSet
         if (re == null) return null;
-        if (curRe != null && curRe.containsDelegate(re)) return curRe;
+        if (curRe != null && curRe.containsRaw(re)) return curRe;
         if (results != null) {
             for (ProxyResultSetBase resultSetBase : results) {
-                if (resultSetBase.containsDelegate(re)) return resultSetBase;
+                if (resultSetBase.containsRaw(re)) return resultSetBase;
             }
         }
-        return createProxyResultSet(re, this, pCon);
+        return createProxyResultSet(re, this, p);
     }
 
     public void setPoolable(boolean var1) throws SQLException {
