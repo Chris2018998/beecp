@@ -21,10 +21,10 @@ abstract class ProxyDatabaseMetaDataBase implements DatabaseMetaData {
     protected PooledConnection p;//called by subclass to update time
     private ProxyConnectionBase owner;//called by subclass to check close state
 
-    public ProxyDatabaseMetaDataBase(DatabaseMetaData metaData, PooledConnection pCon) {
-        this.p = pCon;
-        this.raw = metaData;
-        this.owner = pCon.proxyCon;
+    public ProxyDatabaseMetaDataBase(DatabaseMetaData raw, PooledConnection p) {
+        this.p = p;
+        this.raw = raw;
+        this.owner = p.proxyCon;
     }
 
     protected final void checkClosed() throws SQLException {

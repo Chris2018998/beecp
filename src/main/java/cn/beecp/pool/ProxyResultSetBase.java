@@ -25,9 +25,9 @@ abstract class ProxyResultSetBase implements ResultSet {
     boolean isClosed;
     private ProxyStatementBase owner;//called by subclass to check close state
 
-    public ProxyResultSetBase(ResultSet raw, PooledConnection pCon) {
+    public ProxyResultSetBase(ResultSet raw, PooledConnection p) {
         this.raw = raw;
-        this.p = pCon;
+        this.p = p;
     }
 
     public ProxyResultSetBase(ResultSet raw, ProxyStatementBase owner, PooledConnection p) {
