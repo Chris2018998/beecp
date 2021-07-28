@@ -399,7 +399,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     b.state = BOWER_NORMAL;
                     yield();
                 } else {//here:(state == BOWER_NORMAL)
-                    long t = deadline - nanoTime();
+                   long t = deadline - nanoTime();
                     if (t > 0L) {
                         if (t > spinForTimeoutThreshold && BorrowStUpd.compareAndSet(b, BOWER_NORMAL, BOWER_WAITING)) {
                             if (servantThreadTryCount.get() > 0 && servantThreadState.get() == THREAD_WAITING && servantThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
@@ -437,11 +437,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     private final void tryWakeupServantThread() {
-        if (servantThreadTryCount.get() < poolMaxSize) {
-            servantThreadTryCount.incrementAndGet();
-            if (!waitQueue.isEmpty() && servantThreadState.get() == THREAD_WAITING && servantThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
-                unpark(this);
-        }
+        int c;
+        do {
+            c = servantThreadTryCount.get();
+            if (c >= poolMaxSize) return;
+        } while (!servantThreadTryCount.compareAndSet(c, c + 1));
+        if (!waitQueue.isEmpty() && servantThreadState.get() == THREAD_WAITING && servantThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
+            unpark(this);
     }
 
     /**
