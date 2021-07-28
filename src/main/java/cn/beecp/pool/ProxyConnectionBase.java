@@ -26,7 +26,7 @@ public abstract class ProxyConnectionBase implements Connection {
 
     public ProxyConnectionBase(PooledConnection p) {
         this.p = p;
-        this.raw = p.rawCon;
+        this.raw = p.raw;
         p.proxyCon = this;
     }
 
@@ -78,28 +78,28 @@ public abstract class ProxyConnectionBase implements Connection {
         if (p.commitDirtyInd) throw AutoCommitChangeForbiddenException;
         raw.setAutoCommit(autoCommit);
         p.curAutoCommit = autoCommit;
-        p.setResetInd(PS_AUTO, autoCommit != p.defaultAutoCommit);
+        p.setResetInd(PS_AUTO, autoCommit != p.defAutoCommit);
     }
 
     public void setTransactionIsolation(int level) throws SQLException {
         raw.setTransactionIsolation(level);
-        p.setResetInd(PS_TRANS, level != p.defaultTransactionIsolation);
+        p.setResetInd(PS_TRANS, level != p.defTransactionIsolation);
     }
 
     public void setReadOnly(boolean readOnly) throws SQLException {
         raw.setReadOnly(readOnly);
-        p.setResetInd(PS_READONLY, readOnly != p.defaultReadOnly);
+        p.setResetInd(PS_READONLY, readOnly != p.defReadOnly);
     }
 
     public void setCatalog(String catalog) throws SQLException {
         raw.setCatalog(catalog);
-        p.setResetInd(PS_CATALOG, !PoolStaticCenter.equals(catalog, p.defaultCatalog));
+        p.setResetInd(PS_CATALOG, !PoolStaticCenter.equals(catalog, p.defCatalog));
     }
 
     //for JDK1.7 begin
     public void setSchema(String schema) throws SQLException {
         raw.setSchema(schema);
-        p.setResetInd(PS_SCHEMA, !PoolStaticCenter.equals(schema, p.defaultSchema));
+        p.setResetInd(PS_SCHEMA, !PoolStaticCenter.equals(schema, p.defSchema));
     }
 
     public void abort(Executor executor) throws SQLException {
@@ -110,7 +110,7 @@ public abstract class ProxyConnectionBase implements Connection {
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
         if (p.supportNetworkTimeout()) {
             raw.setNetworkTimeout(executor, milliseconds);
-            p.setResetInd(PS_NETWORK, milliseconds != p.defaultNetworkTimeout);
+            p.setResetInd(PS_NETWORK, milliseconds != p.defNetworkTimeout);
         } else {
             throw DriverNotSupportNetworkTimeoutException;
         }

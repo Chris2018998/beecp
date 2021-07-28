@@ -21,64 +21,64 @@ import static java.lang.System.currentTimeMillis;
  * @version 1.0
  */
 final class PooledConnection implements Cloneable {
-    private static final boolean[] FALSE_ARRAY = new boolean[6];
-    public final boolean defaultAutoCommit;
-    public final boolean defaultReadOnly;
-    public final String defaultCatalog;
-    public final String defaultSchema;
-    public final int defaultTransactionIsolation;
-    public final int defaultNetworkTimeout;
-    private final boolean defaultCatalogIsNotBlank;
-    private final boolean defaultSchemaIsNotBlank;
+    private static final boolean[] FALSE = new boolean[6];
+    public final boolean defAutoCommit;
+    public final boolean defReadOnly;
+    public final String defCatalog;
+    public final String defSchema;
+    public final int defTransactionIsolation;
+    public final int defNetworkTimeout;
+    private final boolean defCatalogIsNotBlank;
+    private final boolean defSchemaIsNotBlank;
     private final boolean supportNetworkTimeout;
     private final ThreadPoolExecutor networkTimeoutExecutor;
     private final FastConnectionPool pool;
 
+    public Connection raw;
     public ProxyConnectionBase proxyCon;
+    public volatile int state;
+    public volatile long lastAccessTime;
     public boolean commitDirtyInd;
     public boolean curAutoCommit;
     public int openStmSize;
-    public Connection rawCon;
-    public volatile int state;
-    public volatile long lastAccessTime;
     private int resetCnt;// reset count
     private boolean[] resetInd;
     private ProxyStatementBase[] openStatements;
 
     public PooledConnection(FastConnectionPool pool,
-                            boolean defaultAutoCommit,
-                            boolean defaultReadOnly,
-                            String defaultCatalog,
-                            String defaultSchema,
-                            int defaultTransactionIsolation,
+                            boolean defAutoCommit,
+                            boolean defReadOnly,
+                            String defCatalog,
+                            String defSchema,
+                            int defTransactionIsolation,
                             boolean supportNetworkTimeout,
-                            int defaultNetworkTimeout,
+                            int defNetworkTimeout,
                             ThreadPoolExecutor networkTimeoutExecutor) {
         this.pool = pool;
-        this.defaultAutoCommit = defaultAutoCommit;
-        this.defaultReadOnly = defaultReadOnly;
-        this.defaultCatalog = defaultCatalog;
-        this.defaultSchema = defaultSchema;
-        this.defaultTransactionIsolation = defaultTransactionIsolation;
+        this.defAutoCommit = defAutoCommit;
+        this.defReadOnly = defReadOnly;
+        this.defCatalog = defCatalog;
+        this.defSchema = defSchema;
+        this.defTransactionIsolation = defTransactionIsolation;
         this.supportNetworkTimeout = supportNetworkTimeout;
-        this.defaultNetworkTimeout = defaultNetworkTimeout;
+        this.defNetworkTimeout = defNetworkTimeout;
         this.networkTimeoutExecutor = networkTimeoutExecutor;
-        this.curAutoCommit = defaultAutoCommit;
-        this.defaultCatalogIsNotBlank = !isBlank(defaultCatalog);
-        this.defaultSchemaIsNotBlank = !isBlank(defaultSchema);
+        this.curAutoCommit = defAutoCommit;
+        this.defCatalogIsNotBlank = !isBlank(defCatalog);
+        this.defSchemaIsNotBlank = !isBlank(defSchema);
     }
 
     public final PooledConnection copy(Connection rawConn, int state) throws CloneNotSupportedException, SQLException {
-        rawConn.setAutoCommit(defaultAutoCommit);
-        rawConn.setTransactionIsolation(defaultTransactionIsolation);
-        rawConn.setReadOnly(defaultReadOnly);
-        if (defaultCatalogIsNotBlank)
-            rawConn.setCatalog(defaultCatalog);
-        if (defaultSchemaIsNotBlank)
-            rawConn.setSchema(defaultSchema);
+        rawConn.setAutoCommit(defAutoCommit);
+        rawConn.setTransactionIsolation(defTransactionIsolation);
+        rawConn.setReadOnly(defReadOnly);
+        if (defCatalogIsNotBlank)
+            rawConn.setCatalog(defCatalog);
+        if (defSchemaIsNotBlank)
+            rawConn.setSchema(defSchema);
         PooledConnection p = (PooledConnection) clone();
         p.state = state;
-        p.rawCon = rawConn;
+        p.raw = rawConn;
         p.resetInd = new boolean[6];
         p.openStatements = new ProxyStatementBase[10];
         p.lastAccessTime = currentTimeMillis();//first time
@@ -102,7 +102,7 @@ final class PooledConnection implements Cloneable {
         } catch (Throwable e) {
             commonLog.error("Connection close error", e);
         } finally {
-            oclose(rawCon);
+            oclose(raw);
         }
     }
 
@@ -114,7 +114,7 @@ final class PooledConnection implements Cloneable {
             pool.recycle(this);
         } catch (Throwable e) {
             pool.abandonOnReturn(this);
-            throw (e instanceof SQLException) ? (SQLException) e : new SQLException(e);
+            throw e instanceof SQLException ? (SQLException) e : new SQLException(e);
         }
     }
 
@@ -129,32 +129,32 @@ final class PooledConnection implements Cloneable {
 
     public final void resetRawConn() throws SQLException {
         if (commitDirtyInd) { //Roll back when commit dirty
-            rawCon.rollback();
+            raw.rollback();
             commitDirtyInd = false;
         }
         //reset begin
         if (resetCnt > 0) {
             if (resetInd[0]) {//reset autoCommit
-                rawCon.setAutoCommit(defaultAutoCommit);
-                curAutoCommit = defaultAutoCommit;
+                raw.setAutoCommit(defAutoCommit);
+                curAutoCommit = defAutoCommit;
             }
             if (resetInd[1])
-                rawCon.setTransactionIsolation(defaultTransactionIsolation);
+                raw.setTransactionIsolation(defTransactionIsolation);
             if (resetInd[2]) //reset readonly
-                rawCon.setReadOnly(defaultReadOnly);
+                raw.setReadOnly(defReadOnly);
             if (resetInd[3]) //reset catalog
-                rawCon.setCatalog(defaultCatalog);
+                raw.setCatalog(defCatalog);
             //for JDK1.7 begin
             if (resetInd[4]) //reset schema
-                rawCon.setSchema(defaultSchema);
+                raw.setSchema(defSchema);
             if (resetInd[5]) //reset networkTimeout
-                rawCon.setNetworkTimeout(networkTimeoutExecutor, defaultNetworkTimeout);
+                raw.setNetworkTimeout(networkTimeoutExecutor, defNetworkTimeout);
             //for JDK1.7 end
             resetCnt = 0;
-            arraycopy(FALSE_ARRAY, 0, resetInd, 0, 6);
+            arraycopy(FALSE, 0, resetInd, 0, 6);
         }//reset end
         //clear warnings
-        rawCon.clearWarnings();
+        raw.clearWarnings();
     }
 
     //****************below are some statement trace methods***************************/

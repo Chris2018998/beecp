@@ -321,12 +321,12 @@ final class ProxyClassGenerator {
             } else {
                 if (methodName.startsWith("execute")) {
                     methodBuffer.append("p.commitDirtyInd=!p.curAutoCommit;");
-                    methodBuffer.append(ctMethod.getReturnType().getName() + " re=" + rawName + methodName + "($$);");
+                    methodBuffer.append(ctMethod.getReturnType().getName() + " r=" + rawName + methodName + "($$);");
                     methodBuffer.append("p.lastAccessTime=System.currentTimeMillis();");
                     if (ctMethod.getReturnType() == ctResultSetClass) {
-                        methodBuffer.append("return new ProxyResultSet(re,this,p);");
+                        methodBuffer.append("return new ProxyResultSet(r,this,p);");
                     } else {
-                        methodBuffer.append("return re;");
+                        methodBuffer.append("return r;");
                     }
                 } else {
                     if (ctMethod.getReturnType() == ctResultSetClass) {
@@ -414,9 +414,9 @@ final class ProxyClassGenerator {
                         methodBuffer.append(" p.updateAccessTime();");
                 } else {
                     if (methodName.startsWith("insertRow") || methodName.startsWith("updateRow") || methodName.startsWith("deleteRow")) {
-                        methodBuffer.append(ctMethod.getReturnType().getName() + " re=raw." + methodName + "($$);")
+                        methodBuffer.append(ctMethod.getReturnType().getName() + " r=raw." + methodName + "($$);")
                                 .append(" p.updateAccessTime();")
-                                .append(" return re;");
+                                .append(" return r;");
                     } else {
                         methodBuffer.append("return raw." + methodName + "($$);");
                     }

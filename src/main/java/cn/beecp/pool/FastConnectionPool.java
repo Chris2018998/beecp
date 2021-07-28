@@ -399,7 +399,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     b.state = BOWER_NORMAL;
                     yield();
                 } else {//here:(state == BOWER_NORMAL)
-                   long t = deadline - nanoTime();
+                    long t = deadline - nanoTime();
                     if (t > 0L) {
                         if (t > spinForTimeoutThreshold && BorrowStUpd.compareAndSet(b, BOWER_NORMAL, BOWER_WAITING)) {
                             if (servantThreadTryCount.get() > 0 && servantThreadState.get() == THREAD_WAITING && servantThreadState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
@@ -794,7 +794,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     public final boolean isAlive(PooledConnection p) {
         try {
-            if (p.rawCon.isValid(connectionTestTimeout)) {
+            if (p.raw.isValid(connectionTestTimeout)) {
                 p.lastAccessTime = currentTimeMillis();
                 return true;
             }
@@ -825,7 +825,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         public final boolean isAlive(PooledConnection p) {
             Statement st = null;
             boolean changed = false;
-            Connection con = p.rawCon;
+            Connection con = p.raw;
             try {
                 if (autoCommit) {
                     con.setAutoCommit(false);

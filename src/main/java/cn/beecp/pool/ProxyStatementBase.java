@@ -30,8 +30,8 @@ abstract class ProxyStatementBase implements Statement {
     private ArrayList<ProxyResultSetBase> results;
     private int resultOpenCode = CLOSE_CURRENT_RESULT;
 
-    public ProxyStatementBase(Statement raw, PooledConnection p) {
-        this.raw = raw;
+    public ProxyStatementBase(Statement r, PooledConnection p) {
+        this.raw = r;
         this.p = p;
         owner = p.proxyCon;
         owner.registerStatement(this);
@@ -43,15 +43,15 @@ abstract class ProxyStatementBase implements Statement {
      *                                                                                         *
      *******************************************************************************************/
 
-    final void removeOpenResultSet(ProxyResultSetBase re) {//call by ProxyResultSetBase.constructor
-        if (re == curRe) {
+    final void removeOpenResultSet(ProxyResultSetBase r) {//call by ProxyResultSetBase.constructor
+        if (r == curRe) {
             curRe = null;
         } else if (results != null) {
-            results.remove(re);
+            results.remove(r);
         }
     }
 
-    final void setOpenResultSet(ProxyResultSetBase re) {//call by ProxyResultSetBase.constructor
+    final void setOpenResultSet(ProxyResultSetBase r) {//call by ProxyResultSetBase.constructor
         switch (resultOpenCode) {
             case CLOSE_CURRENT_RESULT: {
                 if (curRe != null && !curRe.isClosed) oclose(curRe);
@@ -79,7 +79,7 @@ abstract class ProxyStatementBase implements Statement {
             default:
                 break;
         }
-        this.curRe = re;
+        this.curRe = r;
     }
 
     /******************************************************************************************
