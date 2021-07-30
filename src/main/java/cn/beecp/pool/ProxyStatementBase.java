@@ -30,11 +30,11 @@ abstract class ProxyStatementBase implements Statement {
     private ArrayList<ProxyResultSetBase> results;
     private int resultOpenCode = CLOSE_CURRENT_RESULT;
 
-    public ProxyStatementBase(Statement r, PooledConnection p) {
-        this.raw = r;
+    public ProxyStatementBase(Statement raw, ProxyConnectionBase o, PooledConnection p) {
+        o.registerStatement(this);
+        this.raw = raw;
+        this.owner = o;
         this.p = p;
-        owner = p.proxyCon;
-        owner.registerStatement(this);
     }
 
     /*******************************************************************************************

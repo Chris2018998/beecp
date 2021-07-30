@@ -96,6 +96,7 @@ final class ProxyClassGenerator {
             ctProxyStatementClass.setModifiers(Modifier.PUBLIC);
             CtClass[] statementCreateParam = new CtClass[]{
                     classPool.get("java.sql.Statement"),
+                    classPool.get("cn.beecp.pool.ProxyConnectionBase"),
                     classPool.get("cn.beecp.pool.PooledConnection")
             };
             ctConstructor = new CtConstructor(statementCreateParam, ctProxyStatementClass);
@@ -113,6 +114,7 @@ final class ProxyClassGenerator {
 
             CtClass[] statementPsCreateParam = new CtClass[]{
                     classPool.get("java.sql.PreparedStatement"),
+                    classPool.get("cn.beecp.pool.ProxyConnectionBase"),
                     classPool.get("cn.beecp.pool.PooledConnection")
 
             };
@@ -131,6 +133,7 @@ final class ProxyClassGenerator {
 
             CtClass[] statementCsCreateParam = new CtClass[]{
                     classPool.get("java.sql.CallableStatement"),
+                    classPool.get("cn.beecp.pool.ProxyConnectionBase"),
                     classPool.get("cn.beecp.pool.PooledConnection")};
             ctConstructor = new CtConstructor(statementCsCreateParam, ctProxyCsStatementClass);
             ctConstructor.setModifiers(Modifier.PUBLIC);
@@ -257,13 +260,13 @@ final class ProxyClassGenerator {
             methodBuffer.append("{");
             if (ctMethod.getReturnType() == ctStatementClass) {
                 newCtMethodm.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
-                methodBuffer.append("return new ProxyStatement(raw." + methodName + "($$),p);");
+                methodBuffer.append("return new ProxyStatement(raw." + methodName + "($$),this,p);");
             } else if (ctMethod.getReturnType() == ctPreparedStatementClass) {
                 newCtMethodm.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
-                methodBuffer.append("return new ProxyPsStatement(raw." + methodName + "($$),p);");
+                methodBuffer.append("return new ProxyPsStatement(raw." + methodName + "($$),this,p);");
             } else if (ctMethod.getReturnType() == ctCallableStatementClass) {
                 newCtMethodm.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
-                methodBuffer.append("return new ProxyCsStatement(raw." + methodName + "($$),p);");
+                methodBuffer.append("return new ProxyCsStatement(raw." + methodName + "($$),this,p);");
             } else if (ctMethod.getReturnType() == ctDatabaseMetaDataIntf) {
                 methodBuffer.append("return new ProxyDatabaseMetaData(raw." + methodName + "($$),p);");
             } else if (methodName.equals("close")) {
