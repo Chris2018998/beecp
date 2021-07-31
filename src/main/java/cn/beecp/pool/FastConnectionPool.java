@@ -889,7 +889,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    //create pooled connection by asyn
     private static final class IdleTimeoutScanThread extends Thread {
         private FastConnectionPool pool;
 

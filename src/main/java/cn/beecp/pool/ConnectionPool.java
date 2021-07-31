@@ -51,6 +51,18 @@ public interface ConnectionPool {
     void close() throws SQLException;
 
     /**
+     * Clear all connections from pool
+     */
+    void clearAllConnections();
+
+    /**
+     * Clear all connections from pool
+     *
+     * @param forceCloseUsingOnClear close using connection directly
+     */
+    void clearAllConnections(boolean forceCloseUsingOnClear);
+
+    /**
      * check pool is closed
      *
      * @return true, closed, false active
@@ -68,18 +80,6 @@ public interface ConnectionPool {
      * @param indicator indicator,whether print pool runtime info
      */
     void setEnableRuntimeLog(boolean indicator);
-
-    /**
-     * Clear all connections from pool
-     */
-    void clearAllConnections();
-
-    /**
-     * Clear all connections from pool
-     *
-     * @param forceCloseUsingOnClear close using connection directly
-     */
-    void clearAllConnections(boolean forceCloseUsingOnClear);
 
 }
 	
