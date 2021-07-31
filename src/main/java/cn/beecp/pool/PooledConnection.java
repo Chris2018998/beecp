@@ -28,18 +28,18 @@ final class PooledConnection implements Cloneable {
     public final String defSchema;
     public final int defTransactionIsolation;
     public final int defNetworkTimeout;
-    private final boolean defCatalogIsNotBlank;
-    private final boolean defSchemaIsNotBlank;
+    private final FastConnectionPool pool;
+    private final boolean defCatalogSetInd;
+    private final boolean defSchemaSetInd;
     private final boolean supportNetworkTimeout;
     private final ThreadPoolExecutor networkTimeoutExecutor;
-    private final FastConnectionPool pool;
+    public boolean curAutoCommit;
+    public boolean commitDirtyInd;
+    public ProxyConnectionBase proxyCon;
 
     public Connection raw;
-    public ProxyConnectionBase proxyCon;
     public volatile int state;
     public volatile long lastAccessTime;
-    public boolean commitDirtyInd;
-    public boolean curAutoCommit;
     public int openStmSize;
     private int resetCnt;// reset count
     private boolean[] resetInd;
@@ -63,22 +63,23 @@ final class PooledConnection implements Cloneable {
         this.supportNetworkTimeout = supportNetworkTimeout;
         this.defNetworkTimeout = defNetworkTimeout;
         this.networkTimeoutExecutor = networkTimeoutExecutor;
+        this.defCatalogSetInd = !isBlank(defCatalog);
+        this.defSchemaSetInd = !isBlank(defSchema);
         this.curAutoCommit = defAutoCommit;
-        this.defCatalogIsNotBlank = !isBlank(defCatalog);
-        this.defSchemaIsNotBlank = !isBlank(defSchema);
     }
 
-    public final PooledConnection copy(Connection rawConn, int state) throws CloneNotSupportedException, SQLException {
-        rawConn.setAutoCommit(defAutoCommit);
-        rawConn.setTransactionIsolation(defTransactionIsolation);
-        rawConn.setReadOnly(defReadOnly);
-        if (defCatalogIsNotBlank)
-            rawConn.setCatalog(defCatalog);
-        if (defSchemaIsNotBlank)
-            rawConn.setSchema(defSchema);
+    public final PooledConnection copy(Connection raw, int state) throws CloneNotSupportedException, SQLException {
+        raw.setAutoCommit(defAutoCommit);
+        raw.setTransactionIsolation(defTransactionIsolation);
+        raw.setReadOnly(defReadOnly);
+        if (defCatalogSetInd)
+            raw.setCatalog(defCatalog);
+        if (defSchemaSetInd)
+            raw.setSchema(defSchema);
+
         PooledConnection p = (PooledConnection) clone();
         p.state = state;
-        p.raw = rawConn;
+        p.raw = raw;
         p.resetInd = new boolean[6];
         p.openStatements = new ProxyStatementBase[10];
         p.lastAccessTime = currentTimeMillis();//first time
