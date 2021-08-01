@@ -60,8 +60,8 @@ final class PooledConnection implements Cloneable {
         this.defCatalog = defCatalog;
         this.defSchema = defSchema;
         this.defTransactionIsolation = defTransactionIsolation;
-        this.supportNetworkTimeout = supportNetworkTimeout;
         this.defNetworkTimeout = defNetworkTimeout;
+        this.supportNetworkTimeout = supportNetworkTimeout;
         this.networkTimeoutExecutor = networkTimeoutExecutor;
         this.defCatalogSetInd = !isBlank(defCatalog);
         this.defSchemaSetInd = !isBlank(defSchema);

@@ -20,8 +20,8 @@ import static java.lang.System.currentTimeMillis;
  * @version 1.0
  */
 public abstract class ProxyConnectionBase implements Connection {
+    protected final PooledConnection p;//called by subclass to update time
     protected Connection raw;
-    protected PooledConnection p;//called by subclass to update time
     private boolean isClosed;
 
     public ProxyConnectionBase(PooledConnection p) {

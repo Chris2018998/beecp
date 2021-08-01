@@ -20,8 +20,8 @@ import static cn.beecp.pool.PoolStaticCenter.ResultSetClosedException;
  * @version 1.0
  */
 abstract class ProxyResultSetBase implements ResultSet {
+    protected final PooledConnection p;//called by subclass to update tim
     protected ResultSet raw;
-    protected PooledConnection p;//called by subclass to update tim
     boolean isClosed;
     private ProxyStatementBase owner;//called by subclass to check close state
 

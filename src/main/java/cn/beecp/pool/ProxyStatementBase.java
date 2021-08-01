@@ -21,8 +21,8 @@ import static cn.beecp.pool.PoolStaticCenter.*;
  * @version 1.0
  */
 abstract class ProxyStatementBase implements Statement {
+    protected final PooledConnection p;//called by subclass to update time
     protected Statement raw;
-    protected PooledConnection p;//called by subclass to update time
     boolean registered = true;
     private boolean isClosed;
     private ProxyConnectionBase owner;
