@@ -40,10 +40,10 @@ final class PooledConnection implements Cloneable {
     public Connection raw;
     public volatile int state;
     public volatile long lastAccessTime;
-    public int openStmSize;
     private int resetCnt;// reset count
     private boolean[] resetInd;
     private ProxyStatementBase[] openStatements;
+    public int openStmSize;
 
     public PooledConnection(FastConnectionPool pool,
                             boolean defAutoCommit,
@@ -161,9 +161,9 @@ final class PooledConnection implements Cloneable {
     //****************below are some statement trace methods***************************/
     public final void registerStatement(ProxyStatementBase s) {
         if (openStmSize == openStatements.length) {//full
-            ProxyStatementBase[] newArray = new ProxyStatementBase[openStmSize << 1];
-            arraycopy(openStatements, 0, newArray, 0, openStmSize);
-            openStatements = newArray;
+            ProxyStatementBase[] array = new ProxyStatementBase[openStmSize << 1];
+            arraycopy(openStatements, 0, array, 0, openStmSize);
+            openStatements = array;
         }
         openStatements[openStmSize++] = s;
     }
