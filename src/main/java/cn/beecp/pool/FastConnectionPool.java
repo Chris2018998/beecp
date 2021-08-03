@@ -379,7 +379,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             boolean failed = false;
             Throwable cause = null;
             deadline += maxWaitNs;
-            Thread bth = b.thread;
+            final Thread bth = b.thread;
 
             do {
                 final Object s = b.state;
@@ -457,7 +457,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         transferPolicy.beforeTransfer(p);
         W:
         while (it.hasNext()) {
-            Borrower b = it.next();
+            final Borrower b = it.next();
             Object s;
             do {
                 s = b.state;
@@ -481,7 +481,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         final Iterator<Borrower> it = waitQueue.iterator();
         W:
         while (it.hasNext()) {
-            Borrower b = it.next();
+            final Borrower b = it.next();
             Object s;
             do {
                 s = b.state;
