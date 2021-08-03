@@ -52,13 +52,14 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         XaConnectionFactoryMap.put("postgresql", "cn.beecp.xa.PostgresXaConnectionFactory");
     }
 
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private final ReentrantReadWriteLock.ReadLock rLock = lock.readLock();
+    private final ReentrantReadWriteLock.WriteLock wLock = lock.writeLock();
+
     //pool initialized
     private boolean inited;
     private ConnectionPool pool;
     private SQLException failedCause;
-    private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-    private ReentrantReadWriteLock.ReadLock rLock = lock.readLock();
-    private ReentrantReadWriteLock.WriteLock wLock = lock.writeLock();
     private XaConnectionFactory xaConnectionFactory;
 
     public BeeDataSource() {

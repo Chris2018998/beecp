@@ -24,7 +24,7 @@ public abstract class ProxyConnectionBase implements Connection {
     protected Connection raw;
     private boolean isClosed;
 
-    public ProxyConnectionBase(PooledConnection p) {
+    public ProxyConnectionBase(final PooledConnection p) {
         this.p = p;
         this.raw = p.raw;
         p.proxyCon = this;
@@ -45,11 +45,11 @@ public abstract class ProxyConnectionBase implements Connection {
         return raw;
     }
 
-    synchronized final void registerStatement(ProxyStatementBase s) {
+    synchronized final void registerStatement(final ProxyStatementBase s) {
         p.registerStatement(s);
     }
 
-    synchronized final void unregisterStatement(ProxyStatementBase s) {
+    synchronized final void unregisterStatement(final ProxyStatementBase s) {
         p.unregisterStatement(s);
     }
 
@@ -74,7 +74,7 @@ public abstract class ProxyConnectionBase implements Connection {
         p.recycleSelf();
     }
 
-    public final void setAutoCommit(boolean autoCommit) throws SQLException {
+    public final void setAutoCommit(final boolean autoCommit) throws SQLException {
         if (p.commitDirtyInd) throw AutoCommitChangeForbiddenException;
         raw.setAutoCommit(autoCommit);
         p.curAutoCommit = autoCommit;

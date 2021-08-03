@@ -190,7 +190,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     //create one pooled connection
-    private synchronized final PooledConnection createPooledConn(int state) throws SQLException {
+    private synchronized final PooledConnection createPooledConn(final int state) throws SQLException {
         int l = conArray.length;
         if (l < poolMaxSize) {
             if (printRuntimeLog)
@@ -221,7 +221,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     //remove one pooled connection
-    private synchronized void removePooledConn(PooledConnection p, String removeType) {
+    private synchronized void removePooledConn(final PooledConnection p, final String removeType) {
         if (printRuntimeLog)
             commonLog.info("BeeCP({}))begin to remove pooled connection:{},reason:{}", poolName, p, removeType);
         p.onBeforeRemove();
@@ -382,7 +382,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             Thread bth = b.thread;
 
             do {
-                Object s = b.state;
+                final Object s = b.state;
                 if (s instanceof PooledConnection) {
                     p = (PooledConnection) s;
                     if (transferPolicy.tryCatch(p) && testOnBorrow(p)) {
@@ -399,7 +399,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     b.state = BOWER_NORMAL;
                     yield();
                 } else {//here:(state == BOWER_NORMAL)
-                    long t = deadline - nanoTime();
+                    final long t = deadline - nanoTime();
                     if (t > 0L) {
                         if (t > spinForTimeoutThreshold && BorrowStUpd.compareAndSet(b, BOWER_NORMAL, BOWER_WAITING)) {
                             if (servantTryCount.get() > 0 && servantState.get() == THREAD_WAITING && servantState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
@@ -424,7 +424,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     private final PooledConnection searchOrCreate() throws SQLException {
-        PooledConnection[] array = conArray;
+        final PooledConnection[] array = conArray;
         int l = array.length;
         for (int i = 0; i < l; ++i) {
             PooledConnection p = array[i];
@@ -452,8 +452,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *
      * @param p target connection need release
      */
-    public final void recycle(PooledConnection p) {
-        Iterator<Borrower> it = waitQueue.iterator();
+    public final void recycle(final PooledConnection p) {
+        final Iterator<Borrower> it = waitQueue.iterator();
         transferPolicy.beforeTransfer(p);
         W:
         while (it.hasNext()) {
@@ -477,8 +477,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *
      * @param e: transfer Exception to waiter
      */
-    private void transferException(Throwable e) {
-        Iterator<Borrower> it = waitQueue.iterator();
+    private void transferException(final Throwable e) {
+        final Iterator<Borrower> it = waitQueue.iterator();
         W:
         while (it.hasNext()) {
             Borrower b = it.next();
@@ -497,7 +497,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *
      * @param p target connection need release
      */
-    final void abandonOnReturn(PooledConnection p) {
+    final void abandonOnReturn(final PooledConnection p) {
         removePooledConn(p, DESC_RM_BAD);
         tryWakeupServantThread();
     }
@@ -507,7 +507,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *
      * @return boolean, true:alive
      */
-    private final boolean testOnBorrow(PooledConnection p) {
+    private final boolean testOnBorrow(final PooledConnection p) {
         if (currentTimeMillis() - p.lastAccessTime - conTestInterval > 0L && !conTester.isAlive(p)) {
             removePooledConn(p, DESC_RM_BAD);
             tryWakeupServantThread();
@@ -781,18 +781,18 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         return CON_IDLE;
     }
 
-    public final void beforeTransfer(PooledConnection p) {
+    public final void beforeTransfer(final PooledConnection p) {
         p.state = CON_IDLE;
     }
 
-    public final boolean tryCatch(PooledConnection p) {
+    public final boolean tryCatch(final PooledConnection p) {
         return ConStUpd.compareAndSet(p, CON_IDLE, CON_USING);
     }
 
-    public final void onFailedTransfer(PooledConnection p) {
+    public final void onFailedTransfer(final PooledConnection p) {
     }
 
-    public final boolean isAlive(PooledConnection p) {
+    public final boolean isAlive(final PooledConnection p) {
         try {
             if (p.raw.isValid(connectionTestTimeout)) {
                 p.lastAccessTime = currentTimeMillis();
@@ -822,7 +822,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             this.supportQueryTimeout = supportQueryTimeout;
         }
 
-        public final boolean isAlive(PooledConnection p) {
+        public final boolean isAlive(final PooledConnection p) {
             Statement st = null;
             boolean changed = false;
             Connection con = p.raw;
@@ -935,14 +935,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             return CON_USING;
         }
 
-        public final void beforeTransfer(PooledConnection p) {
+        public final void beforeTransfer(final PooledConnection p) {
         }
 
-        public final boolean tryCatch(PooledConnection p) {
+        public final boolean tryCatch(final PooledConnection p) {
             return p.state == CON_USING;
         }
 
-        public final void onFailedTransfer(PooledConnection p) {
+        public final void onFailedTransfer(final PooledConnection p) {
             p.state = CON_IDLE;
         }
     }
