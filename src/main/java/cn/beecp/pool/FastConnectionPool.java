@@ -455,32 +455,17 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     public final void recycle(final PooledConnection p) {
         final Iterator<Borrower> it = waitQueue.iterator();
         transferPolicy.beforeTransfer(p);
-//        W:
-//        while (it.hasNext()) {
-//            final Borrower b = it.next();
-//            Object s;
-//            do {
-//                s = b.state;
-//                if (!(s instanceof BorrowerState)) continue W;
-//                if (p.state != unCatchStateCode) return;
-//            } while (!BorrowStUpd.compareAndSet(b, s, p));
-//            if (s == BOWER_WAITING) unpark(b.thread);
-//            return;
-//        }
-//
-
         W:
         while (it.hasNext()) {
             final Borrower b = it.next();
-            Object s = b.state;
-            if (!(s instanceof BorrowerState)) continue W;
-            if (p.state != unCatchStateCode) return;
-            if (BorrowStUpd.compareAndSet(b, s, p)) {
-                if (s == BOWER_WAITING) unpark(b.thread);
-                return;
-            } else {
-                yield();
-            }
+            Object s;
+            do {
+                s = b.state;
+                if (!(s instanceof BorrowerState)) continue W;
+                if (p.state != unCatchStateCode) return;
+            } while (!BorrowStUpd.compareAndSet(b, s, p));
+            if (s == BOWER_WAITING) unpark(b.thread);
+            return;
         }
         transferPolicy.onFailedTransfer(p);
         tryWakeupServantThread();
