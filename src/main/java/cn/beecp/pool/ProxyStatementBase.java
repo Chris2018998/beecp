@@ -22,15 +22,15 @@ import static cn.beecp.pool.PoolStaticCenter.*;
  */
 abstract class ProxyStatementBase implements Statement {
     protected final PooledConnection p;//called by subclass to update time
+    private final ProxyConnectionBase owner;
     protected Statement raw;
     boolean registered = true;
     private boolean isClosed;
-    private ProxyConnectionBase owner;
     private ProxyResultSetBase curRe;
     private ArrayList<ProxyResultSetBase> results;
     private int resultOpenCode = CLOSE_CURRENT_RESULT;
 
-    public ProxyStatementBase(final Statement raw, final ProxyConnectionBase o,final PooledConnection p) {
+    public ProxyStatementBase(final Statement raw, final ProxyConnectionBase o, final PooledConnection p) {
         o.registerStatement(this);
         this.raw = raw;
         this.owner = o;

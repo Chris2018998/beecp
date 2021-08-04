@@ -103,7 +103,7 @@ public class PoolStaticCenter {
             }
     );
 
-    static final void oclose(ResultSet r) {
+    static final void oclose(final ResultSet r) {
         try {
             r.close();
         } catch (Throwable e) {
@@ -111,7 +111,7 @@ public class PoolStaticCenter {
         }
     }
 
-    static final void oclose(Statement s) {
+    static final void oclose(final Statement s) {
         try {
             s.close();
         } catch (Throwable e) {
@@ -119,7 +119,7 @@ public class PoolStaticCenter {
         }
     }
 
-    static final void oclose(Connection c) {
+    static final void oclose(final Connection c) {
         try {
             c.close();
         } catch (Throwable e) {
@@ -127,11 +127,11 @@ public class PoolStaticCenter {
         }
     }
 
-    static final Connection createProxyConnection(PooledConnection p, Borrower b) throws SQLException {
+    static final Connection createProxyConnection(final PooledConnection p, final Borrower b) throws SQLException {
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
     }
 
-    static final ResultSet createProxyResultSet(ResultSet raw, ProxyStatementBase owner, PooledConnection p) throws SQLException {
+    static final ResultSet createProxyResultSet(final ResultSet raw, final ProxyStatementBase owner, final PooledConnection p) throws SQLException {
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
     }
 
