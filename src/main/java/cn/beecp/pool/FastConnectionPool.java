@@ -463,9 +463,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 s = b.state;
                 if (!(s instanceof BorrowerState)) continue W;
                 if (p.state != unCatchStateCode) return;
-            } while (!BorrowStUpd.compareAndSet(b, s, p));
-            if (s == BOWER_WAITING) unpark(b.thread);
-            return;
+                if(BorrowStUpd.compareAndSet(b, s, p)){
+                   if (s == BOWER_WAITING) unpark(b.thread);
+                   return;
+                }
+                yield();
+            } while (true);
         }
         transferPolicy.onFailedTransfer(p);
         tryWakeupServantThread();
@@ -489,9 +492,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (BorrowStUpd.compareAndSet(b, s, e)) {
                     if (s == BOWER_WAITING) unpark(b.thread);
                     return;
-                } else {//why?
-                    yield();
                 }
+                yield();
             } while (true);
         }
     }
