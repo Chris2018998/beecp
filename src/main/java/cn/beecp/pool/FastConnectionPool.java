@@ -21,6 +21,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+
 import static cn.beecp.pool.PoolStaticCenter.*;
 import static java.lang.System.*;
 import static java.util.concurrent.TimeUnit.*;
@@ -457,9 +458,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         W:
         while (it.hasNext()) {
             final Borrower b = it.next();
-            Object s;
             do {
-                s = b.state;
+                final Object s = b.state;
                 if (!(s instanceof BorrowerState)) continue W;
                 if (p.state != unCatchStateCode) return;
                 if (BorrowStUpd.compareAndSet(b, s, p)) {
@@ -484,9 +484,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         W:
         while (it.hasNext()) {
             final Borrower b = it.next();
-            Object s;
             do {
-                s = b.state;
+                final Object s = b.state;
                 if (!(s instanceof BorrowerState)) continue W;
                 if (BorrowStUpd.compareAndSet(b, s, e)) {
                     if (s == BOWER_WAITING) unpark(b.thread);
