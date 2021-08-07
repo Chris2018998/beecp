@@ -21,7 +21,6 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
-
 import static cn.beecp.pool.PoolStaticCenter.*;
 import static java.lang.System.*;
 import static java.util.concurrent.TimeUnit.*;
@@ -463,9 +462,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 s = b.state;
                 if (!(s instanceof BorrowerState)) continue W;
                 if (p.state != unCatchStateCode) return;
-                if(BorrowStUpd.compareAndSet(b, s, p)){
-                   if (s == BOWER_WAITING) unpark(b.thread);
-                   return;
+                if (BorrowStUpd.compareAndSet(b, s, p)) {
+                    if (s == BOWER_WAITING) unpark(b.thread);
+                    return;
                 }
                 yield();
             } while (true);
@@ -805,7 +804,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 return true;
             }
         } catch (Throwable e) {
-            commonLog.error("BeeCP({})failed to test connection", poolName, e);
+            commonLog.debug("BeeCP({})failed to test connection with 'isValid' method", poolName, e);
         }
         return false;
     }
@@ -842,14 +841,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     try {
                         st.setQueryTimeout(conTestTimeout);
                     } catch (Throwable e) {
-                        commonLog.error("BeeCP({})failed to setQueryTimeout", poolName, e);
+                        commonLog.debug("BeeCP({})failed to setQueryTimeout", poolName, e);
                     }
                 }
                 st.execute(testSql);
                 p.lastAccessTime = currentTimeMillis();
                 return true;
             } catch (Throwable e) {
-                commonLog.error("BeeCP({})failed to test connection", poolName, e);
+                commonLog.debug("BeeCP({})failed to test connection by sql", poolName, e);
                 return false;
             } finally {
                 if (st != null) oclose(st);
@@ -857,7 +856,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     con.rollback();
                     if (changed) con.setAutoCommit(autoCommit);//reset to default
                 } catch (Throwable e) {
-                    commonLog.error("BeeCP({})failed to rest connection after sql test", poolName, e);
+                    commonLog.debug("BeeCP({})failed to rest connection after sql test", poolName, e);
                     return false;
                 }
             }
