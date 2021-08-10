@@ -247,16 +247,15 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             defaultNetworkTimeout = rawCon.getNetworkTimeout();
             if (defaultNetworkTimeout < 0) {
                 supportNetworkTimeout = false;
-                commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
+                if (printRuntimeLog)
+                    commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
             } else {
                 rawCon.setNetworkTimeout(networkTimeoutExecutor, defaultNetworkTimeout);
             }
         } catch (Throwable e) {
             supportNetworkTimeout = false;
             if (printRuntimeLog)
-                commonLog.info("BeeCP({})driver not support 'networkTimeout',cause:", poolName, e);
-            else
-                commonLog.warn("BeeCP({})driver not support 'networkTimeout'", poolName);
+                commonLog.warn("BeeCP({})driver not support 'networkTimeout',cause:", poolName, e);
         }
 
         int defaultTransactionIsolation = poolConfig.getDefaultTransactionIsolationCode();
@@ -279,14 +278,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 return;
             } else {
                 validTestFailed = true;
-                commonLog.warn("BeeCP({})driver not support 'isValid'", poolName);
+                if (printRuntimeLog)
+                    commonLog.warn("BeeCP({})driver not support 'isValid'", poolName);
             }
         } catch (Throwable e) {
             validTestFailed = true;
             if (printRuntimeLog)
-                commonLog.info("BeeCP({})driver not support 'isValid',cause:", poolName, e);
-            else
-                commonLog.warn("BeeCP({})driver not support 'isValid'", poolName);
+                commonLog.warn("BeeCP({})driver not support 'isValid',cause:", poolName, e);
         }
 
         if (validTestFailed) {
@@ -309,9 +307,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         } catch (Throwable e) {
             ((SqlQueryTester) conTester).setSupportQueryTimeout(false);
             if (printRuntimeLog)
-                commonLog.info("BeeCP({})driver not support 'queryTimeout',cause:", poolName, e);
-            else
-                commonLog.warn("BeeCP({})driver not support 'queryTimeout'", poolName);
+                commonLog.warn("BeeCP({})driver not support 'queryTimeout',cause:", poolName, e);
         }
     }
 
