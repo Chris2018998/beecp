@@ -289,7 +289,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
         if (validTestFailed) {
             Statement st = null;
-            this.conTester = new SqlQueryTester(poolName, connectionTestTimeout,
+            this.conTester = new SqlQueryTester(
                     poolConfig.isDefaultAutoCommit(), poolConfig.getConnectionTestSql());
             try {
                 st = rawCon.createStatement();
@@ -895,17 +895,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     private final class SqlQueryTester implements PooledConnectionTester {
-        private final String poolName;
-        private final int conTestTimeout;//seconds
         private final String testSql;
         private final boolean autoCommit;//connection default value
         private boolean supportQueryTimeout = true;
 
-        public SqlQueryTester(String poolName, int ConTestTimeout, boolean autoCommit, String testSql) {
-            this.poolName = poolName;
-            this.conTestTimeout = ConTestTimeout;
-            this.autoCommit = autoCommit;
+        public SqlQueryTester(boolean autoCommit, String testSql) {
             this.testSql = testSql;
+            this.autoCommit = autoCommit;
         }
 
         public void setSupportQueryTimeout(boolean supportQueryTimeout) {
@@ -924,7 +920,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 st = con.createStatement();
                 if (supportQueryTimeout) {
                     try {
-                        st.setQueryTimeout(conTestTimeout);
+                        st.setQueryTimeout(connectionTestTimeout);
                     } catch (Throwable e) {
                         if (printRuntimeLog)
                             commonLog.warn("BeeCP({})failed to setQueryTimeout", poolName, e);
