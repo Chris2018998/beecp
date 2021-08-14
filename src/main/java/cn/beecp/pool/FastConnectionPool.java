@@ -799,63 +799,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 return true;
             }
         } catch (Throwable e) {
-            commonLog.debug("BeeCP({})failed to test connection with 'isValid' method", poolName, e);
+            if (printRuntimeLog)
+                commonLog.warn("BeeCP({})failed to test connection with 'isValid' method", poolName, e);
         }
         return false;
-    }
-
-    private static final class SqlQueryTester implements PooledConnectionTester {
-        private final String poolName;
-        private final int conTestTimeout;//seconds
-        private final String testSql;
-        private final boolean autoCommit;//connection default value
-        private boolean supportQueryTimeout = true;
-
-        public SqlQueryTester(String poolName, int ConTestTimeout, boolean autoCommit, String testSql) {
-            this.poolName = poolName;
-            this.conTestTimeout = ConTestTimeout;
-            this.autoCommit = autoCommit;
-            this.testSql = testSql;
-        }
-
-        public void setSupportQueryTimeout(boolean supportQueryTimeout) {
-            this.supportQueryTimeout = supportQueryTimeout;
-        }
-
-        public final boolean isAlive(final PooledConnection p) {
-            Statement st = null;
-            boolean changed = false;
-            final Connection con = p.raw;
-            try {
-                if (autoCommit) {
-                    con.setAutoCommit(false);
-                    changed = true;
-                }
-                st = con.createStatement();
-                if (supportQueryTimeout) {
-                    try {
-                        st.setQueryTimeout(conTestTimeout);
-                    } catch (Throwable e) {
-                        commonLog.debug("BeeCP({})failed to setQueryTimeout", poolName, e);
-                    }
-                }
-                st.execute(testSql);
-                p.lastAccessTime = currentTimeMillis();
-                return true;
-            } catch (Throwable e) {
-                commonLog.debug("BeeCP({})failed to test connection by sql", poolName, e);
-                return false;
-            } finally {
-                if (st != null) oclose(st);
-                try {
-                    con.rollback();
-                    if (changed) con.setAutoCommit(autoCommit);//reset to default
-                } catch (Throwable e) {
-                    commonLog.debug("BeeCP({})failed to rest connection after sql test", poolName, e);
-                    return false;
-                }
-            }
-        }
     }
 
     private static final class PoolThreadThreadFactory implements ThreadFactory {
@@ -944,6 +891,63 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
         public final void onFailedTransfer(final PooledConnection p) {
             p.state = CON_IDLE;
+        }
+    }
+
+    private final class SqlQueryTester implements PooledConnectionTester {
+        private final String poolName;
+        private final int conTestTimeout;//seconds
+        private final String testSql;
+        private final boolean autoCommit;//connection default value
+        private boolean supportQueryTimeout = true;
+
+        public SqlQueryTester(String poolName, int ConTestTimeout, boolean autoCommit, String testSql) {
+            this.poolName = poolName;
+            this.conTestTimeout = ConTestTimeout;
+            this.autoCommit = autoCommit;
+            this.testSql = testSql;
+        }
+
+        public void setSupportQueryTimeout(boolean supportQueryTimeout) {
+            this.supportQueryTimeout = supportQueryTimeout;
+        }
+
+        public final boolean isAlive(final PooledConnection p) {
+            Statement st = null;
+            boolean changed = false;
+            final Connection con = p.raw;
+            try {
+                if (autoCommit) {
+                    con.setAutoCommit(false);
+                    changed = true;
+                }
+                st = con.createStatement();
+                if (supportQueryTimeout) {
+                    try {
+                        st.setQueryTimeout(conTestTimeout);
+                    } catch (Throwable e) {
+                        if (printRuntimeLog)
+                            commonLog.warn("BeeCP({})failed to setQueryTimeout", poolName, e);
+                    }
+                }
+                st.execute(testSql);
+                p.lastAccessTime = currentTimeMillis();
+                return true;
+            } catch (Throwable e) {
+                if (printRuntimeLog)
+                    commonLog.warn("BeeCP({})failed to test connection by sql", poolName, e);
+                return false;
+            } finally {
+                if (st != null) oclose(st);
+                try {
+                    con.rollback();
+                    if (changed) con.setAutoCommit(autoCommit);//reset to default
+                } catch (Throwable e) {
+                    if (printRuntimeLog)
+                        commonLog.warn("BeeCP({})failed to rest connection after sql test", poolName, e);
+                    return false;
+                }
+            }
         }
     }
 }

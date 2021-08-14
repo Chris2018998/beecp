@@ -78,8 +78,8 @@ final class PooledConnection implements Cloneable {
             raw.setSchema(defSchema);
 
         final PooledConnection p = (PooledConnection) clone();
-        p.state = state;
         p.raw = raw;
+        p.state = state;
         p.resetInd = new boolean[6];
         p.openStatements = new ProxyStatementBase[10];
         p.lastAccessTime = currentTimeMillis();//first time
