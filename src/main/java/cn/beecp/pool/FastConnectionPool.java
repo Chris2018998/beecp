@@ -448,22 +448,21 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *
      * @param p target connection need release
      */
-    public final void recycle(final PooledConnection p) {
-        final Iterator<Borrower> it = waitQueue.iterator();
+    public final void recycle(PooledConnection p) {
+        final Iterator<Borrower> iterator = waitQueue.iterator();
         transferPolicy.beforeTransfer(p);
         W:
-        while (it.hasNext()) {
-            final Borrower b = it.next();
+        while (iterator.hasNext()) {
+            final Borrower b = iterator.next();
+            Object state;
             do {
-                final Object s = b.state;
-                if (!(s instanceof BorrowerState)) continue W;
                 if (p.state != unCatchStateCode) return;
-                if (BorrowStUpd.compareAndSet(b, s, p)) {
-                    if (s == BOWER_WAITING) unpark(b.thread);
-                    return;
-                }
-                yield();
-            } while (true);
+                state = b.state;
+                if (state != BOWER_NORMAL && state != BOWER_WAITING)
+                    continue W;
+            } while (!BorrowStUpd.compareAndSet(b, state, p));
+            if (state == BOWER_WAITING) unpark(b.thread);
+            return;
         }
         transferPolicy.onFailedTransfer(p);
         tryWakeupServantThread();
@@ -475,20 +474,19 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *
      * @param e: transfer Exception to waiter
      */
-    private void transferException(final Throwable e) {
-        final Iterator<Borrower> it = waitQueue.iterator();
+    private void transferException(Throwable e) {
+        final Iterator<Borrower> iterator = waitQueue.iterator();
         W:
-        while (it.hasNext()) {
-            final Borrower b = it.next();
+        while (iterator.hasNext()) {
+            final Borrower b = iterator.next();
+            Object state;
             do {
-                final Object s = b.state;
-                if (!(s instanceof BorrowerState)) continue W;
-                if (BorrowStUpd.compareAndSet(b, s, e)) {
-                    if (s == BOWER_WAITING) unpark(b.thread);
-                    return;
-                }
-                yield();
-            } while (true);
+                state = b.state;
+                if (state != BOWER_NORMAL && state != BOWER_WAITING)
+                    continue W;
+            } while (!BorrowStUpd.compareAndSet(b, state, e));
+            if (state == BOWER_WAITING) unpark(b.thread);
+            return;
         }
     }
 
@@ -543,7 +541,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 try {
                     servantTryCount.decrementAndGet();
                     PooledConnection p = searchOrCreate();
-                    if (p != null) recycle(p);
+                    if (p != null)
+                        recycle(p);
                 } catch (Throwable e) {
                     transferException(e);
                 }
