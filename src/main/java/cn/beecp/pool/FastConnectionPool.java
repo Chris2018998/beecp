@@ -448,7 +448,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *
      * @param p target connection need release
      */
-    public final void recycle(PooledConnection p) {
+    public final void recycle(final PooledConnection p) {
         final Iterator<Borrower> iterator = waitQueue.iterator();
         transferPolicy.beforeTransfer(p);
         W:
@@ -474,7 +474,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *
      * @param e: transfer Exception to waiter
      */
-    private void transferException(Throwable e) {
+    private void transferException(final Throwable e) {
         final Iterator<Borrower> iterator = waitQueue.iterator();
         W:
         while (iterator.hasNext()) {
