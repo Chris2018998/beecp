@@ -8,7 +8,7 @@ package cn.beecp;
 
 import cn.beecp.pool.DataSourceConnectionFactory;
 import cn.beecp.pool.DriverConnectionFactory;
-import cn.beecp.xa.XaConnectionFactory;
+import cn.beecp.xa.RawXaConnectionFactory;
 
 import javax.sql.DataSource;
 import java.io.File;
@@ -92,11 +92,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
 
     //physical JDBC Connection factory
-    private ConnectionFactory connectionFactory;
+    private RawConnectionFactory connectionFactory;
     //physical JDBC Connection factory class name
     private String connectionFactoryClassName;
     //xaConnectionFactory
-    private XaConnectionFactory xaConnectionFactory;
+    private RawXaConnectionFactory xaConnectionFactory;
     //xaConnection Factory ClassName
     private String xaConnectionFactoryClassName;
     //connection extra properties
@@ -405,11 +405,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             this.delayTimeForNextClear = delayTimeForNextClear;
     }
 
-    public ConnectionFactory getConnectionFactory() {
+    public RawConnectionFactory getConnectionFactory() {
         return connectionFactory;
     }
 
-    public void setConnectionFactory(ConnectionFactory connectionFactory) {
+    public void setConnectionFactory(RawConnectionFactory connectionFactory) {
         this.connectionFactory = connectionFactory;
     }
 
@@ -422,11 +422,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.connectionFactoryClassName = trimString(connectionFactoryClassName);
     }
 
-    public XaConnectionFactory getXaConnectionFactory() {
+    public RawXaConnectionFactory getXaConnectionFactory() {
         return xaConnectionFactory;
     }
 
-    public void setXaConnectionFactory(XaConnectionFactory xaConnectionFactory) {
+    public void setXaConnectionFactory(RawXaConnectionFactory xaConnectionFactory) {
         this.xaConnectionFactory = xaConnectionFactory;
     }
 
@@ -559,7 +559,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.setDefaultTransactionIsolationCode(transactionIsolationCode);
 
         //try to create connection factory
-        ConnectionFactory connectionFactory = tryCreateConnectionFactory();
+        RawConnectionFactory connectionFactory = tryCreateConnectionFactory();
 
         BeeDataSourceConfig configCopy = new BeeDataSourceConfig();
         this.copyTo(configCopy);
@@ -643,7 +643,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         }
     }
 
-    private final ConnectionFactory tryCreateConnectionFactory() throws BeeDataSourceConfigException, SQLException {
+    private final RawConnectionFactory tryCreateConnectionFactory() throws BeeDataSourceConfigException, SQLException {
         if (connectionFactory != null) return connectionFactory;
 
         if (isBlank(connectionFactoryClassName)) {
@@ -670,8 +670,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         } else {
             try {
                 Class<?> conFactClass = Class.forName(connectionFactoryClassName, true, BeeDataSourceConfig.class.getClassLoader());
-                if (ConnectionFactory.class.isAssignableFrom(conFactClass)) {
-                    return (ConnectionFactory) conFactClass.newInstance();
+                if (RawConnectionFactory.class.isAssignableFrom(conFactClass)) {
+                    return (RawConnectionFactory) conFactClass.newInstance();
                 } else if (DataSource.class.isAssignableFrom(conFactClass)) {
                     DataSource dataSource = (DataSource) conFactClass.newInstance();
                     Properties connectProperties = this.connectProperties;
@@ -692,7 +692,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
                     return new DataSourceConnectionFactory(dataSource, username, password);
                 } else {
-                    throw new BeeDataSourceConfigException("Error connection factory class,must implement '" + ConnectionFactory.class.getName() + "' interface");
+                    throw new BeeDataSourceConfigException("Error connection factory class,must implement '" + RawConnectionFactory.class.getName() + "' interface");
                 }
             } catch (ClassNotFoundException e) {
                 throw new BeeDataSourceConfigException("Not found connection factory class:" + connectionFactoryClassName);

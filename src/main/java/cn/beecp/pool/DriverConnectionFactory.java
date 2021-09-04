@@ -6,7 +6,7 @@
  */
 package cn.beecp.pool;
 
-import cn.beecp.ConnectionFactory;
+import cn.beecp.RawConnectionFactory;
 
 import java.sql.Connection;
 import java.sql.Driver;
@@ -20,7 +20,7 @@ import java.util.Properties;
  * @version 1.0
  */
 
-public final class DriverConnectionFactory implements ConnectionFactory {
+public final class DriverConnectionFactory implements RawConnectionFactory {
     //url link
     private String url;
     //connection driver

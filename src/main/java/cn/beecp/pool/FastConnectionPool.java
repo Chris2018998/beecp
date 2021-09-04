@@ -7,7 +7,7 @@
 package cn.beecp.pool;
 
 import cn.beecp.BeeDataSourceConfig;
-import cn.beecp.ConnectionFactory;
+import cn.beecp.RawConnectionFactory;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -67,7 +67,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private BeeDataSourceConfig poolConfig;
     private int semaphoreSize;
     private PoolSemaphore semaphore;
-    private ConnectionFactory conFactory;
+    private RawConnectionFactory conFactory;
     private volatile PooledConnection[] conArray = new PooledConnection[0];
 
     private String poolName;

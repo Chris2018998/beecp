@@ -6,7 +6,7 @@
  */
 package cn.beecp.pool;
 
-import cn.beecp.ConnectionFactory;
+import cn.beecp.RawConnectionFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -20,7 +20,7 @@ import static cn.beecp.pool.PoolStaticCenter.isBlank;
  * @author Chris.liao
  * @version 1.0
  */
-public class DataSourceConnectionFactory implements ConnectionFactory {
+public class DataSourceConnectionFactory implements RawConnectionFactory {
     //username
     private String username;
     //password

@@ -10,8 +10,8 @@ import cn.beecp.pool.ConnectionPool;
 import cn.beecp.pool.ConnectionPoolMonitorVo;
 import cn.beecp.pool.FastConnectionPool;
 import cn.beecp.pool.ProxyConnectionBase;
-import cn.beecp.xa.XaConnectionFactory;
-import cn.beecp.xa.XaConnectionWrapper;
+import cn.beecp.xa.ProxyXaConnection;
+import cn.beecp.xa.RawXaConnectionFactory;
 
 import javax.sql.DataSource;
 import javax.sql.XAConnection;
@@ -45,11 +45,11 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     private static final SQLException XaConnectionFactoryNotFound = new SQLException("xaConnectionFactory can't be null,please config xaConnectionFactory or xaConnectionFactoryClassName");
 
     static {
-        XaConnectionFactoryMap.put("oracle", "cn.beecp.xa.OracleXaConnectionFactory");
-        XaConnectionFactoryMap.put("mariadb", "cn.beecp.xa.MariadbXaConnectionFactory");
-        XaConnectionFactoryMap.put("mysql5", "cn.beecp.xa.Mysql5XaConnectionFactory");
-        XaConnectionFactoryMap.put("mysql8", "cn.beecp.xa.Mysql8XaConnectionFactory");
-        XaConnectionFactoryMap.put("postgresql", "cn.beecp.xa.PostgresXaConnectionFactory");
+        XaConnectionFactoryMap.put("oracle", "cn.beecp.xa.impl.OracleXaConnectionFactory");
+        XaConnectionFactoryMap.put("mariadb", "cn.beecp.xa.impl.MariadbXaConnectionFactory");
+        XaConnectionFactoryMap.put("mysql5", "cn.beecp.xa.impl.Mysql5XaConnectionFactory");
+        XaConnectionFactoryMap.put("mysql8", "cn.beecp.xa.impl.Mysql8XaConnectionFactory");
+        XaConnectionFactoryMap.put("postgresql", "cn.beecp.xa.impl.PostgresXaConnectionFactory");
     }
 
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
@@ -60,7 +60,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     private boolean inited;
     private ConnectionPool pool;
     private SQLException failedCause;
-    private XaConnectionFactory xaConnectionFactory;
+    private RawXaConnectionFactory xaConnectionFactory;
 
     public BeeDataSource() {
     }
@@ -129,7 +129,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     public XAConnection getXAConnection() throws SQLException {
         if (xaConnectionFactory == null) throw XaConnectionFactoryNotFound;
         ProxyConnectionBase proxyCon = (ProxyConnectionBase) this.getConnection();
-        return new XaConnectionWrapper(xaConnectionFactory.create(proxyCon.getRaw()), proxyCon);
+        return new ProxyXaConnection(xaConnectionFactory.create(proxyCon.getRaw()), proxyCon);
     }
 
     public Connection getConnection(String username, String password) throws SQLException {
@@ -271,19 +271,19 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     }
 
     //try to create XAConnection factory by config
-    private final XaConnectionFactory tryCreateXAConnectionFactoryByConfig(BeeDataSourceConfig config) throws BeeDataSourceConfigException {
+    private final RawXaConnectionFactory tryCreateXAConnectionFactoryByConfig(BeeDataSourceConfig config) throws BeeDataSourceConfigException {
         if (config.getXaConnectionFactory() != null) return config.getXaConnectionFactory();
         return createXAConnectionFactoryByClassName(config.getXaConnectionFactoryClassName());
     }
 
-    private final XaConnectionFactory createXAConnectionFactoryByClassName(String xaConnectionFactoryClassName) throws BeeDataSourceConfigException {
+    private final RawXaConnectionFactory createXAConnectionFactoryByClassName(String xaConnectionFactoryClassName) throws BeeDataSourceConfigException {
         if (!isBlank(xaConnectionFactoryClassName)) {
             try {
                 Class<?> xaConnectionFactoryClass = Class.forName(xaConnectionFactoryClassName, true, this.getClass().getClassLoader());
-                if (XaConnectionFactory.class.isAssignableFrom(xaConnectionFactoryClass)) {
-                    return (XaConnectionFactory) xaConnectionFactoryClass.newInstance();
+                if (RawXaConnectionFactory.class.isAssignableFrom(xaConnectionFactoryClass)) {
+                    return (RawXaConnectionFactory) xaConnectionFactoryClass.newInstance();
                 } else {
-                    throw new BeeDataSourceConfigException("xaConnectionFactoryClassName error,must implement '" + XaConnectionFactory.class.getName() + "' interface");
+                    throw new BeeDataSourceConfigException("xaConnectionFactoryClassName error,must implement '" + RawXaConnectionFactory.class.getName() + "' interface");
                 }
             } catch (ClassNotFoundException e) {
                 throw new BeeDataSourceConfigException("Not found XAConnection factory class:" + xaConnectionFactoryClassName);
