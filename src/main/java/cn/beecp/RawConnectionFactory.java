@@ -10,7 +10,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * JDBC Raw Connection factory
+ * JDBC raw connection factory
  *
  * @author Chris
  * @version 1.0
