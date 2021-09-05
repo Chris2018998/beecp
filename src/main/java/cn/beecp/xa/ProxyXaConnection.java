@@ -6,6 +6,8 @@
  */
 package cn.beecp.xa;
 
+import cn.beecp.pool.ProxyConnectionBase;
+
 import javax.sql.ConnectionEventListener;
 import javax.sql.StatementEventListener;
 import javax.sql.XAConnection;
@@ -13,7 +15,6 @@ import javax.transaction.xa.XAException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import static cn.beecp.pool.PoolStaticCenter.ConnectionClosedException;
 import static cn.beecp.pool.PoolStaticCenter.XaConnectionClosedException;
 
 
@@ -24,36 +25,31 @@ import static cn.beecp.pool.PoolStaticCenter.XaConnectionClosedException;
  * @version 1.0
  */
 public class ProxyXaConnection implements XAConnection {
-    private boolean isClosed;
     private XAConnection raw;
-    private Connection proxyConn;
     private ProxyXaResource proxyXaResource;
+    private ProxyConnectionBase proxyBaseConn;
 
-    public ProxyXaConnection(XAConnection raw, Connection proxyConn) {
+    public ProxyXaConnection(XAConnection raw, ProxyConnectionBase proxyCon) {
         this.raw = raw;
-        this.proxyConn = proxyConn;
-    }
-
-    private void checkClosed() throws SQLException {
-        if (isClosed) throw ConnectionClosedException;
+        this.proxyBaseConn = proxyBaseConn;
     }
 
     void checkClosedForXa() throws XAException {
-        if (isClosed) throw XaConnectionClosedException;
+        if (proxyBaseConn.getClosedInd())
+            throw XaConnectionClosedException;
     }
 
     public void close() throws SQLException {
-        isClosed = true;
-        proxyConn.close();
+        proxyBaseConn.close();
     }
 
     public Connection getConnection() throws SQLException {
-        checkClosed();
-        return proxyConn;
+        proxyBaseConn.checkClosed();
+        return proxyBaseConn;
     }
 
     public javax.transaction.xa.XAResource getXAResource() throws SQLException {
-        checkClosed();
+        proxyBaseConn.checkClosed();
         if (proxyXaResource == null)
             proxyXaResource = new ProxyXaResource(raw.getXAResource(), this);
         return proxyXaResource;

@@ -36,7 +36,11 @@ public abstract class ProxyConnectionBase implements Connection {
      *                                                                                         *
      ********************************************************************************************/
 
-    final void checkClosed() throws SQLException {
+    public final boolean getClosedInd() {
+        return isClosed;
+    }
+
+    public final void checkClosed() throws SQLException {
         if (isClosed) throw ConnectionClosedException;
     }
 

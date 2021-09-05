@@ -18,60 +18,60 @@ import javax.transaction.xa.Xid;
  */
 public class ProxyXaResource implements XAResource {
     private XAResource raw;
-    private ProxyXaConnection proxyConn;
+    private ProxyXaConnection owner;
 
-    public ProxyXaResource(XAResource raw, ProxyXaConnection proxyConn) {
+    public ProxyXaResource(XAResource raw, ProxyXaConnection owner) {
         this.raw = raw;
-        this.proxyConn = proxyConn;
+        this.owner = owner;
     }
 
     public void commit(Xid var1, boolean var2) throws XAException {
-        proxyConn.checkClosedForXa();
+        owner.checkClosedForXa();
         raw.commit(var1, var2);
     }
 
     public void end(Xid var1, int var2) throws XAException {
-        proxyConn.checkClosedForXa();
+        owner.checkClosedForXa();
         raw.end(var1, var2);
     }
 
     public void forget(Xid var1) throws XAException {
-        proxyConn.checkClosedForXa();
+        owner.checkClosedForXa();
         raw.forget(var1);
     }
 
     public int getTransactionTimeout() throws XAException {
-        proxyConn.checkClosedForXa();
+        owner.checkClosedForXa();
         return raw.getTransactionTimeout();
     }
 
     public boolean isSameRM(XAResource var1) throws XAException {
-        proxyConn.checkClosedForXa();
+        owner.checkClosedForXa();
         return raw.isSameRM(var1);
     }
 
     public int prepare(Xid var1) throws XAException {
-        proxyConn.checkClosedForXa();
+        owner.checkClosedForXa();
         return raw.prepare(var1);
     }
 
     public Xid[] recover(int var1) throws XAException {
-        proxyConn.checkClosedForXa();
+        owner.checkClosedForXa();
         return raw.recover(var1);
     }
 
     public void rollback(Xid var1) throws XAException {
-        proxyConn.checkClosedForXa();
+        owner.checkClosedForXa();
         raw.rollback(var1);
     }
 
     public boolean setTransactionTimeout(int var1) throws XAException {
-        proxyConn.checkClosedForXa();
+        owner.checkClosedForXa();
         return raw.setTransactionTimeout(var1);
     }
 
     public void start(Xid var1, int var2) throws XAException {
-        proxyConn.checkClosedForXa();
+        owner.checkClosedForXa();
         raw.start(var1, var2);
     }
 }
