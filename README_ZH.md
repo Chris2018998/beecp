@@ -17,7 +17,7 @@ Maven坐标(Java7及更高版本)
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>3.2.6</version>
+   <version>3.2.7</version>
 </dependency>
 ```
 Maven坐标(Java6)
