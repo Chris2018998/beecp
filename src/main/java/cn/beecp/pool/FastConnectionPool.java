@@ -421,8 +421,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     private final PooledConnection searchOrCreate() throws SQLException {
         final PooledConnection[] array = conArray;
-        final int l = array.length;
-        for (int i = 0; i < l; ++i) {
+        for (int i = 0,l = array.length; i < l; ++i) {
             PooledConnection p = array[i];
             if (p.state == CON_IDLE && ConStUpd.compareAndSet(p, CON_IDLE, CON_USING) && testOnBorrow(p))
                 return p;
