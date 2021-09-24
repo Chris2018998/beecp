@@ -74,9 +74,9 @@ public class PropertiesFileLoadTest extends TestCase {
             throw new BeeDataSourceConfigException("delayTimeForNextClear error");
         if (!"cn.beecp.pool.DriverConnectionFactory".equals(testConfig.getConnectionFactoryClassName()))
             throw new BeeDataSourceConfigException("connectionFactoryClassName error");
-        if (!"cn.beecp.xa.Mysql8XaConnectionFactory".equals(testConfig.getXaConnectionFactory().getClass().getName()))
+        if (!"cn.beecp.xa.impl.Mysql8XaConnectionFactory".equals(testConfig.getXaConnectionFactory().getClass().getName()))
             throw new BeeDataSourceConfigException("xaConnectionFactory error");
-        if (!"cn.beecp.xa.Mysql8XaConnectionFactory".equals(testConfig.getXaConnectionFactoryClassName()))
+        if (!"cn.beecp.xa.impl.Mysql8XaConnectionFactory".equals(testConfig.getXaConnectionFactoryClassName()))
             throw new BeeDataSourceConfigException("xaConnectionFactoryClassName error");
         if (!"cn.beecp.pool.RawConnectionPool".equals(testConfig.getPoolImplementClassName()))
             throw new BeeDataSourceConfigException("poolImplementClassName error");
