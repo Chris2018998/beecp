@@ -1,6 +1,13 @@
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/README.md">English</a>|<a href="https://github.com/Chris2018998/BeeCP/blob/master/README_ZH.md">中文</a>
 <img height="50px" width="50px" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img>
 
+<p align="left">
+ <a><img src="https://img.shields.io/badge/JDK-1.7+-green.svg"></a>
+ <a><img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg"></a>
+ <a><img src="https://maven-badges.herokuapp.com/maven-central/com.github.chris2018998/beecp/badge.svg"></a>
+ <a><img src="https://img.shields.io/github/v/release/Chris2018998/beecp.svg"></a> 
+</p>
+
 BeeCP：A lightweight,high-performance JDBC pool
 
 Maven artifact(Java7 or higher)
