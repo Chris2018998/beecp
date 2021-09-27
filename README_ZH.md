@@ -1,6 +1,13 @@
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/README.md">English</a>|<a href="https://github.com/Chris2018998/BeeCP/blob/master/README_ZH.md">中文</a>
 <img height="50px" width="50px" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img>
 
+<p align="left">
+ <a><img src="https://img.shields.io/badge/JDK-1.7+-green.svg"></a>
+ <a><img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg"></a>
+ <a><img src="https://img.shields.io/github/v/release/Chris2018998/beecp.svg"></a> 
+</p> 
+
+
 小蜜蜂连接池：一款创新式JDBC连接池，具有性能高，代码轻,稳定性好的特点。
 
 **亮点**
