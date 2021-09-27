@@ -12,7 +12,7 @@
 6：代码扫描缺陷更少
 7：性能更高 
 
-Maven坐标(Java7及更高版本)
+Maven坐标(Java7及以上)
 ```xml
 <dependency>
    <groupId>com.github.chris2018998</groupId>
