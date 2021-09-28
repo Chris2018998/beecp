@@ -35,6 +35,39 @@ Java6
 </dependency>
 ```
 
+## :thumbsup: 优点
+
+1：ThreadLocal连接单缓存，提高池化性能
+
+2：借用者非移动等待，节约队列出入开销
+
+3：传递管道复用，既可以传递连接，也可传递异常
+
+4：双向异步候补，消除等待者与传送者的时间差错位
+
+
+## :cherries: 比较HikariCP池
+
+|     比较项    |     BeeCP                                                   |      HikariCP                                             |  
+| -----------  |----------------------------------------------------------   | ----------------------------------------------------------|          
+|关键技术       |ThreadLocal + 信号量 + ConcurrentLinkedQueue +Thread          |FastList + ConcurrentBag + ThreadPoolExecutor              | 
+|相似点         |CAS使用，代理预生成，使用驱动自带Statement缓存                    |-                                                          |
+|差异点         |支持平衡模式，支持XA，强制回收持有不用的连接                       |-                                                          |
+|文件           |32个源码文件，Jar包93KB                                        |44个源码文件，Jar包158KB                                     | 
+|性能           |总体性能高40%以上（光连接池基准）                                |                                                            |
+
+HikariCP有哪些缺陷？
+
+1：<a href="https://my.oschina.net/u/3918073/blog/4645061">MySQL应用下,已经关闭的PreparedStatement居然可以复活？</a> 
+
+2：<a href="https://my.oschina.net/u/3918073/blog/5053082">数据库Down机或网络问题，反应迟缓(俗称等你一万年)</a>
+
+3：<a href="https://my.oschina.net/u/3918073/blog/5171229">事务性漏洞问题</a>
+
+.....
+
+
+
 ## :running: 使用
 
 使用方式与一般池大致相似，下面有两个参考例子
@@ -111,35 +144,7 @@ public class DataSourceConfig {
 **如果项目为Springboot类型，推荐使用数据源管理工具：<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a> 配置即可,且自带监控界面
 
 
-## :thumbsup: 优点
 
-1：ThreadLocal连接单缓存，提高池化性能
-
-2：借用者非移动等待，节约队列出入开销
-
-3：传递管道复用，既可以传递连接，也可传递异常
-
-4：双向异步候补，消除等待者与传送者的时间差错位
-
-
-## :cherries: 比较HikariCP池
-
-|     比较项    |     BeeCP                                                   |      HikariCP                                             |  
-| -----------  |----------------------------------------------------------   | ----------------------------------------------------------|          
-|关键技术       |ThreadLocal + 信号量 + ConcurrentLinkedQueue +Thread           |FastList + ConcurrentBag + ThreadPoolExecutor             | 
-|相似点         |CAS使用,代理预生成,使用驱动自带Statement缓存                           |-                                                         |
-|文件           |32个源码文件,Jar包93KB                                         |44个源码文件,Jar包158KB                                    | 
-|性能           |总体性能高40%以上（光连接池基准）                                 |                                                         |
-
-HikariCP有哪些缺陷？
-
-1：<a href="https://my.oschina.net/u/3918073/blog/4645061">MySQL应用下,已经关闭的PreparedStatement居然可以复活？</a> 
-
-2：<a href="https://my.oschina.net/u/3918073/blog/5053082">数据库Down机或网络问题，反应迟缓(俗称等你一万年)</a>
-
-3：<a href="https://my.oschina.net/u/3918073/blog/5171229">事务性漏洞问题</a>
-
-.....
 
 
 ## :book: 配置项列表
