@@ -8,15 +8,15 @@
  <a><img src="https://img.shields.io/github/v/release/Chris2018998/beecp.svg"></a> 
 </p> 
 
-## 简介
+## :coffee: 简介
 
 BeeCP是一款高性能JDBC连接池
 
-## 由来
+## :tea: 由来
 
 BeeCP源自Jmin项目（Java工具套件集，04年创建）的子模块改造而来
 
-## 下载 
+## :arrow_down: 下载 
 
 Java7或更高
 ```xml
@@ -35,7 +35,7 @@ Java6
 </dependency>
 ```
 
-## 使用
+## :running: 使用
 
 使用方式与一般池大致相似，下面有两个参考例子
 
@@ -111,7 +111,7 @@ public class DataSourceConfig {
 **如果项目为Springboot类型，推荐使用数据源管理工具：<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a> 配置即可,且自带监控界面
 
 
-## 优点
+## :thumbsup: 优点
 
 1：ThreadLocal连接单缓存，提高池化性能
 
@@ -122,7 +122,7 @@ public class DataSourceConfig {
 4：双向异步候补，消除等待者与传送者的时间差错位
 
 
-## 比较HikariCP池
+## :cherries: 比较HikariCP池
 
 |     比较项    |     BeeCP                                                   |      HikariCP                                             |  
 | -----------  |----------------------------------------------------------   | ----------------------------------------------------------|          
@@ -142,7 +142,7 @@ HikariCP有哪些缺陷？
 .....
 
 
-## 配置项列表
+## :book: 配置项列表
 
 |  配置项          |   描述                        |   备注                            |
 | ----------------| ---------------------------  | ------------------------          |
@@ -173,7 +173,7 @@ HikariCP有哪些缺陷？
 | enableJmx                 |JMX监控支持开关                    | 默认false                | 
 
 
-## 捐助
+## :sparkling_heart: 捐助
 
 如果您觉得此作品不错，可以捐赠请我们喝杯咖啡吧，在此表示感谢^_^。
 
