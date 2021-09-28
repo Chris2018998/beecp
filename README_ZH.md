@@ -58,7 +58,7 @@ Java6
 
 HikariCP有哪些缺陷？
 
-1：<a href="https://my.oschina.net/u/3918073/blog/4645061">MySQL应用下,已经关闭的PreparedStatement居然可以复活？</a> 
+1：<a href="https://my.oschina.net/u/3918073/blog/4645061">MySQL驱动应用,已经关闭的PreparedStatement居然可以复活？</a> 
 
 2：<a href="https://my.oschina.net/u/3918073/blog/5053082">数据库Down机或网络问题，反应迟缓(俗称等你一万年)</a>
 
