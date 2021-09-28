@@ -1,5 +1,5 @@
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/README.md">English</a>|<a href="https://github.com/Chris2018998/BeeCP/blob/master/README_ZH.md">中文</a>
-<img height="50px" width="50px" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img>
+<img height="20px" width="20px" align="bottom" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img>
 
 <p align="left">
  <a><img src="https://img.shields.io/badge/JDK-1.7+-green.svg"></a>
@@ -8,19 +8,17 @@
  <a><img src="https://img.shields.io/github/v/release/Chris2018998/beecp.svg"></a> 
 </p> 
 
+## 简介
 
-小蜜蜂连接池：一款创新式JDBC连接池，具有性能高，代码轻,稳定性好的特点。
+BeeCP是一款高性能JDBC连接池
 
-**亮点**
-1：单点缓存 (创新）
-2：非移动等待（创新）
-3：传递管道复用（创新） 
-4：异步候补（创新）
-5：代码更简短  
-6：代码扫描缺陷更少
-7：性能更高 
+## 由来
 
-Maven坐标(Java7及以上)
+BeeCP源自Jmin项目（Java工具套件集，04年创建）的子模块改造而来
+
+## 下载 
+
+Java7或更高
 ```xml
 <dependency>
    <groupId>com.github.chris2018998</groupId>
@@ -28,7 +26,7 @@ Maven坐标(Java7及以上)
    <version>3.2.7</version>
 </dependency>
 ```
-Maven坐标(Java6)
+Java6
 ```xml
 <dependency>
    <groupId>com.github.chris2018998</groupId>
@@ -36,132 +34,48 @@ Maven坐标(Java6)
    <version>1.6.9</version>
 </dependency>
 ```
----
 
-### 性能测试
+## 使用
 
-**1：** 100万次查询测试(10000 线程 x 10 次数)
-|   Pool type      | HikariCP-3.4.5  | beecp-3.0.5_compete|  
-| ---------------  |---------------- | ----------------- |          
-| 平均时间(毫秒)     |25.132750        | 0.284550          | 
+使用方式与一般池大致相似，下面有两个参考例子
 
-###### SQL:select 1 from dual
-###### PC:I5-4210M(2.6Hz,dual core4threads),12G memory Java:JAVA8_64 Pool:init-size10,max-size:10 
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/README.md">例子1</a>
 
-日志文件：<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/temp/JDBCPool2020-11-06.log">JDBCPool2020-11-06.log</a>
- 
-测试源码：https://github.com/Chris2018998/PoolPerformance
+<a href="https://github.com/Chris2018998/BeeCP/blob/master/README.md">例子2</a>
 
-**2：** 使用光连接池基准测试结果(I3-7100,8G)
 
-<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/PoolPerformaceCompare.png"></img> 
+## 优点
 
-测试源码：<a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
+1：ThreadLocal连接单缓存，提高池化性能
 
-想知道它性能高的原因吗？ 请
-<a href='https://github.com/Chris2018998/BeeCP/wiki/%E6%83%B3%E7%9F%A5%E9%81%93%E5%B0%8F%E8%9C%9C%E8%9C%82%E8%BF%9E%E6%8E%A5%E6%B1%A0%E6%80%A7%E8%83%BD%E4%B8%BA%E5%95%A5%E8%BF%99%E4%B9%88%E9%AB%98%E5%90%97%EF%BC%9F'> 点击 </a>
+2：借用者非移动等待，节约队列出入开销
 
----
+3：传递管道复用，既可以传递连接，也可传递异常
 
-#### 范例1
+4：双向异步候补，消除等待者与传送者的时间差错位
 
-```java
-BeeDataSourceConfig config = new BeeDataSourceConfig();
-config.setDriverClassName("com.mysql.jdbc.Driver");
-config.setJdbcUrl("jdbc:mysql://localhost/test");
-config.setUsername("root");
-config.setPassword("root");
-config.setMaxActive(10);
-config.setInitialSize(0);
-config.setMaxWait(8000);//ms
-//DataSource ds=new BeeDataSource(config);
-BeeDataSource ds=new BeeDataSource(config);
-Connection con=ds.getConnection();
-....
 
-```
+## 比较HikariCP池
 
-#### 范例2（SpringBoot）
+|     比较项    |     BeeCP                                                   |      HikariCP                                             |  
+| -----------  |----------------------------------------------------------   | ----------------------------------------------------------|          
+|关键技术       |ThreadLocal + 信号量 + ConcurrentLinkedQueue +Thread           |FastList + ConcurrentBag + ThreadPoolExecutor             | 
+|相似点         |CAS使用,代理预生成,不提供Statement缓存                           |-                                                         |
+|文件           |32个源码文件,Jar包93KB                                         |44个源码文件,Jar包158KB                                    | 
+|性能           |总体性能高40%以上（光连接池基准）                                 |                                                         |
 
-*application.properties*
+HikariCP有哪些缺陷？
 
-```java
-spring.datasource.username=xx
-spring.datasource.password=xx
-spring.datasource.url=xx
-spring.datasource.driverClassName=xxx
-spring.datasource.datasourceJndiName=xxx
-``` 
+1：<a href="https://my.oschina.net/u/3918073/blog/4645061">MySQL应用下,已经关闭的PreparedStatement居然可以复活？</a> 
 
-*DataSourceConfig.java*
-```java
-@Configuration
-public class DataSourceConfig {
-  @Value("${spring.datasource.driverClassName}")
-  private String driver;
-  @Value("${spring.datasource.url}")
-  private String url;
-  @Value("${spring.datasource.username}")
-  private String user;
-  @Value("${spring.datasource.password}")
-  private String password;
-  @Value("${spring.datasource.datasourceJndiName}")
-  private String datasourceJndiName;
-  private BeeDataSourceFactory dataSourceFactory = new BeeDataSourceFactory();
-  
-  @Bean
-  @Primary
-  @ConfigurationProperties(prefix="spring.datasource")
-  public DataSource primaryDataSource() {
-    return DataSourceBuilder.create().type(cn.beecp.BeeDataSource.class).build();
-  }
-  
-  @Bean
-  public DataSource secondDataSource(){
-    return new BeeDataSource(new BeeDataSourceConfig(driver,url,user,password));
-  }
-  
-  @Bean
-  public DataSource thirdDataSource()throws SQLException {
-    try{
-       return dataSourceFactory.lookup(datasourceJndiName);
-     }catch(NamingException e){
-       throw new SQLException("Jndi DataSource not found："+datasourceJndiName);
-     }
-  }
-}
-```
+2：<a href="https://my.oschina.net/u/3918073/blog/5053082">数据库Down机或网络问题，反应迟缓(俗称等你一万年)</a>
 
----
+3：<a href="https://my.oschina.net/u/3918073/blog/5171229">事务性漏洞问题</a>
 
-### 功能与特性
+.....
 
-1：请求超时支持
 
-2：两种模式：公平与竞争
-
-3：支持连接安全关闭
-
-4：断网连接池自动恢复
-
-5：闲置超时和持有超时处理
-
-6：支持连接回收前，事物回滚
-
-7：若连接出现问题，池自动补充
-
-8：支持连接回收前，属性重置（比如：autoCommit,transactionIsolation,readonly,catlog,schema,networkTimeout）
-
-9：支持XADataSource
-
-10：支持连接工厂自定义
-
-11：支持连接池重置
-
-12：支持JMX
-
----
-### 配置项说明
+## 配置项列表
 
 |  配置项          |   描述                        |   备注                            |
 | ----------------| ---------------------------  | ------------------------          |
