@@ -43,6 +43,8 @@ Java6
 
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/README.md">例子2</a>
 
+如果项目为Springboot类型，推荐使用 <a href="https://github.com/Chris2018998/BeeCP-Starter"> BeeCP-Starter</a>
+
 
 ## 优点
 
