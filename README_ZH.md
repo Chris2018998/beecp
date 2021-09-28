@@ -62,7 +62,7 @@ Java6
 |     比较项    |     BeeCP                                                   |      HikariCP                                             |  
 | -----------  |----------------------------------------------------------   | ----------------------------------------------------------|          
 |关键技术       |ThreadLocal + 信号量 + ConcurrentLinkedQueue +Thread           |FastList + ConcurrentBag + ThreadPoolExecutor             | 
-|相似点         |CAS使用,代理预生成,不提供Statement缓存                           |-                                                         |
+|相似点         |CAS使用,代理预生成,使用驱动的Statement缓存                           |-                                                         |
 |文件           |32个源码文件,Jar包93KB                                         |44个源码文件,Jar包158KB                                    | 
 |性能           |总体性能高40%以上（光连接池基准）                                 |                                                         |
 
