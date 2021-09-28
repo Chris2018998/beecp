@@ -107,8 +107,8 @@ HikariCP有哪些缺陷？
 | connectionFactoryClassName|自定义的JDBC连接工作类名            | 默认为空                  |
 | enableJmx                 |JMX监控支持开关                    | 默认false                | 
 
----
-### 捐助
+
+## 捐助
 
 如果您觉得此作品不错，可以捐赠请我们喝杯咖啡吧，在此表示感谢^_^。
 
