@@ -39,11 +39,76 @@ Java6
 
 使用方式与一般池大致相似，下面有两个参考例子
 
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/README.md">例子1</a>
+###### 例子1
 
-<a href="https://github.com/Chris2018998/BeeCP/blob/master/README.md">例子2</a>
+```java
+BeeDataSourceConfig config = new BeeDataSourceConfig();
+config.setDriverClassName("com.mysql.jdbc.Driver");
+config.setJdbcUrl("jdbc:mysql://localhost/test");
+config.setUsername("root");
+config.setPassword("root");
+config.setMaxActive(10);
+config.setInitialSize(0);
+config.setMaxWait(8000);//ms
+//DataSource ds=new BeeDataSource(config);
+BeeDataSource ds=new BeeDataSource(config);
+Connection con=ds.getConnection();
+....
 
-如果项目为Springboot类型，推荐使用 <a href="https://github.com/Chris2018998/BeeCP-Starter"> BeeCP-Starter</a>
+```
+
+###### 例子2
+
+*application.properties*
+
+```java
+spring.datasource.username=xx
+spring.datasource.password=xx
+spring.datasource.url=xx
+spring.datasource.driverClassName=xxx
+spring.datasource.datasourceJndiName=xxx
+``` 
+
+*DataSourceConfig.java*
+```java
+@Configuration
+public class DataSourceConfig {
+  @Value("${spring.datasource.driverClassName}")
+  private String driver;
+  @Value("${spring.datasource.url}")
+  private String url;
+  @Value("${spring.datasource.username}")
+  private String user;
+  @Value("${spring.datasource.password}")
+  private String password;
+  @Value("${spring.datasource.datasourceJndiName}")
+  private String datasourceJndiName;
+  private BeeDataSourceFactory dataSourceFactory = new BeeDataSourceFactory();
+  
+  @Bean
+  @Primary
+  @ConfigurationProperties(prefix="spring.datasource")
+  public DataSource primaryDataSource() {
+    return DataSourceBuilder.create().type(cn.beecp.BeeDataSource.class).build();
+  }
+  
+  @Bean
+  public DataSource secondDataSource(){
+    return new BeeDataSource(new BeeDataSourceConfig(driver,url,user,password));
+  }
+  
+  @Bean
+  public DataSource thirdDataSource()throws SQLException {
+    try{
+       return dataSourceFactory.lookup(datasourceJndiName);
+     }catch(NamingException e){
+       throw new SQLException("Jndi DataSource not found："+datasourceJndiName);
+     }
+  }
+}
+```
+
+**如果项目为Springboot类型，推荐使用数据源管理工具：<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a> 配置即可,且自带监控界面
 
 
 ## 优点
@@ -62,7 +127,7 @@ Java6
 |     比较项    |     BeeCP                                                   |      HikariCP                                             |  
 | -----------  |----------------------------------------------------------   | ----------------------------------------------------------|          
 |关键技术       |ThreadLocal + 信号量 + ConcurrentLinkedQueue +Thread           |FastList + ConcurrentBag + ThreadPoolExecutor             | 
-|相似点         |CAS使用,代理预生成,使用驱动的Statement缓存                           |-                                                         |
+|相似点         |CAS使用,代理预生成,使用驱动自带Statement缓存                           |-                                                         |
 |文件           |32个源码文件,Jar包93KB                                         |44个源码文件,Jar包158KB                                    | 
 |性能           |总体性能高40%以上（光连接池基准）                                 |                                                         |
 
