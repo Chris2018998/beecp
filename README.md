@@ -12,10 +12,6 @@
 
 BeeCP is a high-performance JDBC connection pool
 
-## :tea: Origin 
-
-BeeCP is derived from the sub-module transformation of the Jmin project (Java tool suite set, created in 2004) 
-
 ## :arrow_down: Download 
 
 Java7 or higher
