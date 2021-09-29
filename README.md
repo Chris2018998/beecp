@@ -1,16 +1,24 @@
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/README.md">English</a>|<a href="https://github.com/Chris2018998/BeeCP/blob/master/README_ZH.md">中文</a>
-<img height="50px" width="50px" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img>
+<img height="20px" width="20px" align="bottom" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img>
 
 <p align="left">
  <a><img src="https://img.shields.io/badge/JDK-1.7+-green.svg"></a>
  <a><img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg"></a>
  <a><img src="https://maven-badges.herokuapp.com/maven-central/com.github.chris2018998/beecp/badge.svg"></a>
  <a><img src="https://img.shields.io/github/v/release/Chris2018998/beecp.svg"></a> 
-</p>
+</p> 
 
-BeeCP：A lightweight,high-performance JDBC pool
+## :coffee: Introduction 
 
-Maven artifact(Java7 or higher)
+BeeCP is a high-performance JDBC connection pool
+
+## :tea: Origin 
+
+BeeCP is derived from the sub-module transformation of the Jmin project (Java tool suite set, created in 2004) 
+
+## :arrow_down: Download 
+
+Java7 or higher
 ```xml
 <dependency>
    <groupId>com.github.chris2018998</groupId>
@@ -18,7 +26,7 @@ Maven artifact(Java7 or higher)
    <version>3.2.7</version>
 </dependency>
 ```
-Maven artifact(Java6)
+Java6
 ```xml
 <dependency>
    <groupId>com.github.chris2018998</groupId>
@@ -26,30 +34,43 @@ Maven artifact(Java6)
    <version>1.6.9</version>
 </dependency>
 ```
----
 
-### Performance
+## :thumbsup: Highlight
 
-**1：** One million Mutil-thread query (10000 threads x 10 times)
-|   Pool type      | HikariCP-3.4.5  | beecp-3.0.5_compete|  
-| ---------------  |---------------- | ----------------- |          
-| Average time(ms) |25.132750        | 0.284550          | 
-#### SQL:select 1 from dual
-#### PC:I5-4210M(2.6Hz,dual core4threads),12G memory Java:JAVA8_64 Pool:init-size10,max-size:10
+1：ThreadLocal connection single cache to improve pooling performance 
 
-Test log file：<a href="https://github.com/Chris2018998/BeeCP/blob/master/doc/temp/JDBCPool2020-11-06.log">JDBCPool2020-11-06.log</a>
- 
-Test soruce：https://github.com/Chris2018998/PoolPerformance
+2：Borrower does not move and waits, saving queue entry and exit costs 
 
-**2：** Test with HikariCP performance benchmark(I3-7100,8G)
+3：Transmission pipeline reuse, which can transmit connections and exceptions 
 
-<img height="100%" width="100%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/performance/PoolPerformaceCompare.png"></img> 
+4：Two-way asynchronous alternates, eliminating the time difference between the waiter and the sender
 
-Test source：<a href="https://raw.githubusercontent.com/Chris2018998/BeeCP/master/doc/performance/HikariCP-benchmark_BeeCP.zip">HikariCP-benchmark_BeeCP.zip</a>
 
----
+## :cherries: Compare to HikariCP pool 
 
-#### Example-1
+|    Item      |    BeeCP                                                    |      HikariCP                                             |  
+| -----------  |----------------------------------------------------------   | ----------------------------------------------------------|          
+|Key technology|ThreadLocal + signal+ ConcurrentLinkedQueue +Thread          |FastList + ConcurrentBag + ThreadPoolExecutor              | 
+|Similarity    |CAS，Agent pre-generation,not supply statement cache         |                                                           |
+|Difference    |Support balance mode, support XA, force recovery of unused connections|                                                  |
+|file          |32 source files, Jar package 93KB                            |44 source files, Jar package 158KB                         | 
+|performance   |The overall performance is higher than 40% (optical connection pool benchmark) |                                         |
+
+What are the defects of HikariCP? 
+
+1：<a href="https://my.oschina.net/u/3918073/blog/4645061">For MySQL-driven applications, can the closed PreparedStatement be resurrected?</a> 
+
+2：<a href="https://my.oschina.net/u/3918073/blog/5053082">Database Down machine or network problems, slow response</a>
+
+3：<a href="https://my.oschina.net/u/3918073/blog/5171229">Transactional vulnerabilities</a>
+
+.....
+
+## :tractor: Demo
+
+The usage is roughly similar to the general pool, there are two reference examples below 
+
+###### :point_right: Demo1
 
 ```java
 BeeDataSourceConfig config = new BeeDataSourceConfig();
@@ -57,125 +78,107 @@ config.setDriverClassName("com.mysql.jdbc.Driver");
 config.setJdbcUrl("jdbc:mysql://localhost/test");
 config.setUsername("root");
 config.setPassword("root");
-config.setMaxActive(10);
-config.setInitialSize(0);
-config.setMaxWait(8000);//ms
-//DataSource ds=new BeeDataSource(config);
 BeeDataSource ds=new BeeDataSource(config);
 Connection con=ds.getConnection();
 ....
 
 ```
 
-#### Example-2（SpringBoot）
+###### :point_right: Demo2
 
 *application.properties*
 
 ```java
-spring.datasource.username=xx
-spring.datasource.password=xx
-spring.datasource.url=xx
-spring.datasource.driverClassName=xxx
-spring.datasource.datasourceJndiName=xxx
+spring.datasource.username=root
+spring.datasource.password=root
+spring.datasource.url=jdbc:mysql://localhost/test
+spring.datasource.driverClassName=com.mysql.jdbc.Driver
 ``` 
 
 *DataSourceConfig.java*
 ```java
 @Configuration
 public class DataSourceConfig {
-  @Value("${spring.datasource.driverClassName}")
-  private String driver;
-  @Value("${spring.datasource.url}")
-  private String url;
   @Value("${spring.datasource.username}")
   private String user;
   @Value("${spring.datasource.password}")
   private String password;
-  @Value("${spring.datasource.datasourceJndiName}")
-  private String datasourceJndiName;
-  private BeeDataSourceFactory dataSourceFactory = new BeeDataSourceFactory();
-  
+  @Value("${spring.datasource.url}")
+  private String url;
+  @Value("${spring.datasource.driverClassName}")
+  private String driver;
+
   @Bean
   @Primary
   @ConfigurationProperties(prefix="spring.datasource")
   public DataSource primaryDataSource() {
     return DataSourceBuilder.create().type(cn.beecp.BeeDataSource.class).build();
   }
-  
-  @Bean
-  public DataSource secondDataSource(){
-    return new BeeDataSource(new BeeDataSourceConfig(driver,url,user,password));
-  }
-  
-  @Bean
-  public DataSource thirdDataSource()throws SQLException {
-    try{
-       return dataSourceFactory.lookup(datasourceJndiName);
-     }catch(NamingException e){
-       throw new SQLException("Jndi DataSource not found："+datasourceJndiName);
-     }
-  }
 }
 ```
 
----
+:sunny: *If the project is of Springboot type, recommend<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a>（No code development configuration is required, and it comes with a monitoring interface）*
 
-### Features
 
-1：Borrow timeout
+## :book: Configuration item 
 
-2：Fair mode and compete mode for borrowing
+###### :capital_abcd: poolName 
 
-3：Proxy object safe close when return
+If it is not configured, the system will automatically generate it in the format ：FastPool-x 
 
-4：Pooled connection cleared when network bad,pooled connection recreate when network restore OK
+###### :1234: fairMode
 
-5：Idle timeout and hold timeout(long time inactively hold by borrower)
+The pool supports two modes: fair and competitive, and the default is the competitive mode; in the fair mode, the borrower obtains the connection on the first-come, first-served basis 
 
-6：Connection transaction rollback if exist commit transaction when return 
+###### :capital_abcd: initialSize
 
-7：Pooled connection closed when exception,then create new one and transfer it to waiter
+When the pool is initialized, the number of connections is constructed. If it is 0, the pool will create 1 by default 
 
-8：Pooled connection attributes reset when return（autoCommit,transactionIsolation,readonly,catlog,schema,networkTimeout）
+###### :1234: mxActive
 
-9：XADataSource support
+The maximum number of active connections in the pool, the default value is 10 
 
-10：support self defined connection factory
+###### :capital_abcd: borrowSemaphoreSize
 
-11：Pool Reset
+The size of the semaphore in the pool, the default is the number of CPU cores 
 
-12：JMX support
+###### :1234: defaultAutoCommit
 
----
-### Configuration
-|     Field name         |       Description                               |   Remark                                                   |
-| ---------------------  | ------------------------------------------------| -----------------------------------------------------------|
-|username                |JDBC User                                       |                                                             |
-|password                |JDBC Password                                   |                                                             |
-|jdbcUrl                 |DBC URL                                         |                                                             |  
-|driverClassName         |JDBC driver class name                          |                                                             |
-|poolName                |pool name                                       |name auto generated when not set                            |                              
-|fairMode                |boolean indicator for borrow fair mode           |true:fair mode,false:comepete mode;default is false         |
-|initialSize             |pooled object creation size when pool initialized|default is 0                                                |
-|maxActive               |max size for pooled object instances in pool     |default is 10                                               | 
-|borrowSemaphoreSize     |borrow concurrent thread size                    |default val=min(maxActive/2,cpu size)                       |                       
-|defaultAutoCommit       |connection transaction open indicator            |default is true                                             |
-|defaultTransactionIsolationCode|connection default transaction level      |default is not set value                                    |
-|defaultCatalog             |                                              |                                                            |
-|defaultSchema              |                                              |                                                            |
-|defaultReadOnly            |                                              |default is false                                            |
-|maxWait                    |max wait time to borrow one connection        |time unit is ms,default is 8000 ms                          |                       
-|idleTimeout                |max idle time of connection instance in pool  |time unit is ms,default is 18000 ms                         |  
-|holdTimeout                |max inactive time hold by borrower            |time unit is ms,default is 300000 ms                        |  
-|connectionTestSql          |connection valid test sql                     |select statement（don't recommand store procedure in select  |  
-|connectionTestTimeout      |connection test timeout                       |time unit is second, default is 5 seconds                    |  
-|forceCloseUsingOnClear     |using connection close indicator|true,close directly;false,wait util connection becoming idle,then close it |            |delayTimeForNextClear      |delay time to clear pooled connections        |time unit is ms,default is 3000 ms                          |                            |idleCheckTimeInterval      |scan thread time interval to check idle connection |time unit is ms,default is 300000 ms                   |
-|connectionFactoryClassName |object factory class name                           |default is null                                         |
-|enableJmx                 |JMX boolean indicator for pool                      |default is false                                        |
+The attribute default value setting of AutoCommit on the connection, the default is true 
 
----
-### Donate
+###### :capital_abcd: defaultTransactionIsolationCode
 
-If the software can help you, please donate fee of one coffe to us,thanks.
+The TransactionIsolation transaction isolation level setting of the connection, if not set, the default value is subject to the driver 
+
+###### :1234: maxWait
+
+The maximum waiting time of the borrower when obtaining a connection, the time unit is milliseconds, the default value is 8000
+
+###### :capital_abcd: idleTimeout
+
+The connection idle timeout time, if exceeded, it will be removed, the time unit is milliseconds, the default value is 18000 
+
+###### :1234: holdTimeout
+
+The connection that has been borrowed, if it is not active (executing SQL) within a specified period of time, it will be forcibly recycled, the default value is 18000 
+
+###### :capital_abcd: connectionTestSql
+
+Connection activity test Sql query statement, it is recommended not to embed procedure statement, it must be provided 
+
+###### :1234: connectionTestTimeout
+
+The response time range of connection activity test, the time unit is second, the default is 3 seconds 
+
+###### :capital_abcd: connectionTestInterval
+
+Connection activity test interval time, the current activity is assumed to be valid within the current time from the last activity, the default is 500 milliseconds 
+
+:point_right: <a href="https://github.com/Chris2018998/BeeCP/wiki/%E9%85%8D%E7%BD%AE%E9%A1%B9%E5%88%97%E8%A1%A8">More configuration items </a>
+
+
+## :sparkling_heart: 捐助
+
+If you think this work is good, please donate us a cup of coffee, thank you^_^。
 
 <img height="50%" width="50%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/donate.png"> 
