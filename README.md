@@ -58,7 +58,7 @@ Java6
 
 Which are the defects of HikariCP? 
 
-1：<a href="https://my.oschina.net/u/3918073/blog/4645061">For MySQL-driven applications, can the closed PreparedStatement be resurrected?</a> 
+1：<a href="https://my.oschina.net/u/3918073/blog/4645061">For MySQ-driven, can the closed PreparedStatement be resurrected?</a> 
 
 2：<a href="https://my.oschina.net/u/3918073/blog/5053082">Database Down machine or network problems, slow response</a>
 
