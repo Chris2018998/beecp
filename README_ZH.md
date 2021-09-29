@@ -51,10 +51,10 @@ Java6
 |     比较项    |     BeeCP                                                   |      HikariCP                                             |  
 | -----------  |----------------------------------------------------------   | ----------------------------------------------------------|          
 |关键技术       |ThreadLocal + 信号量 + ConcurrentLinkedQueue +Thread          |FastList + ConcurrentBag + ThreadPoolExecutor              | 
-|相似点         |CAS使用，代理预生成，使用驱动自带Statement缓存                    |-                                                          |
-|差异点         |支持平衡模式，支持XA，强制回收持有不用的连接                       |-                                                          |
+|相似点         |CAS使用，代理预生成，使用驱动自带Statement缓存                    |                                                           |
+|差异点         |支持平衡模式，支持XA，强制回收持有不用的连接                       |                                                           |
 |文件           |32个源码文件，Jar包93KB                                        |44个源码文件，Jar包158KB                                     | 
-|性能           |总体性能高40%以上（光连接池基准）                                |                                                            |
+|性能           |总体性能高40%以上（光连接池基准）                                |                                                           |
 
 HikariCP有哪些缺陷？
 
@@ -67,12 +67,11 @@ HikariCP有哪些缺陷？
 .....
 
 
-
-## :running: 使用
+## :tractor: 使用
 
 使用方式与一般池大致相似，下面有两个参考例子
 
-###### 例子1
+###### :point_right: 例子1
 
 ```java
 BeeDataSourceConfig config = new BeeDataSourceConfig();
@@ -80,106 +79,108 @@ config.setDriverClassName("com.mysql.jdbc.Driver");
 config.setJdbcUrl("jdbc:mysql://localhost/test");
 config.setUsername("root");
 config.setPassword("root");
-config.setMaxActive(10);
-config.setInitialSize(0);
-config.setMaxWait(8000);//ms
-//DataSource ds=new BeeDataSource(config);
 BeeDataSource ds=new BeeDataSource(config);
 Connection con=ds.getConnection();
 ....
 
 ```
 
-###### 例子2
+###### :point_right: 例子2
 
 *application.properties*
 
 ```java
-spring.datasource.username=xx
-spring.datasource.password=xx
-spring.datasource.url=xx
-spring.datasource.driverClassName=xxx
-spring.datasource.datasourceJndiName=xxx
+spring.datasource.username=root
+spring.datasource.password=root
+spring.datasource.url=jdbc:mysql://localhost/test
+spring.datasource.driverClassName=com.mysql.jdbc.Driver
 ``` 
 
 *DataSourceConfig.java*
 ```java
 @Configuration
 public class DataSourceConfig {
-  @Value("${spring.datasource.driverClassName}")
-  private String driver;
-  @Value("${spring.datasource.url}")
-  private String url;
   @Value("${spring.datasource.username}")
   private String user;
   @Value("${spring.datasource.password}")
   private String password;
-  @Value("${spring.datasource.datasourceJndiName}")
-  private String datasourceJndiName;
-  private BeeDataSourceFactory dataSourceFactory = new BeeDataSourceFactory();
-  
+  @Value("${spring.datasource.url}")
+  private String url;
+  @Value("${spring.datasource.driverClassName}")
+  private String driver;
+
   @Bean
   @Primary
   @ConfigurationProperties(prefix="spring.datasource")
   public DataSource primaryDataSource() {
     return DataSourceBuilder.create().type(cn.beecp.BeeDataSource.class).build();
   }
-  
-  @Bean
-  public DataSource secondDataSource(){
-    return new BeeDataSource(new BeeDataSourceConfig(driver,url,user,password));
-  }
-  
-  @Bean
-  public DataSource thirdDataSource()throws SQLException {
-    try{
-       return dataSourceFactory.lookup(datasourceJndiName);
-     }catch(NamingException e){
-       throw new SQLException("Jndi DataSource not found："+datasourceJndiName);
-     }
-  }
 }
 ```
 
-**如果项目为Springboot类型，推荐使用数据源管理工具：<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a> 配置即可,且自带监控界面
+:sunny: *如果项目为Springboot类型，推荐使用数据源管理工具：<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a>（无需代码开发配置即可，且自带监控界面）*
 
 
+## :book: 配置项
+
+###### :capital_abcd: poolName 
+
+池的名称配置，如果未配置，系统自动生成，格式为：FastPool-x 
+
+###### :1234: fairMode
+
+池支持公平与竞争两种模式，默认为竞争模式；公平模式下，借用者获取连接是先到先得原则
+
+###### :capital_abcd: initialSize
+
+池的初始化时，构建连接数量，如果为0，池默认创建1个
+
+###### :1234: mxActive
+
+池内连接最大活动数
+
+###### :capital_abcd: borrowSemaphoreSize
+
+池内信号量大小，默认为CPU核心数
+
+###### :1234: defaultAutoCommit
+
+连接上AutoCommit的属性默认值设置，默认为true
+
+###### :capital_abcd: defaultTransactionIsolationCode
+
+连接的TransactionIsolation事务隔离等级设置，未设置时则默认值则以驱动为准
+
+###### :1234: maxWait
+
+获取连接时，借用者的最大等待时间，时间单位为毫秒
+
+###### :capital_abcd: idleTimeout
+
+连接闲置超时时间，超过则被移除，时间单位为毫秒
+
+###### :1234: holdTimeout
+
+已被借用的连接，若指定时间内未活动（执行SQL），则强制回收
+
+###### :capital_abcd: connectionTestSql
+
+连接活性测试Sql查询语句，建议不要嵌入过程语句，必须提供
+
+###### :1234: connectionTestTimeout
+
+连连接活性测试反应时间范围，时间单位为秒
+
+###### :capital_abcd: connectionTestInterval
+
+连连接活性测试间隔时间，当前距离上次活动内则假定活动是有效的，默认500毫秒
 
 
-
-## :book: 配置项列表
-
-|  配置项          |   描述                        |   备注                            |
-| ----------------| ---------------------------  | ------------------------          |
-| username        | JDBC用户名                    |                                   |
-| password        | JDBC密码                      |                                   |
-| jdbcUrl         | JDBC连接URL                   |                                   |
-| driverClassName | JDBC驱动类名                   |                                   |
-| poolName	      |池名                            |如果未赋值则会自动产生一个            |
-| fairMode        | 连接池是否公平模式               | 默认false,竞争模式                 | 
-| initialSize     | 连接池初始大小                  |                                   |
-| maxActive       | 连接池最大个数                  |                                   | 
-| borrowSemaphoreSize  | 信号量请求并发数（借用者线程数）| 不允许大于连接最大数               |
-| defaultAutoCommit|连接是否为自动提交              | 默认true                            |
-| defaultTransactionIsolationCode|事物等级          | 默认不未设置                         |
-| defaultCatalog    |                             |                                     |
-| defaultSchema     |                             |                                     |
-| defaultReadOnly   |                             | 默认false                            |
-| maxWait           |连接借用等待最大时间(毫秒)       | 默认8秒，连接请求最大等待时间           |
-| idleTimeout       |连接闲置最大时间(毫秒)          | 默认3分钟，超时会被清理                 |  
-| holdTimeout       |连接被持有不用的最大时间(毫秒)    | 默认5分钟，超时会被清理                 |  
-| connectionTestSql |连接有效性测试SQL语句           | 一条 select 语句，不建议放入存储过程     |  
-| connectionTestTimeout |连接有效性测试超时时间(秒)   |默认5秒 执行查询测试语句时间，在指定时间范围内等待反应|  
-| connectionTestInterval |连接测试的间隔时间(毫秒)     |默认500毫秒 连接上次活动时间点与当前时间时间差值小于它，则假定连接是有效的|  
-| forceCloseUsingOnClear|是否直接关闭使用中转连接       |默认false;true:直接关闭使用中连接，false:等待处于使用中归还后再关闭|
-| delayTimeForNextClear  |延迟清理的时候时间（毫秒）    |默认3000毫秒,还存在使用中的连接，延迟等待时间再清理|                   
-| idleCheckTimeInterval  |闲置扫描线程间隔时间(毫秒)     |   默认5分钟                                 |
-| connectionFactoryClassName|自定义的JDBC连接工作类名            | 默认为空                  |
-| enableJmx                 |JMX监控支持开关                    | 默认false                | 
+:point_right: <a href="https://github.com/Chris2018998/BeeCP/wiki/%E9%85%8D%E7%BD%AE%E9%A1%B9%E5%88%97%E8%A1%A8">更多配置项</a>
 
 
 ## :sparkling_heart: 捐助
 
-如果您觉得此作品不错，可以捐赠请我们喝杯咖啡吧，在此表示感谢^_^。
+如果您觉得此作品不错，请捐赠我们喝杯咖啡吧，在此表示感谢^_^。
 
 <img height="50%" width="50%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/donate.png"> 
