@@ -12,10 +12,6 @@
 
 BeeCP是一款高性能JDBC连接池
 
-## :tea: 由来
-
-BeeCP源自Jmin项目（Java工具套件集，04年创建）的子模块改造而来
-
 ## :arrow_down: 下载 
 
 Java7或更高
