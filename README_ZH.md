@@ -137,7 +137,7 @@ public class DataSourceConfig {
 
 ###### :1234: mxActive
 
-池内连接最大活动数
+池内连接最大活动数，默认值10
 
 ###### :capital_abcd: borrowSemaphoreSize
 
@@ -153,15 +153,15 @@ public class DataSourceConfig {
 
 ###### :1234: maxWait
 
-获取连接时，借用者的最大等待时间，时间单位为毫秒
+获取连接时，借用者的最大等待时间，时间单位为毫秒，默认值8000
 
 ###### :capital_abcd: idleTimeout
 
-连接闲置超时时间，超过则被移除，时间单位为毫秒
+连接闲置超时时间，超过则被移除，时间单位为毫秒，默认值18000
 
 ###### :1234: holdTimeout
 
-已被借用的连接，若指定时间内未活动（执行SQL），则强制回收
+已被借用的连接，若指定时间内未活动（执行SQL），则强制回收，默认值18000
 
 ###### :capital_abcd: connectionTestSql
 
@@ -169,7 +169,7 @@ public class DataSourceConfig {
 
 ###### :1234: connectionTestTimeout
 
-连连接活性测试反应时间范围，时间单位为秒
+连连接活性测试反应时间范围，时间单位为秒，默认为3秒
 
 ###### :capital_abcd: connectionTestInterval
 
