@@ -46,7 +46,7 @@ Java6
 4：Two-way asynchronous alternates, eliminating the time difference between the waiter and the sender
 
 
-## :cherries: Compare to HikariCP pool 
+## :cherries: Compare to HikariCP
 
 |    Item      |    BeeCP                                                    |      HikariCP                                             |  
 | -----------  |----------------------------------------------------------   | ----------------------------------------------------------|          
@@ -56,7 +56,7 @@ Java6
 |file          |32 source files, Jar package 93KB                            |44 source files, Jar package 158KB                         | 
 |performance   |The overall performance is higher than 40% (optical connection pool benchmark) |                                         |
 
-What are the defects of HikariCP? 
+Which are the defects of HikariCP? 
 
 1：<a href="https://my.oschina.net/u/3918073/blog/4645061">For MySQL-driven applications, can the closed PreparedStatement be resurrected?</a> 
 
