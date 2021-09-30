@@ -33,13 +33,13 @@ Java6
 
 ## :thumbsup: Highlight
 
-1：ThreadLocal connection single cache to improve pooling performance 
+1：Single connection threadLocal cache to improve pooling performance 
 
-2：Borrower does not move and waits, saving queue entry and exit costs 
+2：Borrower non move waiting, saving queue entry and exit costs 
 
-3：Transmission pipeline reuse, which can transmit connections and exceptions 
+3: Transfer queue reuse, which can transfer connections and exceptions 
 
-4：Two-way asynchronous alternates, eliminating the time difference between the waiter and the sender
+4：Connection asynchronized-add thread,which can be triggerred by releaser or waiter
 
 
 ## :cherries: Compare to HikariCP
@@ -113,7 +113,7 @@ public class DataSourceConfig {
 }
 ```
 
-:sunny: *If the project is of Springboot type, recommend<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a>（No code development configuration is required, and it comes with a monitoring interface）*
+:sunny: *If your project is of Springboot type, recommend<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a>（No code development configuration is required, and it comes with a monitoring interface）*
 
 
 ## :book: Configuration item 
