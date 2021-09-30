@@ -172,9 +172,3 @@ Connection activity test interval time, the current activity is assumed to be va
 
 :point_right: <a href="https://github.com/Chris2018998/BeeCP/wiki/%E9%85%8D%E7%BD%AE%E9%A1%B9%E5%88%97%E8%A1%A8">More configuration items </a>
 
-
-## :sparkling_heart: Donate
-
-If you think this work is good, please donate us a cup of coffee, thank you^_^。
-
-<img height="50%" width="50%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/donate.png"> 
