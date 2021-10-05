@@ -289,42 +289,47 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
         if (validTestFailed) {
             Statement st = null;
-            this.conTester = new SqlQueryTester(
-                    poolConfig.isDefaultAutoCommit(), poolConfig.getConnectionTestSql());
+            String conAliveTestSql = poolConfig.getConnectionTestSql();
+            boolean isDefaultAutoCommit = poolConfig.isDefaultAutoCommit();
+            this.conTester = new SqlQueryTester(conAliveTestSql, isDefaultAutoCommit);
+
             try {
                 st = rawCon.createStatement();
-                testQueryTimeout(st, connectionTestTimeout);
-                validateTestSql(rawCon, st);
+                boolean supportQueryTimeout = testQueryTimeout(st, connectionTestTimeout);
+                ((SqlQueryTester) conTester).setSupportQueryTimeout(supportQueryTimeout);
+
+                validateTestSql(rawCon, st, conAliveTestSql, isDefaultAutoCommit);
             } finally {
                 if (st != null) oclose(st);
             }
         }
     }
 
-    private void testQueryTimeout(Statement st, int timeoutSeconds) {
+    private boolean testQueryTimeout(Statement st, int timeoutSeconds) {
         try {
             st.setQueryTimeout(timeoutSeconds);
+            return true;
         } catch (Throwable e) {
-            ((SqlQueryTester) conTester).setSupportQueryTimeout(false);
             if (printRuntimeLog)
                 commonLog.warn("BeeCP({})driver not support 'queryTimeout',cause:", poolName, e);
+            return false;
         }
     }
 
-    private void validateTestSql(Connection rawCon, Statement st) throws SQLException {
+    private void validateTestSql(Connection rawCon, Statement st, String testSql, boolean isDefaultAutoCommit) throws SQLException {
         boolean changed = false;
         try {
-            if (poolConfig.isDefaultAutoCommit()) {
+            if (isDefaultAutoCommit) {
                 rawCon.setAutoCommit(false);
                 changed = true;
             }
-            st.execute(poolConfig.getConnectionTestSql());
+            st.execute(testSql);
         } finally {
             try {
                 rawCon.rollback();//why? maybe store procedure in test sql
-                if (changed) rawCon.setAutoCommit(poolConfig.isDefaultAutoCommit());//reset to default
+                if (changed) rawCon.setAutoCommit(isDefaultAutoCommit);//reset to default
             } catch (Throwable e) {
-                throw (e instanceof SQLException) ? (SQLException) e : new SQLException(e);
+                throw e instanceof SQLException ? (SQLException) e : new SQLException(e);
             }
         }
     }
@@ -421,7 +426,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     private final PooledConnection searchOrCreate() throws SQLException {
         final PooledConnection[] array = conArray;
-        for (int i = 0,l = array.length; i < l; ++i) {
+        for (int i = 0, l = array.length; i < l; ++i) {
             PooledConnection p = array[i];
             if (p.state == CON_IDLE && ConStUpd.compareAndSet(p, CON_IDLE, CON_USING) && testOnBorrow(p))
                 return p;
@@ -897,7 +902,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         private final boolean autoCommit;//connection default value
         private boolean supportQueryTimeout = true;
 
-        public SqlQueryTester(boolean autoCommit, String testSql) {
+        public SqlQueryTester(String testSql, boolean autoCommit) {
             this.testSql = testSql;
             this.autoCommit = autoCommit;
         }
