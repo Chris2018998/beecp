@@ -33,7 +33,7 @@ public class DataSourceConnectionFactoryTest extends TestCase {
         config.addConnectProperty("url", Config.JDBC_URL);
         config.setConnectionFactoryClassName("com.mysql.cj.jdbc.MysqlDataSource");
         config.setInitialSize(5);
-        config.setConnectionTestSql("SELECT 1 from dual");
+        config.setValidTestSql("SELECT 1 from dual");
         config.setIdleTimeout(3000);
         ds = new BeeDataSource(config);
     }

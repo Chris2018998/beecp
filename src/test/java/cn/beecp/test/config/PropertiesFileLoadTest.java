@@ -51,7 +51,7 @@ public class PropertiesFileLoadTest extends TestCase {
             throw new BeeDataSourceConfigException("defaultTransactionIsolationCode error");
         if (!"TRANSACTION_READ_UNCOMMITTED".equals(testConfig.getDefaultTransactionIsolationName()))
             throw new BeeDataSourceConfigException("defaultTransactionIsolation error");
-        if (!"SELECT 1".equals(testConfig.getConnectionTestSql()))
+        if (!"SELECT 1".equals(testConfig.getValidTestSql()))
             throw new BeeDataSourceConfigException("connectionTestSQL error");
         if (!"Pool1".equals(testConfig.getPoolName())) throw new BeeDataSourceConfigException("poolName error");
         if (!testConfig.isFairMode()) throw new BeeDataSourceConfigException("fairMode error");
@@ -62,11 +62,11 @@ public class PropertiesFileLoadTest extends TestCase {
         if (testConfig.getMaxWait() != 8000) throw new BeeDataSourceConfigException("maxWait error");
         if (testConfig.getIdleTimeout() != 18000) throw new BeeDataSourceConfigException("idleTimeout error");
         if (testConfig.getHoldTimeout() != 30000) throw new BeeDataSourceConfigException("holdTimeout error");
-        if (testConfig.getConnectionTestTimeout() != 3)
+        if (testConfig.getValidTestTimeout() != 3)
             throw new BeeDataSourceConfigException("connectionTestTimeout error");
-        if (testConfig.getConnectionTestInterval() != 500)
+        if (testConfig.getValidAssumeTime() != 500)
             throw new BeeDataSourceConfigException("connectionTestInterval error");
-        if (testConfig.getIdleCheckTimeInterval() != 30000)
+        if (testConfig.getTimerCheckInterval() != 30000)
             throw new BeeDataSourceConfigException("idleCheckTimeInterval error");
         if (!testConfig.isForceCloseUsingOnClear())
             throw new BeeDataSourceConfigException("forceCloseUsingOnClear error");

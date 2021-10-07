@@ -35,7 +35,7 @@ public class ProxyResultSetGetTest extends TestCase {
         config.setUsername(Config.JDBC_USER);
         config.setPassword(Config.JDBC_PASSWORD);
         config.setInitialSize(0);
-        config.setConnectionTestSql("SELECT 1 from dual");
+        config.setValidTestSql("SELECT 1 from dual");
         ds = new BeeDataSource(config);
     }
 

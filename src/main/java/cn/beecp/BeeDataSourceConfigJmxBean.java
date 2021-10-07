@@ -49,17 +49,17 @@ public interface BeeDataSourceConfigJmxBean {
 
     long getHoldTimeout();
 
-    String getConnectionTestSql();
+    String getValidTestSql();
 
-    int getConnectionTestTimeout();
+    int getValidTestTimeout();
 
-    long getConnectionTestInterval();
+    long getValidAssumeTime();
 
     boolean isForceCloseUsingOnClear();
 
     long getDelayTimeForNextClear();
 
-    long getIdleCheckTimeInterval();
+    long getTimerCheckInterval();
 
     String getPoolImplementClassName();
 

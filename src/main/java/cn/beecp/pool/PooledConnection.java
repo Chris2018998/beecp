@@ -171,7 +171,7 @@ final class PooledConnection implements Cloneable {
     public final void unregisterStatement(final ProxyStatementBase s) {
         for (int i = 0; i < openStmSize; i++)
             if (s == openStatements[i]) {
-                final int m = openStmSize - i - 1;
+                int m = openStmSize - i - 1;
                 if (m > 0) arraycopy(openStatements, i + 1, openStatements, i, m);//move to ahead
                 openStatements[--openStmSize] = null; // clear to let GC do its work
                 return;

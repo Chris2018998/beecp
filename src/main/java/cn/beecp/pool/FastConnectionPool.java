@@ -33,7 +33,7 @@ import static java.util.concurrent.locks.LockSupport.*;
  * @author Chris.Liao
  * @version 1.0
  */
-public final class FastConnectionPool extends Thread implements ConnectionPool, ConnectionPoolJmxBean, PooledConnectionTransferPolicy, PooledConnectionTester {
+public final class FastConnectionPool extends Thread implements ConnectionPool, ConnectionPoolJmxBean, PooledConnectionTransferPolicy, PooledConnectionValidTest {
     private static final long spinForTimeoutThreshold = 1000L;
     private static final AtomicIntegerFieldUpdater<PooledConnection> ConStUpd = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class, "state");
     private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowStUpd = AtomicReferenceFieldUpdater.newUpdater(Borrower.class, Object.class, "state");
@@ -58,10 +58,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private long idleTimeoutMs;//milliseconds
     private long holdTimeoutMs;//milliseconds
     private int unCatchStateCode;
-    private long conTestInterval;//milliseconds
-    private int connectionTestTimeout;//seconds
+
+    private long conValidAssumeTime;//milliseconds
+    private int conValidTestTimeout;//seconds
     private long delayTimeForNextClearNs;//nanoseconds
-    private PooledConnectionTester conTester;
+    private PooledConnectionValidTest conValidTest;
     private PooledConnectionTransferPolicy transferPolicy;
     private ConnectionPoolHook exitHook;
     private BeeDataSourceConfig poolConfig;
@@ -102,8 +103,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             holdTimeoutMs = poolConfig.getHoldTimeout();
             maxWaitNs = MILLISECONDS.toNanos(poolConfig.getMaxWait());
             delayTimeForNextClearNs = MILLISECONDS.toNanos(poolConfig.getDelayTimeForNextClear());
-            conTestInterval = poolConfig.getConnectionTestInterval();
-            connectionTestTimeout = poolConfig.getConnectionTestTimeout();
+            conValidAssumeTime = poolConfig.getValidAssumeTime();
+            conValidTestTimeout = poolConfig.getValidTestTimeout();
             if (poolConfig.isFairMode()) {
                 poolMode = "fair";
                 transferPolicy = new FairTransferPolicy();
@@ -273,8 +274,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         boolean validTestFailed;
         this.isFirstValidConnection = false;//remark as tested
         try {//test isValid Method
-            if (rawCon.isValid(connectionTestTimeout)) {
-                this.conTester = this;
+            if (rawCon.isValid(conValidTestTimeout)) {
+                this.conValidTest = this;
                 return;
             } else {
                 validTestFailed = true;
@@ -289,14 +290,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
         if (validTestFailed) {
             Statement st = null;
-            String conAliveTestSql = poolConfig.getConnectionTestSql();
+            String conAliveTestSql = poolConfig.getValidTestSql();
             boolean isDefaultAutoCommit = poolConfig.isDefaultAutoCommit();
-            this.conTester = new SqlQueryTester(conAliveTestSql, isDefaultAutoCommit);
+            this.conValidTest = new PooledConnectionValidTestBySql(conAliveTestSql, isDefaultAutoCommit);
 
             try {
                 st = rawCon.createStatement();
-                boolean supportQueryTimeout = testQueryTimeout(st, connectionTestTimeout);
-                ((SqlQueryTester) conTester).setSupportQueryTimeout(supportQueryTimeout);
+                boolean supportQueryTimeout = testQueryTimeout(st, conValidTestTimeout);
+                ((PooledConnectionValidTestBySql) conValidTest).setSupportQueryTimeout(supportQueryTimeout);
 
                 validateTestSql(rawCon, st, conAliveTestSql, isDefaultAutoCommit);
             } finally {
@@ -510,7 +511,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @return boolean, true:alive
      */
     private final boolean testOnBorrow(final PooledConnection p) {
-        if (currentTimeMillis() - p.lastAccessTime - conTestInterval > 0L && !conTester.isAlive(p)) {
+        if (currentTimeMillis() - p.lastAccessTime - conValidAssumeTime > 0L && !conValidTest.isValid(p)) {
             removePooledConn(p, DESC_RM_BAD);
             tryWakeupServantThread();
             return false;
@@ -795,9 +796,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     public final void onFailedTransfer(final PooledConnection p) {
     }
 
-    public final boolean isAlive(final PooledConnection p) {
+    public final boolean isValid(final PooledConnection p) {
         try {
-            if (p.raw.isValid(connectionTestTimeout)) {
+            if (p.raw.isValid(conValidTestTimeout)) {
                 p.lastAccessTime = currentTimeMillis();
                 return true;
             }
@@ -848,7 +849,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
         public void run() {
             pool.poolThreadLatch.countDown();
-            final long checkTimeIntervalNanos = MILLISECONDS.toNanos(pool.poolConfig.getIdleCheckTimeInterval());
+            final long checkTimeIntervalNanos = MILLISECONDS.toNanos(pool.poolConfig.getTimerCheckInterval());
             final AtomicInteger idleScanThreadState = pool.idleScanState;
             while (idleScanThreadState.get() == THREAD_WORKING) {
                 parkNanos(checkTimeIntervalNanos);
@@ -897,12 +898,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    private final class SqlQueryTester implements PooledConnectionTester {
+    private final class PooledConnectionValidTestBySql implements PooledConnectionValidTest {
         private final String testSql;
         private final boolean autoCommit;//connection default value
         private boolean supportQueryTimeout = true;
 
-        public SqlQueryTester(String testSql, boolean autoCommit) {
+        public PooledConnectionValidTestBySql(String testSql, boolean autoCommit) {
             this.testSql = testSql;
             this.autoCommit = autoCommit;
         }
@@ -911,7 +912,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             this.supportQueryTimeout = supportQueryTimeout;
         }
 
-        public final boolean isAlive(final PooledConnection p) {
+        public final boolean isValid(final PooledConnection p) {
             Statement st = null;
             boolean changed = false;
             final Connection con = p.raw;
@@ -923,7 +924,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 st = con.createStatement();
                 if (supportQueryTimeout) {
                     try {
-                        st.setQueryTimeout(connectionTestTimeout);
+                        st.setQueryTimeout(conValidTestTimeout);
                     } catch (Throwable e) {
                         if (printRuntimeLog)
                             commonLog.warn("BeeCP({})failed to setQueryTimeout", poolName, e);

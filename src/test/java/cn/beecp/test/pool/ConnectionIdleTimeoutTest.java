@@ -18,7 +18,6 @@ package cn.beecp.test.pool;
 import cn.beecp.BeeDataSource;
 import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.pool.FastConnectionPool;
-import cn.beecp.pool.PoolStaticCenter;
 import cn.beecp.test.Config;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
@@ -26,8 +25,6 @@ import cn.beecp.test.TestUtil;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
-
-import static cn.beecp.pool.PoolStaticCenter.POOL_UNINIT;
 
 public class ConnectionIdleTimeoutTest extends TestCase {
     private BeeDataSource ds;
@@ -41,9 +38,9 @@ public class ConnectionIdleTimeoutTest extends TestCase {
         config.setPassword(Config.JDBC_PASSWORD);
         config.setInitialSize(initSize);
         config.setMaxActive(initSize);
-        config.setConnectionTestSql("SELECT 1 from dual");
+        config.setValidTestSql("SELECT 1 from dual");
         config.setIdleTimeout(1000);
-        config.setIdleCheckTimeInterval(1000);
+        config.setTimerCheckInterval(1000);
         ds = new BeeDataSource(config);
     }
 

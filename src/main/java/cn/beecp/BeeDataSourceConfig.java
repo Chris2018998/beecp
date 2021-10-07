@@ -77,19 +77,19 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private long idleTimeout = MINUTES.toMillis(3);
     //milliseconds:connection not active time hold in borrower
     private long holdTimeout = MINUTES.toMillis(3);
-    //connection test sql
-    private String connectionTestSql = "SELECT 1";
-    //seconds:wait for connection test result
-    private int connectionTestTimeout = 3;
-    //milliseconds:connection test interval time to last active time
-    private long connectionTestInterval = 500L;
-    //milliseconds:interval time to run check task
-    private long idleCheckTimeInterval = MINUTES.toMillis(1);
+
+    //connection valid test sql
+    private String validTestSql = "SELECT 1";
+    //seconds:wait for connection valid test result
+    private int validTestTimeout = 3;
+    //milliseconds:some time duration after last activity time,assume connection is valid and not need test
+    private long validAssumeTime = 500L;
+    //milliseconds:interval time to run timer check task
+    private long timerCheckInterval = MINUTES.toMillis(1);
     //using connection close indicator,true,close directly;false,delay close util them becoming idle or hold timeout
     private boolean forceCloseUsingOnClear;
     //milliseconds:delay time for next clear pooled connections when exists using connections and 'forceCloseUsingOnClear' is false
     private long delayTimeForNextClear = 3000L;
-
 
     //physical JDBC Connection factory
     private RawConnectionFactory connectionFactory;
@@ -265,13 +265,13 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     @Override
-    public String getConnectionTestSql() {
-        return connectionTestSql;
+    public String getValidTestSql() {
+        return validTestSql;
     }
 
-    public void setConnectionTestSql(String connectionTestSql) {
-        if (!isBlank(connectionTestSql))
-            this.connectionTestSql = trimString(connectionTestSql);
+    public void setValidTestSql(String validTestSql) {
+        if (!isBlank(validTestSql))
+            this.validTestSql = trimString(validTestSql);
     }
 
     @Override
@@ -357,33 +357,33 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     @Override
-    public int getConnectionTestTimeout() {
-        return connectionTestTimeout;
+    public int getValidTestTimeout() {
+        return validTestTimeout;
     }
 
-    public void setConnectionTestTimeout(int connectionTestTimeout) {
-        if (connectionTestTimeout >= 0)
-            this.connectionTestTimeout = connectionTestTimeout;
-    }
-
-    @Override
-    public long getConnectionTestInterval() {
-        return connectionTestInterval;
-    }
-
-    public void setConnectionTestInterval(long connectionTestInterval) {
-        if (connectionTestInterval >= 0)
-            this.connectionTestInterval = connectionTestInterval;
+    public void setValidTestTimeout(int validTestTimeout) {
+        if (validTestTimeout >= 0)
+            this.validTestTimeout = validTestTimeout;
     }
 
     @Override
-    public long getIdleCheckTimeInterval() {
-        return idleCheckTimeInterval;
+    public long getValidAssumeTime() {
+        return validAssumeTime;
     }
 
-    public void setIdleCheckTimeInterval(long idleCheckTimeInterval) {
-        if (idleCheckTimeInterval > 0)
-            this.idleCheckTimeInterval = idleCheckTimeInterval;
+    public void setValidAssumeTime(long validAssumeTime) {
+        if (validAssumeTime >= 0)
+            this.validAssumeTime = validAssumeTime;
+    }
+
+    @Override
+    public long getTimerCheckInterval() {
+        return timerCheckInterval;
+    }
+
+    public void setTimerCheckInterval(long timerCheckInterval) {
+        if (timerCheckInterval > 0)
+            this.timerCheckInterval = timerCheckInterval;
     }
 
     @Override
@@ -545,11 +545,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             throw new BeeDataSourceConfigException("maxWait must be greater than zero");
         //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 begin
         //if (this.validationQuerySQL != null && validationQuerySQL.trim().length() == 0) {
-        if (isBlank(this.connectionTestSql))
-            throw new BeeDataSourceConfigException("connectionTestSql cant be null or empty");
-        if (!this.connectionTestSql.toLowerCase(Locale.US).startsWith("select ")) {
+        if (isBlank(this.validTestSql))
+            throw new BeeDataSourceConfigException("validTestSql cant be null or empty");
+        if (!this.validTestSql.toUpperCase(Locale.US).startsWith("SELECT ")) {
             //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end
-            throw new BeeDataSourceConfigException("connectionTestSql must be start with 'select '");
+            throw new BeeDataSourceConfigException("validTestSql must be start with 'select '");
         }
 
         if (isBlank(this.poolName)) this.poolName = "FastPool-" + poolNameIndex.getAndIncrement();

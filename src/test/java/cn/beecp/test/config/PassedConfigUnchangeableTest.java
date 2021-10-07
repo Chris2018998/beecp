@@ -37,7 +37,7 @@ public class PassedConfigUnchangeableTest extends TestCase {
         testConfig.setPassword(Config.JDBC_PASSWORD);
         testConfig.setInitialSize(initSize);
         testConfig.setMaxActive(maxSize);
-        testConfig.setConnectionTestSql("SELECT 1 from dual");
+        testConfig.setValidTestSql("SELECT 1 from dual");
         testConfig.setIdleTimeout(3000);
         ds = new BeeDataSource(testConfig);
     }
