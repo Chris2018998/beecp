@@ -530,13 +530,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     private void shutdownPoolThread() {
-        int curState = idleScanState.get();
-        idleScanState.set(THREAD_EXIT);
-        if (curState == THREAD_WAITING) unpark(idleScanThread);
-
-        curState = servantState.get();
+        int curState = servantState.get();
         servantState.set(THREAD_EXIT);
         if (curState == THREAD_WAITING) unpark(this);
+
+         curState = idleScanState.get();
+        idleScanState.set(THREAD_EXIT);
+        if (curState == THREAD_WAITING) unpark(idleScanThread);
     }
 
     public void run() {
