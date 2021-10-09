@@ -12,12 +12,11 @@ import cn.beecp.xa.RawXaConnectionFactory;
 
 import javax.sql.DataSource;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -583,7 +582,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
         InputStream stream = null;
         try {
-            stream = Files.newInputStream(Paths.get(file.toURI()));
+            stream = new FileInputStream(file);
             Properties configProperties = new Properties();
             configProperties.load(stream);
             loadFromProperties(configProperties);
