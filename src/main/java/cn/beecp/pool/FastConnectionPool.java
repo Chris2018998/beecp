@@ -182,11 +182,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         } catch (Throwable e) {
             for (PooledConnection p : conArray)
                 removePooledConn(p, DESC_RM_INIT);
-            if (e instanceof ConnectionCreateFailedException) {//may be network bad or database is not ready
-                if (initSize > 0) throw e;
-            } else {
-                throw e;
-            }
+            if (initSize > 0) throw e instanceof SQLException ? (SQLException) e : new SQLException(e);
         }
     }
 
