@@ -104,7 +104,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private String poolImplementClassName;
     //boolean indicator,true:register dataSource to jmx
     private boolean enableJmx;
-    //boolean indicator,true:print datasource config item info on starting
+    //boolean indicator,true:print config item info on pool starting
     private boolean enableConfigLog;
     //boolean indicator,true:print runtime log
     private boolean enableRuntimeLog;
