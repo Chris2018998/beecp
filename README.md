@@ -48,7 +48,8 @@ Java6
 | -----------  |----------------------------------------------------------   | ----------------------------------------------------------|          
 |Key           |ThreadLocal + semaphore+ ConcurrentLinkedQueue +Thread       |FastList + ConcurrentBag + ThreadPoolExecutor              | 
 |Similarity    |CAS,Proxy pre-generation,Driver statement cache,Jmx          |                                                           |
-|Difference    |Balance mode,Hold-timeout,Support XA,Pool clean              |Pool suspend,Config runtime change                         |                            |File          |32 source files,Jar package 93KB                             |44 source files,Jar package 158KB                          | 
+|Difference    |Balance mode,Hold-timeout,Support XA,Pool clean              |Pool suspend,Config runtime change                         |
+|File          |32 source files,Jar package 93KB                             |44 source files,Jar package 158KB                          | 
 |Performance   |Higher than 40%                                              |                                                           |
 
 Which defects of HikariCP?
