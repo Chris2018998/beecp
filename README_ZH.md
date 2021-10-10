@@ -172,7 +172,7 @@ public class DataSourceConfig {
 连连接活性测试间隔时间，当前距离上次活动内则假定活动是有效的，默认500毫秒
 
 
-:point_right: <a href="https://github.com/Chris2018998/BeeCP/wiki/%E9%85%8D%E7%BD%AE%E9%A1%B9%E5%88%97%E8%A1%A8">更多配置项</a>
+:point_right: <a href="https://github.com/Chris2018998/BeeCP/wiki/Configuration--List">更多配置项</a>
 
 
 ## :sparkling_heart: 捐助
