@@ -27,7 +27,7 @@ Java6
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>1.6.9</version>
+   <version>1.6.10</version>
 </dependency>
 ```
 
@@ -46,25 +46,29 @@ Java6
 
 |    Item      |    BeeCP                                                    |      HikariCP                                             |  
 | -----------  |----------------------------------------------------------   | ----------------------------------------------------------|          
-|Key technology|ThreadLocal + signal+ ConcurrentLinkedQueue +Thread          |FastList + ConcurrentBag + ThreadPoolExecutor              | 
-|Similarity    |CAS，Agent pre-generation,not supply statement cache         |                                                           |
-|Difference    |Support balance mode, support XA, force recovery of unused connections|                                                  |
-|file          |32 source files, Jar package 93KB                            |44 source files, Jar package 158KB                         | 
-|performance   |The overall performance is higher than 40% (optical connection pool benchmark) |                                         |
+|Key           |ThreadLocal + semaphore+ ConcurrentLinkedQueue +Thread       |FastList + ConcurrentBag + ThreadPoolExecutor              | 
+|Similarity    |CAS,Proxy pre-generation,Driver statement cache,Jmx          |                                                           |
+|Difference    |Balance mode,Hold-timeout,Support XA,Pool clean              |Pool suspend,Config runtime change                         |                            |File          |32 source files,Jar package 93KB                             |44 source files,Jar package 158KB                          | 
+|Performance   |Higher than 40%                                              |                                                           |
 
-Which are the defects of HikariCP? 
+Which defects of HikariCP?
+ 
+1：<a href="https://my.oschina.net/u/3918073/blog/4645061">Closed preparedStatements can be activation, when using MySQ-driver</a> 
 
-1：<a href="https://my.oschina.net/u/3918073/blog/4645061">For MySQ-driven, can the closed PreparedStatement be resurrected?</a> 
+2：<a href="https://my.oschina.net/u/3918073/blog/5053082">When database down or network failed, getConnection response time == 'connectionTimeout'(if configed value is large,what happen?) </a>
 
-2：<a href="https://my.oschina.net/u/3918073/blog/5053082">Database Down machine or network problems, slow response</a>
-
-3：<a href="https://my.oschina.net/u/3918073/blog/5171229">Transactional vulnerabilities</a>
+3：<a href="https://my.oschina.net/u/3918073/blog/5171229">Exists transaction leak,when using 'setSavepoint' on connection</a>
 
 .....
 
+
+**Conclusion:** faster, simpler, reliabler
+
+
+
 ## :tractor: Demo
 
-The usage is roughly similar to the general pool, there are two reference examples below 
+Its usage is roughly similar to other pool, two reference examples below
 
 ###### :point_right: Demo1
 
@@ -113,62 +117,64 @@ public class DataSourceConfig {
 }
 ```
 
-:sunny: *If your project is of Springboot type, recommend<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a>（No code development configuration is required, and it comes with a monitoring interface）*
+:sunny: *If your projects are based on springboot, we recommend<a href="https://github.com/Chris2018998/BeeCP-Starter"> BeeCP-Starter </a>
+to manage your datasource(file configuration, less code, monitor-ui)*
 
 
 ## :book: Configuration item 
 
 ###### :capital_abcd: poolName 
 
-If it is not configured, the system will automatically generate it in the format ：FastPool-x 
+If not configured, auto generated
 
 ###### :1234: fairMode
 
-The pool supports two modes: fair and competitive, and the default is the competitive mode; in the fair mode, the borrower obtains the connection on the first-come, first-served basis 
+Boolean indicator,if true,pool will use fair semaphore and fair transfer policy. **default value:** false
 
 ###### :capital_abcd: initialSize
 
-When the pool is initialized, the number of connections is constructed. If it is 0, the pool will create 1 by default 
+Size of connections on pool starting,if zero,pool will try to create one.**default value:** 0
 
 ###### :1234: mxActive
 
-The maximum number of active connections in the pool, the default value is 10 
-
+Max reach size of connections in pool.**default value:** 10
+ 
 ###### :capital_abcd: borrowSemaphoreSize
 
-The size of the semaphore in the pool, the default is the number of CPU cores 
+Size of semaphore in pool. **default value:** number of CPU cores 
 
 ###### :1234: defaultAutoCommit
 
-The attribute default value setting of AutoCommit on the connection, the default is true 
+Value setting on conneciton creating and return, *default value:**true
 
 ###### :capital_abcd: defaultTransactionIsolationCode
 
-The TransactionIsolation transaction isolation level setting of the connection, if not set, the default value is subject to the driver 
+Value setting on conneciton creating and return. **default value:**-999,if not set then read value from first connection 
 
 ###### :1234: maxWait
 
-The maximum waiting time of the borrower when obtaining a connection, the time unit is milliseconds, the default value is 8000
+Max wait time for one connection for borrower using 'getConnection'. unit: milliseconds, **default value:** 8000
 
 ###### :capital_abcd: idleTimeout
 
-The connection idle timeout time, if exceeded, it will be removed, the time unit is milliseconds, the default value is 18000 
-
+Max idle time of connections in pool,when reach,then remove from pool.unit: milliseconds, **default value:** 18000
+ 
 ###### :1234: holdTimeout
 
-The connection that has been borrowed, if it is not active (executing SQL) within a specified period of time, it will be forcibly recycled, the default value is 18000 
+Max no-use time of borrowed connections,when reach,then return them to pool by forced close.unit: milliseconds, **default value:** 18000
 
 ###### :capital_abcd: connectionTestSql
 
-Connection activity test Sql query statement, it is recommended not to embed procedure statement, it must be provided 
+Connection valid test sql on borrowed. **default value:** SELECT 1
 
 ###### :1234: connectionTestTimeout
 
-The response time range of connection activity test, the time unit is second, the default is 3 seconds 
-
+Max time to get a valid test result. unit:second, **default value:** 3
+ 
 ###### :capital_abcd: connectionTestInterval
 
-Connection activity test interval time, the current activity is assumed to be valid within the current time from the last activity, the default is 500 milliseconds 
+Conenction valid assume time after last activity,if borrowed,not need test during the duration.unit: milliseconds, **default value:** 500
+
 
 :point_right: <a href="https://github.com/Chris2018998/BeeCP/wiki/%E9%85%8D%E7%BD%AE%E9%A1%B9%E5%88%97%E8%A1%A8">More configuration items </a>
 
