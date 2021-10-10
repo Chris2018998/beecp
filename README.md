@@ -177,5 +177,5 @@ Max time to get a valid test result. unit:second, **default value:** 3
 Conenction valid assume time after last activity,if borrowed,not need test during the duration.unit: milliseconds, **default value:** 500
 
 
-:point_right: <a href="https://github.com/Chris2018998/BeeCP/wiki/%E9%85%8D%E7%BD%AE%E9%A1%B9%E5%88%97%E8%A1%A8">More configuration items </a>
+:point_right: <a href="https://github.com/Chris2018998/BeeCP/wiki/Configuration--List">More configuration items </a>
 
