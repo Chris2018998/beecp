@@ -145,7 +145,7 @@ Size of semaphore in pool. **default value:** number of CPU cores
 
 ###### :1234: defaultAutoCommit
 
-Value setting on conneciton creating and return, *default value:**true
+Value setting on conneciton creating and return, **default value:**true
 
 ###### :capital_abcd: defaultTransactionIsolationCode
 
