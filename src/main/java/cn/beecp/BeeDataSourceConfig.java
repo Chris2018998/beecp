@@ -87,7 +87,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private long timerCheckInterval = MINUTES.toMillis(1);
     //using connections forced close indicator on pool clean
     private boolean forceCloseUsingOnClear;
-    //milliseconds:delay time for next loop to clear,when<code>forceCloseUsingOnClear</code> is true and exists using connections
+    //milliseconds:delay time for next loop to clear,when<code>forceCloseUsingOnClear</code> is false and exists using connections
     private long delayTimeForNextClear = 3000L;
 
     //raw JDBC connection factory
