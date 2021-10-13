@@ -79,7 +79,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private PooledConnection clonePooledConn;
     /******************************************************************************************
      *                                                                                        *
-     *                 1: Pool initialize and Pooled connection create/remove methods         *
+     *                 1: Pool initialize and Pooled connection create/remove methods(8)      *
      *                                                                                        *
      ******************************************************************************************/
 
@@ -336,7 +336,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     /******************************************************************************************
      *                                                                                        *
-     *                 2: Pooled connection borrow and release methods                        *
+     *                 2: Pooled connection borrow and release methods(7)                     *
      *                                                                                        *
      ******************************************************************************************/
 
@@ -523,7 +523,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     /******************************************************************************************
      *                                                                                        *
-     *              3: Pooled connection idle-timeout/hold-timeout scan methods               *
+     *              3: Pooled connection idle-timeout/hold-timeout scan methods(4)            *
      *                                                                                        *
      ******************************************************************************************/
 
@@ -611,7 +611,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     /******************************************************************************************
      *                                                                                        *
-     *                       4: Pool clear/close methods                                      *
+     *                       4: Pool clear/close methods(5)                                      *
      *                                                                                        *
      ******************************************************************************************/
 
@@ -701,7 +701,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     /******************************************************************************************
      *                                                                                        *
-     *                        5: Pool monitor/jmx methods                                     *
+     *                        5: Pool monitor/jmx methods(12)                                 *
      *                                                                                        *
      ******************************************************************************************/
 
@@ -812,7 +812,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     /******************************************************************************************
      *                                                                                        *
-     *                        6: Pool some inner classes                                      *
+     *                        6: Pool some inner classes(11)                                     *
      *                                                                                        *
      ******************************************************************************************/
 
