@@ -84,7 +84,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      ******************************************************************************************/
 
     /**
-     * initialize pool with configuration
+     * Methods-1.1: initialize pool with configuration
      *
      * @param config data source configuration
      * @throws SQLException check configuration fail or to create initiated connection
@@ -147,7 +147,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     /**
-     * check some proxy classes whether exists
+     * Methods-1.2: check some proxy classes whether exists
      */
     private void checkProxyClasses() throws SQLException {
         try {
@@ -169,7 +169,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     /**
-     * create specified size connections at pool initialization,
+     * Methods-1.3: create specified size connections at pool initialization,
      * if zero,then try to create one
      *
      * @throws SQLException error occurred in creating connections
@@ -186,7 +186,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    //create one pooled connection
+    //Methods-1.4: create one pooled connection
     private synchronized final PooledConnection createPooledConn(final int state) throws SQLException {
         int l = conArray.length;
         if (l < poolMaxSize) {
@@ -217,7 +217,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    //remove one pooled connection
+    //Methods-1.5: remove one pooled connection
     private synchronized void removePooledConn(final PooledConnection p, final String removeType) {
         if (printRuntimeLog)
             commonLog.info("BeeCP({}))begin to remove pooled connection:{},reason:{}", poolName, p, removeType);
@@ -237,6 +237,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         conArray = arrayNew;
     }
 
+    //Methods-1.6: test first connection
     private void testFirstConnection(Connection rawCon) throws SQLException {
         int defaultNetworkTimeout = 0;
         boolean supportNetworkTimeout = true;
@@ -302,6 +303,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
+    //Methods-1.7: test statement query timeout
     private boolean testQueryTimeout(Statement st, int timeoutSeconds) {
         try {
             st.setQueryTimeout(timeoutSeconds);
@@ -313,6 +315,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
+    //Methods-1.8: validate test sql
     private void validateTestSql(Connection rawCon, Statement st, String testSql, boolean isDefaultAutoCommit) throws SQLException {
         boolean changed = false;
         try {
@@ -338,7 +341,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      ******************************************************************************************/
 
     /**
-     * Get one idle connection from pool,if not found,then wait util other borrower release one or wait timeout
+     * Methods-2.1: Get one idle connection from pool,if not found,then wait util other borrower release one or wait timeout
      *
      * @return pooled connection
      * @throws SQLException if failed(create failed,interrupt,wait timeout),then throw failed cause exception
@@ -421,6 +424,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
+    //Methods-2.2: search one idle connection,if not found,then try to create one
     private final PooledConnection searchOrCreate() throws SQLException {
         final PooledConnection[] array = conArray;
         for (int i = 0, l = array.length; i < l; ++i) {
@@ -433,6 +437,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         return null;
     }
 
+    //Methods-2.3: try to wakeup servant thread to work if it waiting
     private final void tryWakeupServantThread() {
         int c;
         do {
@@ -444,7 +449,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     /**
-     * Connection return to pool after it end use,if exist waiter in pool,
+     * Methods-2.4: Connection return to pool after it end use,if exist waiter in pool,
      * then try to transfer the connection to one waiting borrower
      *
      * @param p target connection need release
@@ -470,7 +475,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     /**
-     * Connection create failed by creator,then transfer the failed cause exception to one waiting borrower,
+     * Methods-2.5: Connection create failed by creator,then transfer the failed cause exception to one waiting borrower,
      * which will end wait and throw the exception.
      *
      * @param e: transfer Exception to waiter
@@ -492,7 +497,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     /**
-     * When exception occur on return,then remove it from pool
+     * Methods-2.6: when exception occur on return,then remove it from pool
      *
      * @param p target connection need release
      */
@@ -502,7 +507,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     /**
-     * Check one borrowed connection alive state,if not alive,then remove it from pool
+     * * Methods-2.7: check one borrowed connection alive state,if not alive,then remove it from pool
      *
      * @return boolean, true:alive
      */
@@ -521,20 +526,30 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *              3: Pooled connection idle-timeout/hold-timeout scan methods               *
      *                                                                                        *
      ******************************************************************************************/
+
+    /**
+     * * Methods-3.1: check whether exists borrows under semaphore
+     */
     private final boolean existBorrower() {
         return semaphoreSize > semaphore.availablePermits();
     }
 
+    /**
+     * Methods-3.2 shutdown two work threads in pool
+     */
     private void shutdownPoolThread() {
         int curState = servantState.get();
         servantState.set(THREAD_EXIT);
         if (curState == THREAD_WAITING) unpark(this);
 
-         curState = idleScanState.get();
+        curState = idleScanState.get();
         idleScanState.set(THREAD_EXIT);
         if (curState == THREAD_WAITING) unpark(idleScanThread);
     }
 
+    /**
+     * Methods-3.3: pool servant thread run method
+     */
     public void run() {
         poolThreadLatch.countDown();
         while (poolState.get() != POOL_CLOSED) {
@@ -558,7 +573,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     /**
-     * inner timer will call the method to clear some idle timeout connections
+     * Methods-3.4: inner timer will call the method to clear some idle timeout connections
      * or dead connections,or long time not active connections in using state
      */
     private void closeIdleTimeoutConnection() {
@@ -600,12 +615,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *                                                                                        *
      ******************************************************************************************/
 
-    // remove all connections from pool
+    /**
+     * Methods-4.1: remove all connections from pool
+     */
     public void clearAllConnections() {
         clearAllConnections(false);
     }
 
-    //remove all connections from pool
+    /**
+     * Methods-4.2: remove all connections from pool
+     */
     public void clearAllConnections(boolean force) {
         if (poolState.compareAndSet(POOL_NORMAL, POOL_CLEARING)) {
             commonLog.info("BeeCP({})begin to remove connections", poolName);
@@ -615,7 +634,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    //remove all connections from pool
+    /**
+     * Methods-4.3: remove all connections from pool
+     */
     private void removeAllConnections(boolean force, String source) {
         semaphore.interruptWaitingThreads();
         while (!waitQueue.isEmpty()) transferException(PoolCloseException);
@@ -642,10 +663,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         } // while
     }
 
+    /**
+     * Methods-4.4: closed check
+     */
     public boolean isClosed() {
         return poolState.get() == POOL_CLOSED;
     }
 
+    /**
+     * Methods-4.5: close pool
+     */
     public void close() throws SQLException {
         do {
             int poolStateCode = poolState.get();
@@ -678,6 +705,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *                                                                                        *
      ******************************************************************************************/
 
+    /**
+     * Methods-5.1: pool monitor vo
+     */
     public ConnectionPoolMonitorVo getMonitorVo() {
         int totSize = getConnTotalSize();
         int idleSize = getConnIdleSize();
@@ -692,10 +722,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         return monitorVo;
     }
 
+    //Methods-5.2: size of all pooled connections
     public int getConnTotalSize() {
         return conArray.length;
     }
 
+    //Methods-5.3: size of idle pooled connections
     public int getConnIdleSize() {
         int idleSize = 0;
         PooledConnection[] array = conArray;
@@ -704,19 +736,23 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         return idleSize;
     }
 
+    //Methods-5.4: size of using pooled connections
     public int getConnUsingSize() {
         int active = conArray.length - getConnIdleSize();
         return (active > 0) ? active : 0;
     }
 
+    //Methods-5.5: using size of semaphore permit
     public int getSemaphoreAcquiredSize() {
         return poolConfig.getBorrowSemaphoreSize() - semaphore.availablePermits();
     }
 
+    //Methods-5.6: waiting size for semaphore
     public int getSemaphoreWaitingSize() {
         return semaphore.getQueueLength();
     }
 
+    //Methods-5.7: waiting size in transfer queue
     public int getTransferWaitingSize() {
         int size = 0;
         Iterator<Borrower> iterator = waitQueue.iterator();
@@ -727,11 +763,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         return size;
     }
 
-    //set pool info debug switch
+    //Methods-5.8: set pool info debug switch
     public void setEnableRuntimeLog(boolean indicator) {
         this.printRuntimeLog = indicator;
     }
 
+    //Methods-5.9: register pool to jmx
     private void registerJmx() {
         if (poolConfig.isEnableJmx()) {
             MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
@@ -740,6 +777,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
+    //Methods-5.10: jmx register
     private void registerJmxBean(MBeanServer mBeanServer, String regName, Object bean) {
         try {
             ObjectName jmxRegName = new ObjectName(regName);
@@ -751,6 +789,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
+    //Methods-5.11: pool unregister from jmx
     private void unregisterJmx() {
         if (poolConfig.isEnableJmx()) {
             MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
@@ -759,6 +798,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
+    //Methods-5.12: jmx unregister
     private void unregisterJmxBean(MBeanServer mBeanServer, String regName) {
         try {
             ObjectName jmxRegName = new ObjectName(regName);
