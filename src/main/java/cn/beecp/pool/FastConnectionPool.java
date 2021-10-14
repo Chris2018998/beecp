@@ -701,7 +701,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     /******************************************************************************************
      *                                                                                        *
-     *                        5: Pool monitor/jmx methods(12)                                 *
+     *                        5: Pool monitor/jmx methods(17)                                 *
      *                                                                                        *
      ******************************************************************************************/
 
@@ -810,12 +810,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    /******************************************************************************************
-     *                                                                                        *
-     *                        6: Pool some inner classes(11)                                     *
-     *                                                                                        *
-     ******************************************************************************************/
-
     //private static final class CompeteTransferPolicy implements TransferPolicy {
     public final int getCheckStateCode() {
         return CON_IDLE;
@@ -844,6 +838,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
         return false;
     }
+
+    /******************************************************************************************
+     *                                                                                        *
+     *                        6: Pool some inner classes(6)                                     *
+     *                                                                                        *
+     ******************************************************************************************/
 
     private static final class PoolThreadThreadFactory implements ThreadFactory {
         private String thName;
