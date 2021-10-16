@@ -17,7 +17,6 @@ import java.sql.SQLException;
 
 import static cn.beecp.pool.PoolStaticCenter.XaConnectionClosedException;
 
-
 /**
  * XaConnection Proxy
  *
@@ -31,7 +30,7 @@ public class ProxyXaConnection implements XAConnection {
 
     public ProxyXaConnection(XAConnection raw, ProxyConnectionBase proxyCon) {
         this.raw = raw;
-        this.proxyBaseConn = proxyBaseConn;
+        this.proxyBaseConn = proxyCon;
     }
 
     void checkClosedForXa() throws XAException {

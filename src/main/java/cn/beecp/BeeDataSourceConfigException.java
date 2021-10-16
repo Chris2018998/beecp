@@ -21,11 +21,12 @@ public class BeeDataSourceConfigException extends RuntimeException {
         super(s);
     }
 
+    public BeeDataSourceConfigException(Throwable cause) {
+        super(cause);
+    }
+
     public BeeDataSourceConfigException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public BeeDataSourceConfigException(Throwable cause) {
-        super(cause);
-    }
 }

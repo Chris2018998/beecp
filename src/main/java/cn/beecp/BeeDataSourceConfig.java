@@ -123,10 +123,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     public BeeDataSourceConfig(File propertiesFile) {
         this.loadFromPropertiesFile(propertiesFile);
     }
+
     //read configuration from properties file
     public BeeDataSourceConfig(String propertiesFileName) {
         this.loadFromPropertiesFile(propertiesFileName);
     }
+
     //read configuration from properties
     public BeeDataSourceConfig(Properties configProperties) {
         this.loadFromProperties(configProperties);
@@ -139,7 +141,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
      * 3:middle line,example: max_active
      *
      * @param configProperties configuration list
-     * @param propertyName config item name
+     * @param propertyName     config item name
      * @return configuration item value
      */
     private final static String getConfigValue(Properties configProperties, String propertyName) {
