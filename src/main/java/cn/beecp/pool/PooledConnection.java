@@ -81,7 +81,7 @@ final class PooledConnection implements Cloneable {
         p.raw = raw;
         p.state = state;
         p.resetInd = new boolean[6];
-        p.openStatements = new ProxyStatementBase[10];
+        p.openStatements = new ProxyStatementBase[16];
         p.lastAccessTime = currentTimeMillis();//first time
         return p;
     }
@@ -169,13 +169,14 @@ final class PooledConnection implements Cloneable {
     }
 
     public final void unregisterStatement(final ProxyStatementBase s) {
-        for (int i = 0; i < openStmSize; i++)
+        for (int i = openStmSize - 1; i >= 0; i--) {
             if (s == openStatements[i]) {
                 int m = openStmSize - i - 1;
-                if (m > 0) arraycopy(openStatements, i + 1, openStatements, i, m);//move to ahead
+                if (m > 0) arraycopy(openStatements, i + 1, openStatements, i, m);//move ahead
                 openStatements[--openStmSize] = null; // clear to let GC do its work
                 return;
             }
+        }
     }
 
     public final void clearStatement() {
