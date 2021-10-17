@@ -103,6 +103,14 @@ public class PoolStaticCenter {
             }
     );
 
+    static final Connection createProxyConnection(final PooledConnection p, final Borrower b) throws SQLException {
+        throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
+    }
+
+    static final ResultSet createProxyResultSet(final ResultSet raw, final ProxyStatementBase owner, final PooledConnection p) throws SQLException {
+        throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
+    }
+
     static final void oclose(final ResultSet r) {
         try {
             r.close();
@@ -127,12 +135,22 @@ public class PoolStaticCenter {
         }
     }
 
-    static final Connection createProxyConnection(final PooledConnection p, final Borrower b) throws SQLException {
-        throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
-    }
-
-    static final ResultSet createProxyResultSet(final ResultSet raw, final ProxyStatementBase owner, final PooledConnection p) throws SQLException {
-        throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
+    static final void validateTestSql(Connection rawCon, Statement st, String testSql, boolean isDefaultAutoCommit) throws SQLException {
+        boolean changed = false;
+        try {
+            if (isDefaultAutoCommit) {
+                rawCon.setAutoCommit(false);
+                changed = true;
+            }
+            st.execute(testSql);
+        } finally {
+            try {
+                rawCon.rollback();//why? maybe store procedure in test sql
+                if (changed) rawCon.setAutoCommit(isDefaultAutoCommit);//reset to default
+            } catch (Throwable e) {
+                throw e instanceof SQLException ? (SQLException) e : new SQLException(e);
+            }
+        }
     }
 
     public static final boolean isBlank(String str) {

@@ -315,25 +315,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    //Method-1.8: validate test sql
-    private void validateTestSql(Connection rawCon, Statement st, String testSql, boolean isDefaultAutoCommit) throws SQLException {
-        boolean changed = false;
-        try {
-            if (isDefaultAutoCommit) {
-                rawCon.setAutoCommit(false);
-                changed = true;
-            }
-            st.execute(testSql);
-        } finally {
-            try {
-                rawCon.rollback();//why? maybe store procedure in test sql
-                if (changed) rawCon.setAutoCommit(isDefaultAutoCommit);//reset to default
-            } catch (Throwable e) {
-                throw e instanceof SQLException ? (SQLException) e : new SQLException(e);
-            }
-        }
-    }
-
     /******************************************************************************************
      *                                                                                        *
      *                 2: Pooled connection borrow and release methods(7)                     *
@@ -953,10 +934,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             boolean changed = false;
             final Connection con = p.raw;
             try {
-                if (autoCommit) {
-                    con.setAutoCommit(false);
-                    changed = true;
-                }
                 st = con.createStatement();
                 if (supportQueryTimeout) {
                     try {
@@ -965,6 +942,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         if (printRuntimeLog)
                             commonLog.warn("BeeCP({})failed to setQueryTimeout", poolName, e);
                     }
+                }
+
+                if (autoCommit) {
+                    con.setAutoCommit(false);
+                    changed = true;
                 }
                 st.execute(testSql);
                 p.lastAccessTime = currentTimeMillis();
