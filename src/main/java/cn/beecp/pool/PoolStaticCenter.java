@@ -287,12 +287,6 @@ public class PoolStaticCenter {
         }
     }
 
-    static final class ConnectionCreateFailedException extends SQLException {
-        public ConnectionCreateFailedException(Throwable cause) {
-            super(cause);
-        }
-    }
-
     //BORROWER STATE
     static final class BorrowerState {
     }

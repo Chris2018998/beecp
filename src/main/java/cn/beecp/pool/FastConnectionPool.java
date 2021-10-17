@@ -192,13 +192,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         if (l < poolMaxSize) {
             if (printRuntimeLog)
                 commonLog.info("BeeCP({}))begin to create a new pooled connection,state:{}", poolName, state);
-            Connection con;
+
+            Connection con = null;
             try {
                 con = conFactory.create();
-            } catch (Throwable e) {
-                throw new ConnectionCreateFailedException(e);
-            }
-            try {
                 if (isFirstValidConnection) testFirstConnection(con);
                 PooledConnection p = clonePooledConn.copy(con, state);
                 if (printRuntimeLog)
@@ -209,10 +206,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 conArray = arrayNew;
                 return p;
             } catch (Throwable e) {
-                oclose(con);
+                if (con != null) oclose(con);
                 throw e instanceof SQLException ? (SQLException) e : new SQLException(e);
             }
-        } else {
+        }else{
             return null;
         }
     }
