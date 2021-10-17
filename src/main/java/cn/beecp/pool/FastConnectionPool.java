@@ -79,7 +79,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private PooledConnection clonePooledConn;
     /******************************************************************************************
      *                                                                                        *
-     *                 1: Pool initialize and Pooled connection create/remove methods(8)      *
+     *                 1: Pool initialize and Pooled connection create/remove methods(7)      *
      *                                                                                        *
      ******************************************************************************************/
 
@@ -287,16 +287,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
         if (validTestFailed) {
             Statement st = null;
-            String conAliveTestSql = poolConfig.getValidTestSql();
+            String conValidTestSql = poolConfig.getValidTestSql();
             boolean isDefaultAutoCommit = poolConfig.isDefaultAutoCommit();
-            this.conValidTest = new PooledConnectionValidTestBySql(conAliveTestSql, isDefaultAutoCommit);
+            this.conValidTest = new PooledConnectionValidTestBySql(conValidTestSql, isDefaultAutoCommit);
 
             try {
                 st = rawCon.createStatement();
                 boolean supportQueryTimeout = testQueryTimeout(st, conValidTestTimeout);
                 ((PooledConnectionValidTestBySql) conValidTest).setSupportQueryTimeout(supportQueryTimeout);
 
-                validateTestSql(rawCon, st, conAliveTestSql, isDefaultAutoCommit);
+                validateTestSql(rawCon, st, conValidTestSql, isDefaultAutoCommit);
             } finally {
                 if (st != null) oclose(st);
             }

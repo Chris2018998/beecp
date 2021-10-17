@@ -32,7 +32,7 @@ public abstract class ProxyConnectionBase implements Connection {
 
     /*******************************************************************************************
      *                                                                                         *
-     *                         Below are self define methods                                          *
+     *                         Below are self-define methods                                          *
      *                                                                                         *
      ********************************************************************************************/
 

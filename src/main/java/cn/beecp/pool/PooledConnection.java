@@ -128,7 +128,7 @@ final class PooledConnection implements Cloneable {
         //lastAccessTime=currentTimeMillis();
     }
 
-    public final void resetRawConn() throws SQLException {
+    private final void resetRawConn() throws SQLException {
         if (commitDirtyInd) { //Roll back when commit dirty
             raw.rollback();
             commitDirtyInd = false;
