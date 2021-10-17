@@ -56,8 +56,8 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     private final ReentrantReadWriteLock.ReadLock rLock = lock.readLock();
     private final ReentrantReadWriteLock.WriteLock wLock = lock.writeLock();
     //pool initialized
-    private volatile boolean inited;
-    private volatile ConnectionPool pool;
+    private boolean inited;
+    private ConnectionPool pool;
     private SQLException failedCause;
     private RawXaConnectionFactory xaConnectionFactory;
 

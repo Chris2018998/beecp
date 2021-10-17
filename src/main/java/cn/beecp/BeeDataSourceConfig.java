@@ -84,7 +84,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //milliseconds:connections valid assume time after last activity,if borrowed,not need test during the duration
     private long validAssumeTime = 500L;
     //milliseconds:interval time to run timer check task
-    private long timerCheckInterval = MINUTES.toMillis(1);
+    private long timerCheckInterval = MINUTES.toMillis(3);
     //using connections forced close indicator on pool clean
     private boolean forceCloseUsingOnClear;
     //milliseconds:delay time for next loop to clear,when<code>forceCloseUsingOnClear</code> is false and exists using connections
