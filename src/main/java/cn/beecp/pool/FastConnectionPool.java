@@ -139,6 +139,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             idleScanThread.start();
             this.setDaemon(true);
             this.setName(poolName + "-workServant");
+            this.setPriority(Thread.MIN_PRIORITY);
             this.start();
             poolState.set(POOL_NORMAL);
         } else {
