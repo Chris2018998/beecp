@@ -159,15 +159,15 @@ public class DataSourceConfig {
 
 已被借用的连接，若指定时间内未活动（执行SQL），则强制回收，默认值18000
 
-###### :capital_abcd: connectionTestSql
+###### :capital_abcd: validTestSql
 
 连接活性测试Sql查询语句，建议不要嵌入过程语句，必须提供
 
-###### :1234: connectionTestTimeout
+###### :1234: validTestTimeout
 
 连连接活性测试反应时间范围，时间单位为秒，默认为3秒
 
-###### :capital_abcd: connectionTestInterval
+###### :capital_abcd: validAssumeTime
 
 连连接活性测试间隔时间，当前距离上次活动内则假定活动是有效的，默认500毫秒
 
