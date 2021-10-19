@@ -164,15 +164,15 @@ Max idle time of connections in pool,when reach,then remove from pool.unit: mill
 
 Max no-use time of borrowed connections,when reach,then return them to pool by forced close.unit: milliseconds, **default value:** 18000
 
-###### :capital_abcd: connectionTestSql
+###### :capital_abcd: validTestSql
 
 Connection valid test sql on borrowed. **default value:** SELECT 1
 
-###### :1234: connectionTestTimeout
+###### :1234: validTestTimeout
 
 Max time to get a valid test result. unit:second, **default value:** 3
  
-###### :capital_abcd: connectionTestInterval
+###### :capital_abcd: validAssumeTime
 
 Conenction valid assume time after last activity,if borrowed,not need test during the duration.unit: milliseconds, **default value:** 500
 
