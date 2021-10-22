@@ -32,18 +32,16 @@ public class PoolStaticCenter {
     public static final int POOL_NORMAL = 2;
     public static final int POOL_CLOSED = 3;
     public static final int POOL_CLEARING = 4;
-    //POOLED CONNECTION STATE
-    public static final int CON_IDLE = 1;
-    public static final int CON_USING = 2;
-    public static final int CON_CLOSED = 3;
     //Idle Scan thread state
     public static final int THREAD_WORKING = 1;
     public static final int THREAD_WAITING = 2;
     public static final int THREAD_EXIT = 3;
 
-    //BORROWER STATE
-    public static final BorrowerState BOWER_NORMAL = new BorrowerState();
-    public static final BorrowerState BOWER_WAITING = new BorrowerState();
+    //POOLED CONNECTION STATE
+    public static final int CON_IDLE = 1;
+    public static final int CON_USING = 2;
+    public static final int CON_CLOSED = 3;
+
     //Connection reset pos in array
     public static final int PS_AUTO = 0;
     public static final int PS_TRANS = 1;
@@ -285,10 +283,6 @@ public class PoolStaticCenter {
                 throw new BeeDataSourceConfigException("Failed to instantiated class:" + text, e);
             }
         }
-    }
-
-    //BORROWER STATE
-    static final class BorrowerState {
     }
 
     static final class ProxyConnectionCloseTask implements Runnable {

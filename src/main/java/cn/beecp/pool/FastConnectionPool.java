@@ -21,11 +21,9 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+import java.util.concurrent.locks.LockSupport;
 
 import static cn.beecp.pool.PoolStaticCenter.*;
-import static java.lang.System.*;
-import static java.util.concurrent.TimeUnit.*;
-import static java.util.concurrent.locks.LockSupport.*;
 
 /**
  * JDBC Connection Pool Implementation
@@ -43,6 +41,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private static final String DESC_RM_CLOSED = "closed";
     private static final String DESC_RM_CLEAR = "clear";
     private static final String DESC_RM_DESTROY = "destroy";
+    //BORROWER STATE
+    private static final BorrowerState BOWER_NORMAL = new BorrowerState();
+    private static final BorrowerState BOWER_WAITING = new BorrowerState();
+
     private final ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
     private final ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
     private final ConnectionPoolMonitorVo monitorVo = new ConnectionPoolMonitorVo();
@@ -101,8 +103,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
             idleTimeoutMs = poolConfig.getIdleTimeout();
             holdTimeoutMs = poolConfig.getHoldTimeout();
-            maxWaitNs = MILLISECONDS.toNanos(poolConfig.getMaxWait());
-            delayTimeForNextClearNs = MILLISECONDS.toNanos(poolConfig.getDelayTimeForNextClear());
+            maxWaitNs = TimeUnit.MILLISECONDS.toNanos(poolConfig.getMaxWait());
+            delayTimeForNextClearNs = TimeUnit.MILLISECONDS.toNanos(poolConfig.getDelayTimeForNextClear());
             conValidAssumeTime = poolConfig.getValidAssumeTime();
             conValidTestTimeout = poolConfig.getValidTestTimeout();
             if (poolConfig.isFairMode()) {
@@ -117,7 +119,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             unCatchStateCode = transferPolicy.getCheckStateCode();
             semaphoreSize = poolConfig.getBorrowSemaphoreSize();
             semaphore = new PoolSemaphore(semaphoreSize, poolConfig.isFairMode());
-            networkTimeoutExecutor = new ThreadPoolExecutor(1, 1, 10, SECONDS,
+            networkTimeoutExecutor = new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS,
                     new LinkedBlockingQueue<Runnable>(), new PoolThreadThreadFactory("networkTimeoutRestThread"));
             networkTimeoutExecutor.allowCoreThreadTimeOut(true);
             createInitConnections(poolConfig.getInitialSize());
@@ -202,7 +204,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (printRuntimeLog)
                     commonLog.info("BeeCP({}))has created a new pooled connection:{},state:{}", poolName, p, state);
                 PooledConnection[] arrayNew = new PooledConnection[l + 1];
-                arraycopy(conArray, 0, arrayNew, 0, l);
+                System.arraycopy(conArray, 0, arrayNew, 0, l);
                 arrayNew[l] = p;// tail
                 conArray = arrayNew;
                 return p;
@@ -210,7 +212,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (con != null) oclose(con);
                 throw e instanceof SQLException ? (SQLException) e : new SQLException(e);
             }
-        }else{
+        } else {
             return null;
         }
     }
@@ -224,9 +226,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         PooledConnection[] arrayNew = new PooledConnection[l - 1];
         for (int i = 0; i < l; i++) {
             if (conArray[i] == p) {
-                arraycopy(conArray, 0, arrayNew, 0, i);
+                System.arraycopy(conArray, 0, arrayNew, 0, i);
                 int m = l - i - 1;
-                if (m > 0) arraycopy(conArray, i + 1, arrayNew, i, m);
+                if (m > 0) System.arraycopy(conArray, i + 1, arrayNew, i, m);
                 break;
             }
         }
@@ -329,7 +331,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         if (poolState.get() != POOL_NORMAL) throw PoolCloseException;
         //0:try to get from threadLocal cache
         WeakReference<Borrower> r = threadLocal.get();
-        Borrower b = (r != null) ? r.get() : null;
+        Borrower b = (r != null) ? (Borrower) r.get() : null;
         if (b != null) {
             PooledConnection p = b.lastUsed;
             if (p != null && p.state == CON_IDLE && ConStUpd.compareAndSet(p, CON_IDLE, CON_USING)) {
@@ -341,9 +343,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             threadLocal.set(new WeakReference<Borrower>(b));
         }
 
-        long deadline = nanoTime();
+        long deadline = System.nanoTime();
         try {
-            if (!semaphore.tryAcquire(maxWaitNs, NANOSECONDS))
+            if (!semaphore.tryAcquire(maxWaitNs, TimeUnit.NANOSECONDS))
                 throw RequestTimeoutException;
         } catch (InterruptedException e) {
             throw RequestInterruptException;
@@ -379,12 +381,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     b.state = BOWER_NORMAL;
                     yield();
                 } else {//here:(state == BOWER_NORMAL)
-                    final long t = deadline - nanoTime();
+                    final long t = deadline - System.nanoTime();
                     if (t > 0L) {
                         if (t > spinForTimeoutThreshold && BorrowStUpd.compareAndSet(b, BOWER_NORMAL, BOWER_WAITING)) {
                             if (servantTryCount.get() > 0 && servantState.get() == THREAD_WAITING && servantState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
-                                unpark(this);
-                            parkNanos(t);
+                                LockSupport.unpark(this);
+                            LockSupport.parkNanos(t);
                             if (bth.isInterrupted()) {
                                 failed = true;
                                 cause = RequestInterruptException;
@@ -424,7 +426,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (c >= poolMaxSize) return;
         } while (!servantTryCount.compareAndSet(c, c + 1));
         if (!waitQueue.isEmpty() && servantState.get() == THREAD_WAITING && servantState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
-            unpark(this);
+            LockSupport.unpark(this);
     }
 
     /**
@@ -434,11 +436,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @param p target connection need release
      */
     public final void recycle(final PooledConnection p) {
-        final Iterator<Borrower> iterator = waitQueue.iterator();
         transferPolicy.beforeTransfer(p);
+        Iterator<Borrower> iterator = waitQueue.iterator();
+
         W:
         while (iterator.hasNext()) {
-            final Borrower b = iterator.next();
+            Borrower b = (Borrower) iterator.next();
             Object state;
             do {
                 if (p.state != unCatchStateCode) return;
@@ -446,7 +449,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (state != BOWER_NORMAL && state != BOWER_WAITING)
                     continue W;
             } while (!BorrowStUpd.compareAndSet(b, state, p));
-            if (state == BOWER_WAITING) unpark(b.thread);
+            if (state == BOWER_WAITING) LockSupport.unpark(b.thread);
             return;
         }
         transferPolicy.onFailedTransfer(p);
@@ -463,14 +466,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         final Iterator<Borrower> iterator = waitQueue.iterator();
         W:
         while (iterator.hasNext()) {
-            final Borrower b = iterator.next();
+            Borrower b = (Borrower) iterator.next();
             Object state;
             do {
                 state = b.state;
                 if (state != BOWER_NORMAL && state != BOWER_WAITING)
                     continue W;
             } while (!BorrowStUpd.compareAndSet(b, state, e));
-            if (state == BOWER_WAITING) unpark(b.thread);
+            if (state == BOWER_WAITING) LockSupport.unpark(b.thread);
             return;
         }
     }
@@ -491,7 +494,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @return boolean, true:alive
      */
     private final boolean testOnBorrow(final PooledConnection p) {
-        if (currentTimeMillis() - p.lastAccessTime - conValidAssumeTime > 0L && !conValidTest.isValid(p)) {
+        if (System.currentTimeMillis() - p.lastAccessTime > conValidAssumeTime && !conValidTest.isValid(p)) {
             removePooledConn(p, DESC_RM_BAD);
             tryWakeupServantThread();
             return false;
@@ -519,11 +522,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private void shutdownPoolThread() {
         int curState = servantState.get();
         servantState.set(THREAD_EXIT);
-        if (curState == THREAD_WAITING) unpark(this);
+        if (curState == THREAD_WAITING) LockSupport.unpark(this);
 
         curState = idleScanState.get();
         idleScanState.set(THREAD_EXIT);
-        if (curState == THREAD_WAITING) unpark(idleScanThread);
+        if (curState == THREAD_WAITING) LockSupport.unpark(idleScanThread);
     }
 
     /**
@@ -547,7 +550,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (servantState.get() == THREAD_EXIT)
                 break;
             if (servantState.compareAndSet(THREAD_WORKING, THREAD_WAITING))
-                park();
+                LockSupport.park();
         }
     }
 
@@ -562,13 +565,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 PooledConnection p = array[i];
                 int state = p.state;
                 if (state == CON_IDLE && !existBorrower()) {
-                    boolean isTimeoutInIdle = currentTimeMillis() - p.lastAccessTime - idleTimeoutMs >= 0L;
+                    boolean isTimeoutInIdle = System.currentTimeMillis() - p.lastAccessTime >= idleTimeoutMs;
                     if (isTimeoutInIdle && ConStUpd.compareAndSet(p, state, CON_CLOSED)) {//need close idle
                         removePooledConn(p, DESC_RM_IDLE);
                         tryWakeupServantThread();
                     }
                 } else if (state == CON_USING) {
-                    if (currentTimeMillis() - p.lastAccessTime - holdTimeoutMs >= 0L) {//hold timeout
+                    if (System.currentTimeMillis() - p.lastAccessTime >= holdTimeoutMs) {//hold timeout
                         ProxyConnectionBase proxyConn = p.proxyCon;
                         if (proxyConn != null) {
                             oclose(proxyConn);
@@ -631,14 +634,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 } else if (p.state == CON_USING) {
                     ProxyConnectionBase proxyConn = p.proxyCon;
                     if (proxyConn != null) {
-                        if (force || currentTimeMillis() - p.lastAccessTime - holdTimeoutMs >= 0L)//force close or hold timeout
+                        if (force || System.currentTimeMillis() - p.lastAccessTime >= holdTimeoutMs)//force close or hold timeout
                             oclose(proxyConn);
                     } else {
                         removePooledConn(p, source);
                     }
                 }
             } // for
-            if (conArray.length > 0) parkNanos(delayTimeForNextClearNs);
+            if (conArray.length > 0) LockSupport.parkNanos(delayTimeForNextClearNs);
         } // while
     }
 
@@ -672,7 +675,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             } else if (poolState.get() == POOL_CLOSED) {
                 break;
             } else {
-                parkNanos(delayTimeForNextClearNs);// default wait 3 seconds
+                LockSupport.parkNanos(delayTimeForNextClearNs);// default wait 3 seconds
             }
         } while (true);
     }
@@ -808,7 +811,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     public final boolean isValid(final PooledConnection p) {
         try {
             if (p.raw.isValid(conValidTestTimeout)) {
-                p.lastAccessTime = currentTimeMillis();
+                p.lastAccessTime = System.currentTimeMillis();
                 return true;
             }
         } catch (Throwable e) {
@@ -820,9 +823,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     /******************************************************************************************
      *                                                                                        *
-     *                        6: Pool some inner classes(6)                                     *
+     *                        6: Pool some inner classes(7)                                     *
      *                                                                                        *
      ******************************************************************************************/
+
+    //BORROWER STATE
+    private static final class BorrowerState {
+    }
 
     private static final class PoolThreadThreadFactory implements ThreadFactory {
         private String thName;
@@ -864,10 +871,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
         public void run() {
             pool.poolThreadLatch.countDown();
-            final long checkTimeIntervalNanos = MILLISECONDS.toNanos(pool.poolConfig.getTimerCheckInterval());
+            final long checkTimeIntervalNanos = TimeUnit.MILLISECONDS.toNanos(pool.poolConfig.getTimerCheckInterval());
             final AtomicInteger idleScanThreadState = pool.idleScanState;
             while (idleScanThreadState.get() == THREAD_WORKING) {
-                parkNanos(checkTimeIntervalNanos);
+                LockSupport.parkNanos(checkTimeIntervalNanos);
                 try {
                     pool.closeIdleTimeoutConnection();
                 } catch (Throwable e) {
@@ -947,7 +954,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     changed = true;
                 }
                 st.execute(testSql);
-                p.lastAccessTime = currentTimeMillis();
+                p.lastAccessTime = System.currentTimeMillis();
                 return true;
             } catch (Throwable e) {
                 if (printRuntimeLog)

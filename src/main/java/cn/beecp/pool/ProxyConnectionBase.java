@@ -11,7 +11,6 @@ import java.sql.SQLException;
 import java.util.concurrent.Executor;
 
 import static cn.beecp.pool.PoolStaticCenter.*;
-import static java.lang.System.currentTimeMillis;
 
 /**
  * raw connection wrapper
@@ -123,13 +122,13 @@ public abstract class ProxyConnectionBase implements Connection {
 
     public void commit() throws SQLException {
         raw.commit();
-        p.lastAccessTime = currentTimeMillis();
+        p.lastAccessTime = System.currentTimeMillis();
         p.commitDirtyInd = false;
     }
 
     public void rollback() throws SQLException {
         raw.rollback();
-        p.lastAccessTime = currentTimeMillis();
+        p.lastAccessTime = System.currentTimeMillis();
         p.commitDirtyInd = false;
     }
 

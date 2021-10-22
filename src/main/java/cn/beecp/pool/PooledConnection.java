@@ -11,8 +11,6 @@ import java.sql.SQLException;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import static cn.beecp.pool.PoolStaticCenter.*;
-import static java.lang.System.arraycopy;
-import static java.lang.System.currentTimeMillis;
 
 /**
  * Pooled Connection
@@ -82,7 +80,7 @@ final class PooledConnection implements Cloneable {
         p.state = state;
         p.resetInd = new boolean[6];
         p.openStatements = new ProxyStatementBase[16];
-        p.lastAccessTime = currentTimeMillis();//first time
+        p.lastAccessTime = System.currentTimeMillis();//first time
         return p;
     }
 
@@ -92,7 +90,7 @@ final class PooledConnection implements Cloneable {
 
     public final void updateAccessTime() {//for update,insert.select,delete and so on DML
         commitDirtyInd = !curAutoCommit;
-        lastAccessTime = currentTimeMillis();
+        lastAccessTime = System.currentTimeMillis();
     }
 
     //called by pool before remove from pool
@@ -152,7 +150,7 @@ final class PooledConnection implements Cloneable {
                 raw.setNetworkTimeout(networkTimeoutExecutor, defNetworkTimeout);
             //for JDK1.7 end
             resetCnt = 0;
-            arraycopy(FALSE, 0, resetInd, 0, 6);
+            System.arraycopy(FALSE, 0, resetInd, 0, 6);
         }//reset end
         //clear warnings
         raw.clearWarnings();
@@ -162,7 +160,7 @@ final class PooledConnection implements Cloneable {
     public final void registerStatement(final ProxyStatementBase s) {
         if (openStmSize == openStatements.length) {//full
             ProxyStatementBase[] array = new ProxyStatementBase[openStmSize << 1];
-            arraycopy(openStatements, 0, array, 0, openStmSize);
+            System.arraycopy(openStatements, 0, array, 0, openStmSize);
             openStatements = array;
         }
         openStatements[openStmSize++] = s;
@@ -172,7 +170,7 @@ final class PooledConnection implements Cloneable {
         for (int i = openStmSize - 1; i >= 0; i--) {
             if (s == openStatements[i]) {
                 int m = openStmSize - i - 1;
-                if (m > 0) arraycopy(openStatements, i + 1, openStatements, i, m);//move ahead
+                if (m > 0) System.arraycopy(openStatements, i + 1, openStatements, i, m);//move ahead
                 openStatements[--openStmSize] = null; // clear to let GC do its work
                 return;
             }
