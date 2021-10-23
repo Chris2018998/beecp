@@ -56,7 +56,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
         }
 
         registerJMX();
-        commonLog.info("BeeCP({})has been startup{init size:{},max size:{},concurrent size:{},mode:{},max wait:{}ms},driver:{}}",
+        CommonLog.info("BeeCP({})has been startup{init size:{},max size:{},concurrent size:{},mode:{},max wait:{}ms},driver:{}}",
                 poolName,
                 0,
                 0,
@@ -180,24 +180,24 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
                 final ObjectName poolRegName = new ObjectName("cn.beecp.pool.RawConnectionPool:type=BeeCP(" + poolName + ")");
                 if (!mBeanServer.isRegistered(poolRegName)) {
                     mBeanServer.registerMBean(this, poolRegName);
-                    commonLog.info("Registered BeeCP({})as jmx-bean", poolName);
+                    CommonLog.info("Registered BeeCP({})as jmx-bean", poolName);
                 } else {
-                    commonLog.error("Jmx-name BeeCP({})has been exist in jmx server", poolName);
+                    CommonLog.error("Jmx-name BeeCP({})has been exist in jmx server", poolName);
                 }
             } catch (Exception e) {
-                commonLog.warn("Failed to register pool jmx-bean", e);
+                CommonLog.warn("Failed to register pool jmx-bean", e);
             }
 
             try {
                 final ObjectName configRegName = new ObjectName("cn.beecp.BeeDataSourceConfig:type=BeeCP(" + poolName + ")-config");
                 if (!mBeanServer.isRegistered(configRegName)) {
                     mBeanServer.registerMBean(poolConfig, configRegName);
-                    commonLog.info("Registered BeeCP({})config as jmx-bean", poolName);
+                    CommonLog.info("Registered BeeCP({})config as jmx-bean", poolName);
                 } else {
-                    commonLog.error("Pool BeeCP({})config has been exist in jmx server", poolName);
+                    CommonLog.error("Pool BeeCP({})config has been exist in jmx server", poolName);
                 }
             } catch (Exception e) {
-                commonLog.warn("Failed to register pool jmx-bean", e);
+                CommonLog.warn("Failed to register pool jmx-bean", e);
             }
         }
     }
@@ -212,7 +212,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
                     mBeanServer.unregisterMBean(poolRegName);
                 }
             } catch (Exception e) {
-                commonLog.warn("Failed to unregister pool jmx-bean", e);
+                CommonLog.warn("Failed to unregister pool jmx-bean", e);
             }
 
             try {
@@ -221,7 +221,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
                     mBeanServer.unregisterMBean(configRegName);
                 }
             } catch (Exception e) {
-                commonLog.warn("Failed to unregister pool jmx-bean", e);
+                CommonLog.warn("Failed to unregister pool jmx-bean", e);
             }
         }
     }

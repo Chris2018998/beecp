@@ -23,7 +23,7 @@ import java.util.Locale;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
-import static cn.beecp.pool.PoolStaticCenter.commonLog;
+import static cn.beecp.pool.PoolStaticCenter.CommonLog;
 import static cn.beecp.pool.PoolStaticCenter.isBlank;
 
 /**
@@ -188,7 +188,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             try {
                 pool.close();
             } catch (SQLException e) {
-                commonLog.error("Error at closing connection pool,cause:", e);
+                CommonLog.error("Error at closing connection pool,cause:", e);
             }
         }
     }

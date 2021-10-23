@@ -19,6 +19,14 @@ import static cn.beecp.pool.PoolStaticCenter.*;
  * @version 1.0
  */
 public abstract class ProxyConnectionBase implements Connection {
+    //Connection reset pos in array
+    private static final int PS_AUTO = 0;
+    private static final int PS_TRANS = 1;
+    private static final int PS_READONLY = 2;
+    private static final int PS_CATALOG = 3;
+    private static final int PS_SCHEMA = 4;
+    private static final int PS_NETWORK = 5;
+
     protected final PooledConnection p;//called by subclass to update time
     protected Connection raw;
     private boolean isClosed;

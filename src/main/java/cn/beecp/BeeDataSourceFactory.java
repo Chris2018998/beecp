@@ -44,7 +44,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
             if (refObject == null) return null;
             String value = refObject.toString().trim();
             if (!isBlank(value)) {
-                commonLog.info("beecp.{}={}", propertyName, value);
+                CommonLog.info("beecp.{}={}", propertyName, value);
                 return value;
             }
         }

@@ -156,7 +156,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private final static String readConfig(Properties configProperties, String propertyName) {
         String value = configProperties.getProperty(propertyName);
         if (!isBlank(value)) {
-            commonLog.info("beecp.{}={}", propertyName, value);
+            CommonLog.info("beecp.{}={}", propertyName, value);
             return value.trim();
         } else {
             return null;
@@ -517,7 +517,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                 Object fieldValue = field.get(this);
                 fieldName = field.getName();
 
-                if (enableConfigLog) commonLog.info("{}.{}={}", poolName, fieldName, fieldValue);
+                if (enableConfigLog) CommonLog.info("{}.{}={}", poolName, fieldName, fieldValue);
                 field.set(config, fieldValue);
             }
         } catch (Exception e) {
@@ -530,7 +530,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         while (iterator.hasNext()) {
             Map.Entry<Object, Object> entry = iterator.next();
             if (enableConfigLog)
-                commonLog.info("{}.connectProperties.{}={}", poolName, entry.getKey(), entry.getValue());
+                CommonLog.info("{}.connectProperties.{}={}", poolName, entry.getKey(), entry.getValue());
             config.addConnectProperty((String) entry.getKey(), entry.getValue());
         }
     }

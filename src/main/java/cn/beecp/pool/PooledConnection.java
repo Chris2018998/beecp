@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import static cn.beecp.pool.FastConnectionPool.CON_CLOSED;
 import static cn.beecp.pool.PoolStaticCenter.*;
 
 /**
@@ -99,7 +100,7 @@ final class PooledConnection implements Cloneable {
             state = CON_CLOSED;
             resetRawConn();
         } catch (Throwable e) {
-            commonLog.error("Connection close error", e);
+            CommonLog.error("Connection close error", e);
         } finally {
             oclose(raw);
         }

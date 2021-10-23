@@ -27,28 +27,11 @@ import java.util.*;
  * @version 1.0
  */
 public class PoolStaticCenter {
-    //POOL STATE
     public static final int POOL_UNINIT = 1;
     public static final int POOL_NORMAL = 2;
     public static final int POOL_CLOSED = 3;
     public static final int POOL_CLEARING = 4;
-    //Idle Scan thread state
-    public static final int THREAD_WORKING = 1;
-    public static final int THREAD_WAITING = 2;
-    public static final int THREAD_EXIT = 3;
-
-    //POOLED CONNECTION STATE
-    public static final int CON_IDLE = 1;
-    public static final int CON_USING = 2;
-    public static final int CON_CLOSED = 3;
-
-    //Connection reset pos in array
-    public static final int PS_AUTO = 0;
-    public static final int PS_TRANS = 1;
-    public static final int PS_READONLY = 2;
-    public static final int PS_CATALOG = 3;
-    public static final int PS_SCHEMA = 4;
-    public static final int PS_NETWORK = 5;
+    public static final Logger CommonLog = LoggerFactory.getLogger(PoolStaticCenter.class);
     public static final SQLTimeoutException RequestTimeoutException = new SQLTimeoutException("Request timeout");
     public static final SQLException RequestInterruptException = new SQLException("Request interrupted");
     public static final SQLException PoolCloseException = new SQLException("Pool has shut down or in clearing");
@@ -58,7 +41,6 @@ public class PoolStaticCenter {
     public static final SQLException ResultSetClosedException = new SQLException("No operations allowed after resultSet closed");
     public static final SQLException AutoCommitChangeForbiddenException = new SQLException("Execute 'commit' or 'rollback' before this operation");
     public static final SQLException DriverNotSupportNetworkTimeoutException = new SQLException("Driver not support 'networkTimeout'");
-    public static final Logger commonLog = LoggerFactory.getLogger(PoolStaticCenter.class);
     public static final String DS_Config_Prop_Separator_MiddleLine = "-";
     public static final String DS_Config_Prop_Separator_UnderLine = "_";
     static final Connection CLOSED_CON = (Connection) Proxy.newProxyInstance(
@@ -101,6 +83,7 @@ public class PoolStaticCenter {
             }
     );
 
+
     static final Connection createProxyConnection(final PooledConnection p, final Borrower b) throws SQLException {
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
     }
@@ -113,7 +96,7 @@ public class PoolStaticCenter {
         try {
             r.close();
         } catch (Throwable e) {
-            commonLog.debug("Warning:Error at closing resultSet:", e);
+            CommonLog.debug("Warning:Error at closing resultSet:", e);
         }
     }
 
@@ -121,7 +104,7 @@ public class PoolStaticCenter {
         try {
             s.close();
         } catch (Throwable e) {
-            commonLog.debug("Warning:Error at closing statement:", e);
+            CommonLog.debug("Warning:Error at closing statement:", e);
         }
     }
 
@@ -129,7 +112,7 @@ public class PoolStaticCenter {
         try {
             c.close();
         } catch (Throwable e) {
-            commonLog.debug("Warning:Error at closing connection:", e);
+            CommonLog.debug("Warning:Error at closing connection:", e);
         }
     }
 
