@@ -35,14 +35,15 @@ import static cn.beecp.pool.PoolStaticCenter.*;
  */
 public final class FastConnectionPool extends Thread implements ConnectionPool, ConnectionPoolJmxBean, PooledConnectionTransferPolicy, PooledConnectionValidTest {
     public static final int CON_CLOSED = 3;
-    private static final long spinForTimeoutThreshold = 1000L;
-    private static final AtomicIntegerFieldUpdater<PooledConnection> ConStUpd = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class, "state");
-    private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowStUpd = AtomicReferenceFieldUpdater.newUpdater(Borrower.class, Object.class, "state");
+    private static final int CON_IDLE = 1;
+    private static final int CON_USING = 2;
+    private static final int POOL_UNINIT = 1;
+    private static final int POOL_NORMAL = 2;
+    private static final int POOL_CLOSED = 3;
+    private static final int POOL_CLEARING = 4;
     private static final int THREAD_WORKING = 1;
     private static final int THREAD_WAITING = 2;
     private static final int THREAD_EXIT = 3;
-    private static final int CON_IDLE = 1;
-    private static final int CON_USING = 2;
     private static final String DESC_RM_INIT = "init";
     private static final String DESC_RM_BAD = "bad";
     private static final String DESC_RM_IDLE = "idle";
@@ -51,7 +52,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private static final String DESC_RM_DESTROY = "destroy";
     private static final BorrowerState BOWER_NORMAL = new BorrowerState();
     private static final BorrowerState BOWER_WAITING = new BorrowerState();
+    private static final long spinForTimeoutThreshold = 1000L;
     private static final Logger Log = LoggerFactory.getLogger(FastConnectionPool.class);
+    private static final AtomicIntegerFieldUpdater<PooledConnection> ConStUpd = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class, "state");
+    private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowStUpd = AtomicReferenceFieldUpdater.newUpdater(Borrower.class, Object.class, "state");
 
     private final ConcurrentLinkedQueue<Borrower> waitQueue = new ConcurrentLinkedQueue<Borrower>();
     private final ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
@@ -87,6 +91,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private ThreadPoolExecutor networkTimeoutExecutor;
     private boolean isFirstValidConnection = true;
     private PooledConnection clonePooledConn;
+
     /******************************************************************************************
      *                                                                                        *
      *                 1: Pool initialize and Pooled connection create/remove methods(7)      *
@@ -338,7 +343,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     public final Connection getConnection() throws SQLException {
         if (poolState.get() != POOL_NORMAL) throw PoolCloseException;
         //0:try to get from threadLocal cache
-        WeakReference<Borrower> r = threadLocal.get();
+        WeakReference<Borrower> r = (WeakReference) threadLocal.get();
         Borrower b = (r != null) ? (Borrower) r.get() : null;
         if (b != null) {
             PooledConnection p = b.lastUsed;

@@ -27,10 +27,6 @@ import java.util.*;
  * @version 1.0
  */
 public class PoolStaticCenter {
-    public static final int POOL_UNINIT = 1;
-    public static final int POOL_NORMAL = 2;
-    public static final int POOL_CLOSED = 3;
-    public static final int POOL_CLEARING = 4;
     public static final Logger CommonLog = LoggerFactory.getLogger(PoolStaticCenter.class);
     public static final SQLTimeoutException RequestTimeoutException = new SQLTimeoutException("Request timeout");
     public static final SQLException RequestInterruptException = new SQLException("Request interrupted");
