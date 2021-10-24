@@ -67,6 +67,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private final IdleTimeoutScanThread idleScanThread = new IdleTimeoutScanThread(this);
     private boolean printRuntimeLog;
 
+    private String poolName;
+    private String poolMode;
     private int poolMaxSize;
     private long maxWaitNs;//nanoseconds
     private long idleTimeoutMs;//milliseconds
@@ -85,8 +87,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private RawConnectionFactory conFactory;
     private volatile PooledConnection[] conArray = new PooledConnection[0];
 
-    private String poolName;
-    private String poolMode;
     private ThreadPoolExecutor networkTimeoutExecutor;
     private boolean isFirstValidConnection = true;
     private PooledConnection clonePooledConn;
