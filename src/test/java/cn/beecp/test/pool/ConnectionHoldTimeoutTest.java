@@ -53,8 +53,8 @@ public class ConnectionHoldTimeoutTest extends TestCase {
         Connection con = null;
         try {
             FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
-            CountDownLatch poolThreadLatch=(CountDownLatch) TestUtil.getFieldValue(pool, "poolThreadLatch");
-            if(poolThreadLatch.getCount()>0)poolThreadLatch.await();
+            //CountDownLatch poolThreadLatch = (CountDownLatch) TestUtil.getFieldValue(pool, "poolThreadLatch");
+            //if (poolThreadLatch.getCount() > 0) poolThreadLatch.await();
 
             con = ds.getConnection();
             if (pool.getConnTotalSize() != 1)
