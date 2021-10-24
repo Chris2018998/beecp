@@ -87,7 +87,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     private String poolName;
     private String poolMode;
-    private CountDownLatch poolThreadLatch = new CountDownLatch(2);
     private ThreadPoolExecutor networkTimeoutExecutor;
     private boolean isFirstValidConnection = true;
     private PooledConnection clonePooledConn;
@@ -149,13 +148,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     poolConfig.getMaxWait(),
                     poolConfig.getDriverClassName());
 
-            idleScanThread.setDaemon(true);
-            idleScanThread.setName(poolName + "-idleCheck");
-            idleScanThread.start();
             this.setDaemon(true);
             this.setName(poolName + "-workServant");
             this.setPriority(Thread.MIN_PRIORITY);
             this.start();
+            idleScanThread.setDaemon(true);
+            idleScanThread.setName(poolName + "-idleCheck");
+            idleScanThread.start();
             poolState.set(POOL_NORMAL);
         } else {
             throw new SQLException("Pool has initialized");
@@ -547,7 +546,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * Method-3.3: pool servant thread run method
      */
     public void run() {
-        poolThreadLatch.countDown();
         while (poolState.get() != POOL_CLOSED) {
             while (servantState.get() == THREAD_WORKING && servantTryCount.get() > 0) {
                 try {
@@ -884,7 +882,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
 
         public void run() {
-            pool.poolThreadLatch.countDown();
             final long checkTimeIntervalNanos = TimeUnit.MILLISECONDS.toNanos(pool.poolConfig.getTimerCheckInterval());
             final AtomicInteger idleScanThreadState = pool.idleScanState;
             while (idleScanThreadState.get() == THREAD_WORKING) {
