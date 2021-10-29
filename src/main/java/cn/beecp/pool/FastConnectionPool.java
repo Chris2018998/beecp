@@ -387,6 +387,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     waitQueue.remove(b);
                     throw s instanceof SQLException ? (SQLException) s : new SQLException((Throwable) s);
                 }
+
                 if (failed) {
                     BorrowStUpd.compareAndSet(b, s, cause);
                 } else if (s instanceof PooledConnection) {
@@ -394,8 +395,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     Thread.yield();
                 } else {//here:(state == BOWER_NORMAL)
                     final long t = deadline - System.nanoTime();
-                    if (t > 0L) {
-                        if (t > spinForTimeoutThreshold && BorrowStUpd.compareAndSet(b, BOWER_NORMAL, BOWER_WAITING)) {
+                    if (t > spinForTimeoutThreshold) {
+                        if (BorrowStUpd.compareAndSet(b, BOWER_NORMAL, BOWER_WAITING)) {
                             if (servantTryCount.get() > 0 && servantState.get() == THREAD_WAITING && servantState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
                                 LockSupport.unpark(this);//wakeup servant thread
 
@@ -407,7 +408,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                             if (b.state == BOWER_WAITING)
                                 BorrowStUpd.compareAndSet(b, BOWER_WAITING, failed ? cause : BOWER_NORMAL);//reset to normal
                         }
-                    } else {//timeout
+                    } else if (t <= 0) {//timeout
                         failed = true;
                         cause = RequestTimeoutException;
                     }
