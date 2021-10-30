@@ -383,7 +383,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         waitQueue.remove(b);
                         return PoolStaticCenter.createProxyConnection(p, b);
                     }
-                } else if (s instanceof Throwable) {
+                }else if (s instanceof Throwable) {
                     waitQueue.remove(b);
                     throw s instanceof SQLException ? (SQLException) s : new SQLException((Throwable) s);
                 }
@@ -450,9 +450,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @param p target connection need release
      */
     public final void recycle(final PooledConnection p) {
-        transferPolicy.beforeTransfer(p);
         Iterator<Borrower> iterator = waitQueue.iterator();
-
+        transferPolicy.beforeTransfer(p);
         W:
         while (iterator.hasNext()) {
             Borrower b = (Borrower) iterator.next();
