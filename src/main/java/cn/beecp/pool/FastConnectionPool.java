@@ -459,8 +459,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             do {
                 if (p.state != unCatchStateCode) return;
                 state = b.state;
-                if (state != BOWER_NORMAL && state != BOWER_WAITING)
-                    continue W;
+                if (!(state instanceof BorrowerState)) continue W;
             } while (!BorrowStUpd.compareAndSet(b, state, p));
             if (state == BOWER_WAITING) LockSupport.unpark(b.thread);
             return;
@@ -483,8 +482,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             Object state;
             do {
                 state = b.state;
-                if (state != BOWER_NORMAL && state != BOWER_WAITING)
-                    continue W;
+                if (!(state instanceof BorrowerState)) continue W;
             } while (!BorrowStUpd.compareAndSet(b, state, e));
             if (state == BOWER_WAITING) LockSupport.unpark(b.thread);
             return;
