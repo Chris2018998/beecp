@@ -376,14 +376,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             final Thread bth = b.thread;
 
             do {
-                final Object s = b.state;
+                final Object s = b.state;//PooledConnection,Throwable,BOWER_NORMAL
                 if (s instanceof PooledConnection) {
                     p = (PooledConnection) s;
                     if (transferPolicy.tryCatch(p) && testOnBorrow(p)) {
                         waitQueue.remove(b);
                         return PoolStaticCenter.createProxyConnection(p, b);
                     }
-                }else if (s instanceof Throwable) {
+                } else if (s instanceof Throwable) {
                     waitQueue.remove(b);
                     throw s instanceof SQLException ? (SQLException) s : new SQLException((Throwable) s);
                 }
@@ -393,7 +393,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 } else if (s instanceof PooledConnection) {
                     b.state = BOWER_NORMAL;
                     Thread.yield();
-                } else {//here:(state == BOWER_NORMAL)
+                } else {//here:(s == BOWER_NORMAL)
                     final long t = deadline - System.nanoTime();
                     if (t > spinForTimeoutThreshold) {
                         if (BorrowStUpd.compareAndSet(b, BOWER_NORMAL, BOWER_WAITING)) {
@@ -412,7 +412,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         failed = true;
                         cause = RequestTimeoutException;
                     }
-                }//end (state == BOWER_NORMAL)
+                }//end (s == BOWER_NORMAL)
             } while (true);//while
         } finally {
             semaphore.release();
@@ -465,7 +465,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (state == BOWER_WAITING) LockSupport.unpark(b.thread);
             return;
         }
-        transferPolicy.onFailedTransfer(p);
+        transferPolicy.onTransferFail(p);
         tryWakeupServantThread();
     }
 
@@ -817,7 +817,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         return ConStUpd.compareAndSet(p, CON_IDLE, CON_USING);
     }
 
-    public final void onFailedTransfer(final PooledConnection p) {
+    public final void onTransferFail(final PooledConnection p) {
     }
 
     public final boolean isValid(final PooledConnection p) {
@@ -926,7 +926,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             return p.state == CON_USING;
         }
 
-        public final void onFailedTransfer(final PooledConnection p) {
+        public final void onTransferFail(final PooledConnection p) {
             p.state = CON_IDLE;
         }
     }

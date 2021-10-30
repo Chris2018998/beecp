@@ -19,5 +19,5 @@ interface PooledConnectionTransferPolicy {
 
     boolean tryCatch(PooledConnection p);
 
-    void onFailedTransfer(PooledConnection p);
+    void onTransferFail(PooledConnection p);
 }
