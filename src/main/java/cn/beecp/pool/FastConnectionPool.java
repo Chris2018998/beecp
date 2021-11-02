@@ -408,7 +408,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                             if (b.state == BOWER_WAITING)
                                 BorrowStUpd.compareAndSet(b, BOWER_WAITING, failed ? cause : BOWER_NORMAL);//reset to normal
                         }
-                    } else if (t <= 0) {//timeout
+                    } else if (t <= 0L) {//timeout
                         failed = true;
                         cause = RequestTimeoutException;
                     }
