@@ -29,7 +29,7 @@ import java.util.Properties;
  */
 public class PropertiesFileLoadTest extends TestCase {
     public void test() throws Exception {
-        String filename = "PropertiesFileLoadTest.properties";
+        String filename = "config2.properties";
         URL url = PropertiesFileLoadTest.class.getClassLoader().getResource(filename);
         if (url == null) url = PropertiesFileLoadTest.class.getResource(filename);
 
@@ -89,7 +89,7 @@ public class PropertiesFileLoadTest extends TestCase {
             throw new BeeDataSourceConfigException("connectProperties error");
         if (!"50".equals(connectProperties.getProperty("prepStmtCacheSize")))
             throw new BeeDataSourceConfigException("connectProperties error");
-		if (!"2048".equals(connectProperties.getProperty("prepStmtCacheSqlLimit")))
+        if (!"2048".equals(connectProperties.getProperty("prepStmtCacheSqlLimit")))
             throw new BeeDataSourceConfigException("connectProperties error");
         if (!"true".equals(connectProperties.getProperty("useServerPrepStmts")))
             throw new BeeDataSourceConfigException("connectProperties error");
