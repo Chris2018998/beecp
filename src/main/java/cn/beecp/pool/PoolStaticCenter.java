@@ -6,6 +6,7 @@
  */
 package cn.beecp.pool;
 
+import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.BeeDataSourceConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,6 +143,53 @@ public class PoolStaticCenter {
 
     public static final boolean equals(String a, String b) {
         return a == null ? b == null : a.equals(b);
+    }
+
+
+    /**
+     * get config item value by property name,which support three format:
+     * 1:hump,example:maxActive
+     * 2:middle line,example: max-active
+     * 3:middle line,example: max_active
+     *
+     * @param configProperties configuration list
+     * @param propertyName     config item name
+     * @return configuration item value
+     */
+    public final static String getConfigValue(Properties configProperties, String propertyName) {
+        String value = readConfig(configProperties, propertyName);
+        if (isBlank(value))
+            value = readConfig(configProperties, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_MiddleLine));
+        if (isBlank(value))
+            value = readConfig(configProperties, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_UnderLine));
+        return value;
+    }
+
+    public final static String readConfig(Properties configProperties, String propertyName) {
+        String value = configProperties.getProperty(propertyName);
+        if (!isBlank(value)) {
+            CommonLog.info("beecp.{}={}", propertyName, value);
+            return value.trim();
+        } else {
+            return null;
+        }
+    }
+
+    public final static String trimString(String value) {
+        return (value == null) ? null : value.trim();
+    }
+
+    public final static Driver loadJdbcDriver(String driverClassName) throws BeeDataSourceConfigException {
+        try {
+            Class<?> driverClass = Class.forName(driverClassName, true, BeeDataSourceConfig.class.getClassLoader());
+            return (Driver) driverClass.newInstance();
+        } catch (ClassNotFoundException e) {
+            throw new BeeDataSourceConfigException("Not found driver class:" + driverClassName);
+        } catch (InstantiationException e) {
+            throw new BeeDataSourceConfigException("Failed to instantiate driver class:" + driverClassName, e);
+        } catch (IllegalAccessException e) {
+            throw new BeeDataSourceConfigException("Failed to instantiate driver class:" + driverClassName, e);
+        }
     }
 
     public static final void setPropertiesValue(Object bean, Map<String, Object> setValueMap) throws Exception {

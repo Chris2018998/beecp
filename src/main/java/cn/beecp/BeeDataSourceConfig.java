@@ -107,18 +107,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //boolean indicator,true:register dataSource to jmx
     private boolean enableJmx;
     //boolean indicator,true:print config item info on pool starting
-    private boolean enableConfigLog;
+    private boolean printConfigLog;
     //boolean indicator,true:print runtime log
-    private boolean enableRuntimeLog;
+    private boolean printRuntimeLog;
 
+    //*********************************************** 0 **************************************************************//
     public BeeDataSourceConfig() {
-    }
-
-    public BeeDataSourceConfig(String driver, String url, String user, String password) {
-        this.jdbcUrl = trimString(url);
-        this.username = trimString(user);
-        this.password = trimString(password);
-        this.driverClassName = trimString(driver);
     }
 
     //read configuration from properties file
@@ -136,53 +130,15 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.loadFromProperties(configProperties);
     }
 
-    /**
-     * get config item value by property name,which support three format:
-     * 1:hump,example:maxActive
-     * 2:middle line,example: max-active
-     * 3:middle line,example: max_active
-     *
-     * @param configProperties configuration list
-     * @param propertyName     config item name
-     * @return configuration item value
-     */
-    private final static String getConfigValue(Properties configProperties, String propertyName) {
-        String value = readConfig(configProperties, propertyName);
-        if (isBlank(value))
-            value = readConfig(configProperties, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_MiddleLine));
-        if (isBlank(value))
-            value = readConfig(configProperties, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_UnderLine));
-        return value;
+    public BeeDataSourceConfig(String driver, String url, String user, String password) {
+        this.jdbcUrl = trimString(url);
+        this.username = trimString(user);
+        this.password = trimString(password);
+        this.driverClassName = trimString(driver);
     }
 
-    private final static String readConfig(Properties configProperties, String propertyName) {
-        String value = configProperties.getProperty(propertyName);
-        if (!isBlank(value)) {
-            CommonLog.info("beecp.{}={}", propertyName, value);
-            return value.trim();
-        } else {
-            return null;
-        }
-    }
 
-    private final static String trimString(String value) {
-        return (value == null) ? null : value.trim();
-    }
-
-    private final static Driver loadJdbcDriver(String driverClassName) throws BeeDataSourceConfigException {
-        try {
-            Class<?> driverClass = Class.forName(driverClassName, true, BeeDataSourceConfig.class.getClassLoader());
-            return (Driver) driverClass.newInstance();
-        } catch (ClassNotFoundException e) {
-            throw new BeeDataSourceConfigException("Not found driver class:" + driverClassName);
-        } catch (InstantiationException e) {
-            throw new BeeDataSourceConfigException("Failed to instantiate driver class:" + driverClassName, e);
-        } catch (IllegalAccessException e) {
-            throw new BeeDataSourceConfigException("Failed to instantiate driver class:" + driverClassName, e);
-        }
-    }
-
-    @Override
+    //*********************************************** 1 **************************************************************//
     public String getUsername() {
         return username;
     }
@@ -199,15 +155,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.password = trimString(password);
     }
 
-    public String getJdbcUrl() {
-        return jdbcUrl;
-    }
-
-    public void setJdbcUrl(String jdbcUrl) {
-        this.jdbcUrl = trimString(jdbcUrl);
-    }
-
-    @Override
     public String getUrl() {
         return jdbcUrl;
     }
@@ -216,7 +163,14 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.jdbcUrl = trimString(jdbcUrl);
     }
 
-    @Override
+    public String getJdbcUrl() {
+        return jdbcUrl;
+    }
+
+    public void setJdbcUrl(String jdbcUrl) {
+        this.jdbcUrl = trimString(jdbcUrl);
+    }
+
     public String getDriverClassName() {
         return driverClassName;
     }
@@ -225,7 +179,129 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.driverClassName = trimString(driverClassName);
     }
 
-    @Override
+
+    //*********************************************** 2 ***************************************************************//
+    public String getPoolName() {
+        return poolName;
+    }
+
+    public void setPoolName(String poolName) {
+        this.poolName = trimString(poolName);
+    }
+
+    public boolean isFairMode() {
+        return fairMode;
+    }
+
+    public void setFairMode(boolean fairMode) {
+        this.fairMode = fairMode;
+    }
+
+    public int getInitialSize() {
+        return initialSize;
+    }
+
+    public void setInitialSize(int initialSize) {
+        if (initialSize >= 0) this.initialSize = initialSize;
+    }
+
+    public int getMaxActive() {
+        return maxActive;
+    }
+
+    public void setMaxActive(int maxActive) {
+        if (maxActive > 0) {
+            this.maxActive = maxActive;
+            //fix issue:#19 Chris-2020-08-16 begin
+            this.borrowSemaphoreSize = (maxActive > 1) ? Math.min(maxActive / 2, NCPUS) : 1;
+            //fix issue:#19 Chris-2020-08-16 end
+        }
+    }
+
+    public int getBorrowSemaphoreSize() {
+        return borrowSemaphoreSize;
+    }
+
+    public void setBorrowSemaphoreSize(int borrowSemaphoreSize) {
+        if (borrowSemaphoreSize > 0) this.borrowSemaphoreSize = borrowSemaphoreSize;
+    }
+
+    public long getMaxWait() {
+        return maxWait;
+    }
+
+    public void setMaxWait(long maxWait) {
+        if (maxWait > 0) this.maxWait = maxWait;
+    }
+
+    public long getIdleTimeout() {
+        return idleTimeout;
+    }
+
+    public void setIdleTimeout(long idleTimeout) {
+        if (idleTimeout > 0) this.idleTimeout = idleTimeout;
+    }
+
+    public long getHoldTimeout() {
+        return holdTimeout;
+    }
+
+    public void setHoldTimeout(long holdTimeout) {
+        if (holdTimeout > 0) this.holdTimeout = holdTimeout;
+    }
+
+
+    //*********************************************** 3 **************************************************************//
+    public String getValidTestSql() {
+        return validTestSql;
+    }
+
+    public void setValidTestSql(String validTestSql) {
+        if (!isBlank(validTestSql)) this.validTestSql = trimString(validTestSql);
+    }
+
+    public int getValidTestTimeout() {
+        return validTestTimeout;
+    }
+
+    public void setValidTestTimeout(int validTestTimeout) {
+        if (validTestTimeout >= 0) this.validTestTimeout = validTestTimeout;
+    }
+
+    public long getValidAssumeTime() {
+        return validAssumeTime;
+    }
+
+    public void setValidAssumeTime(long validAssumeTime) {
+        if (validAssumeTime >= 0) this.validAssumeTime = validAssumeTime;
+    }
+
+    public long getTimerCheckInterval() {
+        return timerCheckInterval;
+    }
+
+    public void setTimerCheckInterval(long timerCheckInterval) {
+        if (timerCheckInterval > 0) this.timerCheckInterval = timerCheckInterval;
+    }
+
+    public boolean isForceCloseUsingOnClear() {
+        return forceCloseUsingOnClear;
+    }
+
+    public void setForceCloseUsingOnClear(boolean forceCloseUsingOnClear) {
+        this.forceCloseUsingOnClear = forceCloseUsingOnClear;
+    }
+
+    public long getDelayTimeForNextClear() {
+        return delayTimeForNextClear;
+    }
+
+    public void setDelayTimeForNextClear(long delayTimeForNextClear) {
+        if (delayTimeForNextClear > 0) this.delayTimeForNextClear = delayTimeForNextClear;
+    }
+
+
+    //*********************************************** 4 **************************************************************//
     public String getDefaultCatalog() {
         return defaultCatalog;
     }
@@ -242,7 +318,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.defaultSchema = trimString(defaultSchema);
     }
 
-    @Override
     public boolean isDefaultReadOnly() {
         return defaultReadOnly;
     }
@@ -251,7 +326,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.defaultReadOnly = defaultReadOnly;
     }
 
-    @Override
     public boolean isDefaultAutoCommit() {
         return defaultAutoCommit;
     }
@@ -260,7 +334,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.defaultAutoCommit = defaultAutoCommit;
     }
 
-    @Override
     public int getDefaultTransactionIsolationCode() {
         return defaultTransactionIsolationCode;
     }
@@ -269,7 +342,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.defaultTransactionIsolationCode = defaultTransactionIsolationCode;
     }
 
-    @Override
     public String getDefaultTransactionIsolationName() {
         return defaultTransactionIsolationName;
     }
@@ -278,147 +350,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.defaultTransactionIsolationName = trimString(defaultTransactionIsolationName);
     }
 
-    @Override
-    public String getValidTestSql() {
-        return validTestSql;
-    }
 
-    public void setValidTestSql(String validTestSql) {
-        if (!isBlank(validTestSql))
-            this.validTestSql = trimString(validTestSql);
-    }
-
-    @Override
-    public String getPoolName() {
-        return poolName;
-    }
-
-    public void setPoolName(String poolName) {
-        this.poolName = trimString(poolName);
-    }
-
-    @Override
-    public boolean isFairMode() {
-        return fairMode;
-    }
-
-    public void setFairMode(boolean fairMode) {
-        this.fairMode = fairMode;
-    }
-
-    @Override
-    public int getInitialSize() {
-        return initialSize;
-    }
-
-    public void setInitialSize(int initialSize) {
-        if (initialSize >= 0)
-            this.initialSize = initialSize;
-    }
-
-    @Override
-    public int getMaxActive() {
-        return maxActive;
-    }
-
-    public void setMaxActive(int maxActive) {
-        if (maxActive > 0) {
-            this.maxActive = maxActive;
-            //fix issue:#19 Chris-2020-08-16 begin
-            this.borrowSemaphoreSize = (maxActive > 1) ? Math.min(maxActive / 2, NCPUS) : 1;
-            //fix issue:#19 Chris-2020-08-16 end
-        }
-    }
-
-    @Override
-    public int getBorrowSemaphoreSize() {
-        return borrowSemaphoreSize;
-    }
-
-    public void setBorrowSemaphoreSize(int borrowSemaphoreSize) {
-        if (borrowSemaphoreSize > 0)
-            this.borrowSemaphoreSize = borrowSemaphoreSize;
-    }
-
-    @Override
-    public long getMaxWait() {
-        return maxWait;
-    }
-
-    public void setMaxWait(long maxWait) {
-        if (maxWait > 0)
-            this.maxWait = maxWait;
-    }
-
-    @Override
-    public long getIdleTimeout() {
-        return idleTimeout;
-    }
-
-    public void setIdleTimeout(long idleTimeout) {
-        if (idleTimeout > 0)
-            this.idleTimeout = idleTimeout;
-    }
-
-    @Override
-    public long getHoldTimeout() {
-        return holdTimeout;
-    }
-
-    public void setHoldTimeout(long holdTimeout) {
-        if (holdTimeout > 0)
-            this.holdTimeout = holdTimeout;
-    }
-
-    @Override
-    public int getValidTestTimeout() {
-        return validTestTimeout;
-    }
-
-    public void setValidTestTimeout(int validTestTimeout) {
-        if (validTestTimeout >= 0)
-            this.validTestTimeout = validTestTimeout;
-    }
-
-    @Override
-    public long getValidAssumeTime() {
-        return validAssumeTime;
-    }
-
-    public void setValidAssumeTime(long validAssumeTime) {
-        if (validAssumeTime >= 0)
-            this.validAssumeTime = validAssumeTime;
-    }
-
-    @Override
-    public long getTimerCheckInterval() {
-        return timerCheckInterval;
-    }
-
-    public void setTimerCheckInterval(long timerCheckInterval) {
-        if (timerCheckInterval > 0)
-            this.timerCheckInterval = timerCheckInterval;
-    }
-
-    @Override
-    public boolean isForceCloseUsingOnClear() {
-        return forceCloseUsingOnClear;
-    }
-
-    public void setForceCloseUsingOnClear(boolean forceCloseUsingOnClear) {
-        this.forceCloseUsingOnClear = forceCloseUsingOnClear;
-    }
-
-    @Override
-    public long getDelayTimeForNextClear() {
-        return delayTimeForNextClear;
-    }
-
-    public void setDelayTimeForNextClear(long delayTimeForNextClear) {
-        if (delayTimeForNextClear > 0)
-            this.delayTimeForNextClear = delayTimeForNextClear;
-    }
-
+    //*********************************************** 5 **************************************************************//
     public RawConnectionFactory getConnectionFactory() {
         return connectionFactory;
     }
@@ -427,7 +360,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.connectionFactory = connectionFactory;
     }
 
-    @Override
     public String getConnectionFactoryClassName() {
         return connectionFactoryClassName;
     }
@@ -479,7 +411,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         }
     }
 
-    @Override
     public String getPoolImplementClassName() {
         return poolImplementClassName;
     }
@@ -488,7 +419,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.poolImplementClassName = trimString(poolImplementClassName);
     }
 
-    @Override
     public boolean isEnableJmx() {
         return enableJmx;
     }
@@ -497,18 +427,20 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.enableJmx = enableJmx;
     }
 
-    public void setEnableConfigLog(boolean enableConfigLog) {
-        this.enableConfigLog = enableConfigLog;
+    public void setPrintConfigLog(boolean printConfigLog) {
+        this.printConfigLog = printConfigLog;
     }
 
-    public boolean isEnableRuntimeLog() {
-        return enableRuntimeLog;
+    public boolean isPrintRuntimeLog() {
+        return printRuntimeLog;
     }
 
-    public void setEnableRuntimeLog(boolean enableRuntimeLog) {
-        this.enableRuntimeLog = enableRuntimeLog;
+    public void setPrintRuntimeLog(boolean printRuntimeLog) {
+        this.printRuntimeLog = printRuntimeLog;
     }
 
+
+    //*********************************************** 6 **************************************************************//
     void copyTo(BeeDataSourceConfig config) {
         //1:primitive type copy
         String fieldName = "";
@@ -519,7 +451,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                 Object fieldValue = field.get(this);
                 fieldName = field.getName();
 
-                if (enableConfigLog) CommonLog.info("{}.{}={}", poolName, fieldName, fieldValue);
+                if (printConfigLog) CommonLog.info("{}.{}={}", poolName, fieldName, fieldValue);
                 field.set(config, fieldValue);
             }
         } catch (Exception e) {
@@ -527,11 +459,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         }
 
         //2:copy 'connectProperties'
-        //2:copy 'connectProperties'
         Iterator<Map.Entry<Object, Object>> iterator = connectProperties.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<Object, Object> entry = iterator.next();
-            if (enableConfigLog)
+            if (printConfigLog)
                 CommonLog.info("{}.connectProperties.{}={}", poolName, entry.getKey(), entry.getValue());
             config.addConnectProperty((String) entry.getKey(), entry.getValue());
         }

@@ -155,7 +155,7 @@
 //    }
 //
 //    //set pool info debug switch
-//    public void setEnableRuntimeLog(boolean enabledDebug) {
+//    public void setPrintRuntimeLog(boolean enabledDebug) {
 //    }
 //
 //    public ConnectionPoolMonitorVo getMonitorVo() {
