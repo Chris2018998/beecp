@@ -15,8 +15,6 @@
  */
 package cn.beecp.test.mock;
 
-import com.alibaba.druid.mock.MockConnection;
-
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
