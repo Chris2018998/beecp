@@ -17,7 +17,7 @@ package cn.beecp.test.pool;
 
 import cn.beecp.BeeDataSource;
 import cn.beecp.BeeDataSourceConfig;
-import cn.beecp.test.Config;
+import cn.beecp.test.JdbcConfig;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 
@@ -32,10 +32,10 @@ public class TransactionAutoCommitResetTest extends TestCase {
 
     public void setUp() throws Throwable {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setJdbcUrl(Config.JDBC_URL);
-        config.setDriverClassName(Config.JDBC_DRIVER);
-        config.setUsername(Config.JDBC_USER);
-        config.setPassword(Config.JDBC_PASSWORD);
+        config.setJdbcUrl(JdbcConfig.JDBC_URL);
+        config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+        config.setUsername(JdbcConfig.JDBC_USER);
+        config.setPassword(JdbcConfig.JDBC_PASSWORD);
         config.setDefaultAutoCommit(false);
         ds = new BeeDataSource(config);
     }
@@ -52,7 +52,7 @@ public class TransactionAutoCommitResetTest extends TestCase {
             con1 = ds.getConnection();
             String userId = String.valueOf(new Random(Long.MAX_VALUE).nextLong());
             ps1 = con1
-                    .prepareStatement("select count(*) from " + Config.TEST_TABLE + " where TEST_ID='" + userId + "'");
+                    .prepareStatement("select count(*) from " + JdbcConfig.TEST_TABLE + " where TEST_ID='" + userId + "'");
             re1 = ps1.executeQuery();
             try {
                 con1.setAutoCommit(true);

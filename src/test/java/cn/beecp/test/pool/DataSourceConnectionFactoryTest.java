@@ -17,7 +17,7 @@ package cn.beecp.test.pool;
 
 import cn.beecp.BeeDataSource;
 import cn.beecp.BeeDataSourceConfig;
-import cn.beecp.test.Config;
+import cn.beecp.test.JdbcConfig;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 
@@ -28,10 +28,12 @@ public class DataSourceConnectionFactoryTest extends TestCase {
 
     public void setUp() throws Throwable {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setUsername(Config.JDBC_USER);
-        config.setPassword(Config.JDBC_PASSWORD);
-        config.addConnectProperty("url", Config.JDBC_URL);
-        config.setConnectionFactoryClassName("com.mysql.cj.jdbc.MysqlDataSource");
+        config.setUsername(JdbcConfig.JDBC_USER);
+        config.setPassword(JdbcConfig.JDBC_PASSWORD);
+        config.addConnectProperty("url", JdbcConfig.JDBC_URL);
+        //config.setConnectionFactoryClassName("com.mysql.cj.jdbc.MysqlDataSource");
+        config.setConnectionFactoryClassName("cn.beecp.test.mock.MockDataSource");
+
         config.setInitialSize(5);
         config.setValidTestSql("SELECT 1 from dual");
         config.setIdleTimeout(3000);

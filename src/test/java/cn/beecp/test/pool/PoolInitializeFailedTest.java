@@ -17,7 +17,7 @@ package cn.beecp.test.pool;
 
 import cn.beecp.BeeDataSource;
 import cn.beecp.BeeDataSourceConfig;
-import cn.beecp.test.Config;
+import cn.beecp.test.JdbcConfig;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 
@@ -33,10 +33,10 @@ public class PoolInitializeFailedTest extends TestCase {
     public void testPoolInit() throws InterruptedException, Exception {
         try {
             BeeDataSourceConfig config = new BeeDataSourceConfig();
-            config.setJdbcUrl("jdbc:mysql://localhost/test2");//give valid URL
-            config.setDriverClassName(Config.JDBC_DRIVER);
-            config.setUsername(Config.JDBC_USER);
-            config.setPassword(Config.JDBC_PASSWORD);
+            config.setJdbcUrl("jdbc:bee://localhost/test/mockdb2");//give valid URL
+            config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+            config.setUsername(JdbcConfig.JDBC_USER);
+            config.setPassword(JdbcConfig.JDBC_PASSWORD);
             config.setInitialSize(initSize);
             new BeeDataSource(config);
             TestUtil.assertError("A initializerError need be thrown,but not");

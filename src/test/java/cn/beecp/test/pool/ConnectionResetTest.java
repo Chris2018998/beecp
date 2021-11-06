@@ -4,7 +4,7 @@ import cn.beecp.BeeDataSource;
 import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.TransactionIsolationLevel;
 import cn.beecp.pool.FastConnectionPool;
-import cn.beecp.test.Config;
+import cn.beecp.test.JdbcConfig;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 
@@ -17,10 +17,10 @@ public class ConnectionResetTest extends TestCase {
 
     public void setUp() throws Throwable {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setJdbcUrl(Config.JDBC_URL);
-        config.setDriverClassName(Config.JDBC_DRIVER);
-        config.setUsername(Config.JDBC_USER);
-        config.setPassword(Config.JDBC_PASSWORD);
+        config.setJdbcUrl(JdbcConfig.JDBC_URL);
+        config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+        config.setUsername(JdbcConfig.JDBC_USER);
+        config.setPassword(JdbcConfig.JDBC_PASSWORD);
         config.setDefaultAutoCommit(false);
         config.setDefaultTransactionIsolationName(TransactionIsolationLevel.LEVEL_READ_COMMITTED);
         config.setDefaultReadOnly(true);

@@ -17,7 +17,7 @@ package cn.beecp.test.pool;
 
 import cn.beecp.BeeDataSource;
 import cn.beecp.BeeDataSourceConfig;
-import cn.beecp.test.Config;
+import cn.beecp.test.JdbcConfig;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 
@@ -31,10 +31,10 @@ public class TransactionNormalRollbackTest extends TestCase {
 
     public void setUp() throws Throwable {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setJdbcUrl(Config.JDBC_URL);
-        config.setDriverClassName(Config.JDBC_DRIVER);
-        config.setUsername(Config.JDBC_USER);
-        config.setPassword(Config.JDBC_PASSWORD);
+        config.setJdbcUrl(JdbcConfig.JDBC_URL);
+        config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+        config.setUsername(JdbcConfig.JDBC_USER);
+        config.setPassword(JdbcConfig.JDBC_PASSWORD);
         ds = new BeeDataSource(config);
     }
 
@@ -56,7 +56,7 @@ public class TransactionNormalRollbackTest extends TestCase {
 
             String userId = String.valueOf(new Random(Long.MAX_VALUE).nextLong());
             ps1 = con1
-                    .prepareStatement("select count(*) from " + Config.TEST_TABLE + " where TEST_ID='" + userId + "'");
+                    .prepareStatement("select count(*) from " + JdbcConfig.TEST_TABLE + " where TEST_ID='" + userId + "'");
             re1 = ps1.executeQuery();
             if (re1.next()) {
                 int size = re1.getInt(1);
@@ -64,7 +64,7 @@ public class TransactionNormalRollbackTest extends TestCase {
                     TestUtil.assertError("record size error");
             }
 
-            ps2 = con1.prepareStatement("insert into " + Config.TEST_TABLE + "(TEST_ID,TEST_NAME)values(?,?)");
+            ps2 = con1.prepareStatement("insert into " + JdbcConfig.TEST_TABLE + "(TEST_ID,TEST_NAME)values(?,?)");
             ps2.setString(1, userId);
             ps2.setString(2, userId);
             int rows = ps2.executeUpdate();
@@ -74,7 +74,7 @@ public class TransactionNormalRollbackTest extends TestCase {
             con1.rollback();
 
             ps3 = con1
-                    .prepareStatement("select count(*) from " + Config.TEST_TABLE + " where TEST_ID='" + userId + "'");
+                    .prepareStatement("select count(*) from " + JdbcConfig.TEST_TABLE + " where TEST_ID='" + userId + "'");
             re3 = ps3.executeQuery();
             if (re3.next()) {
                 int size = re3.getInt(1);

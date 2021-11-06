@@ -17,7 +17,7 @@ package cn.beecp.test.pool;
 
 import cn.beecp.BeeDataSource;
 import cn.beecp.BeeDataSourceConfig;
-import cn.beecp.test.Config;
+import cn.beecp.test.JdbcConfig;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 
@@ -28,10 +28,10 @@ public class OperationAfterOwnerCloseTest extends TestCase {
 
     public void setUp() throws Throwable {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setJdbcUrl(Config.JDBC_URL);
-        config.setDriverClassName(Config.JDBC_DRIVER);
-        config.setUsername(Config.JDBC_USER);
-        config.setPassword(Config.JDBC_PASSWORD);
+        config.setJdbcUrl(JdbcConfig.JDBC_URL);
+        config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+        config.setUsername(JdbcConfig.JDBC_USER);
+        config.setPassword(JdbcConfig.JDBC_PASSWORD);
         ds = new BeeDataSource(config);
     }
 
@@ -47,7 +47,7 @@ public class OperationAfterOwnerCloseTest extends TestCase {
         PreparedStatement ps = null;
         try {
             st = con.createStatement();
-            cs = con.prepareCall("?={call " + Config.TEST_PROCEDURE + "}");
+            cs = con.prepareCall("?={call " + JdbcConfig.TEST_PROCEDURE + "}");
             ps = con.prepareStatement("select 1 from dual");
             DatabaseMetaData dbs = con.getMetaData();
 
@@ -93,7 +93,7 @@ public class OperationAfterOwnerCloseTest extends TestCase {
         PreparedStatement ps = null;
         try {
             st = con.createStatement();
-            cs = con.prepareCall("?={call " + Config.TEST_PROCEDURE + "}");
+            cs = con.prepareCall("?={call " + JdbcConfig.TEST_PROCEDURE + "}");
             ps = con.prepareStatement("select 1 from dual");
             ResultSet rs1 = null;
 

@@ -28,6 +28,11 @@ import java.util.Properties;
  * @version 1.0
  */
 public class PropertiesFileLoadTest extends TestCase {
+    //private final String ConfigedUrl="jdbc:mysql://localhost/test";
+    //private final String ConfigedDriver="com.mysql.cj.jdbc.Driver";
+    private final String ConfigUrl = "jdbc:bee://localhost/test/mockdb";
+    private final String ConfigDriver = "cn.beecp.test.mock.MockDriver";
+
     public void test() throws Exception {
         String filename = "config2.properties";
         URL url = PropertiesFileLoadTest.class.getClassLoader().getResource(filename);
@@ -38,9 +43,9 @@ public class PropertiesFileLoadTest extends TestCase {
 
         if (!"root".equals(testConfig.getUsername())) throw new BeeDataSourceConfigException("username error");
         if (!"root".equals(testConfig.getPassword())) throw new BeeDataSourceConfigException("password error");
-        if (!"jdbc:mysql://localhost/test".equals(testConfig.getJdbcUrl()))
+        if (!ConfigUrl.equals(testConfig.getJdbcUrl()))
             throw new BeeDataSourceConfigException("jdbcUrl error");
-        if (!"com.mysql.cj.jdbc.Driver".equals(testConfig.getDriverClassName()))
+        if (!ConfigDriver.equals(testConfig.getDriverClassName()))
             throw new BeeDataSourceConfigException("driverClassName error");
         if (!"test1".equals(testConfig.getDefaultCatalog()))
             throw new BeeDataSourceConfigException("defaultCatalog error");

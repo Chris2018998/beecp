@@ -17,7 +17,7 @@ package cn.beecp.test.pool;
 
 import cn.beecp.BeeDataSource;
 import cn.beecp.pool.FastConnectionPool;
-import cn.beecp.test.Config;
+import cn.beecp.test.JdbcConfig;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 
@@ -34,10 +34,10 @@ public class PoolDelayInitializeSuccessTest extends TestCase {
 
     public void testPoolInit() throws InterruptedException, Exception {
         BeeDataSource ds = new BeeDataSource();
-        ds.setJdbcUrl(Config.JDBC_URL);
-        ds.setDriverClassName(Config.JDBC_DRIVER);
-        ds.setUsername(Config.JDBC_USER);
-        ds.setPassword(Config.JDBC_PASSWORD);
+        ds.setJdbcUrl(JdbcConfig.JDBC_URL);
+        ds.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+        ds.setUsername(JdbcConfig.JDBC_USER);
+        ds.setPassword(JdbcConfig.JDBC_PASSWORD);
         ds.setInitialSize(initSize);
 
         Connection con = null;

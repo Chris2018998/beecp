@@ -16,7 +16,7 @@
 package cn.beecp.test.pool;
 
 import cn.beecp.BeeDataSource;
-import cn.beecp.test.Config;
+import cn.beecp.test.JdbcConfig;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 
@@ -37,10 +37,10 @@ public class PoolDelayInitializeFailedTest extends TestCase {
         BeeDataSource ds = null;
         try {
             ds = new BeeDataSource();
-            ds.setJdbcUrl("jdbc:mysql://localhost/test2");//give valid URL
-            ds.setDriverClassName(Config.JDBC_DRIVER);
-            ds.setUsername(Config.JDBC_USER);
-            ds.setPassword(Config.JDBC_PASSWORD);
+            ds.setJdbcUrl("jdbc:bee://localhost/test/mockdb2");//give valid URL
+            ds.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+            ds.setUsername(JdbcConfig.JDBC_USER);
+            ds.setPassword(JdbcConfig.JDBC_PASSWORD);
             ds.setInitialSize(initSize);
             con = ds.getConnection();
             TestUtil.assertError("A pool fail to init e need be thrown,but not");
