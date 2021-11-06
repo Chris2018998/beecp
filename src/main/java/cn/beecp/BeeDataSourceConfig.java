@@ -385,13 +385,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void removeConnectProperty(String key) {
-        if (!isBlank(key))
-            connectProperties.remove(key);
+        if (!isBlank(key)) connectProperties.remove(key);
     }
 
     public void addConnectProperty(String key, Object value) {
-        if (!isBlank(key) && value != null)
-            connectProperties.put(key, value);
+        if (!isBlank(key) && value != null) connectProperties.put(key, value);
     }
 
     public void addConnectProperty(String connectPropertyText) {
