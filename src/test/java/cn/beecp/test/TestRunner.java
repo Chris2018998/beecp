@@ -17,7 +17,9 @@ package cn.beecp.test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 
 public class TestRunner {
     private static String defaultFilename = "testCase.properties";
@@ -37,7 +39,7 @@ public class TestRunner {
         InputStream propertiesStream = null;
 
         try {
-            SortKeyProperties properties = new SortKeyProperties();
+            SortedProperties properties = new SortedProperties();
             propertiesStream = TestRunner.class.getResourceAsStream(caseFile);
             propertiesStream = TestRunner.class.getClassLoader().getResourceAsStream(defaultFilename);
             if (propertiesStream == null) propertiesStream = TestRunner.class.getResourceAsStream(defaultFilename);
@@ -84,28 +86,5 @@ public class TestRunner {
         long begtinTime = System.currentTimeMillis();
         TestRunner.run(getTestCaseClasses());
         System.out.println("Took time:(" + (System.currentTimeMillis() - begtinTime) + ")ms");
-    }
-}
-
-@SuppressWarnings("serial")
-class SortKeyProperties extends Properties {
-    private Vector<Object> keyVector = new Vector<Object>(10);
-
-    public synchronized Enumeration<Object> keys() {
-        return keyVector.elements();
-    }
-
-    public synchronized Object put(Object key, Object value) {
-        Object oldValue = super.put(key, value);
-        if (!keyVector.contains(key))
-            keyVector.add(key);
-        return oldValue;
-    }
-
-    public synchronized Object remove(Object key) {
-        Object value = super.remove(key);
-        if (keyVector.contains(key))
-            keyVector.remove(key);
-        return value;
     }
 }
