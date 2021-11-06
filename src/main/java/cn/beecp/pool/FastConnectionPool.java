@@ -756,7 +756,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     //Method-5.8: set pool info debug switch
-    public void setEnableRuntimeLog(boolean indicator) {
+    public void setPrintRuntimeLog(boolean indicator) {
         this.printRuntimeLog = indicator;
     }
 

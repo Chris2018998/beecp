@@ -40,6 +40,8 @@ public class PoolStaticCenter {
     public static final SQLException DriverNotSupportNetworkTimeoutException = new SQLException("Driver not support 'networkTimeout'");
     public static final String DS_Config_Prop_Separator_MiddleLine = "-";
     public static final String DS_Config_Prop_Separator_UnderLine = "_";
+
+    //*********************************************** 1 **************************************************************//
     static final Connection CLOSED_CON = (Connection) Proxy.newProxyInstance(
             PoolStaticCenter.class.getClassLoader(),
             new Class[]{Connection.class},
@@ -79,15 +81,6 @@ public class PoolStaticCenter {
                 }
             }
     );
-
-
-    static final Connection createProxyConnection(final PooledConnection p, final Borrower b) throws SQLException {
-        throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
-    }
-
-    static final ResultSet createProxyResultSet(final ResultSet raw, final ProxyStatementBase owner, final PooledConnection p) throws SQLException {
-        throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
-    }
 
     static final void oclose(final ResultSet r) {
         try {
@@ -131,6 +124,24 @@ public class PoolStaticCenter {
         }
     }
 
+    static final Connection createProxyConnection(final PooledConnection p, final Borrower b) throws SQLException {
+        throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
+    }
+
+    static final ResultSet createProxyResultSet(final ResultSet raw, final ProxyStatementBase owner, final PooledConnection p) throws SQLException {
+        throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
+    }
+
+    //*********************************************** 2 **************************************************************//
+
+    public static final String trimString(String value) {
+        return value == null ? null : value.trim();
+    }
+
+    public static final boolean equals(String a, String b) {
+        return a == null ? b == null : a.equals(b);
+    }
+
     public static final boolean isBlank(String str) {
         if (str == null) return true;
         int l = str.length();
@@ -141,10 +152,8 @@ public class PoolStaticCenter {
         return true;
     }
 
-    public static final boolean equals(String a, String b) {
-        return a == null ? b == null : a.equals(b);
-    }
 
+    //*********************************************** 3 **************************************************************//
 
     /**
      * get config item value by property name,which support three format:
@@ -173,10 +182,6 @@ public class PoolStaticCenter {
         } else {
             return null;
         }
-    }
-
-    public final static String trimString(String value) {
-        return (value == null) ? null : value.trim();
     }
 
     public final static Driver loadJdbcDriver(String driverClassName) throws BeeDataSourceConfigException {

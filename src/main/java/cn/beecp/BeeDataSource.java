@@ -189,7 +189,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     }
 
     public void setPrintRuntimeLog(boolean printRuntimeLog) {
-        if (pool != null) pool.setEnableRuntimeLog(printRuntimeLog);
+        if (pool != null) pool.setPrintRuntimeLog(printRuntimeLog);
     }
 
     /**

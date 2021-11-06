@@ -79,7 +79,7 @@ public interface ConnectionPool {
      *
      * @param indicator indicator,whether print pool runtime info
      */
-    void setEnableRuntimeLog(boolean indicator);
+    void setPrintRuntimeLog(boolean indicator);
 
 }
 	

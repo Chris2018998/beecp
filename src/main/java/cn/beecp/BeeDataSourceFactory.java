@@ -90,7 +90,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         //5:inject found config value to ds config object
         setPropertiesValue(config, setMethodMap, setValueMap);
 
-        //5:try to find 'connectProperties' config value and put to ds config object
+        //6:try to find 'connectProperties' config value and put to ds config object
         config.addConnectProperty(getConfigValue(ref, "connectProperties"));
         String connectPropertiesCount = getConfigValue(ref, "connectProperties.count");
         if (!isBlank(connectPropertiesCount)) {
