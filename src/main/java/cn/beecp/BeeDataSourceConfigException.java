@@ -13,16 +13,9 @@ package cn.beecp;
  * @version 1.0
  */
 public class BeeDataSourceConfigException extends RuntimeException {
-    public BeeDataSourceConfigException() {
-        super();
-    }
 
     public BeeDataSourceConfigException(String s) {
         super(s);
-    }
-
-    public BeeDataSourceConfigException(Throwable cause) {
-        super(cause);
     }
 
     public BeeDataSourceConfigException(String message, Throwable cause) {

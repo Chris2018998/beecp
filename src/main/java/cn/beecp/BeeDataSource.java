@@ -62,7 +62,13 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     private ReentrantReadWriteLock.ReadLock rLock = lock.readLock();
     private ReentrantReadWriteLock.WriteLock wLock = lock.writeLock();
 
+
+    //*********************************************** 0 **************************************************************//
     public BeeDataSource() {
+    }
+
+    public BeeDataSource(String driver, String url, String user, String password) {
+        super(driver, url, user, password);
     }
 
     public BeeDataSource(final BeeDataSourceConfig config) {
@@ -73,18 +79,6 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * constructor
-     *
-     * @param driver   driver class name
-     * @param url      JDBC url
-     * @param user     JDBC user name
-     * @param password JDBC password
-     */
-    public BeeDataSource(String driver, String url, String user, String password) {
-        super(driver, url, user, password);
     }
 
     /*******************************************************************************************
@@ -173,7 +167,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
 
     /*******************************************************************************************
      *                                                                                         *
-     *                        Below are self define methods                                    *
+     *                        Below are self-define methods                                    *
      *                                                                                         *
      ********************************************************************************************/
 
