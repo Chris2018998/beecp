@@ -35,6 +35,7 @@ public class PropertiesFileLoadTest extends TestCase {
 
         BeeDataSourceConfig testConfig = new BeeDataSourceConfig();
         testConfig.loadFromPropertiesFile(url.getFile());
+
         if (!"root".equals(testConfig.getUsername())) throw new BeeDataSourceConfigException("username error");
         if (!"root".equals(testConfig.getPassword())) throw new BeeDataSourceConfigException("password error");
         if (!"jdbc:mysql://localhost/test".equals(testConfig.getJdbcUrl()))
@@ -57,8 +58,7 @@ public class PropertiesFileLoadTest extends TestCase {
         if (!testConfig.isFairMode()) throw new BeeDataSourceConfigException("fairMode error");
         if (testConfig.getInitialSize() != 1) throw new BeeDataSourceConfigException("initialSize error");
         if (testConfig.getMaxActive() != 10) throw new BeeDataSourceConfigException("maxActive error");
-        if (testConfig.getBorrowSemaphoreSize() != 4)
-            throw new BeeDataSourceConfigException("borrowSemaphoreSize error");
+//        if (testConfig.getBorrowSemaphoreSize() != 4)throw new BeeDataSourceConfigException("borrowSemaphoreSize error");
         if (testConfig.getMaxWait() != 8000) throw new BeeDataSourceConfigException("maxWait error");
         if (testConfig.getIdleTimeout() != 18000) throw new BeeDataSourceConfigException("idleTimeout error");
         if (testConfig.getHoldTimeout() != 30000) throw new BeeDataSourceConfigException("holdTimeout error");
@@ -93,7 +93,5 @@ public class PropertiesFileLoadTest extends TestCase {
             throw new BeeDataSourceConfigException("connectProperties error");
         if (!"true".equals(connectProperties.getProperty("useServerPrepStmts")))
             throw new BeeDataSourceConfigException("connectProperties error");
-		
-		
     }
 }
