@@ -368,12 +368,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (p != null) return PoolStaticCenter.createProxyConnection(p, b);
 
             //3:try to get one transferred connection
-            b.state = BOWER_NORMAL;
-            waitQueue.offer(b);
             boolean failed = false;
             Throwable cause = null;
             deadline += maxWaitNs;
-            final Thread bth = b.thread;
+            Thread bth = b.thread;
+            b.state = BOWER_NORMAL;
+            waitQueue.offer(b);
 
             do {
                 final Object s = b.state;//PooledConnection,Throwable,BOWER_NORMAL
