@@ -734,17 +734,22 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         return (active > 0) ? active : 0;
     }
 
-    //Method-5.5: using size of semaphore permit
-    public int getSemaphoreAcquiredSize() {
-        return poolConfig.getBorrowSemaphoreSize() - semaphore.availablePermits();
-    }
-
-    //Method-5.6: waiting size for semaphore
+    //Method-5.5: waiting size for semaphore
     public int getSemaphoreWaitingSize() {
         return semaphore.getQueueLength();
     }
 
-    //Method-5.7: waiting size in transfer queue
+    //Method-5.6: using size of semaphore permit
+    public int getSemaphoreAcquiredSize() {
+        return poolConfig.getBorrowSemaphoreSize() - semaphore.availablePermits();
+    }
+
+    //Method-5.7: set pool info debug switch
+    public void setPrintRuntimeLog(boolean indicator) {
+        this.printRuntimeLog = indicator;
+    }
+
+    //Method-5.8: waiting size in transfer queue
     public int getTransferWaitingSize() {
         int size = 0;
         Iterator<Borrower> iterator = waitQueue.iterator();
@@ -753,11 +758,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (borrower.state instanceof BorrowerState) size++;
         }
         return size;
-    }
-
-    //Method-5.8: set pool info debug switch
-    public void setPrintRuntimeLog(boolean indicator) {
-        this.printRuntimeLog = indicator;
     }
 
     //Method-5.9: register pool to jmx
