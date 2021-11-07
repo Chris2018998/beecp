@@ -21,13 +21,16 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Logger;
 
+/**
+ * @author Chris.Liao
+ * @version 1.0
+ */
 public class MockDataSource implements DataSource {
     public Connection getConnection() throws SQLException {
         return new MockConnection();
     }
 
-    public Connection getConnection(String username, String password)
-            throws SQLException {
+    public Connection getConnection(String username, String password) throws SQLException {
         return new MockConnection();
     }
 

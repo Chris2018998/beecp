@@ -33,7 +33,7 @@ public class PoolInitializeFailedTest extends TestCase {
     public void testPoolInit() throws InterruptedException, Exception {
         try {
             BeeDataSourceConfig config = new BeeDataSourceConfig();
-            config.setJdbcUrl("jdbc:bee://localhost/test/mockdb2");//give valid URL
+            config.setJdbcUrl("jdbc:beecp://localhost/testdb2");//give valid URL
             config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
             config.setUsername(JdbcConfig.JDBC_USER);
             config.setPassword(JdbcConfig.JDBC_PASSWORD);

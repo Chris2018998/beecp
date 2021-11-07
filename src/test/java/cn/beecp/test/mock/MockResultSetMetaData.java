@@ -18,8 +18,11 @@ package cn.beecp.test.mock;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
+/**
+ * @author Chris.Liao
+ * @version 1.0
+ */
 public class MockResultSetMetaData extends MockBase implements ResultSetMetaData {
-
     public int getColumnCount() throws SQLException {
         return 1;
     }
@@ -52,7 +55,6 @@ public class MockResultSetMetaData extends MockBase implements ResultSetMetaData
         return 1;
     }
 
-
     public String getColumnLabel(int column) throws SQLException {
         return "";
     }
@@ -77,39 +79,31 @@ public class MockResultSetMetaData extends MockBase implements ResultSetMetaData
         return "";
     }
 
-
     public String getCatalogName(int column) throws SQLException {
         return "";
     }
-
 
     public int getColumnType(int column) throws SQLException {
         return 1;
     }
 
-
     public String getColumnTypeName(int column) throws SQLException {
         return "";
     }
-
 
     public boolean isReadOnly(int column) throws SQLException {
         return true;
     }
 
-
     public boolean isWritable(int column) throws SQLException {
         return true;
     }
-
 
     public boolean isDefinitelyWritable(int column) throws SQLException {
         return true;
     }
 
-
     public String getColumnClassName(int column) throws SQLException {
         return "";
     }
-
 }

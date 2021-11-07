@@ -21,6 +21,10 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.util.Calendar;
 
+/**
+ * @author Chris.Liao
+ * @version 1.0
+ */
 public class MockResultSet extends MockBase implements ResultSet {
     private MockStatement statement;
 
@@ -83,7 +87,6 @@ public class MockResultSet extends MockBase implements ResultSet {
     public double getDouble(int columnIndex) throws SQLException {
         return 1;
     }
-
 
     public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
         return new BigDecimal(1);
@@ -148,7 +151,6 @@ public class MockResultSet extends MockBase implements ResultSet {
     public double getDouble(String columnLabel) throws SQLException {
         return 1;
     }
-
 
     public BigDecimal getBigDecimal(String columnLabel, int scale) throws SQLException {
         return new BigDecimal(1);
@@ -242,9 +244,7 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public void afterLast() throws SQLException {
-
     }
-
 
     public boolean first() throws SQLException {
         return false;
@@ -253,7 +253,6 @@ public class MockResultSet extends MockBase implements ResultSet {
     public boolean last() throws SQLException {
         return false;
     }
-
 
     public int getRow() throws SQLException {
         return 1;
@@ -276,18 +275,14 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public void setFetchDirection(int direction) throws SQLException {
-
     }
 
     public int getFetchSize() throws SQLException {
         return 1;
     }
 
-
     public void setFetchSize(int rows) throws SQLException {
-
     }
-
 
     public int getType() throws SQLException {
         return 1;
@@ -310,49 +305,36 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public void updateNull(int columnIndex) throws SQLException {
-
     }
 
     public void updateBoolean(int columnIndex, boolean x) throws SQLException {
-
     }
 
     public void updateByte(int columnIndex, byte x) throws SQLException {
-
     }
 
     public void updateShort(int columnIndex, short x) throws SQLException {
-
     }
 
-
     public void updateInt(int columnIndex, int x) throws SQLException {
-
     }
 
     public void updateLong(int columnIndex, long x) throws SQLException {
-
     }
 
-
     public void updateFloat(int columnIndex, float x) throws SQLException {
-
     }
 
     public void updateDouble(int columnIndex, double x) throws SQLException {
-
     }
 
     public void updateBigDecimal(int columnIndex, BigDecimal x) throws SQLException {
-
     }
 
     public void updateString(int columnIndex, String x) throws SQLException {
-
     }
 
     public void updateBytes(int columnIndex, byte x[]) throws SQLException {
-
     }
 
     public void updateDate(int columnIndex, java.sql.Date x) throws SQLException {
@@ -361,23 +343,16 @@ public class MockResultSet extends MockBase implements ResultSet {
     public void updateTime(int columnIndex, java.sql.Time x) throws SQLException {
     }
 
-    public void updateTimestamp(int columnIndex, java.sql.Timestamp x)
-            throws SQLException {
+    public void updateTimestamp(int columnIndex, java.sql.Timestamp x) throws SQLException {
     }
 
-    public void updateAsciiStream(int columnIndex,
-                                  java.io.InputStream x,
-                                  int length) throws SQLException {
+    public void updateAsciiStream(int columnIndex, java.io.InputStream x, int length) throws SQLException {
     }
 
-    public void updateBinaryStream(int columnIndex,
-                                   java.io.InputStream x,
-                                   int length) throws SQLException {
+    public void updateBinaryStream(int columnIndex, java.io.InputStream x, int length) throws SQLException {
     }
 
-    public void updateCharacterStream(int columnIndex,
-                                      java.io.Reader x,
-                                      int length) throws SQLException {
+    public void updateCharacterStream(int columnIndex, java.io.Reader x, int length) throws SQLException {
     }
 
     public void updateObject(int columnIndex, Object x, int scaleOrLength) throws SQLException {
@@ -425,27 +400,19 @@ public class MockResultSet extends MockBase implements ResultSet {
     public void updateTime(String columnLabel, java.sql.Time x) throws SQLException {
     }
 
-    public void updateTimestamp(String columnLabel, java.sql.Timestamp x)
-            throws SQLException {
+    public void updateTimestamp(String columnLabel, java.sql.Timestamp x) throws SQLException {
     }
 
-    public void updateAsciiStream(String columnLabel,
-                                  java.io.InputStream x,
-                                  int length) throws SQLException {
+    public void updateAsciiStream(String columnLabel, java.io.InputStream x, int length) throws SQLException {
     }
 
-    public void updateBinaryStream(String columnLabel,
-                                   java.io.InputStream x,
-                                   int length) throws SQLException {
+    public void updateBinaryStream(String columnLabel, java.io.InputStream x, int length) throws SQLException {
     }
 
-    public void updateCharacterStream(String columnLabel,
-                                      java.io.Reader reader,
-                                      int length) throws SQLException {
+    public void updateCharacterStream(String columnLabel, java.io.Reader reader, int length) throws SQLException {
     }
 
-    public void updateObject(String columnLabel, Object x, int scaleOrLength)
-            throws SQLException {
+    public void updateObject(String columnLabel, Object x, int scaleOrLength) throws SQLException {
     }
 
     public void updateObject(String columnLabel, Object x) throws SQLException {
@@ -472,8 +439,7 @@ public class MockResultSet extends MockBase implements ResultSet {
     public void moveToCurrentRow() throws SQLException {
     }
 
-    public Object getObject(int columnIndex, java.util.Map<String, Class<?>> map)
-            throws SQLException {
+    public Object getObject(int columnIndex, java.util.Map<String, Class<?>> map) throws SQLException {
         return null;
     }
 
@@ -493,15 +459,13 @@ public class MockResultSet extends MockBase implements ResultSet {
         return null;
     }
 
-    public Object getObject(String columnLabel, java.util.Map<String, Class<?>> map)
-            throws SQLException {
+    public Object getObject(String columnLabel, java.util.Map<String, Class<?>> map) throws SQLException {
         return null;
     }
 
     public Ref getRef(String columnLabel) throws SQLException {
         return null;
     }
-
 
     public Blob getBlob(String columnLabel) throws SQLException {
         return null;
@@ -514,7 +478,6 @@ public class MockResultSet extends MockBase implements ResultSet {
     public Array getArray(String columnLabel) throws SQLException {
         return null;
     }
-
 
     public java.sql.Date getDate(int columnIndex, Calendar cal) throws SQLException {
         return null;
@@ -532,13 +495,11 @@ public class MockResultSet extends MockBase implements ResultSet {
         return null;
     }
 
-    public java.sql.Timestamp getTimestamp(int columnIndex, Calendar cal)
-            throws SQLException {
+    public java.sql.Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
         return null;
     }
 
-    public java.sql.Timestamp getTimestamp(String columnLabel, Calendar cal)
-            throws SQLException {
+    public java.sql.Timestamp getTimestamp(String columnLabel, Calendar cal) throws SQLException {
         return null;
     }
 
@@ -551,33 +512,25 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public void updateRef(int columnIndex, java.sql.Ref x) throws SQLException {
-
     }
 
     public void updateRef(String columnLabel, java.sql.Ref x) throws SQLException {
-
     }
-
 
     public void updateBlob(int columnIndex, java.sql.Blob x) throws SQLException {
     }
 
-
     public void updateBlob(String columnLabel, java.sql.Blob x) throws SQLException {
     }
-
 
     public void updateClob(int columnIndex, java.sql.Clob x) throws SQLException {
     }
 
-
     public void updateClob(String columnLabel, java.sql.Clob x) throws SQLException {
     }
 
-
     public void updateArray(int columnIndex, java.sql.Array x) throws SQLException {
     }
-
 
     public void updateArray(String columnLabel, java.sql.Array x) throws SQLException {
     }
@@ -589,7 +542,6 @@ public class MockResultSet extends MockBase implements ResultSet {
     public RowId getRowId(String columnLabel) throws SQLException {
         return null;
     }
-
 
     public void updateRowId(int columnIndex, RowId x) throws SQLException {
     }
@@ -663,28 +615,17 @@ public class MockResultSet extends MockBase implements ResultSet {
     public void updateBinaryStream(int columnIndex, java.io.InputStream x, long length) throws SQLException {
     }
 
-    public void updateCharacterStream(int columnIndex,
-                                      java.io.Reader x,
-                                      long length) throws SQLException {
+    public void updateCharacterStream(int columnIndex, java.io.Reader x, long length) throws SQLException {
     }
 
-
-    public void updateAsciiStream(String columnLabel,
-                                  java.io.InputStream x,
-                                  long length) throws SQLException {
+    public void updateAsciiStream(String columnLabel, java.io.InputStream x, long length) throws SQLException {
     }
 
-    public void updateBinaryStream(String columnLabel,
-                                   java.io.InputStream x,
-                                   long length) throws SQLException {
+    public void updateBinaryStream(String columnLabel, java.io.InputStream x, long length) throws SQLException {
     }
 
-
-    public void updateCharacterStream(String columnLabel,
-                                      java.io.Reader reader,
-                                      long length) throws SQLException {
+    public void updateCharacterStream(String columnLabel, java.io.Reader reader, long length) throws SQLException {
     }
-
 
     public void updateBlob(int columnIndex, InputStream inputStream, long length) throws SQLException {
     }
@@ -704,37 +645,28 @@ public class MockResultSet extends MockBase implements ResultSet {
     public void updateNClob(String columnLabel, Reader reader, long length) throws SQLException {
     }
 
-    public void updateNCharacterStream(int columnIndex,
-                                       java.io.Reader x) throws SQLException {
+    public void updateNCharacterStream(int columnIndex, java.io.Reader x) throws SQLException {
     }
 
-    public void updateNCharacterStream(String columnLabel,
-                                       java.io.Reader reader) throws SQLException {
+    public void updateNCharacterStream(String columnLabel, java.io.Reader reader) throws SQLException {
     }
 
-
-    public void updateAsciiStream(int columnIndex,
-                                  java.io.InputStream x) throws SQLException {
+    public void updateAsciiStream(int columnIndex, java.io.InputStream x) throws SQLException {
     }
 
-    public void updateBinaryStream(int columnIndex,
-                                   java.io.InputStream x) throws SQLException {
+    public void updateBinaryStream(int columnIndex, java.io.InputStream x) throws SQLException {
     }
 
-    public void updateCharacterStream(int columnIndex,
-                                      java.io.Reader x) throws SQLException {
+    public void updateCharacterStream(int columnIndex, java.io.Reader x) throws SQLException {
     }
 
-    public void updateAsciiStream(String columnLabel,
-                                  java.io.InputStream x) throws SQLException {
+    public void updateAsciiStream(String columnLabel, java.io.InputStream x) throws SQLException {
     }
 
-    public void updateBinaryStream(String columnLabel,
-                                   java.io.InputStream x) throws SQLException {
+    public void updateBinaryStream(String columnLabel, java.io.InputStream x) throws SQLException {
     }
 
-    public void updateCharacterStream(String columnLabel,
-                                      java.io.Reader reader) throws SQLException {
+    public void updateCharacterStream(String columnLabel, java.io.Reader reader) throws SQLException {
     }
 
     public void updateBlob(int columnIndex, InputStream inputStream) throws SQLException {

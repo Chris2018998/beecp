@@ -21,8 +21,11 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.util.Calendar;
 
+/**
+ * @author Chris.Liao
+ * @version 1.0
+ */
 public class MockPreparedStatement extends MockStatement implements PreparedStatement {
-
     public MockPreparedStatement(MockConnection connection) {
         super(connection);
     }
@@ -94,8 +97,7 @@ public class MockPreparedStatement extends MockStatement implements PreparedStat
     public void clearParameters() throws SQLException {
     }
 
-    public void setObject(int parameterIndex, Object x, int targetSqlType)
-            throws SQLException {
+    public void setObject(int parameterIndex, Object x, int targetSqlType) throws SQLException {
     }
 
     public void setObject(int parameterIndex, Object x) throws SQLException {
@@ -108,11 +110,8 @@ public class MockPreparedStatement extends MockStatement implements PreparedStat
     public void addBatch() throws SQLException {
     }
 
-    public void setCharacterStream(int parameterIndex,
-                                   java.io.Reader reader,
-                                   int length) throws SQLException {
+    public void setCharacterStream(int parameterIndex, java.io.Reader reader, int length) throws SQLException {
     }
-
 
     public void setRef(int parameterIndex, Ref x) throws SQLException {
     }
@@ -129,18 +128,14 @@ public class MockPreparedStatement extends MockStatement implements PreparedStat
     public void setDate(int parameterIndex, java.sql.Date x, Calendar cal) throws SQLException {
     }
 
-    public void setTime(int parameterIndex, java.sql.Time x, Calendar cal)
-            throws SQLException {
+    public void setTime(int parameterIndex, java.sql.Time x, Calendar cal) throws SQLException {
     }
 
-    public void setTimestamp(int parameterIndex, java.sql.Timestamp x, Calendar cal)
-            throws SQLException {
+    public void setTimestamp(int parameterIndex, java.sql.Timestamp x, Calendar cal) throws SQLException {
     }
 
-    public void setNull(int parameterIndex, int sqlType, String typeName)
-            throws SQLException {
+    public void setNull(int parameterIndex, int sqlType, String typeName) throws SQLException {
     }
-
 
     public void setURL(int parameterIndex, java.net.URL x) throws SQLException {
     }
@@ -161,44 +156,34 @@ public class MockPreparedStatement extends MockStatement implements PreparedStat
     public void setNClob(int parameterIndex, NClob value) throws SQLException {
     }
 
-    public void setClob(int parameterIndex, Reader reader, long length)
-            throws SQLException {
+    public void setClob(int parameterIndex, Reader reader, long length) throws SQLException {
     }
 
-    public void setBlob(int parameterIndex, InputStream inputStream, long length)
-            throws SQLException {
+    public void setBlob(int parameterIndex, InputStream inputStream, long length) throws SQLException {
     }
 
-    public void setNClob(int parameterIndex, Reader reader, long length)
-            throws SQLException {
+    public void setNClob(int parameterIndex, Reader reader, long length) throws SQLException {
     }
 
     public void setSQLXML(int parameterIndex, SQLXML xmlObject) throws SQLException {
     }
 
-    public void setObject(int parameterIndex, Object x, int targetSqlType, int scaleOrLength)
-            throws SQLException {
+    public void setObject(int parameterIndex, Object x, int targetSqlType, int scaleOrLength) throws SQLException {
     }
 
-    public void setAsciiStream(int parameterIndex, java.io.InputStream x, long length)
-            throws SQLException {
+    public void setAsciiStream(int parameterIndex, java.io.InputStream x, long length) throws SQLException {
     }
 
-    public void setBinaryStream(int parameterIndex, java.io.InputStream x,
-                                long length) throws SQLException {
+    public void setBinaryStream(int parameterIndex, java.io.InputStream x, long length) throws SQLException {
     }
 
-    public void setCharacterStream(int parameterIndex,
-                                   java.io.Reader reader,
-                                   long length) throws SQLException {
+    public void setCharacterStream(int parameterIndex, java.io.Reader reader, long length) throws SQLException {
     }
 
-    public void setAsciiStream(int parameterIndex, java.io.InputStream x)
-            throws SQLException {
+    public void setAsciiStream(int parameterIndex, java.io.InputStream x) throws SQLException {
     }
 
-    public void setBinaryStream(int parameterIndex, java.io.InputStream x)
-            throws SQLException {
+    public void setBinaryStream(int parameterIndex, java.io.InputStream x) throws SQLException {
     }
 
     public void setCharacterStream(int parameterIndex, java.io.Reader reader) throws SQLException {
@@ -210,11 +195,9 @@ public class MockPreparedStatement extends MockStatement implements PreparedStat
     public void setClob(int parameterIndex, Reader reader) throws SQLException {
     }
 
-    public void setBlob(int parameterIndex, InputStream inputStream)
-            throws SQLException {
+    public void setBlob(int parameterIndex, InputStream inputStream) throws SQLException {
     }
 
-    public void setNClob(int parameterIndex, Reader reader)
-            throws SQLException {
+    public void setNClob(int parameterIndex, Reader reader) throws SQLException {
     }
 }

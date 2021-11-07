@@ -17,6 +17,10 @@ package cn.beecp.test.mock;
 
 import java.sql.*;
 
+/**
+ * @author Chris.Liao
+ * @version 1.0
+ */
 public class MockStatement extends MockBase implements Statement {
     MockResultSet resultSet;
     MockConnection connection;
@@ -75,7 +79,6 @@ public class MockStatement extends MockBase implements Statement {
     }
 
     public void cancel() throws SQLException {
-
     }
 
     public SQLWarning getWarnings() throws SQLException {
@@ -83,11 +86,9 @@ public class MockStatement extends MockBase implements Statement {
     }
 
     public void clearWarnings() throws SQLException {
-
     }
 
     public void setCursorName(String name) throws SQLException {
-
     }
 
     public boolean execute(String sql) throws SQLException {
@@ -111,7 +112,6 @@ public class MockStatement extends MockBase implements Statement {
     }
 
     public void setFetchDirection(int direction) throws SQLException {
-
     }
 
     public int getFetchSize() throws SQLException {
@@ -180,12 +180,10 @@ public class MockStatement extends MockBase implements Statement {
         return false;
     }
 
-    public void setPoolable(boolean poolable)
-            throws SQLException {
+    public void setPoolable(boolean poolable) throws SQLException {
     }
 
     public void closeOnCompletion() throws SQLException {
-
     }
 
     public boolean isCloseOnCompletion() throws SQLException {

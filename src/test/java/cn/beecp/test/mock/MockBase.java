@@ -18,6 +18,10 @@ package cn.beecp.test.mock;
 import java.sql.SQLException;
 import java.sql.Wrapper;
 
+/**
+ * @author Chris.Liao
+ * @version 1.0
+ */
 public class MockBase implements Wrapper, AutoCloseable {
     private boolean isClosed = false;
 

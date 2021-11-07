@@ -30,7 +30,7 @@ import java.util.Properties;
 public class PropertiesFileLoadTest extends TestCase {
     //private final String ConfigedUrl="jdbc:mysql://localhost/test";
     //private final String ConfigedDriver="com.mysql.cj.jdbc.Driver";
-    private final String ConfigUrl = "jdbc:bee://localhost/test/mockdb";
+    private final String ConfigUrl = "jdbc:beecp://localhost/testdb";
     private final String ConfigDriver = "cn.beecp.test.mock.MockDriver";
 
     public void test() throws Exception {

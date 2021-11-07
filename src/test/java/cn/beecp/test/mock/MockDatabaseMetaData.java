@@ -17,6 +17,10 @@ package cn.beecp.test.mock;
 
 import java.sql.*;
 
+/**
+ * @author Chris.Liao
+ * @version 1.0
+ */
 public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
     private MockConnection connection;
 
@@ -481,49 +485,37 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
         return false;
     }
 
-    public boolean supportsTransactionIsolationLevel(int level)
-            throws SQLException {
+    public boolean supportsTransactionIsolationLevel(int level) throws SQLException {
         return false;
     }
 
-    public boolean supportsDataDefinitionAndDataManipulationTransactions()
-            throws SQLException {
+    public boolean supportsDataDefinitionAndDataManipulationTransactions() throws SQLException {
         return false;
     }
 
-    public boolean supportsDataManipulationTransactionsOnly()
-            throws SQLException {
+    public boolean supportsDataManipulationTransactionsOnly() throws SQLException {
         return false;
     }
 
-    public boolean dataDefinitionCausesTransactionCommit()
-            throws SQLException {
+    public boolean dataDefinitionCausesTransactionCommit() throws SQLException {
         return false;
     }
 
-    public boolean dataDefinitionIgnoredInTransactions()
-            throws SQLException {
+    public boolean dataDefinitionIgnoredInTransactions() throws SQLException {
         return false;
     }
 
-
-    public ResultSet getProcedures(String catalog, String schemaPattern,
-                                   String procedureNamePattern) throws SQLException {
+    public ResultSet getProcedures(String catalog, String schemaPattern, String procedureNamePattern) throws SQLException {
         return new MockResultSet();
     }
 
-    public ResultSet getProcedureColumns(String catalog,
-                                         String schemaPattern,
-                                         String procedureNamePattern,
-                                         String columnNamePattern) throws SQLException {
+    public ResultSet getProcedureColumns(String catalog, String schemaPattern, String procedureNamePattern, String columnNamePattern) throws SQLException {
         return new MockResultSet();
     }
 
-    public ResultSet getTables(String catalog, String schemaPattern,
-                               String tableNamePattern, String types[]) throws SQLException {
+    public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String types[]) throws SQLException {
         return new MockResultSet();
     }
-
 
     public ResultSet getSchemas() throws SQLException {
         return new MockResultSet();
@@ -537,56 +529,39 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
         return new MockResultSet();
     }
 
-    public ResultSet getColumns(String catalog, String schemaPattern,
-                                String tableNamePattern, String columnNamePattern)
-            throws SQLException {
+    public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
         return new MockResultSet();
     }
 
-
-    public ResultSet getColumnPrivileges(String catalog, String schema,
-                                         String table, String columnNamePattern) throws SQLException {
+    public ResultSet getColumnPrivileges(String catalog, String schema, String table, String columnNamePattern) throws SQLException {
         return new MockResultSet();
     }
 
-
-    public ResultSet getTablePrivileges(String catalog, String schemaPattern,
-                                        String tableNamePattern) throws SQLException {
+    public ResultSet getTablePrivileges(String catalog, String schemaPattern, String tableNamePattern) throws SQLException {
         return new MockResultSet();
     }
 
-
-    public ResultSet getBestRowIdentifier(String catalog, String schema,
-                                          String table, int scope, boolean nullable) throws SQLException {
+    public ResultSet getBestRowIdentifier(String catalog, String schema, String table, int scope, boolean nullable) throws SQLException {
         return new MockResultSet();
     }
 
-
-    public ResultSet getVersionColumns(String catalog, String schema,
-                                       String table) throws SQLException {
+    public ResultSet getVersionColumns(String catalog, String schema, String table) throws SQLException {
         return new MockResultSet();
     }
 
-    public ResultSet getPrimaryKeys(String catalog, String schema,
-                                    String table) throws SQLException {
+    public ResultSet getPrimaryKeys(String catalog, String schema, String table) throws SQLException {
         return new MockResultSet();
     }
 
-    public ResultSet getImportedKeys(String catalog, String schema,
-                                     String table) throws SQLException {
+    public ResultSet getImportedKeys(String catalog, String schema, String table) throws SQLException {
         return new MockResultSet();
     }
 
-    public ResultSet getExportedKeys(String catalog, String schema,
-                                     String table) throws SQLException {
+    public ResultSet getExportedKeys(String catalog, String schema, String table) throws SQLException {
         return new MockResultSet();
     }
 
-
-    public ResultSet getCrossReference(
-            String parentCatalog, String parentSchema, String parentTable,
-            String foreignCatalog, String foreignSchema, String foreignTable
-    ) throws SQLException {
+    public ResultSet getCrossReference(String parentCatalog, String parentSchema, String parentTable, String foreignCatalog, String foreignSchema, String foreignTable) throws SQLException {
         return new MockResultSet();
     }
 
@@ -594,9 +569,7 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
         return new MockResultSet();
     }
 
-    public ResultSet getIndexInfo(String catalog, String schema, String table,
-                                  boolean unique, boolean approximate)
-            throws SQLException {
+    public ResultSet getIndexInfo(String catalog, String schema, String table, boolean unique, boolean approximate) throws SQLException {
         return new MockResultSet();
     }
 
@@ -604,8 +577,7 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
         return false;
     }
 
-    public boolean supportsResultSetConcurrency(int type, int concurrency)
-            throws SQLException {
+    public boolean supportsResultSetConcurrency(int type, int concurrency) throws SQLException {
         return false;
     }
 
@@ -649,9 +621,7 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
         return false;
     }
 
-    public ResultSet getUDTs(String catalog, String schemaPattern,
-                             String typeNamePattern, int[] types)
-            throws SQLException {
+    public ResultSet getUDTs(String catalog, String schemaPattern, String typeNamePattern, int[] types) throws SQLException {
         return new MockResultSet();
     }
 
@@ -671,24 +641,17 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
         return false;
     }
 
-
-    public ResultSet getSuperTypes(String catalog, String schemaPattern,
-                                   String typeNamePattern) throws SQLException {
+    public ResultSet getSuperTypes(String catalog, String schemaPattern, String typeNamePattern) throws SQLException {
         return new MockResultSet();
     }
 
-    public ResultSet getSuperTables(String catalog, String schemaPattern,
-                                    String tableNamePattern) throws SQLException {
+    public ResultSet getSuperTables(String catalog, String schemaPattern, String tableNamePattern) throws SQLException {
         return new MockResultSet();
     }
 
-
-    public ResultSet getAttributes(String catalog, String schemaPattern,
-                                   String typeNamePattern, String attributeNamePattern)
-            throws SQLException {
+    public ResultSet getAttributes(String catalog, String schemaPattern, String typeNamePattern, String attributeNamePattern) throws SQLException {
         return new MockResultSet();
     }
-
 
     public boolean supportsResultSetHoldability(int holdability) throws SQLException {
         return false;
@@ -722,7 +685,6 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
         return false;
     }
 
-
     public boolean supportsStatementPooling() throws SQLException {
         return false;
     }
@@ -747,24 +709,17 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
         return new MockResultSet();
     }
 
-    public ResultSet getFunctions(String catalog, String schemaPattern,
-                                  String functionNamePattern) throws SQLException {
+    public ResultSet getFunctions(String catalog, String schemaPattern, String functionNamePattern) throws SQLException {
         return new MockResultSet();
     }
 
-    public ResultSet getFunctionColumns(String catalog,
-                                        String schemaPattern,
-                                        String functionNamePattern,
-                                        String columnNamePattern) throws SQLException {
+    public ResultSet getFunctionColumns(String catalog, String schemaPattern, String functionNamePattern, String columnNamePattern) throws SQLException {
         return new MockResultSet();
     }
 
-    public ResultSet getPseudoColumns(String catalog, String schemaPattern,
-                                      String tableNamePattern, String columnNamePattern)
-            throws SQLException {
+    public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
         return new MockResultSet();
     }
-
 
     public boolean generatedKeyAlwaysReturned() throws SQLException {
         return false;

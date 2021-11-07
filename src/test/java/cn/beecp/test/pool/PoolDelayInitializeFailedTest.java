@@ -37,7 +37,7 @@ public class PoolDelayInitializeFailedTest extends TestCase {
         BeeDataSource ds = null;
         try {
             ds = new BeeDataSource();
-            ds.setJdbcUrl("jdbc:bee://localhost/test/mockdb2");//give valid URL
+            ds.setJdbcUrl("jdbc:beecp://localhost/testdb2");//give valid URL
             ds.setDriverClassName(JdbcConfig.JDBC_DRIVER);
             ds.setUsername(JdbcConfig.JDBC_USER);
             ds.setPassword(JdbcConfig.JDBC_PASSWORD);
