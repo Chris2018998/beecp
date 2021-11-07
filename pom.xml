@@ -10,6 +10,7 @@
     <description>A High Performance JDBC Connection Pool</description>
 
     <properties>
+        <gpg.skip>true</gpg.skip>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <sonar.organization>chris2018998</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -151,6 +152,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>1.5</version>
+                <configuration>
+		<skip>${gpg.skip}</skip>
+	       </configuration>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
