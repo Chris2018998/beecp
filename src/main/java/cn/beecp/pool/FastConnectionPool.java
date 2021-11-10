@@ -53,8 +53,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private static final BorrowerState BOWER_NORMAL = new BorrowerState();
     private static final BorrowerState BOWER_WAITING = new BorrowerState();
     private static final long spinForTimeoutThreshold = 1000L;
-    private static final int NCPUS = Runtime.getRuntime().availableProcessors();
-    private static final int maxTimedSpins = (NCPUS < 2) ? 0 : 32;
+    private static final int maxTimedSpins = Runtime.getRuntime().availableProcessors() < 2? 0 : 32;
     private static final Logger Log = LoggerFactory.getLogger(FastConnectionPool.class);
     private static final AtomicIntegerFieldUpdater<PooledConnection> ConStUpd = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class, "state");
     private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowStUpd = AtomicReferenceFieldUpdater.newUpdater(Borrower.class, Object.class, "state");
