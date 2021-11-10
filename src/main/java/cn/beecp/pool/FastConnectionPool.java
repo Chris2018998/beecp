@@ -53,6 +53,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private static final BorrowerState BOWER_NORMAL = new BorrowerState();
     private static final BorrowerState BOWER_WAITING = new BorrowerState();
     private static final long spinForTimeoutThreshold = 1000L;
+    private static final int NCPUS = Runtime.getRuntime().availableProcessors();
+    private static final int maxTimedSpins = (NCPUS < 2) ? 0 : 32;
     private static final Logger Log = LoggerFactory.getLogger(FastConnectionPool.class);
     private static final AtomicIntegerFieldUpdater<PooledConnection> ConStUpd = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class, "state");
     private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowStUpd = AtomicReferenceFieldUpdater.newUpdater(Borrower.class, Object.class, "state");
@@ -374,6 +376,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             Thread bth = b.thread;
             b.state = BOWER_NORMAL;
             waitQueue.offer(b);
+            int spinSize = (waitQueue.peek() == b) ? maxTimedSpins : 0;
 
             do {
                 final Object s = b.state;//PooledConnection,Throwable,BOWER_NORMAL
@@ -396,6 +399,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 } else {//here:(s == BOWER_NORMAL)
                     final long t = deadline - System.nanoTime();
                     if (t > spinForTimeoutThreshold) {
+                        if (spinSize > 0) {
+                            spinSize--;
+                            continue;
+                        }
                         if (BorrowStUpd.compareAndSet(b, BOWER_NORMAL, BOWER_WAITING)) {
                             if (servantTryCount.get() > 0 && servantState.get() == THREAD_WAITING && servantState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
                                 LockSupport.unpark(this);//wakeup servant thread
