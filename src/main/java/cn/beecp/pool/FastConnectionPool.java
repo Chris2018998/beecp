@@ -401,9 +401,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     if (t > spinForTimeoutThreshold) {
                         if (spinSize > 0) {
                             spinSize--;
-                            continue;
-                        }
-                        if (BorrowStUpd.compareAndSet(b, BOWER_NORMAL, BOWER_WAITING)) {
+                        } else if (BorrowStUpd.compareAndSet(b, BOWER_NORMAL, BOWER_WAITING)) {
                             if (servantTryCount.get() > 0 && servantState.get() == THREAD_WAITING && servantState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
                                 LockSupport.unpark(this);//wakeup servant thread
 
