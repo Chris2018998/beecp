@@ -28,19 +28,37 @@ import java.util.*;
  * @version 1.0
  */
 public class PoolStaticCenter {
-    public static final Logger CommonLog = LoggerFactory.getLogger(PoolStaticCenter.class);
+    public static final int CON_IDLE = 1;
+    public static final int CON_USING = 2;
+    public static final int CON_CLOSED = 3;
+    public static final int POOL_UNINIT = 1;
+    public static final int POOL_NORMAL = 2;
+    public static final int POOL_CLOSED = 3;
+    public static final int POOL_CLEARING = 4;
+    public static final int THREAD_WORKING = 1;
+    public static final int THREAD_WAITING = 2;
+    public static final int THREAD_EXIT = 3;
+    public static final String DESC_RM_INIT = "init";
+    public static final String DESC_RM_BAD = "bad";
+    public static final String DESC_RM_IDLE = "idle";
+    public static final String DESC_RM_CLOSED = "closed";
+    public static final String DESC_RM_CLEAR = "clear";
+    public static final String DESC_RM_DESTROY = "destroy";
+    public static final BorrowerState BOWER_NORMAL = new BorrowerState();
+    public static final BorrowerState BOWER_WAITING = new BorrowerState();
+
+    public static final String DS_Config_Prop_Separator_MiddleLine = "-";
+    public static final String DS_Config_Prop_Separator_UnderLine = "_";
+    public static final XAException XaConnectionClosedException = new XAException("No operations allowed after connection closed");
     public static final SQLTimeoutException RequestTimeoutException = new SQLTimeoutException("Request timeout");
     public static final SQLException RequestInterruptException = new SQLException("Request interrupted");
     public static final SQLException PoolCloseException = new SQLException("Pool has shut down or in clearing");
-    public static final XAException XaConnectionClosedException = new XAException("No operations allowed after connection closed");
     public static final SQLException ConnectionClosedException = new SQLException("No operations allowed after connection closed");
     public static final SQLException StatementClosedException = new SQLException("No operations allowed after statement closed");
     public static final SQLException ResultSetClosedException = new SQLException("No operations allowed after resultSet closed");
     public static final SQLException AutoCommitChangeForbiddenException = new SQLException("Execute 'commit' or 'rollback' before this operation");
     public static final SQLException DriverNotSupportNetworkTimeoutException = new SQLException("Driver not support 'networkTimeout'");
-    public static final String DS_Config_Prop_Separator_MiddleLine = "-";
-    public static final String DS_Config_Prop_Separator_UnderLine = "_";
-
+    public static final Logger CommonLog = LoggerFactory.getLogger(PoolStaticCenter.class);
     //*********************************************** 1 **************************************************************//
     static final Connection CLOSED_CON = (Connection) Proxy.newProxyInstance(
             PoolStaticCenter.class.getClassLoader(),
@@ -106,6 +124,14 @@ public class PoolStaticCenter {
         }
     }
 
+    static final Connection createProxyConnection(final PooledConnection p, final Borrower b) throws SQLException {
+        throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
+    }
+
+    static final ResultSet createProxyResultSet(final ResultSet raw, final ProxyStatementBase owner, final PooledConnection p) throws SQLException {
+        throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
+    }
+
     static final void validateTestSql(Connection rawCon, Statement st, String testSql, boolean isDefaultAutoCommit) throws SQLException {
         boolean changed = false;
         try {
@@ -124,16 +150,7 @@ public class PoolStaticCenter {
         }
     }
 
-    static final Connection createProxyConnection(final PooledConnection p, final Borrower b) throws SQLException {
-        throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
-    }
-
-    static final ResultSet createProxyResultSet(final ResultSet raw, final ProxyStatementBase owner, final PooledConnection p) throws SQLException {
-        throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
-    }
-
     //*********************************************** 2 **************************************************************//
-
     public static final String trimString(String value) {
         return value == null ? null : value.trim();
     }
@@ -151,9 +168,6 @@ public class PoolStaticCenter {
         }
         return true;
     }
-
-
-    //*********************************************** 3 **************************************************************//
 
     /**
      * get config item value by property name,which support three format:
@@ -173,6 +187,9 @@ public class PoolStaticCenter {
             value = readConfig(configProperties, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_UnderLine));
         return value;
     }
+
+
+    //*********************************************** 3 **************************************************************//
 
     public final static String readConfig(Properties configProperties, String propertyName) {
         String value = configProperties.getProperty(propertyName);
@@ -315,6 +332,10 @@ public class PoolStaticCenter {
                 throw new BeeDataSourceConfigException("Failed to instantiated class:" + text, e);
             }
         }
+    }
+
+    //BORROWER STATE
+    static final class BorrowerState {
     }
 
     static final class ProxyConnectionCloseTask implements Runnable {

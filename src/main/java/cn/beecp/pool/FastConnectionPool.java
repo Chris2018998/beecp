@@ -34,26 +34,8 @@ import static cn.beecp.pool.PoolStaticCenter.*;
  * @version 1.0
  */
 public final class FastConnectionPool extends Thread implements ConnectionPool, ConnectionPoolJmxBean, PooledConnectionTransferPolicy, PooledConnectionValidTest {
-    public static final int CON_CLOSED = 3;
-    private static final int CON_IDLE = 1;
-    private static final int CON_USING = 2;
-    private static final int POOL_UNINIT = 1;
-    private static final int POOL_NORMAL = 2;
-    private static final int POOL_CLOSED = 3;
-    private static final int POOL_CLEARING = 4;
-    private static final int THREAD_WORKING = 1;
-    private static final int THREAD_WAITING = 2;
-    private static final int THREAD_EXIT = 3;
-    private static final String DESC_RM_INIT = "init";
-    private static final String DESC_RM_BAD = "bad";
-    private static final String DESC_RM_IDLE = "idle";
-    private static final String DESC_RM_CLOSED = "closed";
-    private static final String DESC_RM_CLEAR = "clear";
-    private static final String DESC_RM_DESTROY = "destroy";
-    private static final BorrowerState BOWER_NORMAL = new BorrowerState();
-    private static final BorrowerState BOWER_WAITING = new BorrowerState();
     private static final long spinForTimeoutThreshold = 1000L;
-    private static final int maxTimedSpins = Runtime.getRuntime().availableProcessors() < 2? 0 : 32;
+    private static final int maxTimedSpins = Runtime.getRuntime().availableProcessors() < 2 ? 0 : 32;
     private static final Logger Log = LoggerFactory.getLogger(FastConnectionPool.class);
     private static final AtomicIntegerFieldUpdater<PooledConnection> ConStUpd = AtomicIntegerFieldUpdater.newUpdater(PooledConnection.class, "state");
     private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowStUpd = AtomicReferenceFieldUpdater.newUpdater(Borrower.class, Object.class, "state");
@@ -840,10 +822,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *                        6: Pool some inner classes(7)                                     *
      *                                                                                        *
      ******************************************************************************************/
-
-    //BORROWER STATE
-    private static final class BorrowerState {
-    }
 
     private static final class PoolThreadThreadFactory implements ThreadFactory {
         private String thName;
