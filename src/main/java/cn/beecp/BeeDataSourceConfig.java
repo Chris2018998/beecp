@@ -102,6 +102,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private String xaConnectionFactoryClassName;
     //extra properties for jdbc driver to connect db
     private Properties connectProperties = new Properties();
+
     //pool implementation class name
     private String poolImplementClassName;
     //boolean indicator,true:register dataSource to jmx
@@ -409,6 +410,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         }
     }
 
+    //*********************************************** 6 **************************************************************//
     public String getPoolImplementClassName() {
         return poolImplementClassName;
     }
@@ -438,7 +440,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
 
-    //*********************************************** 6 **************************************************************//
+    //*********************************************** 7 **************************************************************//
     void copyTo(BeeDataSourceConfig config) {
         //1:primitive type copy
         String fieldName = "";

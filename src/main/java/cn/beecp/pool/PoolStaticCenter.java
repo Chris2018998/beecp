@@ -28,22 +28,27 @@ import java.util.*;
  * @version 1.0
  */
 public class PoolStaticCenter {
+    //connection state
     public static final int CON_IDLE = 1;
     public static final int CON_USING = 2;
     public static final int CON_CLOSED = 3;
+    //pool state
     public static final int POOL_UNINIT = 1;
     public static final int POOL_NORMAL = 2;
     public static final int POOL_CLOSED = 3;
+    //pool thread state
     public static final int POOL_CLEARING = 4;
     public static final int THREAD_WORKING = 1;
     public static final int THREAD_WAITING = 2;
     public static final int THREAD_EXIT = 3;
+    //remove reason
     public static final String DESC_RM_INIT = "init";
     public static final String DESC_RM_BAD = "bad";
     public static final String DESC_RM_IDLE = "idle";
     public static final String DESC_RM_CLOSED = "closed";
     public static final String DESC_RM_CLEAR = "clear";
     public static final String DESC_RM_DESTROY = "destroy";
+    //borrower state
     public static final BorrowerState BOWER_NORMAL = new BorrowerState();
     public static final BorrowerState BOWER_WAITING = new BorrowerState();
 
@@ -59,6 +64,7 @@ public class PoolStaticCenter {
     public static final SQLException AutoCommitChangeForbiddenException = new SQLException("Execute 'commit' or 'rollback' before this operation");
     public static final SQLException DriverNotSupportNetworkTimeoutException = new SQLException("Driver not support 'networkTimeout'");
     public static final Logger CommonLog = LoggerFactory.getLogger(PoolStaticCenter.class);
+
     //*********************************************** 1 **************************************************************//
     static final Connection CLOSED_CON = (Connection) Proxy.newProxyInstance(
             PoolStaticCenter.class.getClassLoader(),

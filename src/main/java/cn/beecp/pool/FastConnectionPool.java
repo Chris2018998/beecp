@@ -65,6 +65,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private PooledConnectionTransferPolicy transferPolicy;
     private ConnectionPoolHook exitHook;
     private BeeDataSourceConfig poolConfig;
+
     private int semaphoreSize;
     private PoolSemaphore semaphore;
     private RawConnectionFactory conFactory;
@@ -216,6 +217,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private synchronized void removePooledConn(final PooledConnection p, final String removeType) {
         if (printRuntimeLog)
             Log.info("BeeCP({}))begin to remove pooled connection:{},reason:{}", poolName, p, removeType);
+
         p.onBeforeRemove();
         int l = conArray.length;
         PooledConnection[] arrayNew = new PooledConnection[l - 1];
@@ -317,7 +319,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      ******************************************************************************************/
 
     /**
-     * Method-2.1: Get one idle connection from pool,if not found,then wait util other borrower release one or wait timeout
+     * Method-2.1:Get one idle connection from pool,if not found,then wait util other borrower release one or wait timeout
      *
      * @return pooled connection
      * @throws SQLException if failed(create failed,interrupt,wait timeout),then throw failed cause exception
@@ -506,16 +508,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *                                                                                        *
      ******************************************************************************************/
 
-    /**
-     * Method-3.1: check whether exists borrows under semaphore
-     */
+    //Method-3.1: check whether exists borrows under semaphore
     private final boolean existBorrower() {
         return semaphoreSize > semaphore.availablePermits();
     }
 
-    /**
-     * Method-3.2 shutdown two work threads in pool
-     */
+    //Method-3.2 shutdown two work threads in pool
     private void shutdownPoolThread() {
         int curState = servantState.get();
         servantState.set(THREAD_EXIT);
@@ -526,9 +524,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         if (curState == THREAD_WAITING) LockSupport.unpark(idleScanThread);
     }
 
-    /**
-     * Method-3.3: pool servant thread run method
-     */
+    //Method-3.3: pool servant thread run method
     public void run() {
         while (poolState.get() != POOL_CLOSED) {
             while (servantState.get() == THREAD_WORKING && servantTryCount.get() > 0) {
@@ -593,16 +589,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *                                                                                        *
      ******************************************************************************************/
 
-    /**
-     * Method-4.1: remove all connections from pool
-     */
+    //Method-4.1: remove all connections from pool
     public void clearAllConnections() {
         clearAllConnections(false);
     }
 
-    /**
-     * Method-4.2: remove all connections from pool
-     */
+    //Method-4.2: remove all connections from pool
     public void clearAllConnections(boolean force) {
         if (poolState.compareAndSet(POOL_NORMAL, POOL_CLEARING)) {
             Log.info("BeeCP({})begin to remove connections", poolName);
@@ -612,9 +604,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    /**
-     * Method-4.3: remove all connections from pool
-     */
+    //Method-4.3: remove all connections from pool
     private void removeAllConnections(boolean force, String source) {
         semaphore.interruptWaitingThreads();
         while (!waitQueue.isEmpty()) transferException(PoolCloseException);
@@ -641,16 +631,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         } // while
     }
 
-    /**
-     * Method-4.4: closed check
-     */
+    //Method-4.4: closed check
     public boolean isClosed() {
         return poolState.get() == POOL_CLOSED;
     }
 
-    /**
-     * Method-4.5: close pool
-     */
+    //Method-4.5: close pool
     public void close() throws SQLException {
         do {
             int poolStateCode = poolState.get();
@@ -683,9 +669,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *                                                                                        *
      ******************************************************************************************/
 
-    /**
-     * Method-5.1: pool monitor vo
-     */
+    //Method-5.1: pool monitor vo
     public ConnectionPoolMonitorVo getMonitorVo() {
         int totSize = getConnTotalSize();
         int idleSize = getConnIdleSize();
