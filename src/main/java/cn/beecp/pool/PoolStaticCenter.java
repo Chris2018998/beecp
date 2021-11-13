@@ -66,7 +66,7 @@ public class PoolStaticCenter {
     public static final Logger CommonLog = LoggerFactory.getLogger(PoolStaticCenter.class);
 
     //*********************************************** 1 **************************************************************//
-    static final Connection CLOSED_CON = (Connection) Proxy.newProxyInstance(
+    public static final Connection CLOSED_CON = (Connection) Proxy.newProxyInstance(
             PoolStaticCenter.class.getClassLoader(),
             new Class[]{Connection.class},
             new InvocationHandler() {
@@ -79,7 +79,7 @@ public class PoolStaticCenter {
                 }
             }
     );
-    static final CallableStatement CLOSED_CSTM = (CallableStatement) Proxy.newProxyInstance(
+    public static final CallableStatement CLOSED_CSTM = (CallableStatement) Proxy.newProxyInstance(
             PoolStaticCenter.class.getClassLoader(),
             new Class[]{CallableStatement.class},
             new InvocationHandler() {
@@ -92,7 +92,7 @@ public class PoolStaticCenter {
                 }
             }
     );
-    static final ResultSet CLOSED_RSLT = (ResultSet) Proxy.newProxyInstance(
+    public static final ResultSet CLOSED_RSLT = (ResultSet) Proxy.newProxyInstance(
             PoolStaticCenter.class.getClassLoader(),
             new Class[]{ResultSet.class},
             new InvocationHandler() {
@@ -106,7 +106,7 @@ public class PoolStaticCenter {
             }
     );
 
-    static final void oclose(final ResultSet r) {
+    public static final void oclose(final ResultSet r) {
         try {
             r.close();
         } catch (Throwable e) {
@@ -114,7 +114,7 @@ public class PoolStaticCenter {
         }
     }
 
-    static final void oclose(final Statement s) {
+    public static final void oclose(final Statement s) {
         try {
             s.close();
         } catch (Throwable e) {
@@ -122,7 +122,7 @@ public class PoolStaticCenter {
         }
     }
 
-    static final void oclose(final Connection c) {
+    public static final void oclose(final Connection c) {
         try {
             c.close();
         } catch (Throwable e) {
@@ -130,11 +130,11 @@ public class PoolStaticCenter {
         }
     }
 
-    static final Connection createProxyConnection(final PooledConnection p, final Borrower b) throws SQLException {
+    public static final Connection createProxyConnection(final PooledConnection p, final Borrower b) throws SQLException {
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
     }
 
-    static final ResultSet createProxyResultSet(final ResultSet raw, final ProxyStatementBase owner, final PooledConnection p) throws SQLException {
+    public static final ResultSet createProxyResultSet(final ResultSet raw, final ProxyStatementBase owner, final PooledConnection p) throws SQLException {
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
     }
 

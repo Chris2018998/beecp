@@ -29,14 +29,15 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
  * @version 1.0
  */
 public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJmxBean {
-    private static AtomicInteger poolNameIndex = new AtomicInteger(1);
-    private final ConnectionPoolMonitorVo monitorVo = new ConnectionPoolMonitorVo();
+    private static final AtomicInteger poolNameIndex = new AtomicInteger(1);
+    private static final ConnectionPoolMonitorVo monitorVo = new ConnectionPoolMonitorVo();
+
+    private String poolName = "";
+    private String poolMode = "";
     private long defaultMaxWait;
     private Semaphore borrowSemaphore;
     private BeeDataSourceConfig poolConfig;
     private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
-    private String poolName = "";
-    private String poolMode = "";
 
     /**
      * initialize pool with configuration
