@@ -4,22 +4,21 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.chris2018998</groupId>
     <artifactId>beecp</artifactId>
-    <version>3.2.9</version>
+    <version>3.3.0</version>
     <name>beecp</name>
     <url>https://github.com/Chris2018998/BeeCP</url>
-    <description>A High Performance JDBC Connection Pool</description>
+    <description>JDBC Connection Pool Implementation</description>
 
     <properties>
         <gpg.skip>true</gpg.skip>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <sonar.organization>chris2018998</sonar.organization>
-        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
     <licenses>
-         <license>
-            <name>Licensed under GNU General Public License version 3.0</name>
-            <url>http://www.gnu.org/licenses/gpl-3.0.html</url>
+        <license>
+            <name>Licensed under GNU Lesser General Public License v2.1</name>
+            <url>http://www.gnu.de/documents/lgpl-2.1.en.html</url>
         </license>
     </licenses>
     <developers>
@@ -153,8 +152,8 @@
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>1.5</version>
                 <configuration>
-		<skip>${gpg.skip}</skip>
-	       </configuration>
+                    <skip>${gpg.skip}</skip>
+                </configuration>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
