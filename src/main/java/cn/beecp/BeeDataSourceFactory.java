@@ -2,7 +2,7 @@
  * Copyright(C) Chris2018998
  * Contact:Chris2018998@tom.com
  *
- * Licensed under GNU General Public License version 3.0.
+ * Licensed under GNU Lesser General Public License v2.1
  */
 package cn.beecp;
 
