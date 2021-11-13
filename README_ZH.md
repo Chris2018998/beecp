@@ -3,9 +3,9 @@
 
 <p align="left">
  <a><img src="https://img.shields.io/badge/JDK-1.7+-green.svg"></a>
- <a><img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg"></a>
+ <a><img src="https://img.shields.io/badge/License-LGPL%202.1-blue.svg"></a>
  <a><img src="https://maven-badges.herokuapp.com/maven-central/com.github.chris2018998/beecp/badge.svg"></a>
- <a><img src="https://img.shields.io/github/v/release/Chris2018998/beecp.svg"></a> 
+ <a><img src="https://img.shields.io/github/v/release/Chris2018998/beecp.svg"></a>  
 </p> 
 
 ## :coffee: 简介
