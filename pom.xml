@@ -10,7 +10,7 @@
     <description>JDBC Connection Pool Implementation</description>
 
     <properties>
-        <gpg.skip>true</gpg.skip>
+        <gpg.skip>false</gpg.skip>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <sonar.organization>chris2018998</sonar.organization>
     </properties>
