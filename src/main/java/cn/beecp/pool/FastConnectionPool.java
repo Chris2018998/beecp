@@ -258,7 +258,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         int defaultIsolationCode = poolConfig.getDefaultTransactionIsolationCode();
         if (isBlank(defaultCatalog))defaultCatalog = rawCon.getCatalog();
         if (isBlank(defaultSchema))defaultSchema = rawCon.getSchema();
-        if (defaultIsolationCode == NOT_SET_ISOLATION_CODE)
+        if (defaultIsolationCode == -999)
             defaultIsolationCode = rawCon.getTransactionIsolation();
         this.clonePooledConn = new PooledConnection(this,
                 poolConfig.isDefaultAutoCommit(),
