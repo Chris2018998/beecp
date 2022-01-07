@@ -265,7 +265,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 poolConfig.isDefaultReadOnly(),
                 defaultCatalog,
                 defaultSchema,
-                defaultTransactionIsolation,
+                defaultIsolationCode,
                 supportNetworkTimeout,
                 defaultNetworkTimeout,
                 networkTimeoutExecutor);
