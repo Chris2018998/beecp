@@ -116,7 +116,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             semaphoreSize = poolConfig.getBorrowSemaphoreSize();
             semaphore = new PoolSemaphore(semaphoreSize, poolConfig.isFairMode());
             networkTimeoutExecutor = new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS,
-                    new LinkedBlockingQueue<Runnable>(), new PoolThreadThreadFactory("networkTimeoutRestThread"));
+                    new LinkedBlockingQueue<Runnable>(poolMaxSize), new PoolThreadThreadFactory("networkTimeoutRestThread"));
             networkTimeoutExecutor.allowCoreThreadTimeOut(true);
             createInitConnections(poolConfig.getInitialSize());
 
@@ -127,7 +127,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     poolName,
                     poolMode,
                     conArray.length,
-                    config.getMaxActive(),
+                    poolMaxSize,
                     semaphoreSize,
                     poolConfig.getMaxWait(),
                     poolConfig.getDriverClassName());
@@ -252,14 +252,19 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (printRuntimeLog)
                 Log.warn("BeeCP({})driver not support 'networkTimeout',cause:", poolName, e);
         }
-
-        int defaultTransactionIsolation = poolConfig.getDefaultTransactionIsolationCode();
-        if (defaultTransactionIsolation == -999) defaultTransactionIsolation = rawCon.getTransactionIsolation();
+		
+        String defaultCatalog = poolConfig.getDefaultCatalog();
+        String defaultSchema = poolConfig.getDefaultSchema();
+        int defaultIsolationCode = poolConfig.getDefaultTransactionIsolationCode();
+        if (isBlank(defaultCatalog))defaultCatalog = rawCon.getCatalog();
+        if (isBlank(defaultSchema))defaultSchema = rawCon.getSchema();
+        if (defaultIsolationCode == NOT_SET_ISOLATION_CODE)
+            defaultIsolationCode = rawCon.getTransactionIsolation();
         this.clonePooledConn = new PooledConnection(this,
                 poolConfig.isDefaultAutoCommit(),
                 poolConfig.isDefaultReadOnly(),
-                poolConfig.getDefaultCatalog(),
-                poolConfig.getDefaultSchema(),
+                defaultCatalog,
+                defaultSchema,
                 defaultTransactionIsolation,
                 supportNetworkTimeout,
                 defaultNetworkTimeout,
@@ -425,7 +430,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         int c;
         do {
             c = servantTryCount.get();
-            if (c >= poolMaxSize) return;
+            if (c >= semaphoreSize) return;
         } while (!servantTryCount.compareAndSet(c, c + 1));
         if (!waitQueue.isEmpty() && servantState.get() == THREAD_WAITING && servantState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
             LockSupport.unpark(this);
