@@ -19,7 +19,7 @@ Java7或更高
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>3.3.0</version>
+   <version>3.3.1</version>
 </dependency>
 ```
 Java6
