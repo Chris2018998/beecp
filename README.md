@@ -42,29 +42,15 @@ Java6
 4：Connection asynchronized-add thread,which can be triggerred by releaser or waiter
 
 
-## :cherries: Compare to HikariCP
+## :cherries: Techonolgy
 
-|    Item      |    BeeCP                                                    |      HikariCP                                             |  
-| -----------  |----------------------------------------------------------   | ----------------------------------------------------------|          
-|Key           |ThreadLocal + semaphore+ ConcurrentLinkedQueue +Thread       |FastList + ConcurrentBag + ThreadPoolExecutor              | 
-|Similarity    |CAS,Proxy pre-generation,Driver statement cache,Jmx          |                                                           |
-|Difference    |Balance mode,Hold-timeout,Support XA,Pool clean              |Pool suspend,Config runtime change                         |
-|File          |32 source files,Jar package 93KB                             |44 source files,Jar package 158KB                          | 
-|Performance   |Higher than 40%                                              |                                                           |
-
-Which defects of HikariCP?
- 
-1：<a href="https://my.oschina.net/u/3918073/blog/4645061">Closed preparedStatements can be activation, when using MySQ-driver</a> 
-
-2：<a href="https://my.oschina.net/u/3918073/blog/5053082">When database down or network failed, getConnection response time == 'connectionTimeout'(if configed value is large,what happen?) </a>
-
-3：<a href="https://my.oschina.net/u/3918073/blog/5171229">Exists transaction leak,when using 'setSavepoint' on connection</a>
-
-.....
-
-
-**Conclusion:** faster, simpler, reliabler
-
+|    Item      |    BeeCP                                                    |   
+| -----------  |----------------------------------------------------------   |           
+|Key           |ThreadLocal + semaphore+ ConcurrentLinkedQueue +Thread       | 
+|Similarity    |CAS,Proxy pre-generation,Driver statement cache,Jmx          |                                                          
+|Difference    |Balance mode,Hold-timeout,Support XA,Pool clean              | 
+|File          |32 source files,Jar package 93KB                             | 
+|Performance   |Higher than 40%                                              |                                                            
 
 
 ## :tractor: Demo
