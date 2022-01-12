@@ -42,25 +42,15 @@ Java6
 4：双向异步候补，消除等待者与传送者的时间差错位
 
 
-## :cherries: 比较HikariCP池
+## :cherries: 技术点
 
-|     比较项    |     BeeCP                                                   |      HikariCP                                             |  
-| -----------  |----------------------------------------------------------   | ----------------------------------------------------------|          
-|关键技术       |ThreadLocal + 信号量 + ConcurrentLinkedQueue +Thread          |FastList + ConcurrentBag + ThreadPoolExecutor              | 
-|相似点         |CAS使用，代理预生成，使用驱动自带Statement缓存                    |                                                           |
-|差异点         |支持平衡模式，支持XA，强制回收持有不用的连接                       |                                                           |
-|文件           |32个源码文件，Jar包93KB                                        |44个源码文件，Jar包158KB                                     | 
-|性能           |总体性能高40%以上（光连接池基准）                                |                                                           |
-
-HikariCP有哪些缺陷？
-
-1：<a href="https://my.oschina.net/u/3918073/blog/4645061">MySQL驱动应用,已经关闭的PreparedStatement居然可以复活？</a> 
-
-2：<a href="https://my.oschina.net/u/3918073/blog/5053082">数据库Down机或网络问题，反应迟缓(俗称等你一万年)</a>
-
-3：<a href="https://my.oschina.net/u/3918073/blog/5171229">事务性漏洞问题</a>
-
-.....
+|     比较项    |     BeeCP                                                   |       
+| -----------  |----------------------------------------------------------   |      
+|关键技术       |ThreadLocal + 信号量 + ConcurrentLinkedQueue +Thread          | 
+|相似点         |CAS使用，代理预生成，使用驱动自带Statement缓存                    |                                                           
+|差异点         |支持平衡模式，支持XA，强制回收持有不用的连接                       |                                                            
+|文件           |32个源码文件，Jar包93KB                                        | 
+|性能           |总体性能高40%以上（光连接池基准）                                |                                                    
 
 
 ## :tractor: 使用
