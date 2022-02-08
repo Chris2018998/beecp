@@ -1,5 +1,5 @@
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/README.md">English</a>|<a href="https://github.com/Chris2018998/BeeCP/blob/master/README_ZH.md">中文</a>
-<img height="20px" width="20px" align="bottom" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/bee.png"></img>
+![图片](https://user-images.githubusercontent.com/32663325/153004295-35c77bdf-c857-4486-8a80-272ef608c0ed.png)
 
 <p align="left">
  <a><img src="https://img.shields.io/badge/JDK-1.7+-green.svg"></a>
@@ -152,4 +152,4 @@ public class DataSourceConfig {
 
 如果您觉得此作品不错，请捐赠我们喝杯咖啡吧，在此表示感谢^_^。
 
-<img height="50%" width="50%" src="https://github.com/Chris2018998/BeeCP/blob/master/doc/individual/donate.png"> 
+![图片](https://user-images.githubusercontent.com/32663325/153004175-cb7dd622-03f8-47ae-a454-15d5fc82aebb.png)
