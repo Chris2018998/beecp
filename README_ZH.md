@@ -118,61 +118,35 @@ public class DataSourceConfig {
 
 ## :book: 配置项
 
-###### :capital_abcd: poolName 
-
-池的名称配置，如果未配置，系统自动生成，格式为：FastPool-x 
-
-###### :1234: fairMode
-
-池支持公平与竞争两种模式，默认为竞争模式；公平模式下，借用者获取连接是先到先得原则
-
-###### :capital_abcd: initialSize
-
-池的初始化时，构建连接数量，如果为0，池默认创建1个
-
-###### :1234: mxActive
-
-池内连接最大活动数，默认值10
-
-###### :capital_abcd: borrowSemaphoreSize
-
-池内信号量大小，默认为CPU核心数
-
-###### :1234: defaultAutoCommit
-
-连接上AutoCommit的属性默认值设置，默认为true
-
-###### :capital_abcd: defaultTransactionIsolationCode
-
-连接的TransactionIsolation事务隔离等级设置，未设置时则默认值则以驱动为准
-
-###### :1234: maxWait
-
-获取连接时，借用者的最大等待时间，时间单位为毫秒，默认值8000
-
-###### :capital_abcd: idleTimeout
-
-连接闲置超时时间，超过则被移除，时间单位为毫秒，默认值18000
-
-###### :1234: holdTimeout
-
-已被借用的连接，若指定时间内未活动（执行SQL），则强制回收，默认值18000
-
-###### :capital_abcd: validTestSql
-
-连接活性测试Sql查询语句，建议不要嵌入过程语句，必须提供
-
-###### :1234: validTestTimeout
-
-连连接活性测试反应时间范围，时间单位为秒，默认为3秒
-
-###### :capital_abcd: validAssumeTime
-
-连连接活性测试间隔时间，当前距离上次活动内则假定活动是有效的，默认500毫秒
-
-
-:point_right: <a href="https://github.com/Chris2018998/BeeCP/wiki/Configuration--List">更多配置项</a>
-
+|项名                              |描述                                   |默认值                               |
+| ---------------------------------| -------------------------------------| -----------------------------------|
+|username                          |JDBC用户名                             |空                                  |
+|password                          |JDBC密码                               |空                                  |
+|jdbcUrl                           |JDBC连接URL                            |空                                  |
+|driverClassName                   |JDBC驱动类名                            |空                                  |
+|poolName	                   |池名，如果未赋值则会自动产生一个                 |空                                  |
+|fairMode                          |是否使用公平模式                         |false（竞争模式）                     | 
+|initialSize                       |连接池初始大小                           |0                                   |
+|maxActive                         |连接池最大个数                           |10                                  | 
+|borrowSemaphoreSize               |信号量许可大小                           |min(最大连接数/2,CPU核心数）           |
+|defaultAutoCommit                 |AutoComit默认值,未配置则从第一个连接上读取默认值|空                               |
+|defaultTransactionIsolationCode   |事物隔离代码，未设置时则从第一个连接上读取默认值|空                                |
+|defaultCatalog                    |Catalog默认值 ,未配置则从第一个连接上读取默认值|空                                |
+|defaultSchema                     |Schema默认值,未配置则从第一个连接上读取默认值|空                                  |
+|defaultReadOnly                   |ReadOnly默认值 ,未配置则从第一个连接上读取默认值|空                               |
+|maxWait                           |连接借用等待最大时间(毫秒)                |8000                                |
+|idleTimeout                       |连接闲置最大时间(毫秒)                    |18000                               |  
+|holdTimeout                       |连接被持有不用最大允许时间(毫秒)           |18000                               |  
+|validTestSql                      |连接有效性测试SQL语句                     |SELECT 1                            |  
+|validTestTimeout                  |连接有效性测试超时时间(秒)                 |3                                   |  
+|validAssumeTime                   |连接测试的间隔时间(毫秒)                   |500                                 |  
+|forceCloseUsingOnClear            |是否直接关闭使用中连接                     |false                               |
+|delayTimeForNextClear             |延迟清理的时候时间（毫秒）                 |3000                                |                   
+|timerCheckInterval                |闲置扫描线程间隔时间(毫秒)                 |18000                               |
+|connectionFactoryClassName        |自定义的JDBC连接工作类名                   |空                                  |
+|enableJmx                         |JMX监控支持开关                           |false                               | 
+|printConfigInfo                   |是否打印配置信息                           |false                               | 
+|printRuntimeLog                   |是否打印运行时日志                         |false                               | 
 
 ## :sparkling_heart: 捐助
 
