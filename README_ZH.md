@@ -35,10 +35,32 @@ BeeCP定位：一款管理数据库连接的容器产品，其原理与图书馆
 ![图片](https://user-images.githubusercontent.com/32663325/153000242-33211226-ce18-4dca-8487-e5ac1c7cac67.png)
 
 
-。。。。。。待续
+## 四：扩展接口
+### 1：连接工厂接口
+对于连接的构造，产品提供了两个工厂接口，可供外部扩展，如下：
+ 
+![图片](https://user-images.githubusercontent.com/32663325/153597017-2f3ba479-8f3f-4a82-949b-275068c287cd.png)
+ 
+数据源配置类(BeeDataSourceConfig)中有一个工厂类名配置项，支持4种类型
+
+![图片](https://user-images.githubusercontent.com/32663325/153597130-a22c0d92-2899-46db-b982-35b998434eae.png)
+ 
+参考例子
+
+![图片](https://user-images.githubusercontent.com/32663325/153597143-3a8e45f8-4894-4e98-913d-63994d3486c6.png)
+
+
+### 2：连接密文解密
+JDBC驱动连接数据库时，通常会需要使用密码，但是密码可能以明文的形式存在文件或数据库中，可能存在泄露的风险，BeeCP产品给出一个解决方案：将连接密码进行加密处理，使用时再实时对密文进行解密，产品内部提供了一个密文解密工具类，用户扩展该类，实现解密过程，使用时将实现类名注入配置中。
+ 
+
+![图片](https://user-images.githubusercontent.com/32663325/153597176-e48382b9-7395-4c6c-9f34-425072d7c510.png)
 
 
 
+## 五：功能架构图
+
+![图片](https://user-images.githubusercontent.com/32663325/153597592-c7d36f14-445a-454b-9db4-2289e1f92ed6.png)
 
 
 
