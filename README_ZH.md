@@ -62,29 +62,8 @@ JDBC驱动连接数据库时，通常会需要使用密码，但是密码可能�
 
 ![图片](https://user-images.githubusercontent.com/32663325/153597592-c7d36f14-445a-454b-9db4-2289e1f92ed6.png)
 
-
-
-## :arrow_down: 下载 
-
-Java7或更高
-```xml
-<dependency>
-   <groupId>com.github.chris2018998</groupId>
-   <artifactId>beecp</artifactId>
-   <version>3.3.1</version>
-</dependency>
-```
-Java6
-```xml
-<dependency>
-   <groupId>com.github.chris2018998</groupId>
-   <artifactId>beecp</artifactId>
-   <version>1.6.10</version>
-</dependency>
-```
-
-                                              
-## :tractor: 使用
+                                           
+## :tractor: 六：如何使用
 
 使用方式与一般池大致相似，下面有两个参考例子
 
@@ -137,8 +116,28 @@ public class DataSourceConfig {
 
 :sunny: *如果项目为Springboot类型，推荐使用数据源管理工具：<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a>（无需代码开发配置即可，且自带监控界面）*
 
+## :arrow_down: 七：下载 
 
-## :book: 配置项
+Java7或更高
+```xml
+<dependency>
+   <groupId>com.github.chris2018998</groupId>
+   <artifactId>beecp</artifactId>
+   <version>3.3.1</version>
+</dependency>
+```
+Java6
+```xml
+<dependency>
+   <groupId>com.github.chris2018998</groupId>
+   <artifactId>beecp</artifactId>
+   <version>1.6.10</version>
+</dependency>
+```
+
+
+
+## :book:八：配置项
 
 |项名                              |描述                                   |默认值                               |
 | ---------------------------------| -------------------------------------| -----------------------------------|
