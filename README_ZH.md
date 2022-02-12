@@ -1,13 +1,10 @@
 <a href="https://github.com/Chris2018998/BeeCP/blob/master/README.md">English</a>|<a href="https://github.com/Chris2018998/BeeCP/blob/master/README_ZH.md">中文</a>
 ![图片](https://user-images.githubusercontent.com/32663325/153004295-35c77bdf-c857-4486-8a80-272ef608c0ed.png)
-
 <p align="left">
  <a><img src="https://img.shields.io/badge/JDK-1.7+-green.svg"></a>
  <a><img src="https://img.shields.io/badge/License-LGPL%202.1-blue.svg"></a>
  <a><img src="https://maven-badges.herokuapp.com/maven-central/com.github.chris2018998/beecp/badge.svg"></a>
- <a><img src="https://img.shields.io/github/v/release/Chris2018998/beecp.svg"></a>  
 </p> 
-
 
 ## 一：产品简介
 小蜜蜂连接池（BeeCP）是一款利用Java语言(计算机语言)开发的基础性组件, 用来帮助J2EE应用统一管理数据库的桥接对象（Connection），达到连接资源重用和提高系统性能的目标。 
