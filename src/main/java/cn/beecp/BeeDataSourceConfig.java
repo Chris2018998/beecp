@@ -102,6 +102,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private String xaConnectionFactoryClassName;
     //extra properties for jdbc driver to connect db
     private Properties connectProperties = new Properties();
+    //password decoder
+    private Class passwordDecoderClass;
+    //password decoder class name
+    private String passwordDecoderClassName;
 
     //pool implementation class name
     private String poolImplementClassName;
@@ -410,6 +414,22 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         }
     }
 
+    public Class getPasswordDecoderClass() {
+        return passwordDecoderClass;
+    }
+
+    public void setPasswordDecoderClass(Class passwordDecoderClass) {
+        this.passwordDecoderClass = passwordDecoderClass;
+    }
+
+    public String getPasswordDecoderClassName() {
+        return passwordDecoderClassName;
+    }
+
+    public void setPasswordDecoderClassName(String passwordDecoderClassName) {
+        this.passwordDecoderClassName = passwordDecoderClassName;
+    }
+
     //*********************************************** 6 **************************************************************//
     public String getPoolImplementClassName() {
         return poolImplementClassName;
@@ -466,6 +486,28 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                 CommonLog.info("{}.connectProperties.{}={}", poolName, entry.getKey(), entry.getValue());
             config.addConnectProperty((String) entry.getKey(), entry.getValue());
         }
+    }
+
+    //create PasswordDecoder instance
+    private PasswordDecoder createPasswordDecoder() throws BeeDataSourceConfigException {
+        PasswordDecoder passwordDecoder = null;
+        Class<?> passwordDecoderClass = this.passwordDecoderClass;
+        if (passwordDecoderClass == null && !isBlank(passwordDecoderClassName)) {
+            try {
+                passwordDecoderClass = Class.forName(passwordDecoderClassName);
+            } catch (Throwable e) {
+                throw new BeeDataSourceConfigException("Failed to load password decoder class:" + passwordDecoderClassName, e);
+            }
+        }
+
+        if (passwordDecoderClass != null) {
+            try {
+                passwordDecoder = (PasswordDecoder) passwordDecoderClass.newInstance();
+            } catch (Throwable e) {
+                throw new BeeDataSourceConfigException("Failed to instantiate password decoder class:" + passwordDecoderClass.getName(), e);
+            }
+        }
+        return passwordDecoder;
     }
 
     //check pool configuration
@@ -589,6 +631,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     private final RawConnectionFactory tryCreateConnectionFactory() throws BeeDataSourceConfigException, SQLException {
+        PasswordDecoder passwordDecoder = createPasswordDecoder();
         if (connectionFactory != null) return connectionFactory;
 
         if (isBlank(connectionFactoryClassName)) {
@@ -609,8 +652,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             connectProperties.putAll(this.connectProperties);
             if (!isBlank(username))
                 connectProperties.put("user", username);
-            if (!isBlank(password))
-                connectProperties.put("password", password);
+            if (!isBlank(password)) {
+                String tempPassword = password;
+                if (passwordDecoder != null) tempPassword = passwordDecoder.decode(tempPassword);
+                connectProperties.setProperty("password", tempPassword);
+            }
             return new DriverConnectionFactory(jdbcUrl, connectDriver, connectProperties);
         } else {
             try {
