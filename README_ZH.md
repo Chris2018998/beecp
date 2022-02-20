@@ -7,7 +7,7 @@
 </p> 
 
 ## 一：简介
-小蜜蜂连接池（BeeCP）是一款轻量级JDBC连接池，它是<a href="https://www.oschina.net">中国开源社区</a>优质开源作品之一，具有性能高，代码轻，稳定好的特点。
+小蜜蜂连接池（BeeCP）是一款轻量级JDBC连接池，它是<a href="https://www.oschina.net">中国开源社区</a>的优质开源作品之一，具有性能高，代码轻，稳定好的特点。
 
 + Java语言开发，具有跨平台的优点
 
@@ -31,11 +31,9 @@
 ![图片](https://user-images.githubusercontent.com/32663325/153597592-c7d36f14-445a-454b-9db4-2289e1f92ed6.png)
  
                                     
-## :tractor: 三：使用
+## :tractor:三：例子
 
-使用方式与一般池大致相似，下面有两个参考例子
-
-###### :point_right: 例子1
+ ###### :point_right: 例子1(独立应用)
 
 ```java
 BeeDataSourceConfig config = new BeeDataSourceConfig();
@@ -49,7 +47,7 @@ Connection con=ds.getConnection();
 
 ```
 
-###### :point_right: 例子2
+###### :point_right: 例子2(Springbooot)
 
 *application.properties*
 
@@ -84,7 +82,17 @@ public class DataSourceConfig {
 
 :sunny: *如果项目为Springboot类型，推荐使用数据源管理工具：<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a>（无需代码开发配置即可，且自带监控界面）*
 
-## :arrow_down: 四：下载 
+
+## :tractor:四：监控
+
+
+
+
+
+
+
+
+## :arrow_down:五：下载 
 
 Java7或更高
 ```xml
@@ -103,7 +111,7 @@ Java6
 </dependency>
 ```
 
-## 五：扩展接口
+## 六：扩展接口
 
 ###### 1：连接工厂接口
 对于连接的构造，产品提供了两个工厂接口，可供外部扩展，如下：
@@ -126,7 +134,7 @@ JDBC驱动连接数据库时，通常会需要使用密码，但是密码以明�
 ![图片](https://user-images.githubusercontent.com/32663325/153597176-e48382b9-7395-4c6c-9f34-425072d7c510.png)
 
 
-## :book:六：配置项
+## :book:七：配置项
 
 |项名                              |描述                                   |默认值                               |
 | ---------------------------------| -------------------------------------| -----------------------------------|
