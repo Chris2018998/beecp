@@ -7,7 +7,7 @@
 </p> 
 
 ## 一：简介
-小蜜蜂连接池（BeeCP）是一款轻量级JDBC连接池，它是<a href="https://www.oschina.net">中国开源社区</a>中高质量开源作品之一，具有性能高，代码轻，稳定好的特点。
+小蜜蜂连接池（BeeCP）是一款轻量级JDBC连接池，它是<a href="https://www.oschina.net">中国开源社区</a>中优质开源作品之一，具有性能高，代码轻，稳定好的特点。
 
 1：Java语言开发，具有跨平台的优点
 
@@ -91,7 +91,7 @@ Java7或更高
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>3.3.1</version>
+   <version>3.3.2</version>
 </dependency>
 ```
 Java6
