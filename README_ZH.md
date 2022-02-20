@@ -25,13 +25,32 @@
 
 + 良好的接口扩展性 
 
- 
-## 二：功能图
+
+## 二：版本下载 
+
+Java7或更高
+```xml
+<dependency>
+   <groupId>com.github.chris2018998</groupId>
+   <artifactId>beecp</artifactId>
+   <version>3.3.2</version>
+</dependency>
+```
+Java6
+```xml
+<dependency>
+   <groupId>com.github.chris2018998</groupId>
+   <artifactId>beecp</artifactId>
+   <version>1.6.10</version>
+</dependency>
+```
+
+## 三：功能图
 
 ![图片](https://user-images.githubusercontent.com/32663325/153597592-c7d36f14-445a-454b-9db4-2289e1f92ed6.png)
  
                                     
-## 三：例子
+## 四：例子
 
  ###### :point_right: 例子1(独立应用)
 
@@ -83,7 +102,7 @@ public class DataSourceConfig {
 :sunny: *如果项目为Springboot类型，推荐使用数据源管理工具：<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a>（无需代码开发配置即可，且自带监控界面）*
 
 
-## 四：运行时监控
+## 五：运行时监控
 
 为了更好的监控池内的运行情况（*闲置连接，使用中连接，等待数等*），产品内部提供了三种方式
 
@@ -100,7 +119,7 @@ public class DataSourceConfig {
 ![图片](https://user-images.githubusercontent.com/32663325/154832193-62b71ade-84cc-41db-894f-9b012995d619.png)
 
  
-## 五：对比其他池
+## 六：对比其他池
 
 #### 1: 性能对比
 
@@ -126,25 +145,6 @@ public class DataSourceConfig {
 
 
 BeeCP中部分灵感受启发于它们，感谢两位大师的贡献。
-
-## 六：版本下载 
-
-Java7或更高
-```xml
-<dependency>
-   <groupId>com.github.chris2018998</groupId>
-   <artifactId>beecp</artifactId>
-   <version>3.3.2</version>
-</dependency>
-```
-Java6
-```xml
-<dependency>
-   <groupId>com.github.chris2018998</groupId>
-   <artifactId>beecp</artifactId>
-   <version>1.6.10</version>
-</dependency>
-```
 
 ## 七：扩展接口
 
