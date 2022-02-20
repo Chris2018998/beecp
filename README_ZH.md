@@ -44,13 +44,8 @@ Java6
    <version>1.6.10</version>
 </dependency>
 ```
-
-## 三：功能导向
-
-![图片](https://user-images.githubusercontent.com/32663325/153597592-c7d36f14-445a-454b-9db4-2289e1f92ed6.png)
- 
                                     
-## 四：参考例子
+## 三：参考例子
 
  ###### :point_right: 例子1(独立应用)
 
@@ -100,6 +95,11 @@ public class DataSourceConfig {
 ```
 
 :sunny: *如果项目为Springboot类型，推荐使用数据源管理工具：<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a>（无需代码开发配置即可，且自带监控界面）*
+
+
+## 四：功能导向
+
+![图片](https://user-images.githubusercontent.com/32663325/153597592-c7d36f14-445a-454b-9db4-2289e1f92ed6.png)
 
 
 ## 五：运行时监控
