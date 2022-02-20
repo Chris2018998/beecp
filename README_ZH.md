@@ -47,7 +47,7 @@ Java6
                                     
 ## 三：参考例子
 
- ###### :point_right: 例子1(独立应用)
+ ##### :point_right: 例子1(独立应用)
 
 ```java
 BeeDataSourceConfig config = new BeeDataSourceConfig();
@@ -61,7 +61,7 @@ Connection con=ds.getConnection();
 
 ```
 
-###### :point_right: 例子2(Springbooot)
+##### :point_right: 例子2(Springbooot)
 
 *application.properties*
 
@@ -121,13 +121,13 @@ public class DataSourceConfig {
  
 ## 六：对比其他池
 
-#### 1: 性能对比
+##### 1: 性能对比
 
 ![图片](https://user-images.githubusercontent.com/32663325/154832468-7659201e-be49-4bd8-802d-50f6aa3b95d8.png)
 
 <sup>**机器**：Win7_64 I3-7100 8G   **池设置**：初始0，最大32  **测试基准**：<a href="https://github.com/brettwooldridge/HikariCP-benchmark">光连接池提供</a> （*光连接池被号称为史上最快的连接池*）</sup>
 
-#### 2: 技术对比（光连接池）
+##### 2: 技术对比（光连接池）
 
 | **比较项**                      |**BeeCP**                                          | **HikariCP**                                      |
 |---------------------------------|---------------------------------------------------| ------------------------------------------------- |
@@ -137,7 +137,7 @@ public class DataSourceConfig {
 | 文件                             |37个源码文件，Jar包95KB                              |44个源码文件，Jar包158KB                                   |
 | 性能                             |总体性能高40%以上（光连接池基准）                      |                                                         |
 
-#### 3: 池介绍
+##### 3: 池介绍
 
 **光连接池（<a href="https://www.github.com/brettwooldridge/HikariCP">HikariCP</a>）**：作者名为：**Brett Wooldridge**， 一位现居日本的美国Java专家，其作品最早发布于2014年，是高性能连接池的典型代表，已经被Java领域广泛使用。
 
@@ -148,7 +148,7 @@ BeeCP中部分灵感受启发于它们，感谢两位大师的贡献。
 
 ## 七：扩展接口
 
-###### 1：连接工厂接口
+##### 1：连接工厂接口
 产品内部提供两个工厂接口分别用来创建本地连接和Xa连接(**一般不建议自扩展**)
  
 ![图片](https://user-images.githubusercontent.com/32663325/153597017-2f3ba479-8f3f-4a82-949b-275068c287cd.png)
@@ -162,7 +162,7 @@ BeeCP中部分灵感受启发于它们，感谢两位大师的贡献。
 ![图片](https://user-images.githubusercontent.com/32663325/153597143-3a8e45f8-4894-4e98-913d-63994d3486c6.png)
 
 
-###### 2：连接密文解密
+##### 2：连接密文解密
 如果连接数据库使用的是密文，产品内部提供一个可供扩展的解密类，使用时将实现类名注入配置中即可。
 
 ![图片](https://user-images.githubusercontent.com/32663325/153597176-e48382b9-7395-4c6c-9f34-425072d7c510.png)
