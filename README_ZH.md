@@ -91,7 +91,7 @@ public class DataSourceConfig {
 
 + 提供Jmx方式监控
 
-+ 提供方法级监控（可访问数据源的监控方法，直接获取池运行时信息）
++ 提供方法级监控（可访问数据源的监控方法，得到一个可反映池内状态的Vo结果对象）
 
 除以上方式，我们额外准备一套具有监控界面的解决方案：<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a>(个人另一个开源项目)
 
