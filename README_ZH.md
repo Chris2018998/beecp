@@ -105,7 +105,7 @@ public class DataSourceConfig {
 
 ## 五：运行时监控
 
-为了更好的监控池内的运行情况（*闲置连接，使用中连接，等待数等*），产品内部提供了三种方式
+为了更好的监控池内的运行情况（*闲置连接等，使用中连接等，等待数等*），产品内部提供了三种方式
 
 + 基于slf4j日志接口输出池内运行时信息
 
@@ -113,7 +113,7 @@ public class DataSourceConfig {
 
 + 提供方法级监控（可访问数据源的监控方法，得到一个可反映池内状态的Vo结果对象）
 
-除以上方式，我们额外准备一套具有监控界面的解决方案：<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a>(个人另一个开源项目)
+除以上方式，我们额外准备一套具有监控界面的解决方案：<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a>(个人另一款开源项目)
 
 ![图片](https://user-images.githubusercontent.com/32663325/154832186-be2b2c34-8765-4be8-8435-b97c6c1771df.png)
 
