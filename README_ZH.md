@@ -138,12 +138,11 @@ public class DataSourceConfig {
 | 文件                             |37个源码文件，Jar包95KB                              |44个源码文件，Jar包158KB                                   |
 | 性能                             |总体性能高40%以上（光连接池基准）                      |                                                         |
 
-##### 3: 池介绍
+##### 3: 启发池介绍
+
+**德鲁伊（<a href="https://github.com/alibaba/druid">druid</a>）**：作者名为：**温绍锦**，一名任职中国阿里的技术专家，其作品最早发布于2012年，专为监控设计（尽管内部含有大量监控属性， 但在性能方面仍有不俗表现）,在中国有超多用户，点赞数超过25k。
 
 **光连接池（<a href="https://www.github.com/brettwooldridge/HikariCP">HikariCP</a>）**：作者名为：**Brett Wooldridge**， 一位现居日本的美国Java专家，其作品最早发布于2014年，是高性能连接池的典型代表，已经被Java领域广泛使用。
-
-**德鲁伊（<a href="https://github.com/alibaba/druid">druid</a>）**：作者名为：**温少锦**，一名任职中国阿里的技术专家，其作品最早发布于2012年，专为监控设计（尽管内部含有大量监控属性， 但在性能方面仍有不俗表现）,在中国有超多用户，点赞数超过25k。
-
 
 BeeCP中部分灵感受启发于它们，感谢两位大师的贡献。
 
