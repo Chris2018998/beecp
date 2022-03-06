@@ -199,9 +199,3 @@ BeeCP中部分灵感受启发于它们，感谢两位大师的贡献。
 |enableJmx                         |JMX监控支持开关                           |false                               | 
 |printConfigInfo                   |是否打印配置信息                           |false                               | 
 |printRuntimeLog                   |是否打印运行时日志                         |false                               | 
-
-## :sparkling_heart: 捐助
-
-如果您觉得此作品不错，请捐赠我们喝杯咖啡吧，在此表示感谢^_^。
-
-![图片](https://user-images.githubusercontent.com/32663325/154846599-d87b59bb-fa93-4806-9216-ddf8aa1b135d.png)
