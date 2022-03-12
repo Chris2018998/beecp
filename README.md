@@ -30,11 +30,9 @@ Java6
 </dependency>
 ```
 
-## :tractor: Demo
+## :tractor: Example
 
-Its usage is roughly similar to other pool, two reference examples below
-
-###### :point_right: Demo1
+###### :point_right: Example-1(independent)
 
 ```java
 BeeDataSourceConfig config = new BeeDataSourceConfig();
@@ -47,7 +45,7 @@ Connection con=ds.getConnection();
 ....
 
 ```
-###### :point_right: Demo2
+###### :point_right: Example-2(Springboot)
 
 *application.properties*
 
