@@ -10,14 +10,12 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * JDBC raw connection factory
+ * Connection factory
  *
  * @author Chris
  * @version 1.0
  */
 public interface RawConnectionFactory {
-
-    //create raw connection
+    //create connection instance
     Connection create() throws SQLException;
-
 }

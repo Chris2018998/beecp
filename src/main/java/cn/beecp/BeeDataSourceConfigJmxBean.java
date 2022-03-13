@@ -12,7 +12,6 @@ package cn.beecp;
  * @author Chris.Liao
  * @version 1.0
  */
-
 public interface BeeDataSourceConfigJmxBean {
 
     String getUsername();
@@ -33,15 +32,15 @@ public interface BeeDataSourceConfigJmxBean {
 
     int getBorrowSemaphoreSize();
 
-    boolean isDefaultAutoCommit();
+    Boolean isDefaultAutoCommit();
+
+    Integer getDefaultTransactionIsolationCode();
 
     String getDefaultTransactionIsolationName();
 
-    int getDefaultTransactionIsolationCode();
-
     String getDefaultCatalog();
 
-    boolean isDefaultReadOnly();
+    Boolean isDefaultReadOnly();
 
     long getMaxWait();
 

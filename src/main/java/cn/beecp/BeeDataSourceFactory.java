@@ -15,7 +15,7 @@ import javax.naming.spi.ObjectFactory;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 
 import static cn.beecp.pool.PoolStaticCenter.*;
@@ -27,17 +27,21 @@ import static cn.beecp.pool.PoolStaticCenter.*;
  * @version 1.0
  */
 public final class BeeDataSourceFactory implements ObjectFactory {
-
-    private final static String getConfigValue(Reference ref, String propertyName) {
+    private static String getConfigValue(Reference ref, String propertyName) {
         String value = readConfig(ref, propertyName);
-        if (isBlank(value))
-            value = readConfig(ref, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_MiddleLine));
-        if (isBlank(value))
-            value = readConfig(ref, propertyNameToFieldId(propertyName, DS_Config_Prop_Separator_UnderLine));
-        return value;
+        if (value != null) return value;
+
+        propertyName = propertyName.substring(0, 1).toLowerCase(Locale.US) + propertyName.substring(1);
+        value = readConfig(ref, propertyName);
+        if (value != null) return value;
+
+        value = readConfig(ref, propertyNameToFieldId(propertyName, Separator_MiddleLine));
+        if (value != null) return value;
+
+        return readConfig(ref, propertyNameToFieldId(propertyName, Separator_UnderLine));
     }
 
-    private final static String readConfig(Reference ref, String propertyName) {
+    private static String readConfig(Reference ref, String propertyName) {
         RefAddr refAddr = ref.get(propertyName);
         if (refAddr != null) {
             Object refObject = refAddr.getContent();
@@ -62,28 +66,20 @@ public final class BeeDataSourceFactory implements ObjectFactory {
      * @param environment The possibly null environment that is used in creating the
      *                    object.
      * @return The object created; null if an object cannot be created.
-     * @throws Exception if this object factory encountered an exception while
-     *                   attempting to create an object, and no other object
-     *                   factories are to be tried.
      * @see NamingManager#getObjectInstance
      * @see NamingManager#getURLContext
      */
-    public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment)
-            throws Exception {
-
+    public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) {
         Reference ref = (Reference) obj;
         //1:create datasource config instance
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         //2:get all properties set methods
-        Map<String, Method> setMethodMap = getSetMethodMap(config.getClass());
+        Map<String, Method> setMethodMap = getClassSetMethodMap(config.getClass());
         //3:create properties to collect config value
         Map<String, Object> setValueMap = new HashMap<String, Object>(setMethodMap.size());
         //4:loop to find out properties config value by set methods
-        Iterator<String> iterator = setMethodMap.keySet().iterator();
-        while (iterator.hasNext()) {
-            String propertyName = iterator.next();
+        for (String propertyName : setMethodMap.keySet()) {
             String configVal = getConfigValue(ref, propertyName);
-
             if (isBlank(configVal)) continue;
             setValueMap.put(propertyName, configVal);
         }
@@ -94,11 +90,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         config.addConnectProperty(getConfigValue(ref, "connectProperties"));
         String connectPropertiesCount = getConfigValue(ref, "connectProperties.count");
         if (!isBlank(connectPropertiesCount)) {
-            int count = 0;
-            try {
-                count = Integer.parseInt(connectPropertiesCount.trim());
-            } catch (Throwable e) {
-            }
+            int count = Integer.parseInt(connectPropertiesCount.trim());
             for (int i = 1; i <= count; i++)
                 config.addConnectProperty(getConfigValue(ref, "connectProperties." + i));
         }
