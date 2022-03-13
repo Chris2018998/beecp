@@ -87,32 +87,31 @@ public class DataSourceConfig {
 to manage your datasource(file configuration, less code, monitor-ui)*
 
 ## :book: Configuration item 
-|**Item Name**                     |**Desc**                              |**Default**                          |
-| ---------------------------------| ------------------------------------- | ----------------------------------- |
-|username                          |jdbc username                          |empty                                |
-|password                          |jdbc password                          |empty                                |
-|jdbcUrl                           |jdbc url                               |empty                                |
-|driverClassName                   |jdbc driver class name                 |empty                                |
-|poolName	                   |pool name,if not set,auto generated    |empty                                |
-|fairMode                          |indicator,true:pool will use fair semaphore and fair transfer policy|false   | 
-|initialSize                       |size of connections on pool starting      |0                                 |
-|maxActive                         |max reachable size of connections in pool |10                                | 
-|borrowSemaphoreSize               |max permit size of pool semaphore         |min(maxActive/2,CPU core size）   |
-|defaultAutoCommit                 |'autoCommit' property default value       |true                 |
-|defaultTransactionIsolationCode   |'transactionIsolation'property default value,if not set,then read out from first connection|-999|
-|defaultCatalog                    |'catalog' property default value        |empty                                 |
-|defaultSchema                     |'schema' property default value         |empty                                 |
-|defaultReadOnly                   |'readOnly' property default value       |false                                 |
-|maxWait                           |milliseconds:max wait time to get one connection from pool|8000                |
-|idleTimeout                       |milliseconds:max idle time of connections,when reach,then close them and remove from pool|18000|                             
-|holdTimeout                       |milliseconds:max no-use time of borrowed connections,when reach,then return them to pool by forced close           |18000                             |  
-|validTestSql                      |connection valid test sql on borrowed              |SELECT 1                            |  
-|validTestTimeout                  |seconds:max time to get valid test result          |3                                   |  
-|validAssumeTime                   |milliseconds:connections valid assume time after last activity,if borrowed,not need test during the duration                   |500                               |  
-|forceCloseUsingOnClear            |using connections forced close indicator on pool clear|false                            |
-|delayTimeForNextClear             |milliseconds:delay time for next loop to clear,when<code>forceCloseUsingOnClear</code> is false and exists using connections                  |3000                                |                   
-|timerCheckInterval                |milliseconds:interval time to run timer check task|18000                               |
-|connectionFactoryClassName        |raw JDBC connection factory class name            |empty                               |
-|enableJmx                         |boolean indicator,true:register dataSource to jmx |false                               | 
-|enableConfigLog                   |boolean indicator,true:print config item info on pool starting|false                   | 
-|enableRuntimeLog                  |boolean indicator,true:print runtime log                      |false                   | 
+|**Item Name**                     |**Desc**                                |**Default**                      |
+| ------------------------------|--------------------------------------- |----------------------------------- |
+|username                       |jdbc username                           |null                                |
+|password                       |jdbc password                           |null                                |
+|jdbcUrl                        |jdbc url                                |null                                |
+|driverClassName                |jdbc driver class name                  |null                                |
+|poolName	                      |pool name;auto generated when not set   |null                                |
+|fairMode                       |indicator,true-fair semaphore and fair transfer policy|false                 | 
+|initialSize                    |size of connections on pool starting      |0                                 |
+|maxActive                      |max reachable size of connections in pool |10                                | 
+|borrowSemaphoreSize            |max permit size of pool semaphore         |min(maxActive/2,CPU core size）   |
+|defaultAutoCommit              |'autoCommit' property default value       |null                              |
+|defaultTransactionIsolationCode|'transactionIsolation'property default value,if not set,then read out from first connection|null|
+|defaultCatalog                 |'catalog' property default value        |null                                 |
+|defaultSchema                  |'schema' property default value         |null                                 |
+|defaultReadOnly                |'readOnly' property default value       |null                                 |
+|maxWait                        |milliseconds:max wait time to get one connection from pool|8000               |
+|idleTimeout                    |milliseconds:max idle time of connections,when reach,then close them and remove from pool|18000|                             
+|holdTimeout                    |milliseconds:max no-use time of borrowed connections,when reach,then return them to pool by forced close|18000|  
+|validTestSql                   |connection valid test sql on borrowed              |SELECT 1                            |  
+|validTestTimeout               |seconds:max time to get valid test result          |3                                   |  
+|validAssumeTime                |milliseconds:connections valid assume time after last activity,if borrowed,not need test during the duration|500|  
+|forceCloseUsingOnClear         |using connections forced close indicator on pool clear|false                            |
+|delayTimeForNextClear          |milliseconds:delay time for next loop to clear,when<code>forceCloseUsingOnClear</code> is false and exists using connections|3000|   |timerCheckInterval             |milliseconds:interval time to run timer check task|18000                               |
+|connectionFactoryClassName     |raw JDBC connection factory class name            |null                                |
+|enableJmx                      |boolean indicator,true:register dataSource to jmx |false                               | 
+|printConfigInfo                |boolean indicator,true:print config item info on pool starting|false                   | 
+|printRuntimeLog                |boolean indicator,true:print runtime log                      |false                   | 
