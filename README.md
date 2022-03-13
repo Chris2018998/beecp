@@ -75,6 +75,11 @@ public class DataSourceConfig {
   public DataSource primaryDataSource() {
     return DataSourceBuilder.create().type(cn.beecp.BeeDataSource.class).build();
   }
+  
+  @Bean
+  public DataSource secondDataSource() {
+   return new BeeDataSource(new BeeDataSourceConfig(driver,url,user,password));
+  }
 }
 ```
 
