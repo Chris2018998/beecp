@@ -4,7 +4,7 @@
  *
  * Licensed under GNU Lesser General Public License v2.1
  */
-package cn.beecp.pool.atomic;
+package cn.beeop.pool.atomic;
 
 import sun.misc.Unsafe;
 
