@@ -7,9 +7,10 @@
 package cn.beecp;
 
 import cn.beecp.pool.ConnectionPool;
-import cn.beecp.pool.ConnectionPoolException;
 import cn.beecp.pool.ConnectionPoolMonitorVo;
 import cn.beecp.pool.FastConnectionPool;
+import cn.beecp.pool.exception.PoolCreateFailedException;
+import cn.beecp.pool.exception.PoolNotCreateException;
 
 import javax.sql.DataSource;
 import javax.sql.XAConnection;
@@ -65,24 +66,22 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             String errorMsg = checkClass(poolClass, ConnectionPool.class, "pool");
             if (!isBlank(errorMsg)) throw new BeeDataSourceConfigException(errorMsg);
 
-            ConnectionPool pool = (ConnectionPool) poolClass.newInstance();
+            ConnectionPool pool = (ConnectionPool) poolClass.getConstructor().newInstance();
             pool.init(ds);
             ds.pool = pool;
             ds.ready = true;
             return pool;
-        } catch (ClassNotFoundException e) {
-            throw new ConnectionPoolException("Not found connection pool class:" + poolImplementClassName);
-        } catch (InstantiationException e) {
-            throw new ConnectionPoolException("Failed to instantiate connection pool by class:" + poolImplementClassName, e);
-        } catch (IllegalAccessException e) {
-            throw new ConnectionPoolException("Illegal access connection pool class:" + poolImplementClassName, e);
+        } catch (SQLException e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new PoolCreateFailedException("Failed to create connection pool by class:" + poolImplementClassName, e);
         }
     }
 
     //***************************************************************************************************************//
     //                                          2: below are override methods(11)                                    //
     //***************************************************************************************************************//
-    public final Connection getConnection() throws SQLException {
+    public Connection getConnection() throws SQLException {
         if (ready) return pool.getConnection();
         synchronized (synLock) {
             if (pool != null) return pool.getConnection();
@@ -90,7 +89,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         }
     }
 
-    public final XAConnection getXAConnection() throws SQLException {
+    public XAConnection getXAConnection() throws SQLException {
         if (ready) return pool.getXAConnection();
         synchronized (synLock) {
             if (pool != null) return pool.getXAConnection();
@@ -140,13 +139,12 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     //***************************************************************************************************************//
     //                                     3: below are self-define methods(6)                                       //
     //***************************************************************************************************************//
-
     public void clear() throws SQLException {
         this.clear(false);
     }
 
     public void clear(boolean force) throws SQLException {
-        if (pool == null) throw new ConnectionPoolException("Connection pool not initialize");
+        if (pool == null) throw new PoolNotCreateException("Connection pool not initialize");
         pool.clear(force);
     }
 
@@ -170,7 +168,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     }
 
     public ConnectionPoolMonitorVo getPoolMonitorVo() throws SQLException {
-        if (pool == null) throw new ConnectionPoolException("Connection pool not initialize");
+        if (pool == null) throw new PoolNotCreateException("Connection pool not initialize");
         return pool.getPoolMonitorVo();
     }
 }
