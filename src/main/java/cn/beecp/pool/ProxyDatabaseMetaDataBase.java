@@ -16,34 +16,22 @@ import java.sql.SQLException;
  * @author Chris.Liao
  * @version 1.0
  */
-abstract class ProxyDatabaseMetaDataBase implements DatabaseMetaData {
-    protected DatabaseMetaData raw;
-    protected PooledConnection p;//called by subclass to update time
-    private ProxyConnectionBase owner;//called by subclass to check close state
+abstract class ProxyDatabaseMetaDataBase extends ProxyBaseWrapper implements DatabaseMetaData {
+    protected final DatabaseMetaData raw;
+    private final ProxyConnectionBase owner;//called by subclass to check close state
 
     public ProxyDatabaseMetaDataBase(DatabaseMetaData raw, PooledConnection p) {
-        this.p = p;
+        super(p);
         this.raw = raw;
-        this.owner = p.proxyCon;
+        this.owner = p.proxyInUsing;
     }
 
-    protected final void checkClosed() throws SQLException {
+    protected void checkClosed() throws SQLException {
         owner.checkClosed();
     }
 
     public Connection getConnection() throws SQLException {
         checkClosed();
         return owner;
-    }
-
-    public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        return iface.isInstance(this);
-    }
-
-    public <T> T unwrap(Class<T> iface) throws SQLException {
-        if (iface.isInstance(this))
-            return (T) this;
-        else
-            throw new SQLException("Wrapped object is not an instance of " + iface);
     }
 }

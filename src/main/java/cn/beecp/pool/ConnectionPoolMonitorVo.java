@@ -14,29 +14,51 @@ package cn.beecp.pool;
  */
 
 public class ConnectionPoolMonitorVo {
-    private String poolName;
-    private String poolMode;
+    private final String hostIP;
+    private final long threadId;
+    private final String threadName;
+    private final String poolName;
+    private final String poolMode;
+    private final int poolMaxSize;
+
     private int poolState;
-    private int maxActive;
     private int idleSize;
     private int usingSize;
-    private int semaphoreWaiterSize;
-    private int transferWaiterSize;
+    private int semaphoreWaitingSize;
+    private int transferWaitingSize;
+
+    ConnectionPoolMonitorVo(String poolName, String poolMode, int poolMaxSize,
+                            String hostIP, long threadId, String threadName) {
+        this.poolName = poolName;
+        this.poolMode = poolMode;
+        this.poolMaxSize = poolMaxSize;
+        this.hostIP = hostIP;
+        this.threadId = threadId;
+        this.threadName = threadName;
+    }
+
+    public String getHostIP() {
+        return hostIP;
+    }
+
+    public long getThreadId() {
+        return threadId;
+    }
+
+    public String getThreadName() {
+        return threadName;
+    }
 
     public String getPoolName() {
         return poolName;
-    }
-
-    void setPoolName(String poolName) {
-        this.poolName = poolName;
     }
 
     public String getPoolMode() {
         return poolMode;
     }
 
-    void setPoolMode(String poolMode) {
-        this.poolMode = poolMode;
+    public int getPoolMaxSize() {
+        return poolMaxSize;
     }
 
     public int getPoolState() {
@@ -45,14 +67,6 @@ public class ConnectionPoolMonitorVo {
 
     void setPoolState(int poolState) {
         this.poolState = poolState;
-    }
-
-    public int getMaxActive() {
-        return maxActive;
-    }
-
-    void setMaxActive(int maxActive) {
-        this.maxActive = maxActive;
     }
 
     public int getIdleSize() {
@@ -71,19 +85,19 @@ public class ConnectionPoolMonitorVo {
         this.usingSize = usingSize;
     }
 
-    public int getSemaphoreWaiterSize() {
-        return semaphoreWaiterSize;
+    public int getSemaphoreWaitingSize() {
+        return semaphoreWaitingSize;
     }
 
-    void setSemaphoreWaiterSize(int semaphoreWaiterSize) {
-        this.semaphoreWaiterSize = semaphoreWaiterSize;
+    void setSemaphoreWaitingSize(int semaphoreWaitingSize) {
+        this.semaphoreWaitingSize = semaphoreWaitingSize;
     }
 
-    public int getTransferWaiterSize() {
-        return transferWaiterSize;
+    public int getTransferWaitingSize() {
+        return transferWaitingSize;
     }
 
-    void setTransferWaiterSize(int transferWaiterSize) {
-        this.transferWaiterSize = transferWaiterSize;
+    void setTransferWaitingSize(int transferWaitingSize) {
+        this.transferWaitingSize = transferWaitingSize;
     }
 }

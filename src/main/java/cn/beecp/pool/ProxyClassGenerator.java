@@ -25,18 +25,35 @@ import static cn.beecp.pool.PoolStaticCenter.isBlank;
 final class ProxyClassGenerator {
 
     /**
-     * default classes output folder in project
-     */
-    private String defaultFolder = "BeeCP/target/classes";
-
-    /**
      * @param args take the first argument as classes generated output folder,otherwise take default folder
      * @throws Exception throw exception in generating process
      */
     public static void main(String[] args) throws Exception {
         String classesFolder = "";
         if (args != null && args.length > 0) classesFolder = args[0];
-        new ProxyClassGenerator().writeProxyFile(classesFolder);
+        writeProxyFile(classesFolder);
+    }
+
+    private static void resolveInterfaceMethods(CtClass interfaceClass, LinkedList linkedList, HashSet exitSignatureSet) throws Exception {
+        CtMethod[] ctMethods = interfaceClass.getDeclaredMethods();
+        for (int i = 0; i < ctMethods.length; i++) {
+            int modifiers = ctMethods[i].getModifiers();
+            String signature = ctMethods[i].getName() + ctMethods[i].getSignature();
+            if (Modifier.isAbstract(modifiers)
+                    && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers))
+                    && !Modifier.isStatic(modifiers)
+                    && !Modifier.isFinal(modifiers)
+                    && !exitSignatureSet.contains(signature)) {
+
+                linkedList.add(ctMethods[i]);
+                exitSignatureSet.add(signature);
+            }
+        }
+
+        CtClass[] superInterfaces = interfaceClass.getInterfaces();
+        for (int i = 0; i < superInterfaces.length; i++) {
+            resolveInterfaceMethods(superInterfaces[i], linkedList, exitSignatureSet);
+        }
     }
 
     /**
@@ -45,9 +62,10 @@ final class ProxyClassGenerator {
      * @param folder classes generated will write to it
      * @throws Exception if failed to write file to disk
      */
-    public void writeProxyFile(String folder) throws Exception {
+    private static void writeProxyFile(String folder) throws Exception {
+        String defaultFolder = "BeeCP/target/classes";
         if (isBlank(folder)) folder = defaultFolder;
-        CtClass[] ctClasses = this.createJdbcProxyClasses();
+        CtClass[] ctClasses = createJdbcProxyClasses();
         for (CtClass ctClass : ctClasses) {
             ctClass.writeFile(folder);
         }
@@ -66,12 +84,12 @@ final class ProxyClassGenerator {
      * cn.beecp.pool.ProxyResultSet
      * @throws Exception if failed to generate class
      */
-    private CtClass[] createJdbcProxyClasses() throws Exception {
+    private static CtClass[] createJdbcProxyClasses() throws Exception {
         try {
             ClassPool classPool = ClassPool.getDefault();
             classPool.importPackage("java.sql");
             classPool.importPackage("cn.beecp.pool");
-            classPool.appendClassPath(new LoaderClassPath(this.getClass().getClassLoader()));
+            classPool.appendClassPath(new LoaderClassPath(ProxyClassGenerator.class.getClassLoader()));
 
             //............Connection Begin.........
             CtClass ctConnectionClass = classPool.get(Connection.class.getName());
@@ -80,10 +98,9 @@ final class ProxyClassGenerator {
             CtClass ctProxyConnectionClass = classPool.makeClass(ctProxyConnectionClassName, ctProxyConnectionBaseClass);
             ctProxyConnectionClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
 
-            CtClass[] conCreateParam = new CtClass[]{
+            CtClass[] conCreateParamTypes = new CtClass[]{
                     classPool.get("cn.beecp.pool.PooledConnection")};
-            CtConstructor ctConstructor = new CtConstructor(conCreateParam, ctProxyConnectionClass);
-            ctConstructor.setModifiers(Modifier.PUBLIC);
+            CtConstructor ctConstructor = new CtConstructor(conCreateParamTypes, ctProxyConnectionClass);
             ctConstructor.setBody("{super($$);}");
             ctProxyConnectionClass.addConstructor(ctConstructor);
             //...............Connection End................
@@ -94,13 +111,12 @@ final class ProxyClassGenerator {
             String ctProxyStatementClassName = "cn.beecp.pool.ProxyStatement";
             CtClass ctProxyStatementClass = classPool.makeClass(ctProxyStatementClassName, ctProxyStatementBaseClass);
             ctProxyStatementClass.setModifiers(Modifier.PUBLIC);
-            CtClass[] statementCreateParam = new CtClass[]{
+            CtClass[] statementCreateParamTypes = new CtClass[]{
                     classPool.get("java.sql.Statement"),
                     classPool.get("cn.beecp.pool.ProxyConnectionBase"),
                     classPool.get("cn.beecp.pool.PooledConnection")
             };
-            ctConstructor = new CtConstructor(statementCreateParam, ctProxyStatementClass);
-            ctConstructor.setModifiers(Modifier.PUBLIC);
+            ctConstructor = new CtConstructor(statementCreateParamTypes, ctProxyStatementClass);
             ctConstructor.setBody("{super($$);}");
             ctProxyStatementClass.addConstructor(ctConstructor);
             //.............Statement Begin...............
@@ -111,15 +127,11 @@ final class ProxyClassGenerator {
             CtClass ctProxyPsStatementClass = classPool.makeClass(ctProxyPsStatementClassName, ctProxyStatementClass);
             ctProxyPsStatementClass.setInterfaces(new CtClass[]{ctPreparedStatementClass});
             ctProxyPsStatementClass.setModifiers(Modifier.PUBLIC);
-
-            CtClass[] statementPsCreateParam = new CtClass[]{
+            CtClass[] statementPsCreateParamTypes = new CtClass[]{
                     classPool.get("java.sql.PreparedStatement"),
                     classPool.get("cn.beecp.pool.ProxyConnectionBase"),
-                    classPool.get("cn.beecp.pool.PooledConnection")
-
-            };
-            ctConstructor = new CtConstructor(statementPsCreateParam, ctProxyPsStatementClass);
-            ctConstructor.setModifiers(Modifier.PUBLIC);
+                    classPool.get("cn.beecp.pool.PooledConnection")};
+            ctConstructor = new CtConstructor(statementPsCreateParamTypes, ctProxyPsStatementClass);
             ctConstructor.setBody("{super($$);}");
             ctProxyPsStatementClass.addConstructor(ctConstructor);
             //........PreparedStatement End..............
@@ -130,13 +142,11 @@ final class ProxyClassGenerator {
             CtClass ctProxyCsStatementClass = classPool.makeClass(ctProxyCsStatementClassName, ctProxyPsStatementClass);
             ctProxyCsStatementClass.setInterfaces(new CtClass[]{ctCallableStatementClass});
             ctProxyCsStatementClass.setModifiers(Modifier.PUBLIC);
-
-            CtClass[] statementCsCreateParam = new CtClass[]{
+            CtClass[] statementCsCreateParamTypes = new CtClass[]{
                     classPool.get("java.sql.CallableStatement"),
                     classPool.get("cn.beecp.pool.ProxyConnectionBase"),
                     classPool.get("cn.beecp.pool.PooledConnection")};
-            ctConstructor = new CtConstructor(statementCsCreateParam, ctProxyCsStatementClass);
-            ctConstructor.setModifiers(Modifier.PUBLIC);
+            ctConstructor = new CtConstructor(statementCsCreateParamTypes, ctProxyCsStatementClass);
             ctConstructor.setBody("{super($$);}");
             ctProxyCsStatementClass.addConstructor(ctConstructor);
             //...........CallableStatement End...............
@@ -147,12 +157,10 @@ final class ProxyClassGenerator {
             String ctProxyDatabaseMetaDataClassName = "cn.beecp.pool.ProxyDatabaseMetaData";
             CtClass ctProxyDatabaseMetaDataClass = classPool.makeClass(ctProxyDatabaseMetaDataClassName, ctProxyDatabaseMetaDataBaseClass);
             ctProxyDatabaseMetaDataClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
-
-            CtClass[] databaseMetaData = new CtClass[]{
+            CtClass[] databaseMetaDataTypes = new CtClass[]{
                     classPool.get("java.sql.DatabaseMetaData"),
                     classPool.get("cn.beecp.pool.PooledConnection")};
-            ctConstructor = new CtConstructor(databaseMetaData, ctProxyDatabaseMetaDataClass);
-            ctConstructor.setModifiers(Modifier.PUBLIC);
+            ctConstructor = new CtConstructor(databaseMetaDataTypes, ctProxyDatabaseMetaDataClass);
             ctConstructor.setBody("{super($$);}");
             ctProxyDatabaseMetaDataClass.addConstructor(ctConstructor);
             //...........DatabaseMetaData End...............
@@ -163,30 +171,27 @@ final class ProxyClassGenerator {
             String ctProxyResultSetClassName = "cn.beecp.pool.ProxyResultSet";
             CtClass ctProxyResultSetClass = classPool.makeClass(ctProxyResultSetClassName, ctProxyResultSetBaseClass);
             ctProxyResultSetClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
-
-            CtClass[] resultSetCreateParam1 = new CtClass[]{
+            CtClass[] resultSetCreateParamTypes1 = new CtClass[]{
                     classPool.get("java.sql.ResultSet"),
                     classPool.get("cn.beecp.pool.PooledConnection")};
-            CtConstructor ctConstructor1 = new CtConstructor(resultSetCreateParam1, ctProxyResultSetClass);
-            ctConstructor1.setModifiers(Modifier.PUBLIC);
+            CtConstructor ctConstructor1 = new CtConstructor(resultSetCreateParamTypes1, ctProxyResultSetClass);
             ctConstructor1.setBody("{super($$);}");
             ctProxyResultSetClass.addConstructor(ctConstructor1);
 
-            CtClass[] resultSetCreateParam2 = new CtClass[]{
+            CtClass[] resultSetCreateParamTypes2 = new CtClass[]{
                     classPool.get("java.sql.ResultSet"),
                     classPool.get("cn.beecp.pool.ProxyStatementBase"),
                     classPool.get("cn.beecp.pool.PooledConnection")};
-            ctConstructor = new CtConstructor(resultSetCreateParam2, ctProxyResultSetClass);
-            ctConstructor.setModifiers(Modifier.PUBLIC);
+            ctConstructor = new CtConstructor(resultSetCreateParamTypes2, ctProxyResultSetClass);
             ctConstructor.setBody("{super($$);}");
             ctProxyResultSetClass.addConstructor(ctConstructor);
             //............Result End...............
-            this.createProxyConnectionClass(classPool, ctProxyConnectionClass, ctConnectionClass, ctProxyConnectionBaseClass);
-            this.createProxyStatementClass(classPool, ctProxyStatementClass, ctStatementClass, ctProxyStatementBaseClass);
-            this.createProxyStatementClass(classPool, ctProxyPsStatementClass, ctPreparedStatementClass, ctProxyStatementClass);
-            this.createProxyStatementClass(classPool, ctProxyCsStatementClass, ctCallableStatementClass, ctProxyPsStatementClass);
-            this.createProxyDatabaseMetaDataClass(classPool, ctProxyDatabaseMetaDataClass, ctDatabaseMetaDataClass, ctProxyDatabaseMetaDataBaseClass);
-            this.createProxyResultSetClass(classPool, ctProxyResultSetClass, ctResultSetClass, ctProxyResultSetBaseClass);
+            createProxyConnectionClass(classPool, ctProxyConnectionClass, ctConnectionClass, ctProxyConnectionBaseClass);
+            createProxyStatementClass(classPool, ctProxyStatementClass, ctStatementClass, ctProxyStatementBaseClass);
+            createProxyStatementClass(classPool, ctProxyPsStatementClass, ctPreparedStatementClass, ctProxyStatementClass);
+            createProxyStatementClass(classPool, ctProxyCsStatementClass, ctCallableStatementClass, ctProxyPsStatementClass);
+            createProxyDatabaseMetaDataClass(classPool, ctProxyDatabaseMetaDataClass, ctDatabaseMetaDataClass, ctProxyDatabaseMetaDataBaseClass);
+            createProxyResultSetClass(classPool, ctProxyResultSetClass, ctResultSetClass, ctProxyResultSetBaseClass);
 
             //............... ProxyObjectFactory Begin..................
             CtClass ctProxyObjectFactoryClass = classPool.get(PoolStaticCenter.class.getName());
@@ -202,8 +207,10 @@ final class ProxyClassGenerator {
                 }
             }
 
-            createProxyConnectionMethod.setBody("{$2.lastUsed=$1; return new ProxyConnection($1);}");
-            createProxyResultSetMethod.setBody("{return new ProxyResultSet($$);}");
+            if (createProxyConnectionMethod != null)
+                createProxyConnectionMethod.setBody("{return new ProxyConnection($$);}");
+            if (createProxyResultSetMethod != null)
+                createProxyResultSetMethod.setBody("{return new ProxyResultSet($$);}");
             //............... ProxyObjectFactory end..................
 
             return new CtClass[]{
@@ -228,10 +235,9 @@ final class ProxyClassGenerator {
      * @param ctConnectionClassProxyClass connection implemented sub class will be generated
      * @param ctConnectionClass           connection interface in javassist class pool
      * @param ctConBaseClass              super class extend by 'ctctConnectionClassProxyClass'
-     * @return proxy class base on connection interface
      * @throws Exception some error occurred
      */
-    private Class createProxyConnectionClass(ClassPool classPool, CtClass ctConnectionClassProxyClass, CtClass ctConnectionClass, CtClass ctConBaseClass) throws Exception {
+    private static void createProxyConnectionClass(ClassPool classPool, CtClass ctConnectionClassProxyClass, CtClass ctConnectionClass, CtClass ctConBaseClass) throws Exception {
         CtMethod[] ctSuperClassMethods = ctConBaseClass.getMethods();
         HashSet notNeedAddProxyMethods = new HashSet(16);
         for (int i = 0, l = ctSuperClassMethods.length; i < l; i++) {
@@ -270,7 +276,7 @@ final class ProxyClassGenerator {
             } else if (ctMethod.getReturnType() == ctDatabaseMetaDataIntf) {
                 methodBuffer.append("return new ProxyDatabaseMetaData(raw." + methodName + "($$),p);");
             } else if (methodName.equals("close")) {
-                //methodBuffer.append("super."+methodName + "($$);");
+                continue;
             } else if (ctMethod.getReturnType() == CtClass.voidType) {
                 methodBuffer.append("raw." + methodName + "($$);");
             } else {
@@ -281,10 +287,9 @@ final class ProxyClassGenerator {
             newCtMethodm.setBody(methodBuffer.toString());
             ctConnectionClassProxyClass.addMethod(newCtMethodm);
         }
-        return ctConnectionClassProxyClass.toClass();
     }
 
-    private Class createProxyStatementClass(ClassPool classPool, CtClass statementProxyClass, CtClass ctStatementClass, CtClass ctStatementSuperClass) throws Exception {
+    private static void createProxyStatementClass(ClassPool classPool, CtClass statementProxyClass, CtClass ctStatementClass, CtClass ctStatementSuperClass) throws Exception {
         CtMethod[] ctSuperClassMethods = ctStatementSuperClass.getMethods();
         HashSet superClassSignatureSet = new HashSet(16);
         for (int i = 0, l = ctSuperClassMethods.length; i < l; i++) {
@@ -342,11 +347,10 @@ final class ProxyClassGenerator {
             newCtMethodm.setBody(methodBuffer.toString());
             statementProxyClass.addMethod(newCtMethodm);
         }
-        return statementProxyClass.toClass();
     }
 
     //ctProxyDatabaseMetaDataClass,ctDatabaseMetaDataIntf,ctDatabaseMetaDataSuperClass
-    private Class createProxyDatabaseMetaDataClass(ClassPool classPool, CtClass ctProxyDatabaseMetaDataClass, CtClass ctDatabaseMetaDataIntf, CtClass ctDatabaseMetaDataSuperClass) throws Exception {
+    private static void createProxyDatabaseMetaDataClass(ClassPool classPool, CtClass ctProxyDatabaseMetaDataClass, CtClass ctDatabaseMetaDataIntf, CtClass ctDatabaseMetaDataSuperClass) throws Exception {
         CtMethod[] ctSuperClassMethods = ctDatabaseMetaDataSuperClass.getMethods();
         HashSet superClassSignatureSet = new HashSet(16);
         for (int i = 0, l = ctSuperClassMethods.length; i < l; i++) {
@@ -382,10 +386,9 @@ final class ProxyClassGenerator {
             newCtMethodm.setBody(methodBuffer.toString());
             ctProxyDatabaseMetaDataClass.addMethod(newCtMethodm);
         }
-        return ctProxyDatabaseMetaDataClass.toClass();
     }
 
-    private Class createProxyResultSetClass(ClassPool classPool, CtClass ctResultSetClassProxyClass, CtClass ctResultSetClass, CtClass ctResultSetClassSuperClass) throws Exception {
+    private static void createProxyResultSetClass(ClassPool classPool, CtClass ctResultSetClassProxyClass, CtClass ctResultSetClass, CtClass ctResultSetClassSuperClass) throws Exception {
         CtMethod[] ctSuperClassMethods = ctResultSetClassSuperClass.getMethods();
         HashSet superClassSignatureSet = new HashSet(16);
         for (int i = 0, l = ctSuperClassMethods.length; i < l; i++) {
@@ -407,51 +410,26 @@ final class ProxyClassGenerator {
 
             methodBuffer.delete(0, methodBuffer.length());
             methodBuffer.append("{");
-
-            if (methodName.equals("close")) {
-                //methodBuffer.append("super." + methodName + "($$);");
+            if (methodName.equals("close"))
+                continue;
+            if (methodName.startsWith("insert") || methodName.startsWith("update") || methodName.startsWith("delete")) {
+                if (ctMethod.getReturnType() == CtClass.voidType) {
+                    methodBuffer.append("raw." + methodName + "($$);").append(" p.updateAccessTime();");
+                } else {
+                    methodBuffer.append(ctMethod.getReturnType().getName() + " r=raw." + methodName + "($$);")
+                            .append(" p.updateAccessTime();").append(" return r;");
+                }
             } else {
                 if (ctMethod.getReturnType() == CtClass.voidType) {
                     methodBuffer.append("raw." + methodName + "($$);");
-                    if (methodName.startsWith("insertRow") || methodName.startsWith("updateRow") || methodName.startsWith("deleteRow"))
-                        methodBuffer.append(" p.updateAccessTime();");
                 } else {
-                    if (methodName.startsWith("insertRow") || methodName.startsWith("updateRow") || methodName.startsWith("deleteRow")) {
-                        methodBuffer.append(ctMethod.getReturnType().getName() + " r=raw." + methodName + "($$);")
-                                .append(" p.updateAccessTime();")
-                                .append(" return r;");
-                    } else {
-                        methodBuffer.append("return raw." + methodName + "($$);");
-                    }
+                    methodBuffer.append("return raw." + methodName + "($$);");
                 }
             }
 
             methodBuffer.append("}");
             newCtMethodm.setBody(methodBuffer.toString());
             ctResultSetClassProxyClass.addMethod(newCtMethodm);
-        }
-        return ctResultSetClassProxyClass.toClass();
-    }
-
-    private void resolveInterfaceMethods(CtClass interfaceClass, LinkedList linkedList, HashSet exitSignatureSet) throws Exception {
-        CtMethod[] ctMethods = interfaceClass.getDeclaredMethods();
-        for (int i = 0; i < ctMethods.length; i++) {
-            int modifiers = ctMethods[i].getModifiers();
-            String signature = ctMethods[i].getName() + ctMethods[i].getSignature();
-            if (Modifier.isAbstract(modifiers)
-                    && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers))
-                    && !Modifier.isStatic(modifiers)
-                    && !Modifier.isFinal(modifiers)
-                    && !exitSignatureSet.contains(signature)) {
-
-                linkedList.add(ctMethods[i]);
-                exitSignatureSet.add(signature);
-            }
-        }
-
-        CtClass[] superInterfaces = interfaceClass.getInterfaces();
-        for (int i = 0; i < superInterfaces.length; i++) {
-            resolveInterfaceMethods(superInterfaces[i], linkedList, exitSignatureSet);
         }
     }
 }

@@ -8,6 +8,7 @@ package cn.beecp.pool;
 
 import cn.beecp.BeeDataSourceConfig;
 
+import javax.sql.XAConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -19,67 +20,35 @@ import java.sql.SQLException;
  */
 public interface ConnectionPool {
 
-    /**
-     * initialize pool with configuration
-     *
-     * @param config data source configuration
-     * @throws SQLException check configuration fail or to create initiated connection
-     */
+    //initialize pool with configuration
     void init(BeeDataSourceConfig config) throws SQLException;
 
-    /**
-     * borrow a connection from pool
-     *
-     * @return If exists idle connection in pool,then return one;if not, waiting until other borrower release
-     * @throws SQLException if pool is closed or waiting timeout,then throw exception
-     */
+    //borrow a connection from pool
     Connection getConnection() throws SQLException;
 
-    /**
-     * Connection return to pool after it end use,if exist waiter in pool,
-     * then try to transfer the connection to one waiting borrower
-     *
-     * @param p target connection need release
-     */
+    //borrow a connection from pool
+    XAConnection getXAConnection() throws SQLException;
+
+    //recycle one pooled Connection
     void recycle(PooledConnection p);
 
-    /**
-     * close pool
-     *
-     * @throws SQLException if fail to close
-     */
-    void close() throws SQLException;
+    //close pool
+    void close();
 
-    /**
-     * Clear all connections from pool
-     */
-    void clearAllConnections();
+    //remove all pooled connections,if exists using connections,then wait util them idle,and close them and remove
+    void clear();
 
-    /**
-     * Clear all connections from pool
-     *
-     * @param forceCloseUsingOnClear close using connection directly
-     */
-    void clearAllConnections(boolean forceCloseUsingOnClear);
+    //clear all connections from pool,forceCloseUsingOnClear is true,then close using connection directly
+    void clear(boolean forceCloseUsingOnClear);
 
-    /**
-     * check pool is closed
-     *
-     * @return true, closed, false active
-     */
+    //check pool is closed
     boolean isClosed();
 
-    /**
-     * @return Pool Monitor Vo
-     */
-    ConnectionPoolMonitorVo getMonitorVo();
-
-    /**
-     * enable Runtime Log
-     *
-     * @param indicator indicator,whether print pool runtime info
-     */
+    //enable Runtime Log
     void setPrintRuntimeLog(boolean indicator);
+
+    //get pool monitor vo
+    ConnectionPoolMonitorVo getPoolMonitorVo();
 
 }
 	

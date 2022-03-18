@@ -20,30 +20,25 @@ import static cn.beecp.pool.PoolStaticCenter.*;
  * @author Chris.Liao
  * @version 1.0
  */
-abstract class ProxyStatementBase implements Statement {
-    protected final PooledConnection p;//called by subclass to update time
+abstract class ProxyStatementBase extends ProxyBaseWrapper implements Statement {
     private final ProxyConnectionBase owner;
     protected Statement raw;
     boolean registered = true;
-    private boolean isClosed;
     private ProxyResultSetBase curRe;
     private ArrayList<ProxyResultSetBase> results;
     private int resultOpenCode = CLOSE_CURRENT_RESULT;
 
-    public ProxyStatementBase(final Statement raw, final ProxyConnectionBase o, final PooledConnection p) {
+    public ProxyStatementBase(Statement raw, ProxyConnectionBase o, PooledConnection p) {
+        super(p);
         o.registerStatement(this);
         this.raw = raw;
         this.owner = o;
-        this.p = p;
     }
 
-    /*******************************************************************************************
-     *                                                                                         *
-     *                         Below are self define methods                                          *
-     *                                                                                         *
-     *******************************************************************************************/
-
-    final void removeOpenResultSet(final ProxyResultSetBase r) {//call by ProxyResultSetBase.constructor
+    //***************************************************************************************************************//
+    //                                             Below are self-define methods                                     //
+    //***************************************************************************************************************//
+    void removeOpenResultSet(ProxyResultSetBase r) {//call by ProxyResultSetBase.constructor
         if (r == curRe) {
             curRe = null;
         } else if (results != null) {
@@ -51,7 +46,7 @@ abstract class ProxyStatementBase implements Statement {
         }
     }
 
-    final void setOpenResultSet(final ProxyResultSetBase r) {//call by ProxyResultSetBase.constructor
+    void setOpenResultSet(ProxyResultSetBase r) {//call by ProxyResultSetBase.constructor
         switch (resultOpenCode) {
             case CLOSE_CURRENT_RESULT: {
                 if (curRe != null && !curRe.isClosed) oclose(curRe);
@@ -68,10 +63,8 @@ abstract class ProxyStatementBase implements Statement {
                 if (curRe != null && !curRe.isClosed)
                     oclose(curRe);
                 if (results != null) {
-                    for (int i = 0, l = results.size(); i < l; i++) {
-                        ProxyResultSetBase openRe = results.get(i);
+                    for (ProxyResultSetBase openRe : results)
                         if (!openRe.isClosed) oclose(openRe);
-                    }
                     results.clear();
                 }
                 break;
@@ -82,28 +75,25 @@ abstract class ProxyStatementBase implements Statement {
         this.curRe = r;
     }
 
-    /******************************************************************************************
-     *                                                                                        *
-     *                        Below are override methods                                      *
-     *                                                                                        *
-     ******************************************************************************************/
-
+    //***************************************************************************************************************//
+    //                                              Below are override methods                                       //
+    //***************************************************************************************************************//
     public Connection getConnection() throws SQLException {
-        if (isClosed) throw ConnectionClosedException;
+        if (isClosed) throw StatementClosedException;
         return owner;
     }
 
-    public final boolean isClosed() throws SQLException {
+    public boolean isClosed() {
         return isClosed;
     }
 
-    public final void close() throws SQLException {
+    public void close() throws SQLException {
         if (isClosed) return;
         isClosed = true;
         if (curRe != null) oclose(curRe);
         if (results != null) {
-            for (int i = 0, l = results.size(); i < l; i++)
-                oclose(results.get(i));
+            for (ProxyResultSetBase resultSetBase : results)
+                oclose(resultSetBase);
             results.clear();
         }
         try {
@@ -124,7 +114,7 @@ abstract class ProxyStatementBase implements Statement {
     }
 
     public ResultSet getResultSet() throws SQLException {
-        ResultSet re = raw.getResultSet();//raw resultSet
+        ResultSet re = raw.getResultSet();//rawConn resultSet
         if (re == null) return null;
         if (curRe != null && curRe.containsRaw(re)) return curRe;
         if (results != null) {
@@ -135,17 +125,6 @@ abstract class ProxyStatementBase implements Statement {
         return createProxyResultSet(re, this, p);
     }
 
-    public void setPoolable(boolean var1) throws SQLException {
-    }
-
-    public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        return iface.isInstance(this);
-    }
-
-    public <T> T unwrap(Class<T> iface) throws SQLException {
-        if (iface.isInstance(this))
-            return (T) this;
-        else
-            throw new SQLException("Wrapped object is not an instance of " + iface);
+    public void setPoolable(boolean var1) {
     }
 }

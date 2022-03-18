@@ -13,6 +13,5 @@ package cn.beecp.pool;
  * @version 1.0
  */
 interface PooledConnectionValidTest {
-
     boolean isValid(PooledConnection p);
 }

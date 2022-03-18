@@ -13,69 +13,48 @@ import java.util.concurrent.Executor;
 import static cn.beecp.pool.PoolStaticCenter.*;
 
 /**
- * raw connection wrapper
+ * rawConn connection wrapper
  *
  * @author Chris.Liao
  * @version 1.0
  */
-public abstract class ProxyConnectionBase implements Connection {
-    //Connection reset pos in array
-    private static final int PS_AUTO = 0;
-    private static final int PS_TRANS = 1;
-    private static final int PS_READONLY = 2;
-    private static final int PS_CATALOG = 3;
-    private static final int PS_SCHEMA = 4;
-    private static final int PS_NETWORK = 5;
-
-    protected final PooledConnection p;//called by subclass to update time
+abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Connection {
     protected Connection raw;
-    private boolean isClosed;
 
     public ProxyConnectionBase(PooledConnection p) {
-        this.p = p;
-        this.raw = p.raw;
-        p.proxyCon = this;
+        super(p);
+        this.raw = p.rawConn;
+        p.proxyInUsing = this;
     }
 
-    /*******************************************************************************************
-     *                                                                                         *
-     *                         Below are self-define methods                                          *
-     *                                                                                         *
-     ********************************************************************************************/
-
-    public final boolean getClosedInd() {
+    //***************************************************************************************************************//
+    //                                             self-define methods(4)                                            //
+    //***************************************************************************************************************//
+    public boolean getClosedInd() {
         return isClosed;
     }
 
-    public final void checkClosed() throws SQLException {
+    public void checkClosed() throws SQLException {
         if (isClosed) throw ConnectionClosedException;
     }
 
-    public Connection getRaw() throws SQLException {
-        checkClosed();
-        return raw;
-    }
-
-    synchronized final void registerStatement(ProxyStatementBase s) {
+    synchronized void registerStatement(ProxyStatementBase s) {
         p.registerStatement(s);
     }
 
-    synchronized final void unregisterStatement(ProxyStatementBase s) {
+    synchronized void unregisterStatement(ProxyStatementBase s) {
         p.unregisterStatement(s);
     }
 
-    /******************************************************************************************
-     *                                                                                        *
-     *                        Below are override methods                                      *
-     *                                                                                        *
-     ******************************************************************************************/
-
-    public final boolean isClosed() throws SQLException {
+    //***************************************************************************************************************//
+    //                                              override methods (11)                                            //
+    //***************************************************************************************************************//
+    public boolean isClosed() {
         return isClosed;
     }
 
     //call by borrower,then return PooledConnection to pool
-    public final void close() throws SQLException {
+    public void close() throws SQLException {
         synchronized (this) {//safe close
             if (isClosed) return;
             isClosed = true;
@@ -85,69 +64,58 @@ public abstract class ProxyConnectionBase implements Connection {
         p.recycleSelf();
     }
 
-    public final void setAutoCommit(boolean autoCommit) throws SQLException {
-        //if (p.commitDirtyInd) throw AutoCommitChangeForbiddenException;
+    public void setAutoCommit(boolean autoCommit) throws SQLException {
+        //if (p.commitDirtyInd) throw DirtyTransactionException;
         raw.setAutoCommit(autoCommit);
         p.curAutoCommit = autoCommit;
-        p.setResetInd(PS_AUTO, autoCommit != p.defAutoCommit);
+        p.setResetInd(PS_AUTO, autoCommit != p.defaultAutoCommit);
+    }
+
+    public void commit() throws SQLException {
+        raw.commit();
+        p.commitDirtyInd = false;
+        p.lastAccessTime = System.currentTimeMillis();
+    }
+
+    public void rollback() throws SQLException {
+        raw.rollback();
+        p.commitDirtyInd = false;
+        p.lastAccessTime = System.currentTimeMillis();
     }
 
     public void setTransactionIsolation(int level) throws SQLException {
         raw.setTransactionIsolation(level);
-        p.setResetInd(PS_TRANS, level != p.defTransactionIsolation);
+        p.setResetInd(PS_TRANS, level != p.defaultTransactionIsolation);
     }
 
     public void setReadOnly(boolean readOnly) throws SQLException {
         raw.setReadOnly(readOnly);
-        p.setResetInd(PS_READONLY, readOnly != p.defReadOnly);
+        p.setResetInd(PS_READONLY, readOnly != p.defaultReadOnly);
     }
 
     public void setCatalog(String catalog) throws SQLException {
         raw.setCatalog(catalog);
-        p.setResetInd(PS_CATALOG, !PoolStaticCenter.equals(catalog, p.defCatalog));
+        p.setResetInd(PS_CATALOG, !PoolStaticCenter.equals(catalog, p.defaultCatalog));
     }
 
     //for JDK1.7 begin
     public void setSchema(String schema) throws SQLException {
         raw.setSchema(schema);
-        p.setResetInd(PS_SCHEMA, !PoolStaticCenter.equals(schema, p.defSchema));
+        p.setResetInd(PS_SCHEMA, !PoolStaticCenter.equals(schema, p.defaultSchema));
+    }
+
+    public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+        if (p.supportNetworkTimeoutSet()) {
+            raw.setNetworkTimeout(executor, milliseconds);
+            p.setResetInd(PS_NETWORK, milliseconds != p.defaultNetworkTimeout);
+        } else {
+            throw DriverNotSupportNetworkTimeoutException;
+        }
     }
 
     public void abort(Executor executor) throws SQLException {
         if (executor == null) throw new SQLException("executor can't be null");
         executor.execute(new ProxyConnectionCloseTask(this));
     }
-
-    public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-        if (p.supportNetworkTimeout()) {
-            raw.setNetworkTimeout(executor, milliseconds);
-            p.setResetInd(PS_NETWORK, milliseconds != p.defNetworkTimeout);
-        } else {
-            throw DriverNotSupportNetworkTimeoutException;
-        }
-    }
     //for JDK1.7 end
-
-    public void commit() throws SQLException {
-        raw.commit();
-        p.lastAccessTime = System.currentTimeMillis();
-        p.commitDirtyInd = false;
-    }
-
-    public void rollback() throws SQLException {
-        raw.rollback();
-        p.lastAccessTime = System.currentTimeMillis();
-        p.commitDirtyInd = false;
-    }
-
-    public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        return iface.isInstance(this);
-    }
-
-    public <T> T unwrap(Class<T> iface) throws SQLException {
-        if (iface.isInstance(this))
-            return (T) this;
-        else
-            throw new SQLException("Wrapped object is not an instance of " + iface);
-    }
 }

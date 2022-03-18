@@ -15,13 +15,13 @@ package cn.beecp.pool;
 public interface ConnectionPoolJmxBean {
 
     //return current size(using +idle)
-    int getConnTotalSize();
+    int getTotalSize();
 
     //return idle connection size
-    int getConnIdleSize();
+    int getIdleSize();
 
     //return using connection size
-    int getConnUsingSize();
+    int getUsingSize();
 
     //return permit size taken from semaphore
     int getSemaphoreAcquiredSize();
