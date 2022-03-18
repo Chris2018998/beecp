@@ -325,7 +325,7 @@ public class MockResultSet extends MockBase implements ResultSet {
     public void updateString(int columnIndex, String x) throws SQLException {
     }
 
-    public void updateBytes(int columnIndex, byte x[]) throws SQLException {
+    public void updateBytes(int columnIndex, byte[] x) throws SQLException {
     }
 
     public void updateDate(int columnIndex, java.sql.Date x) throws SQLException {
@@ -382,7 +382,7 @@ public class MockResultSet extends MockBase implements ResultSet {
     public void updateString(String columnLabel, String x) throws SQLException {
     }
 
-    public void updateBytes(String columnLabel, byte x[]) throws SQLException {
+    public void updateBytes(String columnLabel, byte[] x) throws SQLException {
     }
 
     public void updateDate(String columnLabel, java.sql.Date x) throws SQLException {

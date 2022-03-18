@@ -26,7 +26,7 @@ public class JdbcConfig {
     public static int REQUEST_TIMEOUT = 8000;
     public static String TEST_TABLE = "BEECP_TEST";
     public static String TEST_PROCEDURE = "BEECP_HELLO()";
-    public static String CONFIG_FILE = "jdbc.properties";
+    public static String CONFIG_FILE = "beecp/jdbc.properties";
 
     static {
         try {

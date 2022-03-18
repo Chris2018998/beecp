@@ -33,7 +33,7 @@ public class TransactionNormalRollbackTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws InterruptedException, Exception {
+    public void test() throws Exception {
         Connection con1 = null;
         PreparedStatement ps1 = null;
         ResultSet re1 = null;

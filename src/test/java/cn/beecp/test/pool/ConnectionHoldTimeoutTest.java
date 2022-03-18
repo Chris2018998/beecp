@@ -39,7 +39,7 @@ public class ConnectionHoldTimeoutTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws InterruptedException, Exception {
+    public void test() throws Exception {
         Connection con = null;
         try {
             FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
@@ -47,13 +47,13 @@ public class ConnectionHoldTimeoutTest extends TestCase {
             //if (poolThreadLatch.getCount() > 0) poolThreadLatch.await();
 
             con = ds.getConnection();
-            if (pool.getConnTotalSize() != 1)
+            if (pool.getTotalSize() != 1)
                 TestUtil.assertError("Total connections not as expected 1");
-            if (pool.getConnUsingSize() != 1)
+            if (pool.getUsingSize() != 1)
                 TestUtil.assertError("Using connections not as expected 1");
 
             LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(5));
-            if (pool.getConnUsingSize() != 0)
+            if (pool.getUsingSize() != 0)
                 TestUtil.assertError("Using connections not as expected 0 after hold timeout");
 
             try {

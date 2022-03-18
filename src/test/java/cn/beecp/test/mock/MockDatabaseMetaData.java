@@ -13,7 +13,7 @@ import java.sql.*;
  * @version 1.0
  */
 public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
-    private MockConnection connection;
+    private final MockConnection connection;
 
     public MockDatabaseMetaData(MockConnection connection) {
         this.connection = connection;
@@ -504,7 +504,7 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
         return new MockResultSet();
     }
 
-    public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String types[]) throws SQLException {
+    public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
         return new MockResultSet();
     }
 

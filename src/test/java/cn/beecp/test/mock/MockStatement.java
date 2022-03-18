@@ -143,11 +143,11 @@ public class MockStatement extends MockBase implements Statement {
         return 1;
     }
 
-    public int executeUpdate(String sql, int columnIndexes[]) throws SQLException {
+    public int executeUpdate(String sql, int[] columnIndexes) throws SQLException {
         return 1;
     }
 
-    public int executeUpdate(String sql, String columnNames[]) throws SQLException {
+    public int executeUpdate(String sql, String[] columnNames) throws SQLException {
         return 1;
     }
 
@@ -155,11 +155,11 @@ public class MockStatement extends MockBase implements Statement {
         return true;
     }
 
-    public boolean execute(String sql, int columnIndexes[]) throws SQLException {
+    public boolean execute(String sql, int[] columnIndexes) throws SQLException {
         return true;
     }
 
-    public boolean execute(String sql, String columnNames[]) throws SQLException {
+    public boolean execute(String sql, String[] columnNames) throws SQLException {
         return true;
     }
 

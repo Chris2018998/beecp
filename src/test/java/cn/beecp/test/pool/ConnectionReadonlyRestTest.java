@@ -35,7 +35,7 @@ public class ConnectionReadonlyRestTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws InterruptedException, Exception {
+    public void test() throws Exception {
         Connection con1 = null;
         try {
             con1 = ds.getConnection();

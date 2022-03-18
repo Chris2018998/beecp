@@ -15,7 +15,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class PoolDelayInitializeFailedTest extends TestCase {
-    private int initSize = 5;
+    private final int initSize = 5;
 
     public void setUp() throws Throwable {
     }
@@ -23,7 +23,7 @@ public class PoolDelayInitializeFailedTest extends TestCase {
     public void tearDown() throws Throwable {
     }
 
-    public void testPoolInit() throws InterruptedException, Exception {
+    public void testPoolInit() throws Exception {
         Connection con = null;
         BeeDataSource ds = null;
         try {

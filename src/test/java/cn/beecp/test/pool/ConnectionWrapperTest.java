@@ -33,7 +33,7 @@ public class ConnectionWrapperTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws InterruptedException, Exception {
+    public void test() throws Exception {
         Connection con = null;
         Statement st = null;
         CallableStatement cs = null;

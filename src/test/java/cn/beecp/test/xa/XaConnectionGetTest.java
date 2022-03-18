@@ -4,25 +4,22 @@
  *
  * Licensed under GNU Lesser General Public License v2.1
  */
-package cn.beecp.test.pool;
+package cn.beecp.test.xa;
 
 import cn.beecp.BeeDataSource;
 import cn.beecp.BeeDataSourceConfig;
-import cn.beecp.test.JdbcConfig;
 import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 
-import java.sql.Connection;
+import javax.sql.XAConnection;
 
-public class ConnectionGetTest extends TestCase {
+public class XaConnectionGetTest extends TestCase {
     private BeeDataSource ds;
 
     public void setUp() throws Throwable {
+        String dataSourceClassName = "cn.beecp.test.mock.MockXaDataSource";
         BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setJdbcUrl(JdbcConfig.JDBC_URL);
-        config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
-        config.setUsername(JdbcConfig.JDBC_USER);
-        config.setPassword(JdbcConfig.JDBC_PASSWORD);
+        config.setConnectionFactoryClassName(dataSourceClassName);
         ds = new BeeDataSource(config);
     }
 
@@ -31,9 +28,9 @@ public class ConnectionGetTest extends TestCase {
     }
 
     public void test() throws Exception {
-        Connection con = null;
+        XAConnection con = null;
         try {
-            con = ds.getConnection();
+            con = ds.getXAConnection();
             if (con == null)
                 TestUtil.assertError("Failed to get Connection");
         } finally {

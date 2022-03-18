@@ -34,7 +34,7 @@ public class ProxyResultSetFromDsMetaCloseTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws InterruptedException, Exception {
+    public void test() throws Exception {
         Connection con = null;
         ResultSet rs = null;
         try {

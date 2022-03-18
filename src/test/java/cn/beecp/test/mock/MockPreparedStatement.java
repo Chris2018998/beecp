@@ -64,7 +64,7 @@ public class MockPreparedStatement extends MockStatement implements PreparedStat
     public void setString(int parameterIndex, String x) throws SQLException {
     }
 
-    public void setBytes(int parameterIndex, byte x[]) throws SQLException {
+    public void setBytes(int parameterIndex, byte[] x) throws SQLException {
     }
 
     public void setDate(int parameterIndex, java.sql.Date x) throws SQLException {

@@ -17,8 +17,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
 public class ConnectionIdleTimeoutTest extends TestCase {
+    private final int initSize = 5;
     private BeeDataSource ds;
-    private int initSize = 5;
 
     public void setUp() throws Throwable {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
@@ -38,17 +38,17 @@ public class ConnectionIdleTimeoutTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws InterruptedException, Exception {
+    public void test() throws Exception {
         FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
         //CountDownLatch poolThreadLatch = (CountDownLatch) TestUtil.getFieldValue(pool, "poolThreadLatch");
         //if (poolThreadLatch.getCount() > 0) poolThreadLatch.await();
 
-        if (pool.getConnTotalSize() != initSize) TestUtil.assertError("Total connections not as expected:" + initSize);
-        if (pool.getConnIdleSize() != initSize) TestUtil.assertError("Idle connections not as expected:" + initSize);
+        if (pool.getTotalSize() != initSize) TestUtil.assertError("Total connections not as expected:" + initSize);
+        if (pool.getIdleSize() != initSize) TestUtil.assertError("Idle connections not as expected:" + initSize);
 
         LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(5));
 
-        if (pool.getConnTotalSize() != 0) TestUtil.assertError("Total connections not as expected:" + 0);
-        if (pool.getConnIdleSize() != 0) TestUtil.assertError("Idle connections not a sexpected:" + 0);
+        if (pool.getTotalSize() != 0) TestUtil.assertError("Total connections not as expected:" + 0);
+        if (pool.getIdleSize() != 0) TestUtil.assertError("Idle connections not a sexpected:" + 0);
     }
 }

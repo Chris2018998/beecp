@@ -177,7 +177,7 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
     public void setString(String parameterName, String x) throws SQLException {
     }
 
-    public void setBytes(String parameterName, byte x[]) throws SQLException {
+    public void setBytes(String parameterName, byte[] x) throws SQLException {
     }
 
     public void setDate(String parameterName, java.sql.Date x) throws SQLException {

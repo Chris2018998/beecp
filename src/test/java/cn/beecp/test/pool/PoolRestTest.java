@@ -14,8 +14,8 @@ import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 
 public class PoolRestTest extends TestCase {
+    private final int initSize = 5;
     private BeeDataSource ds;
-    private int initSize = 5;
 
     public void setUp() throws Throwable {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
@@ -31,18 +31,18 @@ public class PoolRestTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws InterruptedException, Exception {
+    public void test() throws Exception {
         FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
-        if (pool.getConnTotalSize() != initSize)
-            TestUtil.assertError("Total connections expected:%s,current is:%s", initSize, pool.getConnTotalSize());
-        if (pool.getConnIdleSize() != initSize)
-            TestUtil.assertError("connections expected:%s,current is:%s", initSize, pool.getConnIdleSize());
+        if (pool.getTotalSize() != initSize)
+            TestUtil.assertError("Total connections expected:%s,current is:%s", initSize, pool.getTotalSize());
+        if (pool.getIdleSize() != initSize)
+            TestUtil.assertError("connections expected:%s,current is:%s", initSize, pool.getIdleSize());
 
-        pool.clearAllConnections();
+        pool.clear();
 
-        if (pool.getConnTotalSize() != 0)
-            TestUtil.assertError("Total connections not as expected 0,but current is:%s", pool.getConnTotalSize(), "");
-        if (pool.getConnIdleSize() != 0)
-            TestUtil.assertError("Idle connections not as expected 0,but current is:%s", pool.getConnIdleSize(), "");
+        if (pool.getTotalSize() != 0)
+            TestUtil.assertError("Total connections not as expected 0,but current is:%s", pool.getTotalSize(), "");
+        if (pool.getIdleSize() != 0)
+            TestUtil.assertError("Idle connections not as expected 0,but current is:%s", pool.getIdleSize(), "");
     }
 }

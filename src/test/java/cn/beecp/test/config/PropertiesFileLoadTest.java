@@ -12,7 +12,7 @@ import cn.beecp.test.TestCase;
 
 import java.lang.reflect.Field;
 import java.net.URL;
-import java.util.Properties;
+import java.util.Map;
 
 /**
  * @author Chris.Liao
@@ -25,7 +25,7 @@ public class PropertiesFileLoadTest extends TestCase {
     private final String ConfigDriver = "cn.beecp.test.mock.MockDriver";
 
     public void test() throws Exception {
-        String filename = "config2.properties";
+        String filename = "beecp/config2.properties";
         URL url = PropertiesFileLoadTest.class.getClassLoader().getResource(filename);
         if (url == null) url = PropertiesFileLoadTest.class.getResource(filename);
 
@@ -46,7 +46,7 @@ public class PropertiesFileLoadTest extends TestCase {
         if (!testConfig.isDefaultAutoCommit()) throw new BeeDataSourceConfigException("defaultAutoCommit error");
         if (testConfig.getDefaultTransactionIsolationCode() != 1)
             throw new BeeDataSourceConfigException("defaultTransactionIsolationCode error");
-        if (!"TRANSACTION_READ_UNCOMMITTED".equals(testConfig.getDefaultTransactionIsolationName()))
+        if (!"READ_UNCOMMITTED".equals(testConfig.getDefaultTransactionIsolationName()))
             throw new BeeDataSourceConfigException("defaultTransactionIsolation error");
         if (!"SELECT 1".equals(testConfig.getValidTestSql()))
             throw new BeeDataSourceConfigException("connectionTestSQL error");
@@ -68,26 +68,24 @@ public class PropertiesFileLoadTest extends TestCase {
             throw new BeeDataSourceConfigException("forceCloseUsingOnClear error");
         if (testConfig.getDelayTimeForNextClear() != 3000)
             throw new BeeDataSourceConfigException("delayTimeForNextClear error");
-        if (!"cn.beecp.pool.DriverConnectionFactory".equals(testConfig.getConnectionFactoryClassName()))
+        if (!"cn.beecp.pool.ConnectionFactoryByDriver".equals(testConfig.getConnectionFactoryClassName()))
             throw new BeeDataSourceConfigException("connectionFactoryClassName error");
-        if (!"cn.beecp.xa.impl.Mysql8XaConnectionFactory".equals(testConfig.getXaConnectionFactory().getClass().getName()))
-            throw new BeeDataSourceConfigException("xaConnectionFactory error");
-        if (!"cn.beecp.xa.impl.Mysql8XaConnectionFactory".equals(testConfig.getXaConnectionFactoryClassName()))
-            throw new BeeDataSourceConfigException("xaConnectionFactoryClassName error");
+        if (!"cn.beecp.pool.RawConnectionPool".equals(testConfig.getPoolImplementClassName()))
+            throw new BeeDataSourceConfigException("poolImplementClassName error");
         if (!"cn.beecp.pool.RawConnectionPool".equals(testConfig.getPoolImplementClassName()))
             throw new BeeDataSourceConfigException("poolImplementClassName error");
         if (!testConfig.isEnableJmx()) throw new BeeDataSourceConfigException("enableJmx error");
 
         Field connectPropertiesField = BeeDataSourceConfig.class.getDeclaredField("connectProperties");
         connectPropertiesField.setAccessible(true);
-        Properties connectProperties = (Properties) connectPropertiesField.get(testConfig);
-        if (!"true".equals(connectProperties.getProperty("cachePrepStmts")))
+        Map<String, Object> connectProperties = (Map) connectPropertiesField.get(testConfig);
+        if (!"true".equals(connectProperties.get("cachePrepStmts")))
             throw new BeeDataSourceConfigException("connectProperties error");
-        if (!"50".equals(connectProperties.getProperty("prepStmtCacheSize")))
+        if (!"50".equals(connectProperties.get("prepStmtCacheSize")))
             throw new BeeDataSourceConfigException("connectProperties error");
-        if (!"2048".equals(connectProperties.getProperty("prepStmtCacheSqlLimit")))
+        if (!"2048".equals(connectProperties.get("prepStmtCacheSqlLimit")))
             throw new BeeDataSourceConfigException("connectProperties error");
-        if (!"true".equals(connectProperties.getProperty("useServerPrepStmts")))
+        if (!"true".equals(connectProperties.get("useServerPrepStmts")))
             throw new BeeDataSourceConfigException("connectProperties error");
     }
 }

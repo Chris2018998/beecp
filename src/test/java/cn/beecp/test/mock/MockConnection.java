@@ -147,11 +147,11 @@ public class MockConnection extends MockBase implements Connection {
         return new MockPreparedStatement(this);
     }
 
-    public PreparedStatement prepareStatement(String sql, int columnIndexes[]) throws SQLException {
+    public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
         return new MockPreparedStatement(this);
     }
 
-    public PreparedStatement prepareStatement(String sql, String columnNames[]) throws SQLException {
+    public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
         return new MockPreparedStatement(this);
     }
 

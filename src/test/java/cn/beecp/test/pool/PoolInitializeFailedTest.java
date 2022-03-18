@@ -13,7 +13,7 @@ import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 
 public class PoolInitializeFailedTest extends TestCase {
-    private int initSize = 5;
+    private final int initSize = 5;
 
     public void setUp() throws Throwable {
     }
@@ -21,7 +21,7 @@ public class PoolInitializeFailedTest extends TestCase {
     public void tearDown() throws Throwable {
     }
 
-    public void testPoolInit() throws InterruptedException, Exception {
+    public void testPoolInit() throws Exception {
         try {
             BeeDataSourceConfig config = new BeeDataSourceConfig();
             config.setJdbcUrl("jdbc:beecp://localhost/testdb2");//give valid URL

@@ -30,7 +30,7 @@ public class OperationAfterOwnerCloseTest extends TestCase {
         ds.close();
     }
 
-    public void testConnectionClose() throws InterruptedException, Exception {
+    public void testConnectionClose() throws Exception {
         Connection con = ds.getConnection();
 
         Statement st = null;
@@ -76,7 +76,7 @@ public class OperationAfterOwnerCloseTest extends TestCase {
         }
     }
 
-    public void testStatementClose() throws InterruptedException, Exception {
+    public void testStatementClose() throws Exception {
         Connection con = ds.getConnection();
 
         Statement st = null;

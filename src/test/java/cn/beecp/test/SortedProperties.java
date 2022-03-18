@@ -16,7 +16,7 @@ import java.util.Vector;
  * @author chris.liao
  */
 class SortedProperties extends Properties {
-    private Vector<Object> keyVector = new Vector<Object>(10);
+    private final Vector<Object> keyVector = new Vector<Object>(10);
 
     public synchronized Enumeration<Object> keys() {
         return keyVector.elements();
@@ -31,8 +31,7 @@ class SortedProperties extends Properties {
 
     public synchronized Object remove(Object key) {
         Object value = super.remove(key);
-        if (keyVector.contains(key))
-            keyVector.remove(key);
+        keyVector.remove(key);
         return value;
     }
 }

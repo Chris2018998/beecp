@@ -35,7 +35,7 @@ public class ConfigCheckCopyTest extends TestCase {
         assert e1 != null;
         boolean eq;
         if (e1 instanceof Object[] && e2 instanceof Object[])
-            eq = deepEquals((Object[]) e1, (Object[]) e2);
+            eq = deepEquals(e1, e2);
         else if (e1 instanceof byte[] && e2 instanceof byte[])
             eq = Arrays.equals((byte[]) e1, (byte[]) e2);
         else if (e1 instanceof short[] && e2 instanceof short[])

@@ -35,7 +35,7 @@ public class DataSourceConnectionFactoryTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws InterruptedException, Exception {
+    public void test() throws Exception {
         Connection con = null;
         try {
             con = ds.getConnection();

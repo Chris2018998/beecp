@@ -39,7 +39,7 @@ public class ConnectionResetTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws InterruptedException, Exception {
+    public void test() throws Exception {
         Connection con = null;
         try {
             con = ds.getConnection();
@@ -53,7 +53,7 @@ public class ConnectionResetTest extends TestCase {
         }
         try {
             FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
-            if (pool.getConnTotalSize() != 1) TestUtil.assertError("Total connections not as expected:" + 1);
+            if (pool.getTotalSize() != 1) TestUtil.assertError("Total connections not as expected:" + 1);
 
             con = ds.getConnection();
             //if(con.getAutoCommit()!=false)TestUtil.assertError("autoCommit reset fail");

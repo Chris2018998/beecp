@@ -14,10 +14,10 @@ import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 
 public class PoolConfigUnChangeTest extends TestCase {
+    private final int initSize = 5;
+    private final int maxSize = 20;
     BeeDataSourceConfig testConfig;
     private BeeDataSource ds;
-    private int initSize = 5;
-    private int maxSize = 20;
 
     public void setUp() throws Throwable {
         testConfig = new BeeDataSourceConfig();
@@ -37,7 +37,7 @@ public class PoolConfigUnChangeTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws InterruptedException, Exception {
+    public void test() throws Exception {
         testConfig.setInitialSize(10);
         testConfig.setMaxActive(50);
 

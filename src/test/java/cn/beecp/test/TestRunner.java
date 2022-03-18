@@ -13,7 +13,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 public class TestRunner {
-    private static String defaultFilename = "testCase.properties";
+    private static final String defaultFilename = "beecp/testCase.properties";
 
     @SuppressWarnings("rawtypes")
     private static Class[] getTestCaseClasses() throws Exception {

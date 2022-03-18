@@ -17,6 +17,7 @@ import java.util.logging.Logger;
  * @version 1.0
  */
 public class MockDataSource implements DataSource {
+
     public Connection getConnection() throws SQLException {
         return new MockConnection();
     }

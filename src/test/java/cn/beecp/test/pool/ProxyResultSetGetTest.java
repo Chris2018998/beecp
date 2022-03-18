@@ -34,7 +34,7 @@ public class ProxyResultSetGetTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws InterruptedException, Exception {
+    public void test() throws Exception {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;

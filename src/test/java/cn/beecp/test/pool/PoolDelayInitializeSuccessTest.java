@@ -15,7 +15,7 @@ import cn.beecp.test.TestUtil;
 import java.sql.Connection;
 
 public class PoolDelayInitializeSuccessTest extends TestCase {
-    private int initSize = 5;
+    private final int initSize = 5;
 
     public void setUp() throws Throwable {
     }
@@ -23,7 +23,7 @@ public class PoolDelayInitializeSuccessTest extends TestCase {
     public void tearDown() throws Throwable {
     }
 
-    public void testPoolInit() throws InterruptedException, Exception {
+    public void testPoolInit() throws Exception {
         BeeDataSource ds = new BeeDataSource();
         ds.setJdbcUrl(JdbcConfig.JDBC_URL);
         ds.setDriverClassName(JdbcConfig.JDBC_DRIVER);
@@ -35,8 +35,8 @@ public class PoolDelayInitializeSuccessTest extends TestCase {
         try {
             con = ds.getConnection();
             FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
-            if (pool.getConnTotalSize() != initSize)
-                TestUtil.assertError("Total connections expected:%s,current is s%", initSize, pool.getConnTotalSize());
+            if (pool.getTotalSize() != initSize)
+                TestUtil.assertError("Total connections expected:%s,current is s%", initSize, pool.getTotalSize());
         } catch (ExceptionInInitializerError e) {
             e.getCause().printStackTrace();
         } finally {

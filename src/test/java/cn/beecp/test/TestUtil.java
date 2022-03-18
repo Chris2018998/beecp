@@ -9,6 +9,7 @@ package cn.beecp.test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.XAConnection;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -29,7 +30,7 @@ public class TestUtil {
         throw new AssertionError(String.format(message, String.valueOf(expect), String.valueOf(current)));
     }
 
-    public static Object getFieldValue(final Object ob, String fieldName) {
+    public static Object getFieldValue(Object ob, String fieldName) {
         try {
             Field field = ob.getClass().getDeclaredField(fieldName);
             field.setAccessible(true);
@@ -38,6 +39,7 @@ public class TestUtil {
             throw new RuntimeException(e);
         }
     }
+
 
     public final static void oclose(ResultSet r) {
         try {
@@ -60,6 +62,15 @@ public class TestUtil {
             c.close();
         } catch (Throwable e) {
             log.warn("Warning:Error at closing connection:", e);
+        }
+    }
+
+
+    public final static void oclose(XAConnection c) {
+        try {
+            c.close();
+        } catch (Throwable e) {
+            log.warn("Warning:Error at closing resultSet:", e);
         }
     }
 

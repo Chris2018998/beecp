@@ -36,7 +36,7 @@ public class ProxyObjectClosedStateTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws InterruptedException, Exception {
+    public void test() throws Exception {
         Connection con = null;
         Statement st = null;
         PreparedStatement ps = null;
