@@ -10,8 +10,6 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import static cn.beecp.pool.PoolStaticCenter.XAConnectionClosedException;
-
 /**
  * XAResource Proxy
  *
@@ -28,57 +26,57 @@ public final class XaProxyResource implements XAResource {
     }
 
     private void checkClosed() throws XAException {
-        if (proxyConn.getClosedInd())
-            throw XAConnectionClosedException;
+        if (this.proxyConn.getClosedInd())
+            throw new XAException("No operations allowed after XAConnection closed");
     }
 
     public void start(Xid xid, int flags) throws XAException {
-        checkClosed();
-        raw.start(xid, flags);
+        this.checkClosed();
+        this.raw.start(xid, flags);
     }
 
     public int prepare(Xid xid) throws XAException {
-        checkClosed();
-        return raw.prepare(xid);
+        this.checkClosed();
+        return this.raw.prepare(xid);
     }
 
     public void commit(Xid xid, boolean onePhase) throws XAException {
-        checkClosed();
-        raw.commit(xid, onePhase);
+        this.checkClosed();
+        this.raw.commit(xid, onePhase);
     }
 
     public void rollback(Xid xid) throws XAException {
-        checkClosed();
-        raw.rollback(xid);
+        this.checkClosed();
+        this.raw.rollback(xid);
     }
 
     public void end(Xid xid, int flags) throws XAException {
-        checkClosed();
-        raw.end(xid, flags);
+        this.checkClosed();
+        this.raw.end(xid, flags);
     }
 
     public void forget(Xid xid) throws XAException {
-        checkClosed();
-        raw.forget(xid);
+        this.checkClosed();
+        this.raw.forget(xid);
     }
 
     public Xid[] recover(int xid) throws XAException {
-        checkClosed();
-        return raw.recover(xid);
+        this.checkClosed();
+        return this.raw.recover(xid);
     }
 
     public boolean isSameRM(XAResource xares) throws XAException {
-        checkClosed();
+        this.checkClosed();
         return this == xares;
     }
 
     public int getTransactionTimeout() throws XAException {
-        checkClosed();
-        return raw.getTransactionTimeout();
+        this.checkClosed();
+        return this.raw.getTransactionTimeout();
     }
 
     public boolean setTransactionTimeout(int seconds) throws XAException {
-        checkClosed();
-        return raw.setTransactionTimeout(seconds);
+        this.checkClosed();
+        return this.raw.setTransactionTimeout(seconds);
     }
 }

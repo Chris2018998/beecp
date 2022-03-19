@@ -35,7 +35,7 @@ public final class ConnectionFactoryByDriver implements RawConnectionFactory {
     }
 
     //create one connection
-    public Connection create() throws SQLException {
-        return driver.connect(url, properties);
+    public final Connection create() throws SQLException {
+        return this.driver.connect(this.url, this.properties);
     }
 }

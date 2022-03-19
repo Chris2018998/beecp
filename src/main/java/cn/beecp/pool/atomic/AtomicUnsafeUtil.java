@@ -4,7 +4,7 @@
  *
  * Licensed under GNU Lesser General Public License v2.1
  */
-package cn.beeop.pool.atomic;
+package cn.beecp.pool.atomic;
 
 import sun.misc.Unsafe;
 
@@ -36,14 +36,14 @@ class AtomicUnsafeUtil {
     }
 
     public static Unsafe getUnsafe() {
-        return unsafe;
+        return AtomicUnsafeUtil.unsafe;
     }
 
     public static void parkNanos(long nanos) {
-        unsafe.park(false, nanos);
+        AtomicUnsafeUtil.unsafe.park(false, nanos);
     }
 
     public static void unpark(Thread thread) {
-        unsafe.unpark(thread);
+        AtomicUnsafeUtil.unsafe.unpark(thread);
     }
 }

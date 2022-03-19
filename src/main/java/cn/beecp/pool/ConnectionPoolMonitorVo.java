@@ -38,31 +38,31 @@ public class ConnectionPoolMonitorVo {
     }
 
     public String getHostIP() {
-        return hostIP;
+        return this.hostIP;
     }
 
     public long getThreadId() {
-        return threadId;
+        return this.threadId;
     }
 
     public String getThreadName() {
-        return threadName;
+        return this.threadName;
     }
 
     public String getPoolName() {
-        return poolName;
+        return this.poolName;
     }
 
     public String getPoolMode() {
-        return poolMode;
+        return this.poolMode;
     }
 
     public int getPoolMaxSize() {
-        return poolMaxSize;
+        return this.poolMaxSize;
     }
 
     public int getPoolState() {
-        return poolState;
+        return this.poolState;
     }
 
     void setPoolState(int poolState) {
@@ -70,7 +70,7 @@ public class ConnectionPoolMonitorVo {
     }
 
     public int getIdleSize() {
-        return idleSize;
+        return this.idleSize;
     }
 
     void setIdleSize(int idleSize) {
@@ -78,7 +78,7 @@ public class ConnectionPoolMonitorVo {
     }
 
     public int getUsingSize() {
-        return usingSize;
+        return this.usingSize;
     }
 
     void setUsingSize(int usingSize) {
@@ -86,7 +86,7 @@ public class ConnectionPoolMonitorVo {
     }
 
     public int getSemaphoreWaitingSize() {
-        return semaphoreWaitingSize;
+        return this.semaphoreWaitingSize;
     }
 
     void setSemaphoreWaitingSize(int semaphoreWaitingSize) {
@@ -94,7 +94,7 @@ public class ConnectionPoolMonitorVo {
     }
 
     public int getTransferWaitingSize() {
-        return transferWaitingSize;
+        return this.transferWaitingSize;
     }
 
     void setTransferWaitingSize(int transferWaitingSize) {

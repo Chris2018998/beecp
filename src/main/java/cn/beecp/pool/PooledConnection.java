@@ -64,27 +64,27 @@ final class PooledConnection implements Cloneable {
         this.defaultCatalog = defaultCatalog;
         this.defaultSchema = defaultSchema;
         this.defaultNetworkTimeout = defaultNetworkTimeout;
-        this.defaultCatalogIsNotBlank = !isBlank(defaultCatalog);
-        this.defaultSchemaIsNotBlank = !isBlank(defaultSchema);
+        defaultCatalogIsNotBlank = !isBlank(defaultCatalog);
+        defaultSchemaIsNotBlank = !isBlank(defaultSchema);
         this.supportNetworkTimeoutInd = supportNetworkTimeoutInd;
         this.networkTimeoutExecutor = networkTimeoutExecutor;
         this.pool = pool;
-        this.curAutoCommit = defaultAutoCommit;
+        curAutoCommit = defaultAutoCommit;
     }
 
-    PooledConnection setDefaultAndCopy(Connection rawConn, int state, XAResource rawXaRes) throws SQLException, CloneNotSupportedException {
-        if (defaultAutoCommit != rawConn.getAutoCommit())
-            rawConn.setAutoCommit(defaultAutoCommit);
-        if (defaultTransactionIsolation != rawConn.getTransactionIsolation())
-            rawConn.setTransactionIsolation(defaultTransactionIsolation);
-        if (defaultReadOnly != rawConn.isReadOnly())
-            rawConn.setReadOnly(defaultReadOnly);
-        if (defaultCatalogIsNotBlank && !defaultCatalog.equals(rawConn.getCatalog()))
-            rawConn.setCatalog(defaultCatalog);
-        if (defaultSchemaIsNotBlank && !defaultSchema.equals(rawConn.getSchema()))
-            rawConn.setSchema(defaultSchema);
+    final PooledConnection setDefaultAndCopy(Connection rawConn, int state, XAResource rawXaRes) throws SQLException, CloneNotSupportedException {
+        if (this.defaultAutoCommit != rawConn.getAutoCommit())
+            rawConn.setAutoCommit(this.defaultAutoCommit);
+        if (this.defaultTransactionIsolation != rawConn.getTransactionIsolation())
+            rawConn.setTransactionIsolation(this.defaultTransactionIsolation);
+        if (this.defaultReadOnly != rawConn.isReadOnly())
+            rawConn.setReadOnly(this.defaultReadOnly);
+        if (this.defaultCatalogIsNotBlank && !this.defaultCatalog.equals(rawConn.getCatalog()))
+            rawConn.setCatalog(this.defaultCatalog);
+        if (this.defaultSchemaIsNotBlank && !this.defaultSchema.equals(rawConn.getSchema()))
+            rawConn.setSchema(this.defaultSchema);
 
-        PooledConnection p = (PooledConnection) super.clone();
+        PooledConnection p = (PooledConnection) clone();
         p.state = state;
         p.rawConn = rawConn;
         p.rawXaRes = rawXaRes;
@@ -95,108 +95,108 @@ final class PooledConnection implements Cloneable {
     }
 
     boolean supportNetworkTimeoutSet() {
-        return supportNetworkTimeoutInd;
+        return this.supportNetworkTimeoutInd;
     }
 
-    void updateAccessTime() {//for update,insert.select,delete and so on DML
-        commitDirtyInd = !curAutoCommit;
-        lastAccessTime = System.currentTimeMillis();
+    final void updateAccessTime() {//for update,insert.select,delete and so on DML
+        this.commitDirtyInd = !this.curAutoCommit;
+        this.lastAccessTime = System.currentTimeMillis();
+    }
+
+    final void setResetInd(int i, boolean changed) {
+        if (this.resetFlags[i] != changed) {
+            this.resetFlags[i] = changed;
+            this.resetCnt += changed ? 1 : -1;
+        }
     }
 
     //called by pool before remove from pool
-    void onBeforeRemove() {
+    final void onBeforeRemove() {
         try {
-            state = CON_CLOSED;
-            resetRawConn();
+            this.state = CON_CLOSED;
+            this.resetRawConn();
         } catch (Throwable e) {
             CommonLog.error("Connection close error", e);
         } finally {
-            oclose(rawConn);
-            rawXaRes = null;
+            oclose(this.rawConn);
+            this.rawXaRes = null;
             //rawXaConn = null;
         }
     }
 
     //***************called by connection proxy ********//
-    void recycleSelf() throws SQLException {
+    final void recycleSelf() throws SQLException {
         try {
-            proxyInUsing = null;
-            resetRawConn();
-            pool.recycle(this);
+            this.proxyInUsing = null;
+            this.resetRawConn();
+            this.pool.recycle(this);
         } catch (Throwable e) {
-            pool.abandonOnReturn(this);
+            this.pool.abandonOnReturn(this);
             throw e instanceof SQLException ? (SQLException) e : new SQLException(e);
         }
     }
 
-    void setResetInd(int i, boolean changed) {
-        if (resetFlags[i] != changed) {
-            resetFlags[i] = changed;
-            resetCnt += changed ? 1 : -1;
-        }
-    }
-
     private void resetRawConn() throws SQLException {
-        if (commitDirtyInd) { //Roll back when commit dirty
-            rawConn.rollback();
-            commitDirtyInd = false;
+        if (this.commitDirtyInd) { //Roll back when commit dirty
+            this.rawConn.rollback();
+            this.commitDirtyInd = false;
         }
         //reset begin
-        if (resetCnt > 0) {
-            if (resetFlags[PS_AUTO]) {//reset autoCommit
-                rawConn.setAutoCommit(defaultAutoCommit);
-                curAutoCommit = defaultAutoCommit;
+        if (this.resetCnt > 0) {
+            if (this.resetFlags[PS_AUTO]) {//reset autoCommit
+                this.rawConn.setAutoCommit(this.defaultAutoCommit);
+                this.curAutoCommit = this.defaultAutoCommit;
             }
-            if (resetFlags[PS_TRANS])
-                rawConn.setTransactionIsolation(defaultTransactionIsolation);
-            if (resetFlags[PS_READONLY]) //reset readonly
-                rawConn.setReadOnly(defaultReadOnly);
-            if (defaultCatalogIsNotBlank && resetFlags[PS_CATALOG]) //reset catalog
-                rawConn.setCatalog(defaultCatalog);
+            if (this.resetFlags[PS_TRANS])
+                this.rawConn.setTransactionIsolation(this.defaultTransactionIsolation);
+            if (this.resetFlags[PS_READONLY]) //reset readonly
+                this.rawConn.setReadOnly(this.defaultReadOnly);
+            if (this.defaultCatalogIsNotBlank && this.resetFlags[PS_CATALOG]) //reset catalog
+                this.rawConn.setCatalog(this.defaultCatalog);
 
             //for JDK1.7 begin
-            if (defaultSchemaIsNotBlank && resetFlags[PS_SCHEMA]) //reset schema
-                rawConn.setSchema(defaultSchema);
-            if (resetFlags[PS_NETWORK]) //reset networkTimeout
-                rawConn.setNetworkTimeout(networkTimeoutExecutor, defaultNetworkTimeout);
+            if (this.defaultSchemaIsNotBlank && this.resetFlags[PS_SCHEMA]) //reset schema
+                this.rawConn.setSchema(this.defaultSchema);
+            if (this.resetFlags[PS_NETWORK]) //reset networkTimeout
+                this.rawConn.setNetworkTimeout(this.networkTimeoutExecutor, this.defaultNetworkTimeout);
             //for JDK1.7 end
-            resetCnt = 0;
-            System.arraycopy(FALSE, 0, resetFlags, 0, 6);
+            this.resetCnt = 0;
+            System.arraycopy(PooledConnection.FALSE, 0, this.resetFlags, 0, 6);
         }//reset end
         //clear warnings
-        rawConn.clearWarnings();
+        this.rawConn.clearWarnings();
     }
 
     //****************below are some statement trace methods***************************/
-    void registerStatement(ProxyStatementBase s) {
-        if (openStmSize == openStatements.length) {//full
-            ProxyStatementBase[] array = new ProxyStatementBase[openStmSize << 1];
-            System.arraycopy(openStatements, 0, array, 0, openStmSize);
-            openStatements = array;
+    final void registerStatement(ProxyStatementBase s) {
+        if (this.openStmSize == this.openStatements.length) {//full
+            ProxyStatementBase[] array = new ProxyStatementBase[this.openStmSize << 1];
+            System.arraycopy(this.openStatements, 0, array, 0, this.openStmSize);
+            this.openStatements = array;
         }
-        openStatements[openStmSize++] = s;
+        this.openStatements[this.openStmSize++] = s;
     }
 
-    void unregisterStatement(ProxyStatementBase s) {
-        for (int i = openStmSize - 1; i >= 0; i--) {
-            if (s == openStatements[i]) {
-                int m = openStmSize - i - 1;
-                if (m > 0) System.arraycopy(openStatements, i + 1, openStatements, i, m);//move ahead
-                openStatements[--openStmSize] = null; // clear to let GC do its work
+    final void unregisterStatement(ProxyStatementBase s) {
+        for (int i = this.openStmSize - 1; i >= 0; i--) {
+            if (s == this.openStatements[i]) {
+                int m = this.openStmSize - i - 1;
+                if (m > 0) System.arraycopy(this.openStatements, i + 1, this.openStatements, i, m);//move ahead
+                this.openStatements[--this.openStmSize] = null; // clear to let GC do its work
                 return;
             }
         }
     }
 
-    void clearStatement() {
-        for (int i = 0; i < openStmSize; i++) {
-            ProxyStatementBase s = openStatements[i];
+    final void clearStatement() {
+        for (int i = 0; i < this.openStmSize; i++) {
+            ProxyStatementBase s = this.openStatements[i];
             if (s != null) {
                 s.registered = false;
-                openStatements[i] = null;
+                this.openStatements[i] = null;
                 oclose(s);
             }
         }
-        openStmSize = 0;
+        this.openStmSize = 0;
     }
 }

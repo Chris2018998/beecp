@@ -32,7 +32,7 @@ abstract class ProxyResultSetBase extends ProxyBaseWrapper implements ResultSet 
         super(p);
         o.setOpenResultSet(this);
         this.raw = raw;
-        this.owner = o;
+        owner = o;
     }
 
     //***************************************************************************************************************//
@@ -46,22 +46,22 @@ abstract class ProxyResultSetBase extends ProxyBaseWrapper implements ResultSet 
     //                                              Below are override methods                                       //
     //***************************************************************************************************************//
     public Statement getStatement() throws SQLException {
-        if (isClosed) throw ResultSetClosedException;
-        return owner;
+        if (this.isClosed) throw ResultSetClosedException;
+        return this.owner;
     }
 
     public boolean isClosed() {
-        return isClosed;
+        return this.isClosed;
     }
 
-    public void close() throws SQLException {
-        if (isClosed) return;
+    public final void close() throws SQLException {
+        if (this.isClosed) return;
         try {
-            isClosed = true;
-            raw.close();
+            this.isClosed = true;
+            this.raw.close();
         } finally {
-            raw = CLOSED_RSLT;
-            if (owner != null) owner.removeOpenResultSet(this);
+            this.raw = CLOSED_RSLT;
+            if (this.owner != null) this.owner.removeOpenResultSet(this);
         }
     }
 }

@@ -46,7 +46,7 @@ public class BeeJtaDataSource extends TimerTask implements DataSource {
     public BeeJtaDataSource(BeeDataSource ds, TransactionManager tm) {
         this.ds = ds;
         this.tm = tm;
-        transactionTimer.schedule(this, 0, 6000);
+        this.transactionTimer.schedule(this, 0, 6000);
     }
 
     public void setDataSource(BeeDataSource ds) {
@@ -58,17 +58,17 @@ public class BeeJtaDataSource extends TimerTask implements DataSource {
     }
 
     public Connection getConnection() throws SQLException {
-        if (ds == null) throw new SQLException("dataSource not set");
-        if (tm == null) throw new SQLException("transactionManager not set");
+        if (this.ds == null) throw new SQLException("dataSource not set");
+        if (this.tm == null) throw new SQLException("transactionManager not set");
 
         //step1: try to get connection by transaction
         Transaction transaction;
         try {
-            transaction = tm.getTransaction();
+            transaction = this.tm.getTransaction();
             int statusCode = transaction.getStatus();
             if (STATUS_ACTIVE != statusCode)
                 throw new SQLException("Current transaction status code is not expect value:" + statusCode);
-            Connection conn = transactionMap.get(transaction);
+            Connection conn = this.transactionMap.get(transaction);
             if (conn != null) return conn;
         } catch (Throwable e) {
             throw e instanceof SQLException ? (SQLException) e : new SQLException(e);
@@ -77,11 +77,11 @@ public class BeeJtaDataSource extends TimerTask implements DataSource {
         //step2: try to get connection by XAConnection
         XAConnection xaConn = null;
         try {
-            xaConn = ds.getXAConnection();
+            xaConn = this.ds.getXAConnection();
             Connection conn = xaConn.getConnection();
             if (transaction.enlistResource(xaConn.getXAResource())) {
-                transactionMap.put(transaction, conn);
-                Synchronization synchronization = new BeeJtaSynchronization(transaction, transactionMap);
+                this.transactionMap.put(transaction, conn);
+                Synchronization synchronization = new BeeJtaSynchronization(transaction, this.transactionMap);
                 transaction.registerSynchronization(synchronization);
                 return conn;
             } else {
@@ -94,7 +94,7 @@ public class BeeJtaDataSource extends TimerTask implements DataSource {
     }
 
     public void run() {
-        Iterator<Map.Entry<Transaction, Connection>> iterator = transactionMap.entrySet().iterator();
+        Iterator<Map.Entry<Transaction, Connection>> iterator = this.transactionMap.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<Transaction, Connection> entry = iterator.next();
             Transaction transaction = entry.getKey();

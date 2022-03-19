@@ -39,7 +39,7 @@ public class ConnectionFactoryByDriverDs implements RawConnectionFactory {
     }
 
     //create one connection
-    public Connection create() throws SQLException {
-        return useUsername ? driverDataSource.getConnection(username, password) : driverDataSource.getConnection();
+    public final Connection create() throws SQLException {
+        return this.useUsername ? this.driverDataSource.getConnection(this.username, this.password) : this.driverDataSource.getConnection();
     }
 }

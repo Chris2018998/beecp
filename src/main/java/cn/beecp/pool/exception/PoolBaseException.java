@@ -4,7 +4,9 @@
  *
  * Licensed under GNU Lesser General Public License v2.1
  */
-package cn.beeop.pool.exception;
+package cn.beecp.pool.exception;
+
+import java.sql.SQLException;
 
 /**
  * pool exception
@@ -12,7 +14,7 @@ package cn.beeop.pool.exception;
  * @author Chris.Liao
  * @version 1.0
  */
-public class PoolBaseException extends Exception {
+public class PoolBaseException extends SQLException {
 
     public PoolBaseException(String s) {
         super(s);

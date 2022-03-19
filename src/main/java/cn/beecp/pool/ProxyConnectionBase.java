@@ -23,7 +23,7 @@ abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Connectio
 
     public ProxyConnectionBase(PooledConnection p) {
         super(p);
-        this.raw = p.rawConn;
+        raw = p.rawConn;
         p.proxyInUsing = this;
     }
 
@@ -31,83 +31,83 @@ abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Connectio
     //                                             self-define methods(4)                                            //
     //***************************************************************************************************************//
     public boolean getClosedInd() {
-        return isClosed;
+        return this.isClosed;
     }
 
-    public void checkClosed() throws SQLException {
-        if (isClosed) throw ConnectionClosedException;
+    public final void checkClosed() throws SQLException {
+        if (this.isClosed) throw ConnectionClosedException;
     }
 
-    synchronized void registerStatement(ProxyStatementBase s) {
-        p.registerStatement(s);
+    synchronized final void registerStatement(ProxyStatementBase s) {
+        this.p.registerStatement(s);
     }
 
-    synchronized void unregisterStatement(ProxyStatementBase s) {
-        p.unregisterStatement(s);
+    synchronized final void unregisterStatement(ProxyStatementBase s) {
+        this.p.unregisterStatement(s);
     }
 
     //***************************************************************************************************************//
     //                                              override methods (11)                                            //
     //***************************************************************************************************************//
     public boolean isClosed() {
-        return isClosed;
+        return this.isClosed;
     }
 
     //call by borrower,then return PooledConnection to pool
-    public void close() throws SQLException {
+    public final void close() throws SQLException {
         synchronized (this) {//safe close
-            if (isClosed) return;
-            isClosed = true;
-            raw = CLOSED_CON;
-            if (p.openStmSize > 0) p.clearStatement();
+            if (this.isClosed) return;
+            this.isClosed = true;
+            this.raw = CLOSED_CON;
+            if (this.p.openStmSize > 0) this.p.clearStatement();
         }
-        p.recycleSelf();
+        this.p.recycleSelf();
     }
 
     public void setAutoCommit(boolean autoCommit) throws SQLException {
         //if (p.commitDirtyInd) throw DirtyTransactionException;
-        raw.setAutoCommit(autoCommit);
-        p.curAutoCommit = autoCommit;
-        p.setResetInd(PS_AUTO, autoCommit != p.defaultAutoCommit);
+        this.raw.setAutoCommit(autoCommit);
+        this.p.curAutoCommit = autoCommit;
+        this.p.setResetInd(PS_AUTO, autoCommit != this.p.defaultAutoCommit);
     }
 
     public void commit() throws SQLException {
-        raw.commit();
-        p.commitDirtyInd = false;
-        p.lastAccessTime = System.currentTimeMillis();
+        this.raw.commit();
+        this.p.commitDirtyInd = false;
+        this.p.lastAccessTime = System.currentTimeMillis();
     }
 
     public void rollback() throws SQLException {
-        raw.rollback();
-        p.commitDirtyInd = false;
-        p.lastAccessTime = System.currentTimeMillis();
+        this.raw.rollback();
+        this.p.commitDirtyInd = false;
+        this.p.lastAccessTime = System.currentTimeMillis();
     }
 
     public void setTransactionIsolation(int level) throws SQLException {
-        raw.setTransactionIsolation(level);
-        p.setResetInd(PS_TRANS, level != p.defaultTransactionIsolation);
+        this.raw.setTransactionIsolation(level);
+        this.p.setResetInd(PS_TRANS, level != this.p.defaultTransactionIsolation);
     }
 
     public void setReadOnly(boolean readOnly) throws SQLException {
-        raw.setReadOnly(readOnly);
-        p.setResetInd(PS_READONLY, readOnly != p.defaultReadOnly);
+        this.raw.setReadOnly(readOnly);
+        this.p.setResetInd(PS_READONLY, readOnly != this.p.defaultReadOnly);
     }
 
     public void setCatalog(String catalog) throws SQLException {
-        raw.setCatalog(catalog);
-        p.setResetInd(PS_CATALOG, !PoolStaticCenter.equals(catalog, p.defaultCatalog));
+        this.raw.setCatalog(catalog);
+        this.p.setResetInd(PS_CATALOG, !PoolStaticCenter.equals(catalog, this.p.defaultCatalog));
     }
 
     //for JDK1.7 begin
     public void setSchema(String schema) throws SQLException {
-        raw.setSchema(schema);
-        p.setResetInd(PS_SCHEMA, !PoolStaticCenter.equals(schema, p.defaultSchema));
+        this.raw.setSchema(schema);
+        this.p.setResetInd(PS_SCHEMA, !PoolStaticCenter.equals(schema, this.p.defaultSchema));
     }
 
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-        if (p.supportNetworkTimeoutSet()) {
-            raw.setNetworkTimeout(executor, milliseconds);
-            p.setResetInd(PS_NETWORK, milliseconds != p.defaultNetworkTimeout);
+        if (this.p.supportNetworkTimeoutSet()) {
+            this.raw.setNetworkTimeout(executor, milliseconds);
+            this.p.setResetInd(PS_NETWORK, milliseconds != this.p.defaultNetworkTimeout);
         } else {
             throw DriverNotSupportNetworkTimeoutException;
         }
@@ -115,7 +115,7 @@ abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Connectio
 
     public void abort(Executor executor) throws SQLException {
         if (executor == null) throw new SQLException("executor can't be null");
-        executor.execute(new ProxyConnectionCloseTask(this));
+        executor.execute(new PoolStaticCenter.ProxyConnectionCloseTask(this));
     }
     //for JDK1.7 end
 }

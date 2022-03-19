@@ -29,11 +29,11 @@ public class XaConnectionFactoryByDriverDs implements RawXaConnectionFactory {
         this.dataSource = dataSource;
         this.username = username;
         this.password = password;
-        this.useUsername = !isBlank(username);
+        useUsername = !isBlank(username);
     }
 
     //create one connection
-    public XAConnection create() throws SQLException {
-        return useUsername ? dataSource.getXAConnection(username, password) : dataSource.getXAConnection();
+    public final XAConnection create() throws SQLException {
+        return this.useUsername ? this.dataSource.getXAConnection(this.username, this.password) : this.dataSource.getXAConnection();
     }
 }

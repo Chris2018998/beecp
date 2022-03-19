@@ -24,22 +24,22 @@ public final class XaProxyConnection implements XAConnection {
     private final ProxyConnectionBase proxyConn;
 
     XaProxyConnection(ProxyConnectionBase proxyBaseConn, XAResource resource) {
-        this.proxyConn = proxyBaseConn;
+        proxyConn = proxyBaseConn;
         this.resource = resource;
     }
 
     public void close() throws SQLException {
-        proxyConn.close();
+        this.proxyConn.close();
     }
 
     public Connection getConnection() throws SQLException {
-        proxyConn.checkClosed();
-        return proxyConn;
+        this.proxyConn.checkClosed();
+        return this.proxyConn;
     }
 
     public XAResource getXAResource() throws SQLException {
-        proxyConn.checkClosed();
-        return resource;
+        this.proxyConn.checkClosed();
+        return this.resource;
     }
 
     public void addConnectionEventListener(ConnectionEventListener listener) {

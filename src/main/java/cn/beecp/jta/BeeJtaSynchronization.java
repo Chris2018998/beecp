@@ -30,6 +30,6 @@ public class BeeJtaSynchronization implements Synchronization {
     }
 
     public void afterCompletion(int status) {
-        transactionMap.remove(transaction);
+        this.transactionMap.remove(this.transaction);
     }
 }

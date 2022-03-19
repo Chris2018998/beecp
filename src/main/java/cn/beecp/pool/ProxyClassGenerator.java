@@ -31,7 +31,7 @@ final class ProxyClassGenerator {
     public static void main(String[] args) throws Exception {
         String classesFolder = "";
         if (args != null && args.length > 0) classesFolder = args[0];
-        writeProxyFile(classesFolder);
+        ProxyClassGenerator.writeProxyFile(classesFolder);
     }
 
     private static void resolveInterfaceMethods(CtClass interfaceClass, LinkedList linkedList, HashSet exitSignatureSet) throws Exception {
@@ -52,7 +52,7 @@ final class ProxyClassGenerator {
 
         CtClass[] superInterfaces = interfaceClass.getInterfaces();
         for (int i = 0; i < superInterfaces.length; i++) {
-            resolveInterfaceMethods(superInterfaces[i], linkedList, exitSignatureSet);
+            ProxyClassGenerator.resolveInterfaceMethods(superInterfaces[i], linkedList, exitSignatureSet);
         }
     }
 
@@ -65,7 +65,7 @@ final class ProxyClassGenerator {
     private static void writeProxyFile(String folder) throws Exception {
         String defaultFolder = "BeeCP/target/classes";
         if (isBlank(folder)) folder = defaultFolder;
-        CtClass[] ctClasses = createJdbcProxyClasses();
+        CtClass[] ctClasses = ProxyClassGenerator.createJdbcProxyClasses();
         for (CtClass ctClass : ctClasses) {
             ctClass.writeFile(folder);
         }
@@ -98,7 +98,7 @@ final class ProxyClassGenerator {
             CtClass ctProxyConnectionClass = classPool.makeClass(ctProxyConnectionClassName, ctProxyConnectionBaseClass);
             ctProxyConnectionClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
 
-            CtClass[] conCreateParamTypes = new CtClass[]{
+            CtClass[] conCreateParamTypes = {
                     classPool.get("cn.beecp.pool.PooledConnection")};
             CtConstructor ctConstructor = new CtConstructor(conCreateParamTypes, ctProxyConnectionClass);
             ctConstructor.setBody("{super($$);}");
@@ -111,7 +111,7 @@ final class ProxyClassGenerator {
             String ctProxyStatementClassName = "cn.beecp.pool.ProxyStatement";
             CtClass ctProxyStatementClass = classPool.makeClass(ctProxyStatementClassName, ctProxyStatementBaseClass);
             ctProxyStatementClass.setModifiers(Modifier.PUBLIC);
-            CtClass[] statementCreateParamTypes = new CtClass[]{
+            CtClass[] statementCreateParamTypes = {
                     classPool.get("java.sql.Statement"),
                     classPool.get("cn.beecp.pool.ProxyConnectionBase"),
                     classPool.get("cn.beecp.pool.PooledConnection")
@@ -127,7 +127,7 @@ final class ProxyClassGenerator {
             CtClass ctProxyPsStatementClass = classPool.makeClass(ctProxyPsStatementClassName, ctProxyStatementClass);
             ctProxyPsStatementClass.setInterfaces(new CtClass[]{ctPreparedStatementClass});
             ctProxyPsStatementClass.setModifiers(Modifier.PUBLIC);
-            CtClass[] statementPsCreateParamTypes = new CtClass[]{
+            CtClass[] statementPsCreateParamTypes = {
                     classPool.get("java.sql.PreparedStatement"),
                     classPool.get("cn.beecp.pool.ProxyConnectionBase"),
                     classPool.get("cn.beecp.pool.PooledConnection")};
@@ -142,7 +142,7 @@ final class ProxyClassGenerator {
             CtClass ctProxyCsStatementClass = classPool.makeClass(ctProxyCsStatementClassName, ctProxyPsStatementClass);
             ctProxyCsStatementClass.setInterfaces(new CtClass[]{ctCallableStatementClass});
             ctProxyCsStatementClass.setModifiers(Modifier.PUBLIC);
-            CtClass[] statementCsCreateParamTypes = new CtClass[]{
+            CtClass[] statementCsCreateParamTypes = {
                     classPool.get("java.sql.CallableStatement"),
                     classPool.get("cn.beecp.pool.ProxyConnectionBase"),
                     classPool.get("cn.beecp.pool.PooledConnection")};
@@ -157,7 +157,7 @@ final class ProxyClassGenerator {
             String ctProxyDatabaseMetaDataClassName = "cn.beecp.pool.ProxyDatabaseMetaData";
             CtClass ctProxyDatabaseMetaDataClass = classPool.makeClass(ctProxyDatabaseMetaDataClassName, ctProxyDatabaseMetaDataBaseClass);
             ctProxyDatabaseMetaDataClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
-            CtClass[] databaseMetaDataTypes = new CtClass[]{
+            CtClass[] databaseMetaDataTypes = {
                     classPool.get("java.sql.DatabaseMetaData"),
                     classPool.get("cn.beecp.pool.PooledConnection")};
             ctConstructor = new CtConstructor(databaseMetaDataTypes, ctProxyDatabaseMetaDataClass);
@@ -171,14 +171,14 @@ final class ProxyClassGenerator {
             String ctProxyResultSetClassName = "cn.beecp.pool.ProxyResultSet";
             CtClass ctProxyResultSetClass = classPool.makeClass(ctProxyResultSetClassName, ctProxyResultSetBaseClass);
             ctProxyResultSetClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
-            CtClass[] resultSetCreateParamTypes1 = new CtClass[]{
+            CtClass[] resultSetCreateParamTypes1 = {
                     classPool.get("java.sql.ResultSet"),
                     classPool.get("cn.beecp.pool.PooledConnection")};
             CtConstructor ctConstructor1 = new CtConstructor(resultSetCreateParamTypes1, ctProxyResultSetClass);
             ctConstructor1.setBody("{super($$);}");
             ctProxyResultSetClass.addConstructor(ctConstructor1);
 
-            CtClass[] resultSetCreateParamTypes2 = new CtClass[]{
+            CtClass[] resultSetCreateParamTypes2 = {
                     classPool.get("java.sql.ResultSet"),
                     classPool.get("cn.beecp.pool.ProxyStatementBase"),
                     classPool.get("cn.beecp.pool.PooledConnection")};
@@ -186,12 +186,12 @@ final class ProxyClassGenerator {
             ctConstructor.setBody("{super($$);}");
             ctProxyResultSetClass.addConstructor(ctConstructor);
             //............Result End...............
-            createProxyConnectionClass(classPool, ctProxyConnectionClass, ctConnectionClass, ctProxyConnectionBaseClass);
-            createProxyStatementClass(classPool, ctProxyStatementClass, ctStatementClass, ctProxyStatementBaseClass);
-            createProxyStatementClass(classPool, ctProxyPsStatementClass, ctPreparedStatementClass, ctProxyStatementClass);
-            createProxyStatementClass(classPool, ctProxyCsStatementClass, ctCallableStatementClass, ctProxyPsStatementClass);
-            createProxyDatabaseMetaDataClass(classPool, ctProxyDatabaseMetaDataClass, ctDatabaseMetaDataClass, ctProxyDatabaseMetaDataBaseClass);
-            createProxyResultSetClass(classPool, ctProxyResultSetClass, ctResultSetClass, ctProxyResultSetBaseClass);
+            ProxyClassGenerator.createProxyConnectionClass(classPool, ctProxyConnectionClass, ctConnectionClass, ctProxyConnectionBaseClass);
+            ProxyClassGenerator.createProxyStatementClass(classPool, ctProxyStatementClass, ctStatementClass, ctProxyStatementBaseClass);
+            ProxyClassGenerator.createProxyStatementClass(classPool, ctProxyPsStatementClass, ctPreparedStatementClass, ctProxyStatementClass);
+            ProxyClassGenerator.createProxyStatementClass(classPool, ctProxyCsStatementClass, ctCallableStatementClass, ctProxyPsStatementClass);
+            ProxyClassGenerator.createProxyDatabaseMetaDataClass(classPool, ctProxyDatabaseMetaDataClass, ctDatabaseMetaDataClass, ctProxyDatabaseMetaDataBaseClass);
+            ProxyClassGenerator.createProxyResultSetClass(classPool, ctProxyResultSetClass, ctResultSetClass, ctProxyResultSetBaseClass);
 
             //............... ProxyObjectFactory Begin..................
             CtClass ctProxyObjectFactoryClass = classPool.get(PoolStaticCenter.class.getName());
@@ -249,7 +249,7 @@ final class ProxyClassGenerator {
         }
 
         LinkedList<CtMethod> linkedList = new LinkedList<CtMethod>();
-        resolveInterfaceMethods(ctConnectionClass, linkedList, notNeedAddProxyMethods);
+        ProxyClassGenerator.resolveInterfaceMethods(ctConnectionClass, linkedList, notNeedAddProxyMethods);
 
         CtClass ctStatementClass = classPool.get(Statement.class.getName());
         CtClass ctPreparedStatementClass = classPool.get(PreparedStatement.class.getName());
@@ -301,7 +301,7 @@ final class ProxyClassGenerator {
         }
 
         LinkedList<CtMethod> linkedList = new LinkedList<CtMethod>();
-        resolveInterfaceMethods(ctStatementClass, linkedList, superClassSignatureSet);
+        ProxyClassGenerator.resolveInterfaceMethods(ctStatementClass, linkedList, superClassSignatureSet);
 
         CtClass ctResultSetClass = classPool.get(ResultSet.class.getName());
         StringBuilder methodBuffer = new StringBuilder(50);
@@ -362,7 +362,7 @@ final class ProxyClassGenerator {
         }
 
         LinkedList<CtMethod> linkedList = new LinkedList();
-        resolveInterfaceMethods(ctDatabaseMetaDataIntf, linkedList, superClassSignatureSet);
+        ProxyClassGenerator.resolveInterfaceMethods(ctDatabaseMetaDataIntf, linkedList, superClassSignatureSet);
         CtClass ctResultSetClass = classPool.get(ResultSet.class.getName());
 
         StringBuilder methodBuffer = new StringBuilder(40);
@@ -400,7 +400,7 @@ final class ProxyClassGenerator {
         }
 
         LinkedList<CtMethod> linkedList = new LinkedList();
-        resolveInterfaceMethods(ctResultSetClass, linkedList, superClassSignatureSet);
+        ProxyClassGenerator.resolveInterfaceMethods(ctResultSetClass, linkedList, superClassSignatureSet);
         StringBuilder methodBuffer = new StringBuilder(25);
 
         for (CtMethod ctMethod : linkedList) {

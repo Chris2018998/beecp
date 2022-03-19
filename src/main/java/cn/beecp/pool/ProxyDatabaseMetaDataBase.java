@@ -23,15 +23,15 @@ abstract class ProxyDatabaseMetaDataBase extends ProxyBaseWrapper implements Dat
     public ProxyDatabaseMetaDataBase(DatabaseMetaData raw, PooledConnection p) {
         super(p);
         this.raw = raw;
-        this.owner = p.proxyInUsing;
+        owner = p.proxyInUsing;
     }
 
     protected void checkClosed() throws SQLException {
-        owner.checkClosed();
+        this.owner.checkClosed();
     }
 
     public Connection getConnection() throws SQLException {
-        checkClosed();
-        return owner;
+        this.checkClosed();
+        return this.owner;
     }
 }
