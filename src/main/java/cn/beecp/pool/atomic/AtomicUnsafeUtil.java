@@ -12,6 +12,8 @@ import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
 
+import static cn.beecp.pool.PoolStaticCenter.CommonLog;
+
 /**
  * Atomic Unsafe Util
  *
@@ -21,10 +23,8 @@ import java.security.PrivilegedExceptionAction;
 class AtomicUnsafeUtil {
     private static Unsafe unsafe;
 
-    static Unsafe getUnsafe() throws Exception {
-        if (unsafe != null) return unsafe;
-        synchronized (AtomicUnsafeUtil.class) {
-            if (unsafe != null) return unsafe;
+    static {
+        try {
             unsafe = AccessController.doPrivileged(new PrivilegedExceptionAction<Unsafe>() {
                 public Unsafe run() throws Exception {
                     Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
@@ -32,7 +32,12 @@ class AtomicUnsafeUtil {
                     return (Unsafe) theUnsafe.get(null);
                 }
             });
-            return unsafe;
+        } catch (Throwable e) {
+            CommonLog.error("Unable to load unsafe", e);
         }
+    }
+
+    static Unsafe getUnsafe() {
+        return AtomicUnsafeUtil.unsafe;
     }
 }
