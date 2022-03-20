@@ -43,14 +43,18 @@ public final class XaProxyConnection implements XAConnection {
     }
 
     public void addConnectionEventListener(ConnectionEventListener listener) {
+        //do nothing
     }
 
     public void removeConnectionEventListener(ConnectionEventListener listener) {
+        //do nothing
     }
 
     public void addStatementEventListener(StatementEventListener listener) {
+        //do nothing
     }
 
     public void removeStatementEventListener(StatementEventListener listener) {
+        //do nothing
     }
 }
