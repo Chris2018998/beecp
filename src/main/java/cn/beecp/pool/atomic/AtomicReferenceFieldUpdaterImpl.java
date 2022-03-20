@@ -17,38 +17,41 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  * @version 1.0
  */
 public final class AtomicReferenceFieldUpdaterImpl<T, V> extends AtomicReferenceFieldUpdater<T, V> {
-    private static final Unsafe unsafe = AtomicUnsafeUtil.getUnsafe();
+    private static Unsafe unsafe;
     private final long offset;
+    private final Class<V> fieldType;
 
-    private AtomicReferenceFieldUpdaterImpl(long offset) {
+    private AtomicReferenceFieldUpdaterImpl(long offset, Class<V> fieldType) {
         this.offset = offset;
+        this.fieldType = fieldType;
     }
 
-    public static <U, W> AtomicReferenceFieldUpdater<U, W> newUpdater(Class<U> beanClass, Class<W> fieldType, String fieldName) {
+    public static <T, V> AtomicReferenceFieldUpdater<T, V> newUpdater(Class<T> beanClass, Class<V> fieldType, String fieldName) {
         try {
-            return new AtomicReferenceFieldUpdaterImpl<U, W>(AtomicReferenceFieldUpdaterImpl.unsafe.objectFieldOffset(beanClass.getDeclaredField(fieldName)));
+            if (unsafe == null) unsafe = AtomicUnsafeUtil.getUnsafe();
+            return new AtomicReferenceFieldUpdaterImpl<T, V>(unsafe.objectFieldOffset(beanClass.getDeclaredField(fieldName)), fieldType);
         } catch (Throwable e) {
             return AtomicReferenceFieldUpdater.newUpdater(beanClass, fieldType, fieldName);
         }
     }
 
     public final boolean compareAndSet(T bean, V expect, V update) {
-        return AtomicReferenceFieldUpdaterImpl.unsafe.compareAndSwapObject(bean, this.offset, expect, update);
+        return unsafe.compareAndSwapObject(bean, this.offset, expect, update);
     }
 
     public final boolean weakCompareAndSet(T bean, V expect, V update) {
-        return AtomicReferenceFieldUpdaterImpl.unsafe.compareAndSwapObject(bean, this.offset, expect, update);
+        return unsafe.compareAndSwapObject(bean, this.offset, expect, update);
     }
 
     public final void set(T bean, V newValue) {
-        AtomicReferenceFieldUpdaterImpl.unsafe.putObjectVolatile(bean, this.offset, newValue);
+        unsafe.putObjectVolatile(bean, this.offset, newValue);
     }
 
     public final void lazySet(T bean, V newValue) {
-        AtomicReferenceFieldUpdaterImpl.unsafe.putOrderedObject(bean, this.offset, newValue);
+        unsafe.putOrderedObject(bean, this.offset, newValue);
     }
 
     public final V get(T bean) {
-        return (V) AtomicReferenceFieldUpdaterImpl.unsafe.getObjectVolatile(bean, this.offset);
+        return fieldType.cast(unsafe.getObjectVolatile(bean, this.offset));
     }
 }

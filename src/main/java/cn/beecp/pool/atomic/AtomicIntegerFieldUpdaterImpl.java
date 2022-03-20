@@ -17,38 +17,39 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
  * @version 1.0
  */
 public final class AtomicIntegerFieldUpdaterImpl<T> extends AtomicIntegerFieldUpdater<T> {
-    private static final Unsafe unsafe = AtomicUnsafeUtil.getUnsafe();
+    private static Unsafe unsafe;
     private final long offset;
 
     private AtomicIntegerFieldUpdaterImpl(long offset) {
         this.offset = offset;
     }
 
-    public static <U> AtomicIntegerFieldUpdater<U> newUpdater(Class<U> beanClass, String fieldName) {
+    public static <T> AtomicIntegerFieldUpdater<T> newUpdater(Class<T> beanClass, String fieldName) {
         try {
-            return new AtomicIntegerFieldUpdaterImpl<U>(AtomicIntegerFieldUpdaterImpl.unsafe.objectFieldOffset(beanClass.getDeclaredField(fieldName)));
+            if (unsafe == null) unsafe = AtomicUnsafeUtil.getUnsafe();
+            return new AtomicIntegerFieldUpdaterImpl<T>(unsafe.objectFieldOffset(beanClass.getDeclaredField(fieldName)));
         } catch (Throwable e) {
             return AtomicIntegerFieldUpdater.newUpdater(beanClass, fieldName);
         }
     }
 
     public final boolean compareAndSet(T bean, int expect, int update) {
-        return AtomicIntegerFieldUpdaterImpl.unsafe.compareAndSwapInt(bean, this.offset, expect, update);
+        return unsafe.compareAndSwapInt(bean, this.offset, expect, update);
     }
 
     public final boolean weakCompareAndSet(T bean, int expect, int update) {
-        return AtomicIntegerFieldUpdaterImpl.unsafe.compareAndSwapInt(bean, this.offset, expect, update);
+        return unsafe.compareAndSwapInt(bean, this.offset, expect, update);
     }
 
     public final void set(T bean, int newValue) {
-        AtomicIntegerFieldUpdaterImpl.unsafe.putIntVolatile(bean, this.offset, newValue);
+        unsafe.putIntVolatile(bean, this.offset, newValue);
     }
 
     public final void lazySet(T bean, int newValue) {
-        AtomicIntegerFieldUpdaterImpl.unsafe.putOrderedInt(bean, this.offset, newValue);
+        unsafe.putOrderedInt(bean, this.offset, newValue);
     }
 
     public final int get(T bean) {
-        return AtomicIntegerFieldUpdaterImpl.unsafe.getIntVolatile(bean, this.offset);
+        return unsafe.getIntVolatile(bean, this.offset);
     }
 }

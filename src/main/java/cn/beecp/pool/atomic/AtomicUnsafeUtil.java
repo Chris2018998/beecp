@@ -19,10 +19,12 @@ import java.security.PrivilegedExceptionAction;
  * @version 1.0
  */
 class AtomicUnsafeUtil {
-    private static final Unsafe unsafe;
+    private static Unsafe unsafe;
 
-    static {
-        try {
+    static Unsafe getUnsafe() throws Exception {
+        if (unsafe != null) return unsafe;
+        synchronized (AtomicUnsafeUtil.class) {
+            if (unsafe != null) return unsafe;
             unsafe = AccessController.doPrivileged(new PrivilegedExceptionAction<Unsafe>() {
                 public Unsafe run() throws Exception {
                     Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
@@ -30,20 +32,7 @@ class AtomicUnsafeUtil {
                     return (Unsafe) theUnsafe.get(null);
                 }
             });
-        } catch (Throwable e) {
-            throw new Error("Unable to load unsafe", e);
+            return unsafe;
         }
-    }
-
-    public static Unsafe getUnsafe() {
-        return AtomicUnsafeUtil.unsafe;
-    }
-
-    public static void parkNanos(long nanos) {
-        AtomicUnsafeUtil.unsafe.park(false, nanos);
-    }
-
-    public static void unpark(Thread thread) {
-        AtomicUnsafeUtil.unsafe.unpark(thread);
     }
 }
