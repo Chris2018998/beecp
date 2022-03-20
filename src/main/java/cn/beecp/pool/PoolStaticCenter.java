@@ -281,18 +281,18 @@ public class PoolStaticCenter {
      * @param propertyName config item name
      * @return configuration item value
      */
-    private static Object getFieldValue(Map<String, Object> valueMap, String propertyName) {
+    private static Object getFieldValue(Map<String, Object> valueMap, final String propertyName) {
         Object value = valueMap.get(propertyName);
         if (value != null) return value;
 
-        propertyName = propertyName.substring(0, 1).toLowerCase(Locale.US) + propertyName.substring(1);
-        value = valueMap.get(propertyName);
+        String newPropertyName = propertyName.substring(0, 1).toLowerCase(Locale.US) + propertyName.substring(1);
+        value = valueMap.get(newPropertyName);
         if (value != null) return value;
 
-        value = valueMap.get(propertyNameToFieldId(propertyName, Separator_MiddleLine));
+        value = valueMap.get(propertyNameToFieldId(newPropertyName, Separator_MiddleLine));
         if (value != null) return value;
 
-        return valueMap.get(propertyNameToFieldId(propertyName, Separator_UnderLine));
+        return valueMap.get(propertyNameToFieldId(newPropertyName, Separator_UnderLine));
     }
 
     public static String propertyNameToFieldId(String property, String separator) {
