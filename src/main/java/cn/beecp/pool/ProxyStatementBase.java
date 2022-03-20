@@ -126,10 +126,11 @@ abstract class ProxyStatementBase extends ProxyBaseWrapper implements Statement 
     }
 
     public void setPoolable(boolean var1) {
+        //do nothing
     }
 
     public void closeOnCompletion() throws SQLException {
-
+        //do nothing
     }
 
     public boolean isCloseOnCompletion() throws SQLException {
