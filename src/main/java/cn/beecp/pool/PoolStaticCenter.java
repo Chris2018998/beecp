@@ -120,7 +120,7 @@ public class PoolStaticCenter {
         return value == null ? null : value.trim();
     }
 
-    public static boolean equals(String a, String b) {
+    public static boolean equalsString(String a, String b) {
         return a == null ? b == null : a.equals(b);
     }
 

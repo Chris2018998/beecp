@@ -95,13 +95,13 @@ abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Connectio
 
     public void setCatalog(String catalog) throws SQLException {
         this.raw.setCatalog(catalog);
-        this.p.setResetInd(PS_CATALOG, !PoolStaticCenter.equals(catalog, this.p.defaultCatalog));
+        this.p.setResetInd(PS_CATALOG, !equalsString(catalog, this.p.defaultCatalog));
     }
 
     //for JDK1.7 begin
     public void setSchema(String schema) throws SQLException {
         this.raw.setSchema(schema);
-        this.p.setResetInd(PS_SCHEMA, !PoolStaticCenter.equals(schema, this.p.defaultSchema));
+        this.p.setResetInd(PS_SCHEMA, !equalsString(schema, this.p.defaultSchema));
     }
 
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
@@ -115,7 +115,7 @@ abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Connectio
 
     public void abort(Executor executor) throws SQLException {
         if (executor == null) throw new SQLException("executor can't be null");
-        executor.execute(new PoolStaticCenter.ProxyConnectionCloseTask(this));
+        executor.execute(new ProxyConnectionCloseTask(this));
     }
     //for JDK1.7 end
 }
