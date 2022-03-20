@@ -73,41 +73,41 @@ public class PoolStaticCenter {
     //                                1: JDBC static global closed proxies(3)                                        //
     //***************************************************************************************************************//
     static final Connection CLOSED_CON = (Connection) Proxy.newProxyInstance(
-            PoolStaticCenter.PoolClassLoader,
+            PoolClassLoader,
             new Class[]{Connection.class},
             new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                     if ("isClosed".equals(method.getName())) {
                         return Boolean.TRUE;
                     } else {
-                        throw PoolStaticCenter.ConnectionClosedException;
+                        throw ConnectionClosedException;
                     }
                 }
             }
     );
     static final ResultSet CLOSED_RSLT = (ResultSet) Proxy.newProxyInstance(
-            PoolStaticCenter.PoolClassLoader,
+            PoolClassLoader,
             new Class[]{ResultSet.class},
             new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                     if ("isClosed".equals(method.getName())) {
                         return Boolean.TRUE;
                     } else {
-                        throw PoolStaticCenter.ResultSetClosedException;
+                        throw ResultSetClosedException;
                     }
                 }
             }
     );
 
     static final CallableStatement CLOSED_CSTM = (CallableStatement) Proxy.newProxyInstance(
-            PoolStaticCenter.PoolClassLoader,
+            PoolClassLoader,
             new Class[]{CallableStatement.class},
             new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                     if ("isClosed".equals(method.getName())) {
                         return Boolean.TRUE;
                     } else {
-                        throw PoolStaticCenter.StatementClosedException;
+                        throw StatementClosedException;
                     }
                 }
             }
@@ -140,7 +140,7 @@ public class PoolStaticCenter {
         try {
             r.close();
         } catch (Throwable e) {
-            PoolStaticCenter.CommonLog.debug("Warning:Error at closing resultSet:", e);
+            CommonLog.debug("Warning:Error at closing resultSet:", e);
         }
     }
 
@@ -148,7 +148,7 @@ public class PoolStaticCenter {
         try {
             s.close();
         } catch (Throwable e) {
-            PoolStaticCenter.CommonLog.debug("Warning:Error at closing statement:", e);
+            CommonLog.debug("Warning:Error at closing statement:", e);
         }
     }
 
@@ -156,7 +156,7 @@ public class PoolStaticCenter {
         try {
             c.close();
         } catch (Throwable e) {
-            PoolStaticCenter.CommonLog.debug("Warning:Error at closing connection:", e);
+            CommonLog.debug("Warning:Error at closing connection:", e);
         }
     }
 
@@ -164,7 +164,7 @@ public class PoolStaticCenter {
         try {
             c.close();
         } catch (Throwable e) {
-            PoolStaticCenter.CommonLog.debug("Warning:Error at closing connection:", e);
+            CommonLog.debug("Warning:Error at closing connection:", e);
         }
     }
 
@@ -197,7 +197,7 @@ public class PoolStaticCenter {
                 st.setQueryTimeout(validTestTimeout);
                 supportQueryTimeout = true;
             } catch (Throwable e) {
-                PoolStaticCenter.CommonLog.warn("BeeCP({})driver not support 'queryTimeout',cause:", poolName, e);
+                CommonLog.warn("BeeCP({})driver not support 'queryTimeout',cause:", poolName, e);
             }
 
             //step3: execute test sql
@@ -211,7 +211,7 @@ public class PoolStaticCenter {
 
             return supportQueryTimeout;
         } finally {
-            if (st != null) PoolStaticCenter.oclose(st);
+            if (st != null) oclose(st);
             if (changed) rawCon.setAutoCommit(true);//reset to default
         }
     }
@@ -256,18 +256,19 @@ public class PoolStaticCenter {
      * @param propertyName config item name
      * @return configuration item value
      */
-    public static String getPropertyValue(Properties properties, String propertyName) {
-        String value = PoolStaticCenter.readPropertyValue(properties, propertyName);
+    public static String getPropertyValue(Properties properties, final String propertyName) {
+        String value = readPropertyValue(properties, propertyName);
         if (value != null) return value;
 
-        propertyName = propertyName.substring(0, 1).toLowerCase(Locale.US) + propertyName.substring(1);
-        value = PoolStaticCenter.readPropertyValue(properties, propertyName);
+        String newPropertyName = propertyName.substring(0, 1).toLowerCase(Locale.US) + propertyName.substring(1);
+
+        value = readPropertyValue(properties, newPropertyName);
         if (value != null) return value;
 
-        value = PoolStaticCenter.readPropertyValue(properties, PoolStaticCenter.propertyNameToFieldId(propertyName, PoolStaticCenter.Separator_MiddleLine));
+        value = readPropertyValue(properties, propertyNameToFieldId(newPropertyName, Separator_MiddleLine));
         if (value != null) return value;
 
-        return PoolStaticCenter.readPropertyValue(properties, PoolStaticCenter.propertyNameToFieldId(propertyName, PoolStaticCenter.Separator_UnderLine));
+        return readPropertyValue(properties, propertyNameToFieldId(newPropertyName, Separator_UnderLine));
     }
 
     /**
@@ -288,10 +289,10 @@ public class PoolStaticCenter {
         value = valueMap.get(propertyName);
         if (value != null) return value;
 
-        value = valueMap.get(PoolStaticCenter.propertyNameToFieldId(propertyName, PoolStaticCenter.Separator_MiddleLine));
+        value = valueMap.get(propertyNameToFieldId(propertyName, Separator_MiddleLine));
         if (value != null) return value;
 
-        return valueMap.get(PoolStaticCenter.propertyNameToFieldId(propertyName, PoolStaticCenter.Separator_UnderLine));
+        return valueMap.get(propertyNameToFieldId(propertyName, Separator_UnderLine));
     }
 
     public static String propertyNameToFieldId(String property, String separator) {
@@ -310,7 +311,7 @@ public class PoolStaticCenter {
     private static String readPropertyValue(Properties configProperties, String propertyName) {
         String value = configProperties.getProperty(propertyName, null);
         if (value != null) {
-            PoolStaticCenter.CommonLog.info("beecp.{}={}", propertyName, value);
+            CommonLog.info("beecp.{}={}", propertyName, value);
             return value.trim();
         } else {
             return null;
@@ -323,7 +324,7 @@ public class PoolStaticCenter {
     //***************************************************************************************************************//
     public static void setPropertiesValue(Object bean, Map<String, Object> valueMap) throws BeeDataSourceConfigException {
         if (bean == null) throw new BeeDataSourceConfigException("Bean can't be null");
-        PoolStaticCenter.setPropertiesValue(bean, PoolStaticCenter.getClassSetMethodMap(bean.getClass()), valueMap);
+        setPropertiesValue(bean, getClassSetMethodMap(bean.getClass()), valueMap);
     }
 
     public static void setPropertiesValue(Object bean, Map<String, Method> setMethodMap, Map<String, Object> valueMap) throws BeeDataSourceConfigException {
@@ -333,12 +334,12 @@ public class PoolStaticCenter {
             String propertyName = entry.getKey();
             Method setMethod = entry.getValue();
 
-            Object setValue = PoolStaticCenter.getFieldValue(valueMap, propertyName);
+            Object setValue = getFieldValue(valueMap, propertyName);
             if (setValue != null) {
                 Class type = setMethod.getParameterTypes()[0];
                 try {
                     //1:convert config value to match type of set method
-                    setValue = PoolStaticCenter.convert(propertyName, setValue, type);
+                    setValue = convert(propertyName, setValue, type);
                 } catch (BeeDataSourceConfigException e) {
                     throw e;
                 } catch (Throwable e) {
@@ -418,7 +419,7 @@ public class PoolStaticCenter {
     //***************************************************************************************************************//
     //check subclass,if failed,then return error message;
     public static String checkClass(Class objectClass, Class parentClass, String objectClassType) {
-        return PoolStaticCenter.checkClass(objectClass, parentClass != null ? new Class[]{parentClass} : null, objectClassType);
+        return checkClass(objectClass, parentClass != null ? new Class[]{parentClass} : null, objectClassType);
     }
 
     //check subclass,if failed,then return error message;
@@ -433,7 +434,7 @@ public class PoolStaticCenter {
                 }
             }
             if (!isSubClass)
-                return "Error " + objectClassType + " class[" + objectClass.getName() + "],which must extend from one of class[" + PoolStaticCenter.getClassName(parentClasses) + "]";
+                return "Error " + objectClassType + " class[" + objectClass.getName() + "],which must extend from one of class[" + getClassName(parentClasses) + "]";
         }
 
         //2:check class abstract modifier
@@ -444,7 +445,7 @@ public class PoolStaticCenter {
             return "Error " + objectClassType + " class[" + objectClass.getName() + "],which must be a public class";
         //4:check class constructor
         try {
-            objectClass.getConstructor(PoolStaticCenter.EMPTY_CLASSES);
+            objectClass.getConstructor(EMPTY_CLASSES);
         } catch (NoSuchMethodException e) {
             return "Error " + objectClassType + " class[" + objectClass.getName() + "],which must provide a constructor without parameter";
         }
@@ -474,7 +475,7 @@ public class PoolStaticCenter {
             try {
                 this.proxyCon.close();
             } catch (Throwable e) {
-                PoolStaticCenter.CommonLog.warn("Warning:Error at closing connection in executor,cause:", e);
+                CommonLog.warn("Warning:Error at closing connection in executor,cause:", e);
             }
         }
     }
