@@ -6,12 +6,15 @@
  */
 package cn.beecp;
 
+import cn.beecp.jta.BeeJtaDataSource;
+
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.spi.NamingManager;
 import javax.naming.spi.ObjectFactory;
+import javax.transaction.TransactionManager;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -27,18 +30,20 @@ import static cn.beecp.pool.PoolStaticCenter.*;
  * @version 1.0
  */
 public final class BeeDataSourceFactory implements ObjectFactory {
-    private static String getConfigValue(Reference ref, String propertyName) {
+
+    private static String getConfigValue(Reference ref, final String propertyName) {
         String value = BeeDataSourceFactory.readConfig(ref, propertyName);
         if (value != null) return value;
 
-        propertyName = propertyName.substring(0, 1).toLowerCase(Locale.US) + propertyName.substring(1);
-        value = BeeDataSourceFactory.readConfig(ref, propertyName);
+        String newPropertyName = propertyName.substring(0, 1).toLowerCase(Locale.US) + propertyName.substring(1);
+
+        value = BeeDataSourceFactory.readConfig(ref, newPropertyName);
         if (value != null) return value;
 
-        value = BeeDataSourceFactory.readConfig(ref, propertyNameToFieldId(propertyName, Separator_MiddleLine));
+        value = BeeDataSourceFactory.readConfig(ref, propertyNameToFieldId(newPropertyName, Separator_MiddleLine));
         if (value != null) return value;
 
-        return BeeDataSourceFactory.readConfig(ref, propertyNameToFieldId(propertyName, Separator_UnderLine));
+        return BeeDataSourceFactory.readConfig(ref, propertyNameToFieldId(newPropertyName, Separator_UnderLine));
     }
 
     private static String readConfig(Reference ref, String propertyName) {
@@ -69,24 +74,31 @@ public final class BeeDataSourceFactory implements ObjectFactory {
      * @see NamingManager#getObjectInstance
      * @see NamingManager#getURLContext
      */
-    public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) {
+    public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
         Reference ref = (Reference) obj;
-        //1:create datasource config instance
+        //1:try to lookup transactionManager if configured
+        TransactionManager tm = null;
+        String tmJndiName = getConfigValue(ref, "transactionManagerName");
+        if (!isBlank(tmJndiName) && nameCtx != null) {
+            tm = (TransactionManager) nameCtx.lookup(tmJndiName);
+        }
+
+        //2:create datasource config instance
         BeeDataSourceConfig config = new BeeDataSourceConfig();
-        //2:get all properties set methods
+        //3:get all properties set methods
         Map<String, Method> setMethodMap = getClassSetMethodMap(config.getClass());
-        //3:create properties to collect config value
+        //4:create properties to collect config value
         Map<String, Object> setValueMap = new HashMap<String, Object>(setMethodMap.size());
-        //4:loop to find out properties config value by set methods
+        //5:loop to find out properties config value by set methods
         for (String propertyName : setMethodMap.keySet()) {
             String configVal = BeeDataSourceFactory.getConfigValue(ref, propertyName);
             if (isBlank(configVal)) continue;
             setValueMap.put(propertyName, configVal);
         }
-        //5:inject found config value to ds config object
+        //6:inject found config value to ds config object
         setPropertiesValue(config, setMethodMap, setValueMap);
 
-        //6:try to find 'connectProperties' config value and put to ds config object
+        //7:try to find 'connectProperties' config value and put to ds config object
         config.addConnectProperty(BeeDataSourceFactory.getConfigValue(ref, "connectProperties"));
         String connectPropertiesCount = BeeDataSourceFactory.getConfigValue(ref, "connectProperties.count");
         if (!isBlank(connectPropertiesCount)) {
@@ -95,7 +107,8 @@ public final class BeeDataSourceFactory implements ObjectFactory {
                 config.addConnectProperty(BeeDataSourceFactory.getConfigValue(ref, "connectProperties." + i));
         }
 
-        //7:create dataSource by config
-        return new BeeDataSource(config);
+        //8:create dataSource by config
+        BeeDataSource ds = new BeeDataSource(config);
+        return (tm != null) ? new BeeJtaDataSource(ds, tm) : ds;
     }
 }
