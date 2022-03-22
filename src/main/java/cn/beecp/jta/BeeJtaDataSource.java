@@ -7,6 +7,7 @@
 package cn.beecp.jta;
 
 import cn.beecp.BeeDataSource;
+import cn.beecp.pool.ConnectionPoolMonitorVo;
 
 import javax.sql.DataSource;
 import javax.sql.XAConnection;
@@ -110,6 +111,45 @@ public class BeeJtaDataSource extends TimerTask implements DataSource {
             }
         }
     }
+
+    private void checkDataSource() throws SQLException {
+        if (this.ds == null) throw new SQLException("dataSource not set");
+    }
+
+    //***************************************************************************************************************//
+    //                   proxy call BeeDataSource methods  (Begin)                                                          //                           //
+    //****************************************************************************************************************//
+    public void clear() throws SQLException {
+        clear(false);
+    }
+
+    public void clear(boolean force) throws SQLException {
+        checkDataSource();
+        this.ds.clear(force);
+    }
+
+    public boolean isClosed() throws SQLException {
+        checkDataSource();
+        return ds.isClosed();
+    }
+
+    public void close() throws SQLException {
+        checkDataSource();
+        this.ds.close();
+    }
+
+    public void setPrintRuntimeLog(boolean printRuntimeLog) throws SQLException {
+        checkDataSource();
+        ds.setPrintRuntimeLog(printRuntimeLog);
+    }
+
+    public ConnectionPoolMonitorVo getPoolMonitorVo() throws SQLException {
+        checkDataSource();
+        return ds.getPoolMonitorVo();
+    }
+    //***************************************************************************************************************//
+    //                   proxy call BeeDataSource methods  (End)                                                          //                           //
+    //****************************************************************************************************************//
 
     public Connection getConnection(String username, String password) throws SQLException {
         throw new SQLFeatureNotSupportedException("Not supported");
