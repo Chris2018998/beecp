@@ -117,7 +117,7 @@ public class BeeJtaDataSource extends TimerTask implements DataSource {
     }
 
     //***************************************************************************************************************//
-    //                   proxy call BeeDataSource methods  (Begin)                                                          //                           //
+    //                   proxy call BeeDataSource methods  (Begin)                                                   //
     //****************************************************************************************************************//
     public void clear() throws SQLException {
         clear(false);
@@ -148,7 +148,7 @@ public class BeeJtaDataSource extends TimerTask implements DataSource {
         return ds.getPoolMonitorVo();
     }
     //***************************************************************************************************************//
-    //                   proxy call BeeDataSource methods  (End)                                                          //                           //
+    //                   proxy call BeeDataSource methods  (End)                                                      //
     //****************************************************************************************************************//
 
     public Connection getConnection(String username, String password) throws SQLException {
