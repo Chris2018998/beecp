@@ -78,7 +78,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         Reference ref = (Reference) obj;
         //1:try to lookup transactionManager if configured
         TransactionManager tm = null;
-        String tmJndiName = getConfigValue(ref, "transactionManagerName");
+        String tmJndiName = getConfigValue(ref, CONFIG_TM_JNDI);
         if (!isBlank(tmJndiName) && nameCtx != null) {
             tm = (TransactionManager) nameCtx.lookup(tmJndiName);
         }
@@ -99,12 +99,12 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         setPropertiesValue(config, setMethodMap, setValueMap);
 
         //7:try to find 'connectProperties' config value and put to ds config object
-        config.addConnectProperty(BeeDataSourceFactory.getConfigValue(ref, "connectProperties"));
-        String connectPropertiesCount = BeeDataSourceFactory.getConfigValue(ref, "connectProperties.count");
+        config.addConnectProperty(BeeDataSourceFactory.getConfigValue(ref, CONFIG_CONNECT_PROP));
+        String connectPropertiesCount = BeeDataSourceFactory.getConfigValue(ref, CONFIG_CONNECT_PROP_SIZE);
         if (!isBlank(connectPropertiesCount)) {
             int count = Integer.parseInt(connectPropertiesCount.trim());
             for (int i = 1; i <= count; i++)
-                config.addConnectProperty(BeeDataSourceFactory.getConfigValue(ref, "connectProperties." + i));
+                config.addConnectProperty(BeeDataSourceFactory.getConfigValue(ref, CONFIG_CONNECT_PROP_KEY_PREFIX + i));
         }
 
         //8:create dataSource by config
