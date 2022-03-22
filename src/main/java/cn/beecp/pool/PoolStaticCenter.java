@@ -25,11 +25,22 @@ import java.util.*;
  * @version 1.0
  */
 public class PoolStaticCenter {
-    public static final String Separator_MiddleLine = "-";
-    public static final String Separator_UnderLine = "_";
     public static final Class[] EMPTY_CLASSES = new Class[0];
     public static final int NCPUS = Runtime.getRuntime().availableProcessors();
     public static final Logger CommonLog = LoggerFactory.getLogger(PoolStaticCenter.class);
+
+    //properties configuration separator
+    public static final String Separator_MiddleLine = "-";
+    //properties configuration separator
+    public static final String Separator_UnderLine = "_";
+    //transaction manager jndi name in configuration
+    public static final String CONFIG_TM_JNDI = "transactionManagerName";
+    //connect properties for driver or driver dataSource
+    public static final String CONFIG_CONNECT_PROP = "connectProperties";
+    //connect properties count for driver or driver dataSource
+    public static final String CONFIG_CONNECT_PROP_SIZE = "connectProperties.size";
+    //connect properties prefix for driver or driver dataSource
+    public static final String CONFIG_CONNECT_PROP_KEY_PREFIX = "connectProperties.";
 
     //connection state
     static final int CON_IDLE = 0;
