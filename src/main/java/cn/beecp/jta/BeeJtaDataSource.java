@@ -35,10 +35,10 @@ import static javax.transaction.Status.STATUS_ACTIVE;
  * @version 1.0
  */
 public class BeeJtaDataSource extends TimerTask implements DataSource {
-    private final Timer transactionTimer = new Timer(true);
-    private final ConcurrentHashMap<Transaction, Connection> transactionMap = new ConcurrentHashMap<Transaction, Connection>(10);
     private BeeDataSource ds;
     private TransactionManager tm;
+    private Timer transactionTimer = new Timer(true);
+    private ConcurrentHashMap<Transaction, Connection> transactionMap = new ConcurrentHashMap<Transaction, Connection>(10);
 
     public BeeJtaDataSource() {
         this(null, null);
@@ -59,7 +59,7 @@ public class BeeJtaDataSource extends TimerTask implements DataSource {
     }
 
     public Connection getConnection() throws SQLException {
-        if (this.ds == null) throw new SQLException("dataSource not set");
+        checkDataSource();
         if (this.tm == null) throw new SQLException("transactionManager not set");
 
         //step1: try to get connection by transaction
@@ -113,7 +113,7 @@ public class BeeJtaDataSource extends TimerTask implements DataSource {
     }
 
     private void checkDataSource() throws SQLException {
-        if (this.ds == null) throw new SQLException("dataSource not set");
+        if (this.ds == null || ds.isClosed()) throw new SQLException("dataSource not set or closed");
     }
 
     //***************************************************************************************************************//
@@ -136,6 +136,7 @@ public class BeeJtaDataSource extends TimerTask implements DataSource {
     public void close() throws SQLException {
         checkDataSource();
         this.ds.close();
+        this.transactionTimer.cancel();
     }
 
     public void setPrintRuntimeLog(boolean printRuntimeLog) throws SQLException {
