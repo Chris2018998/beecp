@@ -97,8 +97,7 @@ final class ProxyClassGenerator {
         CtClass ctProxyConnectionClass = classPool.makeClass(ctProxyConnectionClassName, ctProxyConnectionBaseClass);
         ctProxyConnectionClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
 
-        CtClass[] conCreateParamTypes = {
-                classPool.get("cn.beecp.pool.PooledConnection")};
+        CtClass[] conCreateParamTypes = {classPool.get("cn.beecp.pool.PooledConnection")};
         CtConstructor ctConstructor = new CtConstructor(conCreateParamTypes, ctProxyConnectionClass);
         ctConstructor.setBody("{super($$);}");
         ctProxyConnectionClass.addConstructor(ctConstructor);
@@ -194,24 +193,14 @@ final class ProxyClassGenerator {
 
         //............... ProxyObjectFactory Begin..................
         CtClass ctProxyObjectFactoryClass = classPool.get(PoolStaticCenter.class.getName());
-        CtMethod createProxyConnectionMethod = null;
-        CtMethod createProxyResultSetMethod = null;
-
-        CtMethod[] ctMethods = ctProxyObjectFactoryClass.getDeclaredMethods();
-        for (CtMethod method : ctMethods) {
+        for (CtMethod method : ctProxyObjectFactoryClass.getDeclaredMethods()) {
             if ("createProxyConnection".equals(method.getName())) {
-                createProxyConnectionMethod = method;
+                method.setBody("{return new ProxyConnection($$);}");
             } else if ("createProxyResultSet".equals(method.getName())) {
-                createProxyResultSetMethod = method;
+                method.setBody("{return new ProxyResultSet($$);}");
             }
         }
-
-        if (createProxyConnectionMethod != null)
-            createProxyConnectionMethod.setBody("{return new ProxyConnection($$);}");
-        if (createProxyResultSetMethod != null)
-            createProxyResultSetMethod.setBody("{return new ProxyResultSet($$);}");
         //............... ProxyObjectFactory end..................
-
         return new CtClass[]{
                 ctProxyConnectionClass,
                 ctProxyStatementClass,
