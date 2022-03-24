@@ -30,18 +30,13 @@ public class TestUtil {
         throw new AssertionError(String.format(message, String.valueOf(expect), String.valueOf(current)));
     }
 
-    public static Object getFieldValue(Object ob, String fieldName) {
-        try {
-            Field field = ob.getClass().getDeclaredField(fieldName);
-            field.setAccessible(true);
-            return field.get(ob);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public static Object getFieldValue(Object ob, String fieldName) throws Exception {
+        Field field = ob.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field.get(ob);
     }
 
-
-    public final static void oclose(ResultSet r) {
+    public static void oclose(ResultSet r) {
         try {
             r.close();
         } catch (Throwable e) {
@@ -49,7 +44,7 @@ public class TestUtil {
         }
     }
 
-    public final static void oclose(Statement s) {
+    public static void oclose(Statement s) {
         try {
             s.close();
         } catch (Throwable e) {
@@ -57,7 +52,7 @@ public class TestUtil {
         }
     }
 
-    public final static void oclose(Connection c) {
+    public static void oclose(Connection c) {
         try {
             c.close();
         } catch (Throwable e) {
@@ -65,13 +60,11 @@ public class TestUtil {
         }
     }
 
-
-    public final static void oclose(XAConnection c) {
+    public static void oclose(XAConnection c) {
         try {
             c.close();
         } catch (Throwable e) {
             log.warn("Warning:Error at closing resultSet:", e);
         }
     }
-
 }

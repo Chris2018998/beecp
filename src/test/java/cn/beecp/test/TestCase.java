@@ -35,7 +35,7 @@ public class TestCase {
         }
     }
 
-    private void runTest() throws Throwable {
+    private void runTest() throws Exception {
         int successCount = 0;
         int failedCount = 0;
         long beginTime = System.currentTimeMillis();
