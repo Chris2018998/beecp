@@ -20,7 +20,7 @@ public class MockStatement extends MockBase implements Statement {
     private int maxRows;
     private int fetchSize;
 
-    public MockStatement(MockConnection connection) {
+    MockStatement(MockConnection connection) {
         this.connection = connection;
     }
 

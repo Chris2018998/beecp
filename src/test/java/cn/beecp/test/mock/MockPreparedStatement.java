@@ -78,27 +78,27 @@ public class MockPreparedStatement extends MockStatement implements PreparedStat
         //do nothing
     }
 
-    public void setDate(int parameterIndex, java.sql.Date x) throws SQLException {
+    public void setDate(int parameterIndex, Date x) throws SQLException {
         //do nothing
     }
 
-    public void setTime(int parameterIndex, java.sql.Time x) throws SQLException {
+    public void setTime(int parameterIndex, Time x) throws SQLException {
         //do nothing
     }
 
-    public void setTimestamp(int parameterIndex, java.sql.Timestamp x) throws SQLException {
+    public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException {
         //do nothing
     }
 
-    public void setAsciiStream(int parameterIndex, java.io.InputStream x, int length) throws SQLException {
+    public void setAsciiStream(int parameterIndex, InputStream x, int length) throws SQLException {
         //do nothing
     }
 
-    public void setUnicodeStream(int parameterIndex, java.io.InputStream x, int length) throws SQLException {
+    public void setUnicodeStream(int parameterIndex, InputStream x, int length) throws SQLException {
         //do nothing
     }
 
-    public void setBinaryStream(int parameterIndex, java.io.InputStream x, int length) throws SQLException {
+    public void setBinaryStream(int parameterIndex, InputStream x, int length) throws SQLException {
         //do nothing
     }
 
@@ -122,7 +122,7 @@ public class MockPreparedStatement extends MockStatement implements PreparedStat
         //do nothing
     }
 
-    public void setCharacterStream(int parameterIndex, java.io.Reader reader, int length) throws SQLException {
+    public void setCharacterStream(int parameterIndex, Reader reader, int length) throws SQLException {
         //do nothing
     }
 
@@ -142,15 +142,15 @@ public class MockPreparedStatement extends MockStatement implements PreparedStat
         //do nothing
     }
 
-    public void setDate(int parameterIndex, java.sql.Date x, Calendar cal) throws SQLException {
+    public void setDate(int parameterIndex, Date x, Calendar cal) throws SQLException {
         //do nothing
     }
 
-    public void setTime(int parameterIndex, java.sql.Time x, Calendar cal) throws SQLException {
+    public void setTime(int parameterIndex, Time x, Calendar cal) throws SQLException {
         //do nothing
     }
 
-    public void setTimestamp(int parameterIndex, java.sql.Timestamp x, Calendar cal) throws SQLException {
+    public void setTimestamp(int parameterIndex, Timestamp x, Calendar cal) throws SQLException {
         //do nothing
     }
 
@@ -202,27 +202,27 @@ public class MockPreparedStatement extends MockStatement implements PreparedStat
         //do nothing
     }
 
-    public void setAsciiStream(int parameterIndex, java.io.InputStream x, long length) throws SQLException {
+    public void setAsciiStream(int parameterIndex, InputStream x, long length) throws SQLException {
         //do nothing
     }
 
-    public void setBinaryStream(int parameterIndex, java.io.InputStream x, long length) throws SQLException {
+    public void setBinaryStream(int parameterIndex, InputStream x, long length) throws SQLException {
         //do nothing
     }
 
-    public void setCharacterStream(int parameterIndex, java.io.Reader reader, long length) throws SQLException {
+    public void setCharacterStream(int parameterIndex, Reader reader, long length) throws SQLException {
         //do nothing
     }
 
-    public void setAsciiStream(int parameterIndex, java.io.InputStream x) throws SQLException {
+    public void setAsciiStream(int parameterIndex, InputStream x) throws SQLException {
         //do nothing
     }
 
-    public void setBinaryStream(int parameterIndex, java.io.InputStream x) throws SQLException {
+    public void setBinaryStream(int parameterIndex, InputStream x) throws SQLException {
         //do nothing
     }
 
-    public void setCharacterStream(int parameterIndex, java.io.Reader reader) throws SQLException {
+    public void setCharacterStream(int parameterIndex, Reader reader) throws SQLException {
         //do nothing
     }
 

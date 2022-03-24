@@ -4,7 +4,7 @@
  *
  * Licensed under GNU Lesser General Public License v2.1
  */
-package cn.beecp.pool.xa;
+package cn.beecp.test.mock;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;

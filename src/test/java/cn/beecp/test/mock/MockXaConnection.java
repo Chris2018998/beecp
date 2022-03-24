@@ -6,8 +6,6 @@
  */
 package cn.beecp.test.mock;
 
-import cn.beecp.pool.xa.MockXaResource;
-
 import javax.sql.ConnectionEventListener;
 import javax.sql.StatementEventListener;
 import javax.sql.XAConnection;
@@ -25,7 +23,7 @@ public final class MockXaConnection implements XAConnection {
     private final Connection con;
     private final MockXaResource res;
 
-    public MockXaConnection(Connection con, MockXaResource res) {
+    MockXaConnection(Connection con, MockXaResource res) {
         this.con = con;
         this.res = res;
     }

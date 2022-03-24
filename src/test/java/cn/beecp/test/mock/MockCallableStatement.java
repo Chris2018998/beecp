@@ -75,15 +75,15 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
         return null;
     }
 
-    public java.sql.Date getDate(int parameterIndex) throws SQLException {
+    public Date getDate(int parameterIndex) throws SQLException {
         return null;
     }
 
-    public java.sql.Time getTime(int parameterIndex) throws SQLException {
+    public Time getTime(int parameterIndex) throws SQLException {
         return null;
     }
 
-    public java.sql.Timestamp getTimestamp(int parameterIndex) throws SQLException {
+    public Timestamp getTimestamp(int parameterIndex) throws SQLException {
         return null;
     }
 
@@ -115,15 +115,15 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
         return null;
     }
 
-    public java.sql.Date getDate(int parameterIndex, Calendar cal) throws SQLException {
+    public Date getDate(int parameterIndex, Calendar cal) throws SQLException {
         return null;
     }
 
-    public java.sql.Time getTime(int parameterIndex, Calendar cal) throws SQLException {
+    public Time getTime(int parameterIndex, Calendar cal) throws SQLException {
         return null;
     }
 
-    public java.sql.Timestamp getTimestamp(int parameterIndex, Calendar cal) throws SQLException {
+    public Timestamp getTimestamp(int parameterIndex, Calendar cal) throws SQLException {
         return null;
     }
 
@@ -196,15 +196,15 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
         //do nothing
     }
 
-    public void setDate(String parameterName, java.sql.Date x) throws SQLException {
+    public void setDate(String parameterName, Date x) throws SQLException {
         //do nothing
     }
 
-    public void setTime(String parameterName, java.sql.Time x) throws SQLException {
+    public void setTime(String parameterName, Time x) throws SQLException {
         //do nothing
     }
 
-    public void setTimestamp(String parameterName, java.sql.Timestamp x) throws SQLException {
+    public void setTimestamp(String parameterName, Timestamp x) throws SQLException {
         //do nothing
     }
 
@@ -232,15 +232,15 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
         //do nothing
     }
 
-    public void setDate(String parameterName, java.sql.Date x, Calendar cal) throws SQLException {
+    public void setDate(String parameterName, Date x, Calendar cal) throws SQLException {
         //do nothing
     }
 
-    public void setTime(String parameterName, java.sql.Time x, Calendar cal) throws SQLException {
+    public void setTime(String parameterName, Time x, Calendar cal) throws SQLException {
         //do nothing
     }
 
-    public void setTimestamp(String parameterName, java.sql.Timestamp x, Calendar cal) throws SQLException {
+    public void setTimestamp(String parameterName, Timestamp x, Calendar cal) throws SQLException {
         //do nothing
     }
 
@@ -284,15 +284,15 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
         return null;
     }
 
-    public java.sql.Date getDate(String parameterName) throws SQLException {
+    public Date getDate(String parameterName) throws SQLException {
         return null;
     }
 
-    public java.sql.Time getTime(String parameterName) throws SQLException {
+    public Time getTime(String parameterName) throws SQLException {
         return null;
     }
 
-    public java.sql.Timestamp getTimestamp(String parameterName) throws SQLException {
+    public Timestamp getTimestamp(String parameterName) throws SQLException {
         return null;
     }
 
@@ -324,15 +324,15 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
         return null;
     }
 
-    public java.sql.Date getDate(String parameterName, Calendar cal) throws SQLException {
+    public Date getDate(String parameterName, Calendar cal) throws SQLException {
         return null;
     }
 
-    public java.sql.Time getTime(String parameterName, Calendar cal) throws SQLException {
+    public Time getTime(String parameterName, Calendar cal) throws SQLException {
         return null;
     }
 
-    public java.sql.Timestamp getTimestamp(String parameterName, Calendar cal) throws SQLException {
+    public Timestamp getTimestamp(String parameterName, Calendar cal) throws SQLException {
         return null;
     }
 

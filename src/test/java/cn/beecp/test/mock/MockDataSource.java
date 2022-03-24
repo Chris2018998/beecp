@@ -7,6 +7,7 @@
 package cn.beecp.test.mock;
 
 import javax.sql.DataSource;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -26,11 +27,11 @@ public class MockDataSource implements DataSource {
         return new MockConnection();
     }
 
-    public java.io.PrintWriter getLogWriter() throws SQLException {
+    public PrintWriter getLogWriter() throws SQLException {
         return null;
     }
 
-    public void setLogWriter(java.io.PrintWriter out) throws SQLException {
+    public void setLogWriter(PrintWriter out) throws SQLException {
         //do nothing
     }
 
@@ -47,11 +48,11 @@ public class MockDataSource implements DataSource {
         return null;
     }
 
-    public <T> T unwrap(java.lang.Class<T> iface) throws java.sql.SQLException {
+    public <T> T unwrap(Class<T> iface) throws SQLException {
         return null;
     }
 
-    public boolean isWrapperFor(java.lang.Class<?> iface) throws java.sql.SQLException {
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return false;
     }
 }

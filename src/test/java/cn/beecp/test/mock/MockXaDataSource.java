@@ -6,8 +6,6 @@
  */
 package cn.beecp.test.mock;
 
-import cn.beecp.pool.xa.MockXaResource;
-
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 import java.io.PrintWriter;
