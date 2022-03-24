@@ -16,9 +16,11 @@ import java.lang.reflect.Method;
  */
 public class TestCase {
     public void setUp() throws Throwable {
+        //do nothing
     }
 
     public void tearDown() throws Throwable {
+        //do nothing
     }
 
     void run() throws Throwable {
@@ -34,7 +36,8 @@ public class TestCase {
     }
 
     private void runTest() throws Throwable {
-        int successCount = 0, failedCount = 0;
+        int successCount = 0;
+        int failedCount = 0;
         long beginTime = System.currentTimeMillis();
         Method[] methods = this.getClass().getMethods();
         System.out.println("Case[" + this.getClass().getName() + "]begin");
@@ -59,6 +62,6 @@ public class TestCase {
 
         long endTime = System.currentTimeMillis();
         System.out.println("took time:" + (endTime - beginTime) + "ms,success(" + successCount + "),failed(" + failedCount + ")");
-        if (failedCount > 0) throw new Exception("Failed in Case[" + this.getClass().getName() + "]");
+        if (failedCount > 0) throw new TestException("Failed in Case[" + this.getClass().getName() + "]");
     }
 }
