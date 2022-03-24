@@ -276,6 +276,7 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public void setFetchSize(int rows) throws SQLException {
+        //do nothing
     }
 
     public int getType() throws SQLException {
