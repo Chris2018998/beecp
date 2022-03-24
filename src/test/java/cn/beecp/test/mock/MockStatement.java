@@ -127,9 +127,11 @@ public class MockStatement extends MockBase implements Statement {
     }
 
     public void addBatch(String sql) throws SQLException {
+        //do nothing
     }
 
     public void clearBatch() throws SQLException {
+        //do nothing
     }
 
     public int[] executeBatch() throws SQLException {
