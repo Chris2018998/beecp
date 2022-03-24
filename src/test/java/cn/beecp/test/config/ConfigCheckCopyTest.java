@@ -22,7 +22,7 @@ import java.util.List;
  */
 public class ConfigCheckCopyTest extends TestCase {
 
-    private boolean deepEquals(Object a, Object b) {
+    private boolean equals(Object a, Object b) {
         if (a == b)
             return true;
         else if (a == null || b == null)
@@ -35,7 +35,7 @@ public class ConfigCheckCopyTest extends TestCase {
         assert e1 != null;
         boolean eq;
         if (e1 instanceof Object[] && e2 instanceof Object[])
-            eq = deepEquals(e1, e2);
+            eq = equals(e1, e2);
         else if (e1 instanceof byte[] && e2 instanceof byte[])
             eq = Arrays.equals((byte[]) e1, (byte[]) e2);
         else if (e1 instanceof short[] && e2 instanceof short[])
@@ -66,7 +66,7 @@ public class ConfigCheckCopyTest extends TestCase {
         config.setPassword(JdbcConfig.JDBC_PASSWORD);
         BeeDataSourceConfig config2 = config.check();
 
-        if (config2 == config) throw new Exception("Configuration check copy failed");
+        if (config2 == config) throw new BeeDataSourceConfigException("Configuration check copy failed");
 
         List<String> excludeNames = new LinkedList<String>();
         excludeNames.add("connectProperties");
@@ -77,8 +77,8 @@ public class ConfigCheckCopyTest extends TestCase {
         for (Field field : fields) {
             if (!excludeNames.contains(field.getName())) {
                 field.setAccessible(true);
-                if (!deepEquals(field.get(config), field.get(config2))) {
-                    throw new BeeDataSourceConfigException("Failed to copy field[" + field.getName() + "]value is not equals");
+                if (!equals(field.get(config), field.get(config2))) {
+                    throw new BeeDataSourceConfigException("Failed to copy field[" + field.getName() + "]value is not equalsString");
                 }
             }
         }
@@ -87,8 +87,8 @@ public class ConfigCheckCopyTest extends TestCase {
         Field connectPropertiesField = BeeDataSourceConfig.class.getDeclaredField("connectProperties");
         connectPropertiesField.setAccessible(true);
         if (connectPropertiesField.get(config) == connectPropertiesField.get(config2))
-            throw new Exception("Configuration connectProperties check copy failed");
-        if (!deepEquals(connectPropertiesField.get(config), connectPropertiesField.get(config2)))
-            throw new Exception("Configuration connectProperties check copy failed");
+            throw new BeeDataSourceConfigException("Configuration connectProperties check copy failed");
+        if (!equals(connectPropertiesField.get(config), connectPropertiesField.get(config2)))
+            throw new BeeDataSourceConfigException("Configuration connectProperties check copy failed");
     }
 }
