@@ -180,6 +180,7 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public void clearWarnings() throws SQLException {
+        //do nothing
     }
 
     public String getCursorName() throws SQLException {
@@ -231,10 +232,11 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public void beforeFirst() throws SQLException {
-
+        //do nothing
     }
 
     public void afterLast() throws SQLException {
+        //do nothing
     }
 
     public boolean first() throws SQLException {
@@ -266,6 +268,7 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public void setFetchDirection(int direction) throws SQLException {
+        //do nothing
     }
 
     public int getFetchSize() throws SQLException {
@@ -296,138 +299,183 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public void updateNull(int columnIndex) throws SQLException {
+        //do nothing
     }
 
     public void updateBoolean(int columnIndex, boolean x) throws SQLException {
+        //do nothing
     }
 
     public void updateByte(int columnIndex, byte x) throws SQLException {
+        //do nothing
     }
 
     public void updateShort(int columnIndex, short x) throws SQLException {
+        //do nothing
     }
 
     public void updateInt(int columnIndex, int x) throws SQLException {
+        //do nothing
     }
 
     public void updateLong(int columnIndex, long x) throws SQLException {
+        //do nothing
     }
 
     public void updateFloat(int columnIndex, float x) throws SQLException {
+        //do nothing
     }
 
     public void updateDouble(int columnIndex, double x) throws SQLException {
+        //do nothing
     }
 
     public void updateBigDecimal(int columnIndex, BigDecimal x) throws SQLException {
+        //do nothing
     }
 
     public void updateString(int columnIndex, String x) throws SQLException {
+        //do nothing
     }
 
     public void updateBytes(int columnIndex, byte[] x) throws SQLException {
+        //do nothing
     }
 
     public void updateDate(int columnIndex, java.sql.Date x) throws SQLException {
+        //do nothing
     }
 
     public void updateTime(int columnIndex, java.sql.Time x) throws SQLException {
+        //do nothing
     }
 
     public void updateTimestamp(int columnIndex, java.sql.Timestamp x) throws SQLException {
+        //do nothing
     }
 
     public void updateAsciiStream(int columnIndex, java.io.InputStream x, int length) throws SQLException {
+        //do nothing
     }
 
     public void updateBinaryStream(int columnIndex, java.io.InputStream x, int length) throws SQLException {
+        //do nothing
     }
 
     public void updateCharacterStream(int columnIndex, java.io.Reader x, int length) throws SQLException {
+        //do nothing
     }
 
     public void updateObject(int columnIndex, Object x, int scaleOrLength) throws SQLException {
+        //do nothing
     }
 
     public void updateObject(int columnIndex, Object x) throws SQLException {
+        //do nothing
     }
 
     public void updateNull(String columnLabel) throws SQLException {
+        //do nothing
     }
 
     public void updateBoolean(String columnLabel, boolean x) throws SQLException {
+        //do nothing
     }
 
     public void updateByte(String columnLabel, byte x) throws SQLException {
+        //do nothing
     }
 
     public void updateShort(String columnLabel, short x) throws SQLException {
+        //do nothing
     }
 
     public void updateInt(String columnLabel, int x) throws SQLException {
+        //do nothing
     }
 
     public void updateLong(String columnLabel, long x) throws SQLException {
+        //do nothing
     }
 
     public void updateFloat(String columnLabel, float x) throws SQLException {
+        //do nothing
     }
 
     public void updateDouble(String columnLabel, double x) throws SQLException {
+        //do nothing
     }
 
     public void updateBigDecimal(String columnLabel, BigDecimal x) throws SQLException {
+        //do nothing
     }
 
     public void updateString(String columnLabel, String x) throws SQLException {
+        //do nothing
     }
 
     public void updateBytes(String columnLabel, byte[] x) throws SQLException {
+        //do nothing
     }
 
     public void updateDate(String columnLabel, java.sql.Date x) throws SQLException {
+        //do nothing
     }
 
     public void updateTime(String columnLabel, java.sql.Time x) throws SQLException {
+        //do nothing
     }
 
     public void updateTimestamp(String columnLabel, java.sql.Timestamp x) throws SQLException {
+        //do nothing
     }
 
     public void updateAsciiStream(String columnLabel, java.io.InputStream x, int length) throws SQLException {
+        //do nothing
     }
 
     public void updateBinaryStream(String columnLabel, java.io.InputStream x, int length) throws SQLException {
+        //do nothing
     }
 
     public void updateCharacterStream(String columnLabel, java.io.Reader reader, int length) throws SQLException {
+        //do nothing
     }
 
     public void updateObject(String columnLabel, Object x, int scaleOrLength) throws SQLException {
+        //do nothing
     }
 
     public void updateObject(String columnLabel, Object x) throws SQLException {
+        //do nothing
     }
 
     public void insertRow() throws SQLException {
+        //do nothing
     }
 
     public void updateRow() throws SQLException {
+        //do nothing
     }
 
     public void deleteRow() throws SQLException {
+        //do nothing
     }
 
     public void refreshRow() throws SQLException {
+        //do nothing
     }
 
     public void cancelRowUpdates() throws SQLException {
+        //do nothing
     }
 
     public void moveToInsertRow() throws SQLException {
+        //do nothing
     }
 
     public void moveToCurrentRow() throws SQLException {
+        //do nothing
     }
 
     public Object getObject(int columnIndex, java.util.Map<String, Class<?>> map) throws SQLException {
@@ -503,27 +551,35 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public void updateRef(int columnIndex, java.sql.Ref x) throws SQLException {
+        //do nothing
     }
 
     public void updateRef(String columnLabel, java.sql.Ref x) throws SQLException {
+        //do nothing
     }
 
     public void updateBlob(int columnIndex, java.sql.Blob x) throws SQLException {
+        //do nothing
     }
 
     public void updateBlob(String columnLabel, java.sql.Blob x) throws SQLException {
+        //do nothing
     }
 
     public void updateClob(int columnIndex, java.sql.Clob x) throws SQLException {
+        //do nothing
     }
 
     public void updateClob(String columnLabel, java.sql.Clob x) throws SQLException {
+        //do nothing
     }
 
     public void updateArray(int columnIndex, java.sql.Array x) throws SQLException {
+        //do nothing
     }
 
     public void updateArray(String columnLabel, java.sql.Array x) throws SQLException {
+        //do nothing
     }
 
     public RowId getRowId(int columnIndex) throws SQLException {
@@ -535,9 +591,11 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public void updateRowId(int columnIndex, RowId x) throws SQLException {
+        //do nothing
     }
 
     public void updateRowId(String columnLabel, RowId x) throws SQLException {
+        //do nothing
     }
 
     public int getHoldability() throws SQLException {
@@ -545,15 +603,19 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public void updateNString(int columnIndex, String nString) throws SQLException {
+        //do nothing
     }
 
     public void updateNString(String columnLabel, String nString) throws SQLException {
+        //do nothing
     }
 
     public void updateNClob(int columnIndex, NClob nClob) throws SQLException {
+        //do nothing
     }
 
     public void updateNClob(String columnLabel, NClob nClob) throws SQLException {
+        //do nothing
     }
 
     public NClob getNClob(int columnIndex) throws SQLException {
@@ -573,9 +635,11 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public void updateSQLXML(int columnIndex, SQLXML xmlObject) throws SQLException {
+        //do nothing
     }
 
     public void updateSQLXML(String columnLabel, SQLXML xmlObject) throws SQLException {
+        //do nothing
     }
 
     public String getNString(int columnIndex) throws SQLException {
@@ -595,87 +659,115 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public void updateNCharacterStream(int columnIndex, java.io.Reader x, long length) throws SQLException {
+        //do nothing
     }
 
     public void updateNCharacterStream(String columnLabel, java.io.Reader reader, long length) throws SQLException {
+        //do nothing
     }
 
     public void updateAsciiStream(int columnIndex, java.io.InputStream x, long length) throws SQLException {
+        //do nothing
     }
 
     public void updateBinaryStream(int columnIndex, java.io.InputStream x, long length) throws SQLException {
+        //do nothing
     }
 
     public void updateCharacterStream(int columnIndex, java.io.Reader x, long length) throws SQLException {
+        //do nothing
     }
 
     public void updateAsciiStream(String columnLabel, java.io.InputStream x, long length) throws SQLException {
+        //do nothing
     }
 
     public void updateBinaryStream(String columnLabel, java.io.InputStream x, long length) throws SQLException {
+        //do nothing
     }
 
     public void updateCharacterStream(String columnLabel, java.io.Reader reader, long length) throws SQLException {
+        //do nothing
     }
 
     public void updateBlob(int columnIndex, InputStream inputStream, long length) throws SQLException {
+        //do nothing
     }
 
     public void updateBlob(String columnLabel, InputStream inputStream, long length) throws SQLException {
+        //do nothing
     }
 
     public void updateClob(int columnIndex, Reader reader, long length) throws SQLException {
+        //do nothing
     }
 
     public void updateClob(String columnLabel, Reader reader, long length) throws SQLException {
+        //do nothing
     }
 
     public void updateNClob(int columnIndex, Reader reader, long length) throws SQLException {
+        //do nothing
     }
 
     public void updateNClob(String columnLabel, Reader reader, long length) throws SQLException {
+        //do nothing
     }
 
     public void updateNCharacterStream(int columnIndex, java.io.Reader x) throws SQLException {
+        //do nothing
     }
 
     public void updateNCharacterStream(String columnLabel, java.io.Reader reader) throws SQLException {
+        //do nothing
     }
 
     public void updateAsciiStream(int columnIndex, java.io.InputStream x) throws SQLException {
+        //do nothing
     }
 
     public void updateBinaryStream(int columnIndex, java.io.InputStream x) throws SQLException {
+        //do nothing
     }
 
     public void updateCharacterStream(int columnIndex, java.io.Reader x) throws SQLException {
+        //do nothing
     }
 
     public void updateAsciiStream(String columnLabel, java.io.InputStream x) throws SQLException {
+        //do nothing
     }
 
     public void updateBinaryStream(String columnLabel, java.io.InputStream x) throws SQLException {
+        //do nothing
     }
 
     public void updateCharacterStream(String columnLabel, java.io.Reader reader) throws SQLException {
+        //do nothing
     }
 
     public void updateBlob(int columnIndex, InputStream inputStream) throws SQLException {
+        //do nothing
     }
 
     public void updateBlob(String columnLabel, InputStream inputStream) throws SQLException {
+        //do nothing
     }
 
     public void updateClob(int columnIndex, Reader reader) throws SQLException {
+        //do nothing
     }
 
     public void updateClob(String columnLabel, Reader reader) throws SQLException {
+        //do nothing
     }
 
     public void updateNClob(int columnIndex, Reader reader) throws SQLException {
+        //do nothing
     }
 
     public void updateNClob(String columnLabel, Reader reader) throws SQLException {
+        //do nothing
     }
 
     public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {

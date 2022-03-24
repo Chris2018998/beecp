@@ -88,6 +88,7 @@ public class MockConnection extends MockBase implements Connection {
     }
 
     public void clearWarnings() throws SQLException {
+        //do nothing
     }
 
     public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
@@ -107,6 +108,7 @@ public class MockConnection extends MockBase implements Connection {
     }
 
     public void setTypeMap(java.util.Map<String, Class<?>> map) throws SQLException {
+        //do nothing
     }
 
     public int getHoldability() throws SQLException {
@@ -126,9 +128,11 @@ public class MockConnection extends MockBase implements Connection {
     }
 
     public void rollback(Savepoint savepoint) throws SQLException {
+        //do nothing
     }
 
     public void releaseSavepoint(Savepoint savepoint) throws SQLException {
+        //do nothing
     }
 
     public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
@@ -206,9 +210,11 @@ public class MockConnection extends MockBase implements Connection {
     }
 
     public void abort(Executor executor) throws SQLException {
+        //do nothing
     }
 
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+        //do nothing
     }
 
     public int getNetworkTimeout() throws SQLException {

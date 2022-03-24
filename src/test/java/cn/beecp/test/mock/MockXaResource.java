@@ -29,19 +29,19 @@ public final class MockXaResource implements XAResource {
     }
 
     public void commit(Xid xid, boolean onePhase) throws XAException {
-
+        //do nothing
     }
 
     public void rollback(Xid xid) throws XAException {
-
+        //do nothing
     }
 
     public void end(Xid xid, int flags) throws XAException {
-
+        //do nothing
     }
 
     public void forget(Xid xid) throws XAException {
-
+        //do nothing
     }
 
     public Xid[] recover(int xid) throws XAException {

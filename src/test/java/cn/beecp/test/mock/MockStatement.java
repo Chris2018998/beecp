@@ -59,6 +59,7 @@ public class MockStatement extends MockBase implements Statement {
     }
 
     public void setEscapeProcessing(boolean enable) throws SQLException {
+        //do nothing
     }
 
     public int getQueryTimeout() throws SQLException {
@@ -70,6 +71,7 @@ public class MockStatement extends MockBase implements Statement {
     }
 
     public void cancel() throws SQLException {
+        //do nothing
     }
 
     public SQLWarning getWarnings() throws SQLException {
@@ -77,9 +79,11 @@ public class MockStatement extends MockBase implements Statement {
     }
 
     public void clearWarnings() throws SQLException {
+        //do nothing
     }
 
     public void setCursorName(String name) throws SQLException {
+        //do nothing
     }
 
     public boolean execute(String sql) throws SQLException {
@@ -103,6 +107,7 @@ public class MockStatement extends MockBase implements Statement {
     }
 
     public void setFetchDirection(int direction) throws SQLException {
+        //do nothing
     }
 
     public int getFetchSize() throws SQLException {
@@ -172,9 +177,11 @@ public class MockStatement extends MockBase implements Statement {
     }
 
     public void setPoolable(boolean poolable) throws SQLException {
+        //do nothing
     }
 
     public void closeOnCompletion() throws SQLException {
+        //do nothing
     }
 
     public boolean isCloseOnCompletion() throws SQLException {

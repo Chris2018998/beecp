@@ -31,6 +31,7 @@ public class MockDataSource implements DataSource {
     }
 
     public void setLogWriter(java.io.PrintWriter out) throws SQLException {
+        //do nothing
     }
 
     public int getLoginTimeout() throws SQLException {
@@ -38,7 +39,9 @@ public class MockDataSource implements DataSource {
     }
 
     public void setLoginTimeout(int seconds) throws SQLException {
+        //do nothing
     }
+
 
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
         return null;

@@ -23,9 +23,11 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
     }
 
     public void registerOutParameter(int parameterIndex, int sqlType) throws SQLException {
+        //do nothing
     }
 
     public void registerOutParameter(int parameterIndex, int sqlType, int scale) throws SQLException {
+        //do nothing
     }
 
     public boolean wasNull() throws SQLException {
@@ -130,13 +132,16 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
     }
 
     public void registerOutParameter(String parameterName, int sqlType) throws SQLException {
+        //do nothing
     }
 
 
     public void registerOutParameter(String parameterName, int sqlType, int scale) throws SQLException {
+        //do nothing
     }
 
     public void registerOutParameter(String parameterName, int sqlType, String typeName) throws SQLException {
+        //do nothing
     }
 
     public java.net.URL getURL(int parameterIndex) throws SQLException {
@@ -144,79 +149,103 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
     }
 
     public void setURL(String parameterName, java.net.URL val) throws SQLException {
+        //do nothing
     }
 
     public void setNull(String parameterName, int sqlType) throws SQLException {
+        //do nothing
     }
 
     public void setBoolean(String parameterName, boolean x) throws SQLException {
+        //do nothing
     }
 
     public void setByte(String parameterName, byte x) throws SQLException {
+        //do nothing
     }
 
     public void setShort(String parameterName, short x) throws SQLException {
+        //do nothing
     }
 
     public void setInt(String parameterName, int x) throws SQLException {
+        //do nothing
     }
 
     public void setLong(String parameterName, long x) throws SQLException {
+        //do nothing
     }
 
-
     public void setFloat(String parameterName, float x) throws SQLException {
+        //do nothing
     }
 
     public void setDouble(String parameterName, double x) throws SQLException {
+        //do nothing
     }
 
     public void setBigDecimal(String parameterName, BigDecimal x) throws SQLException {
+        //do nothing
     }
 
     public void setString(String parameterName, String x) throws SQLException {
+        //do nothing
     }
 
     public void setBytes(String parameterName, byte[] x) throws SQLException {
+        //do nothing
     }
 
     public void setDate(String parameterName, java.sql.Date x) throws SQLException {
+        //do nothing
     }
 
     public void setTime(String parameterName, java.sql.Time x) throws SQLException {
+        //do nothing
     }
 
     public void setTimestamp(String parameterName, java.sql.Timestamp x) throws SQLException {
+        //do nothing
     }
 
     public void setAsciiStream(String parameterName, java.io.InputStream x, int length) throws SQLException {
+        //do nothing
     }
 
     public void setBinaryStream(String parameterName, java.io.InputStream x, int length) throws SQLException {
+        //do nothing
     }
 
     public void setObject(String parameterName, Object x, int targetSqlType, int scale) throws SQLException {
+        //do nothing
     }
 
     public void setObject(String parameterName, Object x, int targetSqlType) throws SQLException {
+        //do nothing
     }
 
     public void setObject(String parameterName, Object x) throws SQLException {
+        //do nothing
     }
 
     public void setCharacterStream(String parameterName, java.io.Reader reader, int length) throws SQLException {
+        //do nothing
     }
 
     public void setDate(String parameterName, java.sql.Date x, Calendar cal) throws SQLException {
+        //do nothing
     }
 
     public void setTime(String parameterName, java.sql.Time x, Calendar cal) throws SQLException {
+        //do nothing
     }
 
     public void setTimestamp(String parameterName, java.sql.Timestamp x, Calendar cal) throws SQLException {
+        //do nothing
     }
 
     public void setNull(String parameterName, int sqlType, String typeName) throws SQLException {
+        //do nothing
     }
 
     public String getString(String parameterName) throws SQLException {
@@ -321,24 +350,31 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
     }
 
     public void setRowId(String parameterName, RowId x) throws SQLException {
+        //do nothing
     }
 
     public void setNString(String parameterName, String value) throws SQLException {
+        //do nothing
     }
 
     public void setNCharacterStream(String parameterName, Reader value, long length) throws SQLException {
+        //do nothing
     }
 
     public void setNClob(String parameterName, NClob value) throws SQLException {
+        //do nothing
     }
 
     public void setClob(String parameterName, Reader reader, long length) throws SQLException {
+        //do nothing
     }
 
     public void setBlob(String parameterName, InputStream inputStream, long length) throws SQLException {
+        //do nothing
     }
 
     public void setNClob(String parameterName, Reader reader, long length) throws SQLException {
+        //do nothing
     }
 
     public NClob getNClob(int parameterIndex) throws SQLException {
@@ -350,6 +386,7 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
     }
 
     public void setSQLXML(String parameterName, SQLXML xmlObject) throws SQLException {
+        //do nothing
     }
 
     public SQLXML getSQLXML(int parameterIndex) throws SQLException {
@@ -385,39 +422,52 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
     }
 
     public void setBlob(String parameterName, Blob x) throws SQLException {
+        //do nothing
     }
 
     public void setClob(String parameterName, Clob x) throws SQLException {
+        //do nothing
     }
 
+
     public void setAsciiStream(String parameterName, java.io.InputStream x, long length) throws SQLException {
+        //do nothing
     }
 
     public void setBinaryStream(String parameterName, java.io.InputStream x, long length) throws SQLException {
+        //do nothing
     }
 
     public void setCharacterStream(String parameterName, java.io.Reader reader, long length) throws SQLException {
+        //do nothing
     }
 
     public void setAsciiStream(String parameterName, java.io.InputStream x) throws SQLException {
+        //do nothing
     }
 
     public void setBinaryStream(String parameterName, java.io.InputStream x) throws SQLException {
+        //do nothing
     }
 
     public void setCharacterStream(String parameterName, java.io.Reader reader) throws SQLException {
+        //do nothing
     }
 
     public void setNCharacterStream(String parameterName, Reader value) throws SQLException {
+        //do nothing
     }
 
     public void setClob(String parameterName, Reader reader) throws SQLException {
+        //do nothing
     }
 
     public void setBlob(String parameterName, InputStream inputStream) throws SQLException {
+        //do nothing
     }
 
     public void setNClob(String parameterName, Reader reader) throws SQLException {
+        //do nothing
     }
 
     public <T> T getObject(int parameterIndex, Class<T> type) throws SQLException {
@@ -427,5 +477,4 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
     public <T> T getObject(String parameterName, Class<T> type) throws SQLException {
         return null;
     }
-
 }
