@@ -28,6 +28,7 @@ public class DataSourceConnectionCloseTest extends TestCase {
     }
 
     public void tearDown() throws Throwable {
+        //do nothing
     }
 
     public void test() throws Exception {

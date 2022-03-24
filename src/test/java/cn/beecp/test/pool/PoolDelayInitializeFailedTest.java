@@ -18,9 +18,11 @@ public class PoolDelayInitializeFailedTest extends TestCase {
     private final int initSize = 5;
 
     public void setUp() throws Throwable {
+        //do nothing
     }
 
     public void tearDown() throws Throwable {
+        //do nothing
     }
 
     public void testPoolInit() throws Exception {
