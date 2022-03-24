@@ -37,25 +37,22 @@ final class ProxyClassGenerator {
     }
 
     private static void resolveInterfaceMethods(CtClass interfaceClass, LinkedList linkedList, HashSet exitSignatureSet) throws Exception {
-        CtMethod[] ctMethods = interfaceClass.getDeclaredMethods();
-        for (int i = 0; i < ctMethods.length; i++) {
-            int modifiers = ctMethods[i].getModifiers();
-            String signature = ctMethods[i].getName() + ctMethods[i].getSignature();
+        for (CtMethod ctMethod : interfaceClass.getDeclaredMethods()) {
+            int modifiers = ctMethod.getModifiers();
+            String signature = ctMethod.getName() + ctMethod.getSignature();
             if (Modifier.isAbstract(modifiers)
                     && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers))
                     && !Modifier.isStatic(modifiers)
                     && !Modifier.isFinal(modifiers)
                     && !exitSignatureSet.contains(signature)) {
 
-                linkedList.add(ctMethods[i]);
+                linkedList.add(ctMethod);
                 exitSignatureSet.add(signature);
             }
         }
 
-        CtClass[] superInterfaces = interfaceClass.getInterfaces();
-        for (int i = 0; i < superInterfaces.length; i++) {
-            ProxyClassGenerator.resolveInterfaceMethods(superInterfaces[i], linkedList, exitSignatureSet);
-        }
+        for (CtClass superInterface : interfaceClass.getInterfaces())
+            ProxyClassGenerator.resolveInterfaceMethods(superInterface, linkedList, exitSignatureSet);
     }
 
     /**
@@ -222,13 +219,12 @@ final class ProxyClassGenerator {
      * @throws Exception some error occurred
      */
     private static void createProxyConnectionClass(ClassPool classPool, CtClass ctConnectionClassProxyClass, CtClass ctConnectionClass, CtClass ctConBaseClass) throws Exception {
-        CtMethod[] ctSuperClassMethods = ctConBaseClass.getMethods();
         HashSet notNeedAddProxyMethods = new HashSet(16);
-        for (int i = 0, l = ctSuperClassMethods.length; i < l; i++) {
-            int modifiers = ctSuperClassMethods[i].getModifiers();
+        for (CtMethod ctSuperClassMethod : ctConBaseClass.getMethods()) {
+            int modifiers = ctSuperClassMethod.getModifiers();
             if ((!Modifier.isAbstract(modifiers) && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)))
                     || Modifier.isFinal(modifiers) || Modifier.isStatic(modifiers) || Modifier.isNative(modifiers)) {
-                notNeedAddProxyMethods.add(ctSuperClassMethods[i].getName() + ctSuperClassMethods[i].getSignature());
+                notNeedAddProxyMethods.add(ctSuperClassMethod.getName() + ctSuperClassMethod.getSignature());
             }
         }
 
@@ -243,19 +239,19 @@ final class ProxyClassGenerator {
         StringBuilder methodBuffer = new StringBuilder(50);
         for (CtMethod ctMethod : linkedList) {
             String methodName = ctMethod.getName();
-            CtMethod newCtMethodm = CtNewMethod.copy(ctMethod, ctConnectionClassProxyClass, null);
-            newCtMethodm.setModifiers(Modifier.PUBLIC);
+            CtMethod newCtMethod = CtNewMethod.copy(ctMethod, ctConnectionClassProxyClass, null);
+            newCtMethod.setModifiers(Modifier.PUBLIC);
 
             methodBuffer.delete(0, methodBuffer.length());
             methodBuffer.append("{");
             if (ctMethod.getReturnType() == ctStatementClass) {
-                newCtMethodm.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
+                newCtMethod.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
                 methodBuffer.append("return new ProxyStatement(raw." + methodName + "($$),this,p);");
             } else if (ctMethod.getReturnType() == ctPreparedStatementClass) {
-                newCtMethodm.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
+                newCtMethod.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
                 methodBuffer.append("return new ProxyPsStatement(raw." + methodName + "($$),this,p);");
             } else if (ctMethod.getReturnType() == ctCallableStatementClass) {
-                newCtMethodm.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
+                newCtMethod.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
                 methodBuffer.append("return new ProxyCsStatement(raw." + methodName + "($$),this,p);");
             } else if (ctMethod.getReturnType() == ctDatabaseMetaDataIntf) {
                 methodBuffer.append("return new ProxyDatabaseMetaData(raw." + methodName + "($$),p);");
@@ -268,19 +264,18 @@ final class ProxyClassGenerator {
             }
 
             methodBuffer.append("}");
-            newCtMethodm.setBody(methodBuffer.toString());
-            ctConnectionClassProxyClass.addMethod(newCtMethodm);
+            newCtMethod.setBody(methodBuffer.toString());
+            ctConnectionClassProxyClass.addMethod(newCtMethod);
         }
     }
 
     private static void createProxyStatementClass(ClassPool classPool, CtClass statementProxyClass, CtClass ctStatementClass, CtClass ctStatementSuperClass) throws Exception {
-        CtMethod[] ctSuperClassMethods = ctStatementSuperClass.getMethods();
         HashSet superClassSignatureSet = new HashSet(16);
-        for (int i = 0, l = ctSuperClassMethods.length; i < l; i++) {
-            int modifiers = ctSuperClassMethods[i].getModifiers();
+        for (CtMethod ctSuperClassMethod : ctStatementSuperClass.getMethods()) {
+            int modifiers = ctSuperClassMethod.getModifiers();
             if ((!Modifier.isAbstract(modifiers) && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)))
                     || Modifier.isFinal(modifiers) || Modifier.isStatic(modifiers) || Modifier.isNative(modifiers)) {
-                superClassSignatureSet.add(ctSuperClassMethods[i].getName() + ctSuperClassMethods[i].getSignature());
+                superClassSignatureSet.add(ctSuperClassMethod.getName() + ctSuperClassMethod.getSignature());
             }
         }
 
@@ -299,8 +294,8 @@ final class ProxyClassGenerator {
 
         for (CtMethod ctMethod : linkedList) {
             String methodName = ctMethod.getName();
-            CtMethod newCtMethodm = CtNewMethod.copy(ctMethod, statementProxyClass, null);
-            newCtMethodm.setModifiers(methodName.startsWith("execute") ? Modifier.PUBLIC | Modifier.FINAL : Modifier.PUBLIC);
+            CtMethod newCtMethod = CtNewMethod.copy(ctMethod, statementProxyClass, null);
+            newCtMethod.setModifiers(methodName.startsWith("execute") ? Modifier.PUBLIC | Modifier.FINAL : Modifier.PUBLIC);
 
             methodBuffer.delete(0, methodBuffer.length());
             methodBuffer.append("{");
@@ -328,20 +323,19 @@ final class ProxyClassGenerator {
                 }
             }
             methodBuffer.append("}");
-            newCtMethodm.setBody(methodBuffer.toString());
-            statementProxyClass.addMethod(newCtMethodm);
+            newCtMethod.setBody(methodBuffer.toString());
+            statementProxyClass.addMethod(newCtMethod);
         }
     }
 
     //ctProxyDatabaseMetaDataClass,ctDatabaseMetaDataIntf,ctDatabaseMetaDataSuperClass
     private static void createProxyDatabaseMetaDataClass(ClassPool classPool, CtClass ctProxyDatabaseMetaDataClass, CtClass ctDatabaseMetaDataIntf, CtClass ctDatabaseMetaDataSuperClass) throws Exception {
-        CtMethod[] ctSuperClassMethods = ctDatabaseMetaDataSuperClass.getMethods();
         HashSet superClassSignatureSet = new HashSet(16);
-        for (int i = 0, l = ctSuperClassMethods.length; i < l; i++) {
-            int modifiers = ctSuperClassMethods[i].getModifiers();
+        for (CtMethod ctSuperClassMethod : ctDatabaseMetaDataSuperClass.getMethods()) {
+            int modifiers = ctSuperClassMethod.getModifiers();
             if ((!Modifier.isAbstract(modifiers) && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)))
                     || Modifier.isFinal(modifiers) || Modifier.isStatic(modifiers) || Modifier.isNative(modifiers)) {
-                superClassSignatureSet.add(ctSuperClassMethods[i].getName() + ctSuperClassMethods[i].getSignature());
+                superClassSignatureSet.add(ctSuperClassMethod.getName() + ctSuperClassMethod.getSignature());
             }
         }
 
@@ -352,8 +346,8 @@ final class ProxyClassGenerator {
         StringBuilder methodBuffer = new StringBuilder(40);
         for (CtMethod ctMethod : linkedList) {
             String methodName = ctMethod.getName();
-            CtMethod newCtMethodm = CtNewMethod.copy(ctMethod, ctProxyDatabaseMetaDataClass, null);
-            newCtMethodm.setModifiers(Modifier.PUBLIC);
+            CtMethod newCtMethod = CtNewMethod.copy(ctMethod, ctProxyDatabaseMetaDataClass, null);
+            newCtMethod.setModifiers(Modifier.PUBLIC);
 
             methodBuffer.delete(0, methodBuffer.length());
             methodBuffer.append("{")
@@ -367,19 +361,18 @@ final class ProxyClassGenerator {
             }
 
             methodBuffer.append("}");
-            newCtMethodm.setBody(methodBuffer.toString());
-            ctProxyDatabaseMetaDataClass.addMethod(newCtMethodm);
+            newCtMethod.setBody(methodBuffer.toString());
+            ctProxyDatabaseMetaDataClass.addMethod(newCtMethod);
         }
     }
 
     private static void createProxyResultSetClass(CtClass ctResultSetClassProxyClass, CtClass ctResultSetClass, CtClass ctResultSetClassSuperClass) throws Exception {
-        CtMethod[] ctSuperClassMethods = ctResultSetClassSuperClass.getMethods();
         HashSet superClassSignatureSet = new HashSet(16);
-        for (int i = 0, l = ctSuperClassMethods.length; i < l; i++) {
-            int modifiers = ctSuperClassMethods[i].getModifiers();
+        for (CtMethod ctSuperClassMethod : ctResultSetClassSuperClass.getMethods()) {
+            int modifiers = ctSuperClassMethod.getModifiers();
             if ((!Modifier.isAbstract(modifiers) && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)))
                     || Modifier.isFinal(modifiers) || Modifier.isStatic(modifiers) || Modifier.isNative(modifiers)) {
-                superClassSignatureSet.add(ctSuperClassMethods[i].getName() + ctSuperClassMethods[i].getSignature());
+                superClassSignatureSet.add(ctSuperClassMethod.getName() + ctSuperClassMethod.getSignature());
             }
         }
 
