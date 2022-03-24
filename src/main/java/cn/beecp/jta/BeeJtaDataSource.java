@@ -71,8 +71,10 @@ public class BeeJtaDataSource extends TimerTask implements DataSource {
                 throw new SQLException("Current transaction status code is not expect value:" + statusCode);
             Connection conn = this.transactionMap.get(transaction);
             if (conn != null) return conn;
+        } catch (SQLException e) {
+            throw e;
         } catch (Throwable e) {
-            throw e instanceof SQLException ? (SQLException) e : new SQLException(e);
+            throw new SQLException(e);
         }
 
         //step2: try to get connection by XAConnection
