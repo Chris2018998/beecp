@@ -20,13 +20,13 @@ public class JdbcConfig {
     public static String JDBC_PASSWORD;
     public static String JDBC_DRIVER;
     public static String JDBC_URL;
-
-    public static int POOL_MAX_ACTIVE;
-    public static int POOL_INIT_SIZE;
-    public static int REQUEST_TIMEOUT = 8000;
     public static String TEST_TABLE = "BEECP_TEST";
     public static String TEST_PROCEDURE = "BEECP_HELLO()";
-    public static String CONFIG_FILE = "beecp/jdbc.properties";
+
+    static int POOL_MAX_ACTIVE;
+    static int POOL_INIT_SIZE;
+    static int REQUEST_TIMEOUT = 8000;
+    static String CONFIG_FILE = "beecp/jdbc.properties";
 
     static {
         try {
@@ -62,22 +62,22 @@ public class JdbcConfig {
             }
 
             if (JDBC_USER == null || JDBC_USER.trim().length() == 0)
-                throw new Exception("'USER_ID' missed");
+                throw new TestException("'USER_ID' missed");
             if (JDBC_DRIVER == null || JDBC_DRIVER.trim().length() == 0)
-                throw new Exception("'JDBC_DRIVER' missed");
+                throw new TestException("'JDBC_DRIVER' missed");
             if (JDBC_URL == null || JDBC_URL.trim().length() == 0)
-                throw new Exception("'JDBC_URL' missed");
+                throw new TestException("'JDBC_URL' missed");
             if (TEST_TABLE == null || TEST_TABLE.trim().length() == 0)
-                throw new Exception("'TEST_TABLE' missed");
+                throw new TestException("'TEST_TABLE' missed");
             if (TEST_PROCEDURE == null || TEST_PROCEDURE.trim().length() == 0)
-                throw new Exception("'TEST_PROCEDURE' missed");
+                throw new TestException("'TEST_PROCEDURE' missed");
 
             if (POOL_MAX_ACTIVE <= 0)
-                throw new Exception("'POOL_MAX_ACTIVE' must be more than zero");
+                throw new TestException("'POOL_MAX_ACTIVE' must be more than zero");
             if (POOL_INIT_SIZE < 0)
-                throw new Exception("'POOL_INIT_SIZE' can't be less than zero");
+                throw new TestException("'POOL_INIT_SIZE' can't be less than zero");
             if (POOL_INIT_SIZE > POOL_MAX_ACTIVE)
-                throw new Exception("'POOL_INIT_SIZE' must be less than 'POOL_MAX_ACTIVE'");
+                throw new TestException("'POOL_INIT_SIZE' must be less than 'POOL_MAX_ACTIVE'");
         } finally {
             if (fileStream != null) {
                 try {
