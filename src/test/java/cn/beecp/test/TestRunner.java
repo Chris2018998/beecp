@@ -36,7 +36,8 @@ public class TestRunner {
             if (propertiesStream == null) propertiesStream = TestRunner.class.getResourceAsStream(defaultFilename);
             if (propertiesStream == null) throw new IOException("Can't find file:'testCase.properties' in classpath");
 
-            String pass1 = "true", pass2 = "Y";
+            String pass1 = "true";
+            String pass2 = "Y";
             properties.load(propertiesStream);
 
             Enumeration<Object> keys = properties.keys();
