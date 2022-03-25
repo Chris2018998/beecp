@@ -99,6 +99,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
      * @param p target connection need release
      */
     public void recycle(PooledConnection p) {
+          //do nothing
     }
 
     /**
@@ -126,9 +127,11 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
     //******************************** JMX **************************************//
     // close all connections
     public void clearAllConnections() {
+      //do nothing
     }
 
     public void clearAllConnections(boolean force) {
+      //do nothing
     }
 
     public int getConnTotalSize() {
@@ -157,6 +160,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
 
     //set pool info debug switch
     public void setPrintRuntimeLog(boolean enabledDebug) {
+          //do nothing
     }
 
     public ConnectionPoolMonitorVo getMonitorVo() {
