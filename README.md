@@ -21,6 +21,7 @@ Java7 or higher
    <version>3.3.3</version>
 </dependency>
 ```
+
 Java6
 ```xml
 <dependency>
@@ -32,7 +33,7 @@ Java6
 
 ## :tractor: Example
 
-###### :point_right: Example-1(independent)
+### :point_right: Example-1(independent)
 
 ```java
 BeeDataSourceConfig config = new BeeDataSourceConfig();
@@ -45,7 +46,7 @@ Connection con=ds.getConnection();
 ....
 
 ```
-###### :point_right: Example-2(Springboot)
+### :point_right: Example-2(Springboot)
 
 *application.properties*
 
@@ -87,6 +88,7 @@ public class DataSourceConfig {
 to manage your datasource(file configuration, less code, monitor-ui)*
 
 ## :book: Configuration item 
+
 |**Item Name**                     |**Desc**                                |**Default**                      |
 | ------------------------------|--------------------------------------- |----------------------------------- |
 |username                       |jdbc username                           |null                                |
