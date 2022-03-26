@@ -6,7 +6,6 @@
  */
 package cn.beecp.test;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -51,11 +50,7 @@ public class TestCase {
                 } catch (Throwable e) {
                     failedCount++;
                     System.out.println("Failed to run test method:" + method.getName() + " in Class[" + this.getClass().getName() + "]");
-                    if (e instanceof InvocationTargetException) {
-                        ((InvocationTargetException) e).getTargetException().printStackTrace();
-                    } else {
-                        e.printStackTrace();
-                    }
+                    e.printStackTrace();
                 }
             }
         }
