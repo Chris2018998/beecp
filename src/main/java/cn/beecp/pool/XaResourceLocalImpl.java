@@ -41,7 +41,7 @@ public class XaResourceLocalImpl implements XAResource {
                 this.proxyConn.setAutoCommit(this.defaultAutoCommit);
                 this.currentAutoCommit = this.defaultAutoCommit;
             } catch (SQLException e) {
-
+                //do nothing
             }
         }
     }
@@ -89,7 +89,7 @@ public class XaResourceLocalImpl implements XAResource {
                 return XAResource.XA_RDONLY;
             }
         } catch (SQLException e) {
-
+            //do nothing
         }
         return XAResource.XA_OK;
     }

@@ -429,13 +429,19 @@ public class PoolStaticCenter {
     //                               6: class check(3)                                                               //
     //***************************************************************************************************************//
     //check subclass,if failed,then return error message;
-    public static String checkClass(Class objectClass, Class parentClass, String objectClassType) {
-        return checkClass(objectClass, parentClass != null ? new Class[]{parentClass} : null, objectClassType);
+    public static Constructor getClassConstructor(Class objectClass, Class parentClass, String objectClassType) {
+        return getClassConstructor(objectClass, parentClass != null ? new Class[]{parentClass} : null, objectClassType);
     }
 
     //check subclass,if failed,then return error message;
-    public static String checkClass(Class objectClass, Class[] parentClasses, String objectClassType) {
-        //1:check extension
+    public static Constructor getClassConstructor(Class objectClass, Class[] parentClasses, String objectClassType) {
+        //1:check class abstract modifier
+        if (Modifier.isAbstract(objectClass.getModifiers()))
+            throw new BeeDataSourceConfigException("Error " + objectClassType + " class[" + objectClass.getName() + "],which can't be an abstract class");
+        //2:check class public modifier
+        if (!Modifier.isPublic(objectClass.getModifiers()))
+            throw new BeeDataSourceConfigException("Error " + objectClassType + " class[" + objectClass.getName() + "],which must be a public class");
+        //3:check extension
         boolean isSubClass = false;//pass when match one
         if (parentClasses != null && parentClasses.length > 0) {
             for (Class parentClass : parentClasses) {
@@ -445,22 +451,14 @@ public class PoolStaticCenter {
                 }
             }
             if (!isSubClass)
-                return "Error " + objectClassType + " class[" + objectClass.getName() + "],which must extend from one of class[" + getClassName(parentClasses) + "]";
+                throw new BeeDataSourceConfigException("Error " + objectClassType + " class[" + objectClass.getName() + "],which must extend from one of class[" + getClassName(parentClasses) + "]");
         }
-
-        //2:check class abstract modifier
-        if (Modifier.isAbstract(objectClass.getModifiers()))
-            return "Error " + objectClassType + " class[" + objectClass.getName() + "],which can't be an abstract class";
-        //3:check class public modifier
-        if (!Modifier.isPublic(objectClass.getModifiers()))
-            return "Error " + objectClassType + " class[" + objectClass.getName() + "],which must be a public class";
         //4:check class constructor
         try {
-            objectClass.getConstructor(EMPTY_CLASSES);
+            return objectClass.getConstructor(EMPTY_CLASSES);
         } catch (NoSuchMethodException e) {
-            return "Error " + objectClassType + " class[" + objectClass.getName() + "],which must provide a constructor without parameter";
+            throw new BeeDataSourceConfigException("Error " + objectClassType + " class[" + objectClass.getName() + "],which must provide a constructor without parameter");
         }
-        return null;
     }
 
     private static String getClassName(Class[] classes) {

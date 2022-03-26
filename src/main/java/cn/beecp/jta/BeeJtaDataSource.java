@@ -109,7 +109,7 @@ public class BeeJtaDataSource extends TimerTask implements DataSource {
                     entry.getValue().close();
                 }
             } catch (Throwable e) {
-
+                //do nothing
             }
         }
     }

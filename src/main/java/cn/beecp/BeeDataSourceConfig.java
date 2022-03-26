@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 import javax.sql.XADataSource;
 import java.io.File;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
@@ -81,7 +82,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private boolean forceCloseUsingOnClear;
     //milliseconds:delay time for next clear using connections util them return to pool,when<config>forceCloseUsingOnClear</config> is false
     private long delayTimeForNextClear = 3000L;
-
 
     //connection default value:catalog <code>Connection.setAutoCommit(String)</code>
     private String defaultCatalog;
@@ -609,11 +609,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         }
 
         if (passwordDecoderClass != null) {
-            String errorMsg = checkClass(passwordDecoderClass, PasswordDecoder.class, "password decoder");
-            if (!isBlank(errorMsg)) throw new BeeDataSourceConfigException(errorMsg);
-
+            Constructor constructor = getClassConstructor(passwordDecoderClass, PasswordDecoder.class, "password decoder");
             try {
-                passwordDecoder = (PasswordDecoder) passwordDecoderClass.getConstructor(EMPTY_CLASSES).newInstance();
+                passwordDecoder = (PasswordDecoder) constructor.newInstance();
             } catch (Throwable e) {
                 throw new BeeDataSourceConfigException("Failed to instantiate password decoder class:" + passwordDecoderClass.getName(), e);
             }
@@ -656,11 +654,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
                 //2: check connection factory class
                 Class[] parentClasses = {RawConnectionFactory.class, RawXaConnectionFactory.class, DataSource.class, XADataSource.class};
-                String errorMsg = checkClass(conFactClass, parentClasses, "connection factory");
-                if (!isBlank(errorMsg)) throw new BeeDataSourceConfigException(errorMsg);
+                Constructor constructor = getClassConstructor(conFactClass, parentClasses, "connection factory");
 
                 //3:create connection factory instance
-                Object factory = conFactClass.getConstructor(EMPTY_CLASSES).newInstance();
+                Object factory = constructor.newInstance();
 
                 //4:copy properties to value map(inject to dataSource or factory)
                 Map<String, Object> propertyValueMap = new HashMap<String, Object>(this.connectProperties);//copy

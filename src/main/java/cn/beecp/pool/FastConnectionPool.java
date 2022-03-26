@@ -455,9 +455,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                                 failed = true;
                                 cause = RequestInterruptException;
                             }
-                            if (b.state == BOWER_WAITING && BorrowStUpd.compareAndSet(b, BOWER_WAITING, failed ? cause : BOWER_NORMAL) && !failed) {
+                            if (b.state == BOWER_WAITING && BorrowStUpd.compareAndSet(b, BOWER_WAITING, failed ? cause : BOWER_NORMAL) && !failed)
                                 Thread.yield();
-                            }
                         }
                     } else {//timeout
                         failed = true;

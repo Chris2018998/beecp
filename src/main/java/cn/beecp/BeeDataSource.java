@@ -20,7 +20,8 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Logger;
 
-import static cn.beecp.pool.PoolStaticCenter.*;
+import static cn.beecp.pool.PoolStaticCenter.CommonLog;
+import static cn.beecp.pool.PoolStaticCenter.getClassConstructor;
 
 /**
  * Email:  Chris2018998@tom.com
@@ -52,25 +53,21 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             BeeDataSource.createPool(this);
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        } catch (BeeDataSourceConfigException e) {
-            throw e;
         }
     }
 
     private static ConnectionPool createPool(BeeDataSource ds) throws SQLException {
         try {
             Class<?> poolClass = Class.forName(ds.getPoolImplementClassName());
-            String errorMsg = checkClass(poolClass, ConnectionPool.class, "pool");
-            if (!isBlank(errorMsg)) throw new BeeDataSourceConfigException(errorMsg);
+            ConnectionPool pool = (ConnectionPool) getClassConstructor(poolClass, ConnectionPool.class, "pool").newInstance();
 
-            ConnectionPool pool = (ConnectionPool) poolClass.getConstructor(EMPTY_CLASSES).newInstance();
             pool.init(ds);
             ds.pool = pool;
             ds.ready = true;
             return pool;
         } catch (SQLException e) {
             throw e;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw new PoolCreateFailedException("Failed to create connection pool by class:" + ds.getPoolImplementClassName(), e);
         }
     }
