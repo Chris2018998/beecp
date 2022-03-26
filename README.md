@@ -9,7 +9,7 @@
 
 ## :coffee: Introduction 
 
-BeeCP is a small JDBC connection pool 
+BeeCP: a small JDBC connection pool 
 
 ## :arrow_down: Download 
 
