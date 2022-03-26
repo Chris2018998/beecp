@@ -23,6 +23,7 @@ public class MockConnection extends MockBase implements Connection {
     private String schema;
 
     public MockConnection() {
+        //do nothing
     }
 
     public Statement createStatement() throws SQLException {
@@ -50,9 +51,11 @@ public class MockConnection extends MockBase implements Connection {
     }
 
     public void commit() throws SQLException {
+        //do nothing
     }
 
     public void rollback() throws SQLException {
+        //do nothing
     }
 
     public DatabaseMetaData getMetaData() throws SQLException {
@@ -180,6 +183,7 @@ public class MockConnection extends MockBase implements Connection {
     }
 
     public void setClientInfo(String name, String value) throws SQLClientInfoException {
+        //do nothing
     }
 
     public String getClientInfo(String name) throws SQLException {
@@ -191,6 +195,7 @@ public class MockConnection extends MockBase implements Connection {
     }
 
     public void setClientInfo(Properties properties) throws SQLClientInfoException {
+        //do nothing
     }
 
     public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
