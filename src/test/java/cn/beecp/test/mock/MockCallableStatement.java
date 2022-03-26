@@ -70,7 +70,6 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
         return new BigDecimal(1);
     }
 
-
     public byte[] getBytes(int parameterIndex) throws SQLException {
         return null;
     }
@@ -129,6 +128,7 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
 
     public void registerOutParameter(int parameterIndex, int sqlType, String typeName)
             throws SQLException {
+        //do nothing
     }
 
     public void registerOutParameter(String parameterName, int sqlType) throws SQLException {
@@ -208,11 +208,11 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
         //do nothing
     }
 
-    public void setAsciiStream(String parameterName, java.io.InputStream x, int length) throws SQLException {
+    public void setAsciiStream(String parameterName, InputStream x, int length) throws SQLException {
         //do nothing
     }
 
-    public void setBinaryStream(String parameterName, java.io.InputStream x, int length) throws SQLException {
+    public void setBinaryStream(String parameterName, InputStream x, int length) throws SQLException {
         //do nothing
     }
 
@@ -228,7 +228,7 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
         //do nothing
     }
 
-    public void setCharacterStream(String parameterName, java.io.Reader reader, int length) throws SQLException {
+    public void setCharacterStream(String parameterName, Reader reader, int length) throws SQLException {
         //do nothing
     }
 
@@ -405,19 +405,19 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
         return null;
     }
 
-    public java.io.Reader getNCharacterStream(int parameterIndex) throws SQLException {
+    public Reader getNCharacterStream(int parameterIndex) throws SQLException {
         return null;
     }
 
-    public java.io.Reader getNCharacterStream(String parameterName) throws SQLException {
+    public Reader getNCharacterStream(String parameterName) throws SQLException {
         return null;
     }
 
-    public java.io.Reader getCharacterStream(int parameterIndex) throws SQLException {
+    public Reader getCharacterStream(int parameterIndex) throws SQLException {
         return null;
     }
 
-    public java.io.Reader getCharacterStream(String parameterName) throws SQLException {
+    public Reader getCharacterStream(String parameterName) throws SQLException {
         return null;
     }
 
@@ -430,27 +430,27 @@ public class MockCallableStatement extends MockPreparedStatement implements Call
     }
 
 
-    public void setAsciiStream(String parameterName, java.io.InputStream x, long length) throws SQLException {
+    public void setAsciiStream(String parameterName, InputStream x, long length) throws SQLException {
         //do nothing
     }
 
-    public void setBinaryStream(String parameterName, java.io.InputStream x, long length) throws SQLException {
+    public void setBinaryStream(String parameterName, InputStream x, long length) throws SQLException {
         //do nothing
     }
 
-    public void setCharacterStream(String parameterName, java.io.Reader reader, long length) throws SQLException {
+    public void setCharacterStream(String parameterName, Reader reader, long length) throws SQLException {
         //do nothing
     }
 
-    public void setAsciiStream(String parameterName, java.io.InputStream x) throws SQLException {
+    public void setAsciiStream(String parameterName, InputStream x) throws SQLException {
         //do nothing
     }
 
-    public void setBinaryStream(String parameterName, java.io.InputStream x) throws SQLException {
+    public void setBinaryStream(String parameterName, InputStream x) throws SQLException {
         //do nothing
     }
 
-    public void setCharacterStream(String parameterName, java.io.Reader reader) throws SQLException {
+    public void setCharacterStream(String parameterName, Reader reader) throws SQLException {
         //do nothing
     }
 
