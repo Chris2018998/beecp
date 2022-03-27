@@ -45,10 +45,9 @@ public class TransAbandonAfterConnCloseTest extends TestCase {
             con1.setAutoCommit(false);
             ps1 = con1.prepareStatement("select count(*) from " + JdbcConfig.TEST_TABLE + " where TEST_ID='" + userId + "'");
             re1 = ps1.executeQuery();
-            if (re1.next()) {
-                if (re1.getInt(1) != 0)
-                    TestUtil.assertError("record size error");
-            }
+            if (re1.next() && re1.getInt(1) != 0)
+                TestUtil.assertError("record size error");
+
             ps2 = con1.prepareStatement("insert into " + JdbcConfig.TEST_TABLE + "(TEST_ID,TEST_NAME)values(?,?)");
             ps2.setString(1, userId);
             ps2.setString(2, userId);
@@ -67,8 +66,8 @@ public class TransAbandonAfterConnCloseTest extends TestCase {
             con2 = ds.getConnection();
             ps3 = con2.prepareStatement("select count(*) from " + JdbcConfig.TEST_TABLE + " where TEST_ID='" + userId + "'");
             re3 = ps3.executeQuery();
-            if (re3.next())
-                if (re3.getInt(1) != 0) TestUtil.assertError("rollback failed");
+            if (re3.next() && re3.getInt(1) != 0)
+                TestUtil.assertError("rollback failed");
         } finally {
             TestUtil.oclose(re3);
             TestUtil.oclose(ps3);
