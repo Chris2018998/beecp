@@ -21,7 +21,7 @@ public class MockConnection extends MockBase implements Connection {
     private boolean autoCommit;
     private int holdability;
     private String schema;
-    
+
     public Statement createStatement() throws SQLException {
         return new MockStatement(this);
     }

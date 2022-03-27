@@ -241,5 +241,4 @@ public class MockPreparedStatement extends MockStatement implements PreparedStat
     public void setNClob(int parameterIndex, Reader reader) throws SQLException {
         //do nothing
     }
-
 }

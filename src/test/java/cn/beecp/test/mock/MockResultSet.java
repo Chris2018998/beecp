@@ -9,6 +9,7 @@ package cn.beecp.test.mock;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.sql.*;
 import java.util.Calendar;
 
@@ -28,11 +29,11 @@ public class MockResultSet extends MockBase implements ResultSet {
 
     public void close() throws SQLException {
         super.close();
-        if (statement != null) statement.resultSet = null;
+        if (statement != returnNull()) statement.resultSet = null;
     }
 
     public boolean next() throws SQLException {
-        return false;
+        return returnFalse();
     }
 
     public Statement getStatement() throws SQLException {
@@ -44,7 +45,7 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public boolean wasNull() throws SQLException {
-        return false;
+        return returnFalse();
     }
 
     public String getString(int columnIndex) throws SQLException {
@@ -56,27 +57,27 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public byte getByte(int columnIndex) throws SQLException {
-        return 1;
+        return (byte) returnNumberOne();
     }
 
     public short getShort(int columnIndex) throws SQLException {
-        return 1;
+        return (short) returnNumberOne();
     }
 
     public int getInt(int columnIndex) throws SQLException {
-        return 1;
+        return returnNumberOne();
     }
 
     public long getLong(int columnIndex) throws SQLException {
-        return 1;
+        return (long) returnNumberOne();
     }
 
     public float getFloat(int columnIndex) throws SQLException {
-        return 1;
+        return (float) returnNumberOne();
     }
 
     public double getDouble(int columnIndex) throws SQLException {
-        return 1;
+        return (double) returnNumberOne();
     }
 
     public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
@@ -84,35 +85,35 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public byte[] getBytes(int columnIndex) throws SQLException {
-        return null;
+        return (byte[]) returnNull();
     }
 
     public Date getDate(int columnIndex) throws SQLException {
-        return null;
+        return (Date) returnNull();
     }
 
     public Time getTime(int columnIndex) throws SQLException {
-        return null;
+        return (Time) returnNull();
     }
 
     public Timestamp getTimestamp(int columnIndex) throws SQLException {
-        return null;
+        return (Timestamp) returnNull();
     }
 
     public InputStream getAsciiStream(int columnIndex) throws SQLException {
-        return null;
+        return (InputStream) returnNull();
     }
 
     public InputStream getUnicodeStream(int columnIndex) throws SQLException {
-        return null;
+        return (InputStream) returnNull();
     }
 
     public InputStream getBinaryStream(int columnIndex) throws SQLException {
-        return null;
+        return (InputStream) returnNull();
     }
 
     public String getString(String columnLabel) throws SQLException {
-        return null;
+        return (String) returnNull();
     }
 
     public boolean getBoolean(String columnLabel) throws SQLException {
@@ -120,27 +121,27 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public byte getByte(String columnLabel) throws SQLException {
-        return 1;
+        return (byte) returnNumberOne();
     }
 
     public short getShort(String columnLabel) throws SQLException {
-        return 1;
+        return (short) returnNumberOne();
     }
 
     public int getInt(String columnLabel) throws SQLException {
-        return 1;
+        return returnNumberOne();
     }
 
     public long getLong(String columnLabel) throws SQLException {
-        return 1;
+        return (long) returnNumberOne();
     }
 
     public float getFloat(String columnLabel) throws SQLException {
-        return 1;
+        return returnNumberOne();
     }
 
     public double getDouble(String columnLabel) throws SQLException {
-        return 1;
+        return (double) returnNumberOne();
     }
 
     public BigDecimal getBigDecimal(String columnLabel, int scale) throws SQLException {
@@ -148,35 +149,35 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public byte[] getBytes(String columnLabel) throws SQLException {
-        return null;
+        return (byte[]) returnNull();
     }
 
     public Date getDate(String columnLabel) throws SQLException {
-        return null;
+        return (Date) returnNull();
     }
 
     public Time getTime(String columnLabel) throws SQLException {
-        return null;
+        return (Time) returnNull();
     }
 
     public Timestamp getTimestamp(String columnLabel) throws SQLException {
-        return null;
+        return (Timestamp) returnNull();
     }
 
     public InputStream getAsciiStream(String columnLabel) throws SQLException {
-        return null;
+        return (InputStream) returnNull();
     }
 
     public InputStream getUnicodeStream(String columnLabel) throws SQLException {
-        return null;
+        return (InputStream) returnNull();
     }
 
     public InputStream getBinaryStream(String columnLabel) throws SQLException {
-        return null;
+        return (InputStream) returnNull();
     }
 
     public SQLWarning getWarnings() throws SQLException {
-        return null;
+        return (SQLWarning) returnNull();
     }
 
     public void clearWarnings() throws SQLException {
@@ -184,51 +185,51 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public String getCursorName() throws SQLException {
-        return null;
+        return (String) returnNull();
     }
 
     public Object getObject(int columnIndex) throws SQLException {
-        return null;
+        return returnNull();
     }
 
     public Object getObject(String columnLabel) throws SQLException {
-        return null;
+        return returnNull();
     }
 
     public int findColumn(String columnLabel) throws SQLException {
-        return 1;
+        return returnNumberOne();
     }
 
     public Reader getCharacterStream(int columnIndex) throws SQLException {
-        return null;
+        return (Reader) returnNull();
     }
 
     public Reader getCharacterStream(String columnLabel) throws SQLException {
-        return null;
+        return (Reader) returnNull();
     }
 
     public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-        return null;
+        return (BigDecimal) returnNull();
     }
 
     public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
-        return null;
+        return (BigDecimal) returnNull();
     }
 
     public boolean isBeforeFirst() throws SQLException {
-        return false;
+        return returnFalse();
     }
 
     public boolean isAfterLast() throws SQLException {
-        return false;
+        return returnFalse();
     }
 
     public boolean isFirst() throws SQLException {
-        return false;
+        return returnFalse();
     }
 
     public boolean isLast() throws SQLException {
-        return false;
+        return returnFalse();
     }
 
     public void beforeFirst() throws SQLException {
@@ -240,15 +241,15 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public boolean first() throws SQLException {
-        return false;
+        return returnFalse();
     }
 
     public boolean last() throws SQLException {
-        return false;
+        return returnFalse();
     }
 
     public int getRow() throws SQLException {
-        return 1;
+        return returnNumberOne();
     }
 
     public boolean absolute(int row) throws SQLException {
@@ -264,7 +265,7 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public int getFetchDirection() throws SQLException {
-        return 1;
+        return returnNumberOne();
     }
 
     public void setFetchDirection(int direction) throws SQLException {
@@ -272,7 +273,7 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public int getFetchSize() throws SQLException {
-        return 1;
+        return returnNumberOne();
     }
 
     public void setFetchSize(int rows) throws SQLException {
@@ -280,11 +281,11 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public int getType() throws SQLException {
-        return 1;
+        return returnNumberOne();
     }
 
     public int getConcurrency() throws SQLException {
-        return 1;
+        return returnNumberOne();
     }
 
     public boolean rowUpdated() throws SQLException {
@@ -480,75 +481,75 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public Object getObject(int columnIndex, java.util.Map<String, Class<?>> map) throws SQLException {
-        return null;
+        return returnNull();
     }
 
     public Ref getRef(int columnIndex) throws SQLException {
-        return null;
+        return (Ref) returnNull();
     }
 
     public Blob getBlob(int columnIndex) throws SQLException {
-        return null;
+        return (Blob) returnNull();
     }
 
     public Clob getClob(int columnIndex) throws SQLException {
-        return null;
+        return (Clob) returnNull();
     }
 
     public Array getArray(int columnIndex) throws SQLException {
-        return null;
+        return (Array) returnNull();
     }
 
     public Object getObject(String columnLabel, java.util.Map<String, Class<?>> map) throws SQLException {
-        return null;
+        return returnNull();
     }
 
     public Ref getRef(String columnLabel) throws SQLException {
-        return null;
+        return (Ref) returnNull();
     }
 
     public Blob getBlob(String columnLabel) throws SQLException {
-        return null;
+        return (Blob) returnNull();
     }
 
     public Clob getClob(String columnLabel) throws SQLException {
-        return null;
+        return (Clob) returnNull();
     }
 
     public Array getArray(String columnLabel) throws SQLException {
-        return null;
+        return (Array) returnNull();
     }
 
     public Date getDate(int columnIndex, Calendar cal) throws SQLException {
-        return null;
+        return (Date) returnNull();
     }
 
     public Date getDate(String columnLabel, Calendar cal) throws SQLException {
-        return null;
+        return (Date) returnNull();
     }
 
     public Time getTime(int columnIndex, Calendar cal) throws SQLException {
-        return null;
+        return (Time) returnNull();
     }
 
     public Time getTime(String columnLabel, Calendar cal) throws SQLException {
-        return null;
+        return (Time) returnNull();
     }
 
     public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
-        return null;
+        return (Timestamp) returnNull();
     }
 
     public Timestamp getTimestamp(String columnLabel, Calendar cal) throws SQLException {
-        return null;
+        return (Timestamp) returnNull();
     }
 
-    public java.net.URL getURL(int columnIndex) throws SQLException {
-        return null;
+    public URL getURL(int columnIndex) throws SQLException {
+        return (URL) returnNull();
     }
 
-    public java.net.URL getURL(String columnLabel) throws SQLException {
-        return null;
+    public URL getURL(String columnLabel) throws SQLException {
+        return (URL) returnNull();
     }
 
     public void updateRef(int columnIndex, Ref x) throws SQLException {
@@ -584,11 +585,11 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public RowId getRowId(int columnIndex) throws SQLException {
-        return null;
+        return (RowId) returnNull();
     }
 
     public RowId getRowId(String columnLabel) throws SQLException {
-        return null;
+        return (RowId) returnNull();
     }
 
     public void updateRowId(int columnIndex, RowId x) throws SQLException {
@@ -600,7 +601,7 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public int getHoldability() throws SQLException {
-        return 1;
+        return returnNumberOne();
     }
 
     public void updateNString(int columnIndex, String nString) throws SQLException {
@@ -620,19 +621,19 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public NClob getNClob(int columnIndex) throws SQLException {
-        return null;
+        return (NClob) returnNull();
     }
 
     public NClob getNClob(String columnLabel) throws SQLException {
-        return null;
+        return (NClob) returnNull();
     }
 
     public SQLXML getSQLXML(int columnIndex) throws SQLException {
-        return null;
+        return (SQLXML) returnNull();
     }
 
     public SQLXML getSQLXML(String columnLabel) throws SQLException {
-        return null;
+        return (SQLXML) returnNull();
     }
 
     public void updateSQLXML(int columnIndex, SQLXML xmlObject) throws SQLException {
@@ -644,19 +645,19 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public String getNString(int columnIndex) throws SQLException {
-        return null;
+        return (String) returnNull();
     }
 
     public String getNString(String columnLabel) throws SQLException {
-        return null;
+        return (String) returnNull();
     }
 
     public Reader getNCharacterStream(int columnIndex) throws SQLException {
-        return null;
+        return (Reader) returnNull();
     }
 
     public Reader getNCharacterStream(String columnLabel) throws SQLException {
-        return null;
+        return (Reader) returnNull();
     }
 
     public void updateNCharacterStream(int columnIndex, Reader x, long length) throws SQLException {
@@ -772,11 +773,22 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
-        return null;
+        return (T) returnNull();
     }
 
     public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
+        return (T) returnNull();
+    }
+
+    private Object returnNull() {
         return null;
     }
 
+    private int returnNumberOne() {
+        return returnNumberOne();
+    }
+
+    private boolean returnFalse() {
+        return false;
+    }
 }
