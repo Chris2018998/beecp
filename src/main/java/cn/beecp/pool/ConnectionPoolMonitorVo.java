@@ -14,12 +14,12 @@ package cn.beecp.pool;
  */
 
 public class ConnectionPoolMonitorVo {
-    private final String hostIP;
-    private final long threadId;
-    private final String threadName;
-    private final String poolName;
-    private final String poolMode;
-    private final int poolMaxSize;
+    private String hostIP;
+    private long threadId;
+    private String threadName;
+    private String poolName;
+    private String poolMode;
+    private int poolMaxSize;
 
     private int poolState;
     private int idleSize;
@@ -27,42 +27,56 @@ public class ConnectionPoolMonitorVo {
     private int semaphoreWaitingSize;
     private int transferWaitingSize;
 
-    ConnectionPoolMonitorVo(String poolName, String poolMode, int poolMaxSize,
-                            String hostIP, long threadId, String threadName) {
-        this.poolName = poolName;
-        this.poolMode = poolMode;
-        this.poolMaxSize = poolMaxSize;
-        this.hostIP = hostIP;
-        this.threadId = threadId;
-        this.threadName = threadName;
+    public String getHostIP() {
+        return hostIP;
     }
 
-    public String getHostIP() {
-        return this.hostIP;
+    void setHostIP(String hostIP) {
+        this.hostIP = hostIP;
     }
 
     public long getThreadId() {
-        return this.threadId;
+        return threadId;
+    }
+
+    void setThreadId(long threadId) {
+        this.threadId = threadId;
     }
 
     public String getThreadName() {
-        return this.threadName;
+        return threadName;
+    }
+
+    void setThreadName(String threadName) {
+        this.threadName = threadName;
     }
 
     public String getPoolName() {
-        return this.poolName;
+        return poolName;
+    }
+
+    void setPoolName(String poolName) {
+        this.poolName = poolName;
     }
 
     public String getPoolMode() {
-        return this.poolMode;
+        return poolMode;
+    }
+
+    void setPoolMode(String poolMode) {
+        this.poolMode = poolMode;
     }
 
     public int getPoolMaxSize() {
-        return this.poolMaxSize;
+        return poolMaxSize;
+    }
+
+    void setPoolMaxSize(int poolMaxSize) {
+        this.poolMaxSize = poolMaxSize;
     }
 
     public int getPoolState() {
-        return this.poolState;
+        return poolState;
     }
 
     void setPoolState(int poolState) {
@@ -70,7 +84,7 @@ public class ConnectionPoolMonitorVo {
     }
 
     public int getIdleSize() {
-        return this.idleSize;
+        return idleSize;
     }
 
     void setIdleSize(int idleSize) {
@@ -78,7 +92,7 @@ public class ConnectionPoolMonitorVo {
     }
 
     public int getUsingSize() {
-        return this.usingSize;
+        return usingSize;
     }
 
     void setUsingSize(int usingSize) {
@@ -86,7 +100,7 @@ public class ConnectionPoolMonitorVo {
     }
 
     public int getSemaphoreWaitingSize() {
-        return this.semaphoreWaitingSize;
+        return semaphoreWaitingSize;
     }
 
     void setSemaphoreWaitingSize(int semaphoreWaitingSize) {
@@ -94,7 +108,7 @@ public class ConnectionPoolMonitorVo {
     }
 
     public int getTransferWaitingSize() {
-        return this.transferWaitingSize;
+        return transferWaitingSize;
     }
 
     void setTransferWaitingSize(int transferWaitingSize) {

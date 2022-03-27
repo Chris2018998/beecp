@@ -724,7 +724,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 } catch (Throwable e) {
                     //do nothing
                 }
-
                 Log.info("BeeCP({})has shutdown", this.poolName);
                 break;
             } else if (poolStateCode == POOL_CLOSED) {
@@ -842,14 +841,19 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     //Method-5.13 create monitor vo
     private ConnectionPoolMonitorVo createPoolMonitorVo(String poolMode) {
-        String hostIP = null;
+        ConnectionPoolMonitorVo monitorVo = new ConnectionPoolMonitorVo();
+        monitorVo.setPoolName(poolName);
+        monitorVo.setPoolMode(poolMode);
+        monitorVo.setPoolMaxSize(poolMaxSize);
+        Thread currentThread = Thread.currentThread();
+        monitorVo.setThreadId(currentThread.getId());
+        monitorVo.setThreadName(currentThread.getName());
         try {
-            hostIP = InetAddress.getLocalHost().getHostAddress();
+            monitorVo.setHostIP(InetAddress.getLocalHost().getHostAddress());
         } catch (UnknownHostException e) {
             Log.info("BeeCP({})failed to resolve pool hose ip", this.poolName);
         }
-        Thread currentThread = Thread.currentThread();
-        return new ConnectionPoolMonitorVo(this.poolName, poolMode, this.poolMaxSize, hostIP, currentThread.getId(), currentThread.getName());
+        return monitorVo;
     }
 
     //Method-5.14: pool monitor vo
