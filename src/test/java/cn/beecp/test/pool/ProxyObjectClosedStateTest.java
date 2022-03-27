@@ -36,44 +36,55 @@ public class ProxyObjectClosedStateTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws Exception {
-        Connection con = null;
+    private void testStatement(Connection con) throws Exception {
         Statement st = null;
-        PreparedStatement ps = null;
-        CallableStatement cs = null;
         try {
-            con = ds.getConnection();
             st = con.createStatement();
             st.close();
             if (!st.isClosed())
                 TestUtil.assertError("Statement is not closed");
-            st = null;
+        } finally {
+            TestUtil.oclose(st);
+        }
+    }
 
+    private void testPreparedStatement(Connection con) throws Exception {
+        PreparedStatement ps = null;
+        try {
             ps = con.prepareStatement("select 1 from dual");
             ps.close();
             if (!ps.isClosed())
                 TestUtil.assertError("PreparedStatement is not closed");
-            ps = null;
+        } finally {
+            TestUtil.oclose(ps);
+        }
+    }
 
+    private void testCallableStatement(Connection con) throws Exception {
+        CallableStatement cs = null;
+        try {
             cs = con.prepareCall("?={call test(}");
             cs.close();
             if (!cs.isClosed())
                 TestUtil.assertError("CallableStatement is not closed");
-            cs = null;
+        } finally {
+            TestUtil.oclose(cs);
+        }
+    }
 
+    public void test() throws Exception {
+        Connection con = null;
+        try {
+            con = ds.getConnection();
+            testStatement(con);
+            testPreparedStatement(con);
+            testCallableStatement(con);
             con.close();
             if (!con.isClosed())
                 TestUtil.assertError("Connection is not closed");
             con = null;
         } finally {
-            if (st != null)
-                TestUtil.oclose(st);
-            if (cs != null)
-                TestUtil.oclose(cs);
-            if (ps != null)
-                TestUtil.oclose(ps);
-            if (con != null)
-                TestUtil.oclose(con);
+            TestUtil.oclose(con);
         }
     }
 }
