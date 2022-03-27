@@ -46,48 +46,33 @@ public class TransAbandonAfterConnCloseTest extends TestCase {
             ps1 = con1.prepareStatement("select count(*) from " + JdbcConfig.TEST_TABLE + " where TEST_ID='" + userId + "'");
             re1 = ps1.executeQuery();
             if (re1.next()) {
-                int size = re1.getInt(1);
-                if (size != 0)
+                if (re1.getInt(1) != 0)
                     TestUtil.assertError("record size error");
             }
-
             ps2 = con1.prepareStatement("insert into " + JdbcConfig.TEST_TABLE + "(TEST_ID,TEST_NAME)values(?,?)");
             ps2.setString(1, userId);
             ps2.setString(2, userId);
-            int rows = ps2.executeUpdate();
-            if (rows != 1)
-                TestUtil.assertError("Failed to insert");
+            if (ps2.executeUpdate() != 1) TestUtil.assertError("Failed to insert");
         } finally {
-            if (re1 != null)
-                TestUtil.oclose(re1);
-            if (ps1 != null)
-                TestUtil.oclose(ps1);
-            if (ps2 != null)
-                TestUtil.oclose(ps2);
-            if (con1 != null)
-                TestUtil.oclose(con1);
+            TestUtil.oclose(re1);
+            TestUtil.oclose(ps1);
+            TestUtil.oclose(ps2);
+            TestUtil.oclose(con1);
         }
 
         Connection con2 = null;
         PreparedStatement ps3 = null;
         ResultSet re3 = null;
-
         try {
             con2 = ds.getConnection();
             ps3 = con2.prepareStatement("select count(*) from " + JdbcConfig.TEST_TABLE + " where TEST_ID='" + userId + "'");
             re3 = ps3.executeQuery();
-            if (re3.next()) {
-                int size = re3.getInt(1);
-                if (size != 0)
-                    TestUtil.assertError("rollback failed");
-            }
+            if (re3.next())
+                if (re3.getInt(1) != 0) TestUtil.assertError("rollback failed");
         } finally {
-            if (re3 != null)
-                TestUtil.oclose(re3);
-            if (ps3 != null)
-                TestUtil.oclose(ps3);
-            if (con2 != null)
-                TestUtil.oclose(con2);
+            TestUtil.oclose(re3);
+            TestUtil.oclose(ps3);
+            TestUtil.oclose(con2);
         }
     }
 }
