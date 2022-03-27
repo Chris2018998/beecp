@@ -59,7 +59,7 @@ public class ConnectionResetTest extends TestCase {
             //if(con.getAutoCommit()!=false)TestUtil.assertError("autoCommit reset fail");
             if (con.getTransactionIsolation() != Connection.TRANSACTION_READ_COMMITTED)
                 TestUtil.assertError("TransactionIsolation reset fail");
-            if (con.isReadOnly() != true) TestUtil.assertError("readony reset fail");
+            if (!con.isReadOnly()) TestUtil.assertError("readony reset fail");
             if (!catlog.equals(con.getCatalog()))
                 TestUtil.assertError("catalog reset fail,excpect:s%,cuurent is s%", catlog, con.getCatalog());
         } finally {
