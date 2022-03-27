@@ -106,6 +106,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private Class connectionFactoryClass;
     //connection factory class name
     private String connectionFactoryClassName;
+
     //connection factory
     private Object connectionFactory;
     //password decoder
@@ -311,7 +312,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setDelayTimeForNextClear(long delayTimeForNextClear) {
-        if (delayTimeForNextClear > 0) this.delayTimeForNextClear = delayTimeForNextClear;
+        if (delayTimeForNextClear >= 0) this.delayTimeForNextClear = delayTimeForNextClear;
     }
 
     public String getPoolImplementClassName() {
