@@ -44,12 +44,12 @@ public class ProxyResultSetGetTest extends TestCase {
             ps = con.prepareStatement("select * from BEECP_TEST");
             rs = ps.executeQuery();
             rs2 = ps.getResultSet();
-            if (rs2 != rs) TestUtil.assertError("ps.getResultSet() != ps.executeQuery()");
-            if (ps.getResultSet() != rs2) TestUtil.assertError("ps.getResultSet() != ps.executeQuery()");
+            if (!rs2.equals(rs)) TestUtil.assertError("ps.getResultSet() != ps.executeQuery()");
+            if (!ps.getResultSet().equals(rs2)) TestUtil.assertError("ps.getResultSet() != ps.executeQuery()");
         } finally {
-            if (rs != null) TestUtil.oclose(rs);
-            if (ps != null) TestUtil.oclose(ps);
-            if (con != null) TestUtil.oclose(con);
+            TestUtil.oclose(rs);
+            TestUtil.oclose(ps);
+            TestUtil.oclose(con);
         }
     }
 }
