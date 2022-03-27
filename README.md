@@ -31,62 +31,6 @@ Java6
 </dependency>
 ```
 
-## :tractor: Example
-
-### :point_right: Example-1(independent)
-
-```java
-BeeDataSourceConfig config = new BeeDataSourceConfig();
-config.setDriverClassName("com.mysql.jdbc.Driver");
-config.setJdbcUrl("jdbc:mysql://localhost/test");
-config.setUsername("root");
-config.setPassword("root");
-BeeDataSource ds=new BeeDataSource(config);
-Connection con=ds.getConnection();
-....
-
-```
-### :point_right: Example-2(Springboot)
-
-*application.properties*
-
-```java
-spring.datasource.username=root
-spring.datasource.password=root
-spring.datasource.url=jdbc:mysql://localhost/test
-spring.datasource.driverClassName=com.mysql.jdbc.Driver
-``` 
-
-*DataSourceConfig.java*
-```java
-@Configuration
-public class DataSourceConfig {
-  @Value("${spring.datasource.username}")
-  private String user;
-  @Value("${spring.datasource.password}")
-  private String password;
-  @Value("${spring.datasource.url}")
-  private String url;
-  @Value("${spring.datasource.driverClassName}")
-  private String driver;
-
-  @Bean
-  @Primary
-  @ConfigurationProperties(prefix="spring.datasource")
-  public DataSource primaryDataSource() {
-    return DataSourceBuilder.create().type(cn.beecp.BeeDataSource.class).build();
-  }
-  
-  @Bean
-  public DataSource secondDataSource() {
-   return new BeeDataSource(new BeeDataSourceConfig(driver,url,user,password));
-  }
-}
-```
-
-:sunny: *If your projects are based on springboot, we recommend<a href="https://github.com/Chris2018998/BeeCP-Starter"> BeeCP-Starter </a>
-to manage your datasource(file configuration, less code, monitor-ui)*
-
 ## :book: Configuration item 
 
 |**Item Name**                     |**Desc**                                |**Default**                      |
