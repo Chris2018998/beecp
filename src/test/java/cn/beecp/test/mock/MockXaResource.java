@@ -18,10 +18,9 @@ import javax.transaction.xa.Xid;
  */
 public final class MockXaResource implements XAResource {
     private static final Xid[] EMPTY_XID_ARRAY = {};
-    private Xid xid;
 
     public void start(Xid xid, int flags) throws XAException {
-        this.xid = xid;
+        //do nothing
     }
 
     public int prepare(Xid xid) throws XAException {
