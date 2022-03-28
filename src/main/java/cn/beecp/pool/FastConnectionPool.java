@@ -691,8 +691,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 } else if (p.state == CON_USING) {
                     ProxyConnectionBase proxyInUsing = p.proxyInUsing;
                     if (proxyInUsing != null) {
-                        if (force || System.currentTimeMillis() - p.lastAccessTime >= this.holdTimeoutMs)//force close or hold timeout
+                        if (force || System.currentTimeMillis() - p.lastAccessTime >= this.holdTimeoutMs) {//force close or hold timeout
                             oclose(proxyInUsing);
+                            if (ConStUpd.compareAndSet(p, CON_IDLE, CON_CLOSED))
+                                this.removePooledConn(p, source);
+                        }
                     } else {
                         this.removePooledConn(p, source);
                     }
