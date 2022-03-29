@@ -628,7 +628,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         if (this.poolState == POOL_READY) {
             PooledConnection[] array = this.pooledArray;
             for (PooledConnection p : array) {
-                int state = p.state;
+                final int state = p.state;
                 if (state == CON_IDLE && !this.existBorrower()) {
                     boolean isTimeoutInIdle = System.currentTimeMillis() - p.lastAccessTime >= this.idleTimeoutMs;
                     if (isTimeoutInIdle && ConStUpd.compareAndSet(p, state, CON_CLOSED)) {//need close idle
@@ -684,11 +684,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         while (this.pooledArray.length > 0) {
             PooledConnection[] array = this.pooledArray;
             for (PooledConnection p : array) {
-                if (ConStUpd.compareAndSet(p, CON_IDLE, CON_CLOSED)) {
-                    this.removePooledConn(p, source);
-                } else if (p.state == CON_CLOSED) {
-                    this.removePooledConn(p, source);
-                } else if (p.state == CON_USING) {
+                final int state = p.state;
+                if (state == CON_IDLE) {
+                    if (ConStUpd.compareAndSet(p, CON_IDLE, CON_CLOSED)) this.removePooledConn(p, source);
+                } else if (state == CON_USING) {
                     ProxyConnectionBase proxyInUsing = p.proxyInUsing;
                     if (proxyInUsing != null) {
                         if (force || System.currentTimeMillis() - p.lastAccessTime >= this.holdTimeoutMs) {//force close or hold timeout
@@ -699,6 +698,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     } else {
                         this.removePooledConn(p, source);
                     }
+                } else if (state == CON_CLOSED) {
+                    this.removePooledConn(p, source);
                 }
             } // for
             if (this.pooledArray.length > 0) LockSupport.parkNanos(this.delayTimeForNextClearNs);
