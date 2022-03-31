@@ -650,10 +650,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     this.tryWakeupServantThread();
                 }
             }
+        }
 
+        if (printRuntimeLog) {
             ConnectionPoolMonitorVo vo = getPoolMonitorVo();
-            if (this.printRuntimeLog)
-                Log.info("BeeCP({})-{idle:{},using:{},semaphore-waiting:{},transfer-waiting:{}}", this.poolName, vo.getIdleSize(), vo.getUsingSize(), vo.getSemaphoreWaitingSize(), vo.getTransferWaitingSize());
+            Log.info("BeeCP({})-{idle:{},using:{},semaphore-waiting:{},transfer-waiting:{}}", this.poolName, vo.getIdleSize(), vo.getUsingSize(), vo.getSemaphoreWaitingSize(), vo.getTransferWaitingSize());
         }
     }
 
@@ -704,6 +705,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             } // for
             if (this.pooledArray.length > 0) LockSupport.parkNanos(this.delayTimeForNextClearNs);
         } // while
+
+        if (printRuntimeLog) {
+            ConnectionPoolMonitorVo vo = getPoolMonitorVo();
+            Log.info("BeeCP({})-{idle:{},using:{},semaphore-waiting:{},transfer-waiting:{}}", this.poolName, vo.getIdleSize(), vo.getUsingSize(), vo.getSemaphoreWaitingSize(), vo.getTransferWaitingSize());
+        }
     }
 
     //Method-4.4: closed check
