@@ -859,7 +859,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         Thread currentThread = Thread.currentThread();
         monitorVo.setThreadId(currentThread.getId());
         monitorVo.setThreadName(currentThread.getName());
-        monitorUUID = UUID.randomUUID().toString();
+        monitorUUID = "BeeCP_" + UUID.randomUUID().toString();
         monitorVo.setUUID(monitorUUID);
         try {
             monitorVo.setHostIP(InetAddress.getLocalHost().getHostAddress());
