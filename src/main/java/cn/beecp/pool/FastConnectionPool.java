@@ -28,6 +28,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
@@ -85,7 +86,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private ConnectionPoolMonitorVo monitorVo;
     private ConnectionPoolHook exitHook;
     private boolean printRuntimeLog;
-
+    private String monitorUUID;
     //***************************************************************************************************************//
     //               1: Pool initialize and Pooled connection create/remove methods(7)                               //                                                                                  //
     //***************************************************************************************************************//
@@ -858,6 +859,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         Thread currentThread = Thread.currentThread();
         monitorVo.setThreadId(currentThread.getId());
         monitorVo.setThreadName(currentThread.getName());
+        monitorUUID = UUID.randomUUID().toString();
+        monitorVo.setUUID(monitorUUID);
         try {
             monitorVo.setHostIP(InetAddress.getLocalHost().getHostAddress());
         } catch (UnknownHostException e) {
@@ -870,7 +873,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     public ConnectionPoolMonitorVo getPoolMonitorVo() {
         int totSize = this.getTotalSize();
         int idleSize = this.getIdleSize();
-        this.monitorVo.setPoolState(this.poolState);
+        this.monitorVo.setUUID(monitorUUID);
+        this.monitorVo.setPoolState(poolState);
         this.monitorVo.setIdleSize(idleSize);
         this.monitorVo.setUsingSize(totSize - idleSize);
         this.monitorVo.setSemaphoreWaitingSize(this.getSemaphoreWaitingSize());
