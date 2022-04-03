@@ -129,11 +129,11 @@ abstract class ProxyStatementBase extends ProxyBaseWrapper implements Statement 
         //do nothing
     }
 
-    public void closeOnCompletion() throws SQLException {
+    public void closeOnCompletion() {
         //do nothing
     }
 
-    public boolean isCloseOnCompletion() throws SQLException {
+    public boolean isCloseOnCompletion() {
         return false;
     }
 }
