@@ -27,55 +27,55 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
     }
 
     public boolean allProceduresAreCallable() {
-        return returnFalse();
+        return false;
     }
 
     public boolean allTablesAreSelectable() {
-        return returnFalse();
+        return false;
     }
 
     public String getURL() {
-        return returnNull();
+        return null;
     }
 
     public String getUserName() {
-        return returnNull();
+        return null;
     }
 
     public boolean isReadOnly() {
-        return returnFalse();
+        return false;
     }
 
     public boolean nullsAreSortedHigh() {
-        return returnFalse();
+        return false;
     }
 
     public boolean nullsAreSortedLow() {
-        return returnFalse();
+        return false;
     }
 
     public boolean nullsAreSortedAtStart() {
-        return returnFalse();
+        return false;
     }
 
     public boolean nullsAreSortedAtEnd() {
-        return returnFalse();
+        return false;
     }
 
     public String getDatabaseProductName() {
-        return returnNull();
+        return null;
     }
 
     public String getDatabaseProductVersion() {
-        return returnNull();
+        return null;
     }
 
     public String getDriverName() {
-        return returnNull();
+        return null;
     }
 
     public String getDriverVersion() {
-        return returnNull();
+        return null;
     }
 
     public int getDriverMajorVersion() {
@@ -87,183 +87,183 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
     }
 
     public boolean usesLocalFiles() {
-        return returnFalse();
+        return false;
     }
 
     public boolean usesLocalFilePerTable() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsMixedCaseIdentifiers() {
-        return returnFalse();
+        return false;
     }
 
     public boolean storesUpperCaseIdentifiers() {
-        return returnFalse();
+        return false;
     }
 
     public boolean storesLowerCaseIdentifiers() {
-        return returnFalse();
+        return false;
     }
 
     public boolean storesMixedCaseIdentifiers() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsMixedCaseQuotedIdentifiers() {
-        return returnFalse();
+        return false;
     }
 
     public boolean storesUpperCaseQuotedIdentifiers() {
-        return returnFalse();
+        return false;
     }
 
     public boolean storesLowerCaseQuotedIdentifiers() {
-        return returnFalse();
+        return false;
     }
 
     public boolean storesMixedCaseQuotedIdentifiers() {
-        return returnFalse();
+        return false;
     }
 
     public String getIdentifierQuoteString() {
-        return returnNull();
+        return null;
     }
 
     public String getSQLKeywords() {
-        return returnNull();
+        return null;
     }
 
     public String getNumericFunctions() {
-        return returnNull();
+        return null;
     }
 
     public String getStringFunctions() {
-        return returnNull();
+        return null;
     }
 
     public String getSystemFunctions() {
-        return returnNull();
+        return null;
     }
 
     public String getTimeDateFunctions() {
-        return returnNull();
+        return null;
     }
 
     public String getSearchStringEscape() {
-        return returnNull();
+        return null;
     }
 
     public String getExtraNameCharacters() {
-        return returnNull();
+        return null;
     }
 
     public boolean supportsAlterTableWithAddColumn() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsAlterTableWithDropColumn() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsColumnAliasing() {
-        return returnFalse();
+        return false;
     }
 
     public boolean nullPlusNonNullIsNull() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsConvert() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsConvert(int fromType, int toType) {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsTableCorrelationNames() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsDifferentTableCorrelationNames() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsExpressionsInOrderBy() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsOrderByUnrelated() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsGroupBy() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsGroupByUnrelated() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsGroupByBeyondSelect() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsLikeEscapeClause() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsMultipleResultSets() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsMultipleTransactions() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsNonNullableColumns() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsMinimumSQLGrammar() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsCoreSQLGrammar() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsExtendedSQLGrammar() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsANSI92EntryLevelSQL() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsANSI92IntermediateSQL() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsANSI92FullSQL() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsIntegrityEnhancementFacility() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsOuterJoins() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsFullOuterJoins() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsLimitedOuterJoins() {
-        return returnFalse();
+        return false;
     }
 
     public String getSchemaTerm() {
@@ -279,7 +279,7 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
     }
 
     public boolean isCatalogAtStart() {
-        return returnFalse();
+        return false;
     }
 
     public String getCatalogSeparator() {
@@ -287,103 +287,103 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
     }
 
     public boolean supportsSchemasInDataManipulation() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsSchemasInProcedureCalls() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsSchemasInTableDefinitions() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsSchemasInIndexDefinitions() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsSchemasInPrivilegeDefinitions() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsCatalogsInDataManipulation() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsCatalogsInProcedureCalls() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsCatalogsInTableDefinitions() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsCatalogsInIndexDefinitions() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsCatalogsInPrivilegeDefinitions() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsPositionedDelete() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsPositionedUpdate() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsSelectForUpdate() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsStoredProcedures() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsSubqueriesInComparisons() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsSubqueriesInExists() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsSubqueriesInIns() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsSubqueriesInQuantifieds() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsCorrelatedSubqueries() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsUnion() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsUnionAll() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsOpenCursorsAcrossCommit() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsOpenCursorsAcrossRollback() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsOpenStatementsAcrossCommit() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsOpenStatementsAcrossRollback() {
-        return returnFalse();
+        return false;
     }
 
     public int getMaxBinaryLiteralLength() {
@@ -447,7 +447,7 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
     }
 
     public boolean doesMaxRowSizeIncludeBlobs() {
-        return returnFalse();
+        return false;
     }
 
     public int getMaxStatementLength() {
@@ -475,27 +475,27 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
     }
 
     public boolean supportsTransactions() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsTransactionIsolationLevel(int level) {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsDataDefinitionAndDataManipulationTransactions() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsDataManipulationTransactionsOnly() {
-        return returnFalse();
+        return false;
     }
 
     public boolean dataDefinitionCausesTransactionCommit() {
-        return returnFalse();
+        return false;
     }
 
     public boolean dataDefinitionIgnoredInTransactions() {
-        return returnFalse();
+        return false;
     }
 
     public ResultSet getProcedures(String catalog, String schemaPattern, String procedureNamePattern) {
@@ -567,51 +567,51 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
     }
 
     public boolean supportsResultSetType(int type) {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsResultSetConcurrency(int type, int concurrency) {
-        return returnFalse();
+        return false;
     }
 
     public boolean ownUpdatesAreVisible(int type) {
-        return returnFalse();
+        return false;
     }
 
     public boolean ownDeletesAreVisible(int type) {
-        return returnFalse();
+        return false;
     }
 
     public boolean ownInsertsAreVisible(int type) {
-        return returnFalse();
+        return false;
     }
 
     public boolean othersUpdatesAreVisible(int type) {
-        return returnFalse();
+        return false;
     }
 
     public boolean othersDeletesAreVisible(int type) {
-        return returnFalse();
+        return false;
     }
 
     public boolean othersInsertsAreVisible(int type) {
-        return returnFalse();
+        return false;
     }
 
     public boolean updatesAreDetected(int type) {
-        return returnFalse();
+        return false;
     }
 
     public boolean deletesAreDetected(int type) {
-        return returnFalse();
+        return false;
     }
 
     public boolean insertsAreDetected(int type) {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsBatchUpdates() {
-        return returnFalse();
+        return false;
     }
 
     public ResultSet getUDTs(String catalog, String schemaPattern, String typeNamePattern, int[] types) {
@@ -619,19 +619,19 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
     }
 
     public boolean supportsSavepoints() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsNamedParameters() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsMultipleOpenResults() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsGetGeneratedKeys() {
-        return returnFalse();
+        return false;
     }
 
     public ResultSet getSuperTypes(String catalog, String schemaPattern, String typeNamePattern) {
@@ -647,7 +647,7 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
     }
 
     public boolean supportsResultSetHoldability(int holdability) {
-        return returnFalse();
+        return false;
     }
 
     public int getResultSetHoldability() {
@@ -675,11 +675,11 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
     }
 
     public boolean locatorsUpdateCopy() {
-        return returnFalse();
+        return false;
     }
 
     public boolean supportsStatementPooling() {
-        return returnFalse();
+        return false;
     }
 
     public RowIdLifetime getRowIdLifetime() {
@@ -691,11 +691,11 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
     }
 
     public boolean supportsStoredFunctionsUsingCallSyntax() {
-        return returnFalse();
+        return false;
     }
 
     public boolean autoCommitFailureClosesAllResultSets() {
-        return returnFalse();
+        return false;
     }
 
     public ResultSet getClientInfoProperties() {
@@ -715,22 +715,14 @@ public class MockDatabaseMetaData extends MockBase implements DatabaseMetaData {
     }
 
     public boolean generatedKeyAlwaysReturned() {
-        return returnFalse();
+        return false;
     }
 
     private String returnEmpty() {
         return "";
     }
 
-    private String returnNull() {
-        return null;
-    }
-
     private int returnNumberOne() {
         return 1;
-    }
-
-    private boolean returnFalse() {
-        return false;
     }
 }
