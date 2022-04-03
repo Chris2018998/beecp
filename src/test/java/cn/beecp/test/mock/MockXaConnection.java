@@ -32,11 +32,11 @@ public final class MockXaConnection implements XAConnection {
         con.close();
     }
 
-    public Connection getConnection() throws SQLException {
+    public Connection getConnection() {
         return con;
     }
 
-    public XAResource getXAResource() throws SQLException {
+    public XAResource getXAResource() {
         return res;
     }
 

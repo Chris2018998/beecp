@@ -17,228 +17,228 @@ import java.util.Calendar;
  * @version 1.0
  */
 public class MockPreparedStatement extends MockStatement implements PreparedStatement {
-    public MockPreparedStatement(MockConnection connection) {
+    MockPreparedStatement(MockConnection connection) {
         super(connection);
     }
 
-    public ResultSet executeQuery() throws SQLException {
+    public ResultSet executeQuery() {
         resultSet = new MockResultSet(this);
         return resultSet;
     }
 
-    public ResultSetMetaData getMetaData() throws SQLException {
+    public ResultSetMetaData getMetaData() {
         return new MockResultSetMetaData();
     }
 
-    public int executeUpdate() throws SQLException {
+    public int executeUpdate() {
         return 1;
     }
 
-    public void setNull(int parameterIndex, int sqlType) throws SQLException {
+    public void setNull(int parameterIndex, int sqlType) {
         //do nothing
     }
 
-    public void setBoolean(int parameterIndex, boolean x) throws SQLException {
+    public void setBoolean(int parameterIndex, boolean x) {
         //do nothing
     }
 
-    public void setByte(int parameterIndex, byte x) throws SQLException {
+    public void setByte(int parameterIndex, byte x) {
         //do nothing
     }
 
-    public void setShort(int parameterIndex, short x) throws SQLException {
+    public void setShort(int parameterIndex, short x) {
         //do nothing
     }
 
-    public void setInt(int parameterIndex, int x) throws SQLException {
+    public void setInt(int parameterIndex, int x) {
         //do nothing
     }
 
-    public void setLong(int parameterIndex, long x) throws SQLException {
+    public void setLong(int parameterIndex, long x) {
         //do nothing
     }
 
-    public void setFloat(int parameterIndex, float x) throws SQLException {
+    public void setFloat(int parameterIndex, float x) {
         //do nothing
     }
 
-    public void setDouble(int parameterIndex, double x) throws SQLException {
+    public void setDouble(int parameterIndex, double x) {
         //do nothing
     }
 
-    public void setBigDecimal(int parameterIndex, BigDecimal x) throws SQLException {
+    public void setBigDecimal(int parameterIndex, BigDecimal x) {
         //do nothing
     }
 
-    public void setString(int parameterIndex, String x) throws SQLException {
+    public void setString(int parameterIndex, String x) {
         //do nothing
     }
 
-    public void setBytes(int parameterIndex, byte[] x) throws SQLException {
+    public void setBytes(int parameterIndex, byte[] x) {
         //do nothing
     }
 
-    public void setDate(int parameterIndex, Date x) throws SQLException {
+    public void setDate(int parameterIndex, Date x) {
         //do nothing
     }
 
-    public void setTime(int parameterIndex, Time x) throws SQLException {
+    public void setTime(int parameterIndex, Time x) {
         //do nothing
     }
 
-    public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException {
+    public void setTimestamp(int parameterIndex, Timestamp x) {
         //do nothing
     }
 
-    public void setAsciiStream(int parameterIndex, InputStream x, int length) throws SQLException {
+    public void setAsciiStream(int parameterIndex, InputStream x, int length) {
         //do nothing
     }
 
-    public void setUnicodeStream(int parameterIndex, InputStream x, int length) throws SQLException {
+    public void setUnicodeStream(int parameterIndex, InputStream x, int length) {
         //do nothing
     }
 
-    public void setBinaryStream(int parameterIndex, InputStream x, int length) throws SQLException {
+    public void setBinaryStream(int parameterIndex, InputStream x, int length) {
         //do nothing
     }
 
-    public void clearParameters() throws SQLException {
+    public void clearParameters() {
         //do nothing
     }
 
-    public void setObject(int parameterIndex, Object x, int targetSqlType) throws SQLException {
+    public void setObject(int parameterIndex, Object x, int targetSqlType) {
         //do nothing
     }
 
-    public void setObject(int parameterIndex, Object x) throws SQLException {
+    public void setObject(int parameterIndex, Object x) {
         //do nothing
     }
 
-    public boolean execute() throws SQLException {
+    public boolean execute() {
         return true;
     }
 
-    public void addBatch() throws SQLException {
+    public void addBatch() {
         //do nothing
     }
 
-    public void setCharacterStream(int parameterIndex, Reader reader, int length) throws SQLException {
+    public void setCharacterStream(int parameterIndex, Reader reader, int length) {
         //do nothing
     }
 
-    public void setRef(int parameterIndex, Ref x) throws SQLException {
+    public void setRef(int parameterIndex, Ref x) {
         //do nothing
     }
 
-    public void setBlob(int parameterIndex, Blob x) throws SQLException {
+    public void setBlob(int parameterIndex, Blob x) {
         //do nothing
     }
 
-    public void setClob(int parameterIndex, Clob x) throws SQLException {
+    public void setClob(int parameterIndex, Clob x) {
         //do nothing
     }
 
-    public void setArray(int parameterIndex, Array x) throws SQLException {
+    public void setArray(int parameterIndex, Array x) {
         //do nothing
     }
 
-    public void setDate(int parameterIndex, Date x, Calendar cal) throws SQLException {
+    public void setDate(int parameterIndex, Date x, Calendar cal) {
         //do nothing
     }
 
-    public void setTime(int parameterIndex, Time x, Calendar cal) throws SQLException {
+    public void setTime(int parameterIndex, Time x, Calendar cal) {
         //do nothing
     }
 
-    public void setTimestamp(int parameterIndex, Timestamp x, Calendar cal) throws SQLException {
+    public void setTimestamp(int parameterIndex, Timestamp x, Calendar cal) {
         //do nothing
     }
 
-    public void setNull(int parameterIndex, int sqlType, String typeName) throws SQLException {
+    public void setNull(int parameterIndex, int sqlType, String typeName) {
         //do nothing
     }
 
-    public void setURL(int parameterIndex, java.net.URL x) throws SQLException {
+    public void setURL(int parameterIndex, java.net.URL x) {
         //do nothing
     }
 
-    public ParameterMetaData getParameterMetaData() throws SQLException {
+    public ParameterMetaData getParameterMetaData() {
         return null;
     }
 
-    public void setRowId(int parameterIndex, RowId x) throws SQLException {
+    public void setRowId(int parameterIndex, RowId x) {
         //do nothing
     }
 
-    public void setNString(int parameterIndex, String value) throws SQLException {
+    public void setNString(int parameterIndex, String value) {
         //do nothing
     }
 
-    public void setNCharacterStream(int parameterIndex, Reader value, long length) throws SQLException {
+    public void setNCharacterStream(int parameterIndex, Reader value, long length) {
         //do nothing
     }
 
-    public void setNClob(int parameterIndex, NClob value) throws SQLException {
+    public void setNClob(int parameterIndex, NClob value) {
         //do nothing
     }
 
-    public void setClob(int parameterIndex, Reader reader, long length) throws SQLException {
+    public void setClob(int parameterIndex, Reader reader, long length) {
         //do nothing
     }
 
-    public void setBlob(int parameterIndex, InputStream inputStream, long length) throws SQLException {
+    public void setBlob(int parameterIndex, InputStream inputStream, long length) {
         //do nothing
     }
 
-    public void setNClob(int parameterIndex, Reader reader, long length) throws SQLException {
+    public void setNClob(int parameterIndex, Reader reader, long length) {
         //do nothing
     }
 
-    public void setSQLXML(int parameterIndex, SQLXML xmlObject) throws SQLException {
+    public void setSQLXML(int parameterIndex, SQLXML xmlObject) {
         //do nothing
     }
 
-    public void setObject(int parameterIndex, Object x, int targetSqlType, int scaleOrLength) throws SQLException {
+    public void setObject(int parameterIndex, Object x, int targetSqlType, int scaleOrLength) {
         //do nothing
     }
 
-    public void setAsciiStream(int parameterIndex, InputStream x, long length) throws SQLException {
+    public void setAsciiStream(int parameterIndex, InputStream x, long length) {
         //do nothing
     }
 
-    public void setBinaryStream(int parameterIndex, InputStream x, long length) throws SQLException {
+    public void setBinaryStream(int parameterIndex, InputStream x, long length) {
         //do nothing
     }
 
-    public void setCharacterStream(int parameterIndex, Reader reader, long length) throws SQLException {
+    public void setCharacterStream(int parameterIndex, Reader reader, long length) {
         //do nothing
     }
 
-    public void setAsciiStream(int parameterIndex, InputStream x) throws SQLException {
+    public void setAsciiStream(int parameterIndex, InputStream x) {
         //do nothing
     }
 
-    public void setBinaryStream(int parameterIndex, InputStream x) throws SQLException {
+    public void setBinaryStream(int parameterIndex, InputStream x) {
         //do nothing
     }
 
-    public void setCharacterStream(int parameterIndex, Reader reader) throws SQLException {
+    public void setCharacterStream(int parameterIndex, Reader reader) {
         //do nothing
     }
 
-    public void setNCharacterStream(int parameterIndex, Reader value) throws SQLException {
+    public void setNCharacterStream(int parameterIndex, Reader value) {
         //do nothing
     }
 
-    public void setClob(int parameterIndex, Reader reader) throws SQLException {
+    public void setClob(int parameterIndex, Reader reader) {
         //do nothing
     }
 
-    public void setBlob(int parameterIndex, InputStream inputStream) throws SQLException {
+    public void setBlob(int parameterIndex, InputStream inputStream) {
         //do nothing
     }
 
-    public void setNClob(int parameterIndex, Reader reader) throws SQLException {
+    public void setNClob(int parameterIndex, Reader reader) {
         //do nothing
     }
 }

@@ -22,159 +22,159 @@ public class MockConnection extends MockBase implements Connection {
     private int holdability;
     private String schema;
 
-    public Statement createStatement() throws SQLException {
+    public Statement createStatement() {
         return new MockStatement(this);
     }
 
-    public PreparedStatement prepareStatement(String sql) throws SQLException {
+    public PreparedStatement prepareStatement(String sql) {
         return new MockPreparedStatement(this);
     }
 
-    public CallableStatement prepareCall(String sql) throws SQLException {
+    public CallableStatement prepareCall(String sql) {
         return new MockCallableStatement(this);
     }
 
-    public String nativeSQL(String sql) throws SQLException {
+    public String nativeSQL(String sql) {
         return null;
     }
 
-    public boolean getAutoCommit() throws SQLException {
+    public boolean getAutoCommit() {
         return autoCommit;
     }
 
-    public void setAutoCommit(boolean autoCommit) throws SQLException {
+    public void setAutoCommit(boolean autoCommit) {
         this.autoCommit = autoCommit;
     }
 
-    public void commit() throws SQLException {
+    public void commit() {
         //do nothing
     }
 
-    public void rollback() throws SQLException {
+    public void rollback() {
         //do nothing
     }
 
-    public DatabaseMetaData getMetaData() throws SQLException {
+    public DatabaseMetaData getMetaData() {
         return new MockDatabaseMetaData(this);
     }
 
-    public boolean isReadOnly() throws SQLException {
+    public boolean isReadOnly() {
         return readOnly;
     }
 
-    public void setReadOnly(boolean readOnly) throws SQLException {
+    public void setReadOnly(boolean readOnly) {
         this.readOnly = readOnly;
     }
 
-    public String getCatalog() throws SQLException {
+    public String getCatalog() {
         return catalog;
     }
 
-    public void setCatalog(String catalog) throws SQLException {
+    public void setCatalog(String catalog) {
         this.catalog = catalog;
     }
 
-    public int getTransactionIsolation() throws SQLException {
+    public int getTransactionIsolation() {
         return transactionIsolation;
     }
 
-    public void setTransactionIsolation(int level) throws SQLException {
+    public void setTransactionIsolation(int level) {
         transactionIsolation = level;
     }
 
-    public SQLWarning getWarnings() throws SQLException {
+    public SQLWarning getWarnings() {
         return null;
     }
 
-    public void clearWarnings() throws SQLException {
+    public void clearWarnings() {
         //do nothing
     }
 
-    public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
+    public Statement createStatement(int resultSetType, int resultSetConcurrency) {
         return new MockStatement(this);
     }
 
-    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
+    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) {
         return new MockPreparedStatement(this);
     }
 
-    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
+    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) {
         return new MockCallableStatement(this);
     }
 
-    public java.util.Map<String, Class<?>> getTypeMap() throws SQLException {
+    public java.util.Map<String, Class<?>> getTypeMap() {
         return null;
     }
 
-    public void setTypeMap(java.util.Map<String, Class<?>> map) throws SQLException {
+    public void setTypeMap(java.util.Map<String, Class<?>> map) {
         //do nothing
     }
 
-    public int getHoldability() throws SQLException {
+    public int getHoldability() {
         return holdability;
     }
 
-    public void setHoldability(int holdability) throws SQLException {
+    public void setHoldability(int holdability) {
         this.holdability = holdability;
     }
 
-    public Savepoint setSavepoint() throws SQLException {
+    public Savepoint setSavepoint() {
         return null;
     }
 
-    public Savepoint setSavepoint(String name) throws SQLException {
+    public Savepoint setSavepoint(String name) {
         return null;
     }
 
-    public void rollback(Savepoint savepoint) throws SQLException {
+    public void rollback(Savepoint savepoint) {
         //do nothing
     }
 
-    public void releaseSavepoint(Savepoint savepoint) throws SQLException {
+    public void releaseSavepoint(Savepoint savepoint) {
         //do nothing
     }
 
-    public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+    public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) {
         return new MockStatement(this);
     }
 
-    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) {
         return new MockPreparedStatement(this);
     }
 
-    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) {
         return new MockCallableStatement(this);
     }
 
-    public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
+    public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) {
         return new MockPreparedStatement(this);
     }
 
-    public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
+    public PreparedStatement prepareStatement(String sql, int[] columnIndexes) {
         return new MockPreparedStatement(this);
     }
 
-    public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
+    public PreparedStatement prepareStatement(String sql, String[] columnNames) {
         return new MockPreparedStatement(this);
     }
 
-    public Clob createClob() throws SQLException {
+    public Clob createClob() {
         return null;
     }
 
-    public Blob createBlob() throws SQLException {
+    public Blob createBlob() {
         return null;
     }
 
-    public NClob createNClob() throws SQLException {
+    public NClob createNClob() {
         return null;
     }
 
-    public SQLXML createSQLXML() throws SQLException {
+    public SQLXML createSQLXML() {
         return null;
     }
 
-    public boolean isValid(int timeout) throws SQLException {
+    public boolean isValid(int timeout) {
         return true;
     }
 
@@ -182,11 +182,11 @@ public class MockConnection extends MockBase implements Connection {
         //do nothing
     }
 
-    public String getClientInfo(String name) throws SQLException {
+    public String getClientInfo(String name) {
         return null;
     }
 
-    public Properties getClientInfo() throws SQLException {
+    public Properties getClientInfo() {
         return null;
     }
 
@@ -194,31 +194,31 @@ public class MockConnection extends MockBase implements Connection {
         //do nothing
     }
 
-    public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
+    public Array createArrayOf(String typeName, Object[] elements) {
         return null;
     }
 
-    public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
+    public Struct createStruct(String typeName, Object[] attributes) {
         return null;
     }
 
-    public String getSchema() throws SQLException {
+    public String getSchema() {
         return schema;
     }
 
-    public void setSchema(String schema) throws SQLException {
+    public void setSchema(String schema) {
         this.schema = schema;
     }
 
-    public void abort(Executor executor) throws SQLException {
+    public void abort(Executor executor) {
         //do nothing
     }
 
-    public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+    public void setNetworkTimeout(Executor executor, int milliseconds) {
         //do nothing
     }
 
-    public int getNetworkTimeout() throws SQLException {
+    public int getNetworkTimeout() {
         return 0;
     }
 }

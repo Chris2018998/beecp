@@ -28,11 +28,11 @@ public class MockDriver implements Driver {
     }
 
     //jdbc:beecp://localhost/test
-    public boolean acceptsURL(String url) throws SQLException {
+    public boolean acceptsURL(String url) {
         return url.startsWith("jdbc:beecp:");
     }
 
-    public DriverPropertyInfo[] getPropertyInfo(String url, java.util.Properties info) throws SQLException {
+    public DriverPropertyInfo[] getPropertyInfo(String url, java.util.Properties info) {
         return null;
     }
 
@@ -48,7 +48,7 @@ public class MockDriver implements Driver {
         return true;
     }
 
-    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+    public Logger getParentLogger() {
         return null;
     }
 }

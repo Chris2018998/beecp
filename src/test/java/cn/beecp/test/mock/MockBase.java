@@ -20,18 +20,18 @@ public class MockBase implements Wrapper, AutoCloseable {
         isClosed = true;
     }
 
-    public boolean isClosed() throws SQLException {
+    public boolean isClosed() {
         return isClosed;
     }
 
-    public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        return iface.isInstance(this);
+    public boolean isWrapperFor(Class<?> face) {
+        return face.isInstance(this);
     }
 
-    public <T> T unwrap(Class<T> iface) throws SQLException {
-        if (iface.isInstance(this))
+    public <T> T unwrap(Class<T> face) throws SQLException {
+        if (face.isInstance(this))
             return (T) this;
         else
-            throw new SQLException("Wrapped object is not an instance of " + iface);
+            throw new SQLException("Wrapped object is not an instance of " + face);
     }
 }

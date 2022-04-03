@@ -6,7 +6,6 @@
  */
 package cn.beecp.test.mock;
 
-import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
@@ -19,43 +18,43 @@ import javax.transaction.xa.Xid;
 public final class MockXaResource implements XAResource {
     private static final Xid[] EMPTY_XID_ARRAY = {};
 
-    public void start(Xid xid, int flags) throws XAException {
+    public void start(Xid xid, int flags) {
         //do nothing
     }
 
-    public int prepare(Xid xid) throws XAException {
+    public int prepare(Xid xid) {
         return XAResource.XA_OK;
     }
 
-    public void commit(Xid xid, boolean onePhase) throws XAException {
+    public void commit(Xid xid, boolean onePhase) {
         //do nothing
     }
 
-    public void rollback(Xid xid) throws XAException {
+    public void rollback(Xid xid) {
         //do nothing
     }
 
-    public void end(Xid xid, int flags) throws XAException {
+    public void end(Xid xid, int flags) {
         //do nothing
     }
 
-    public void forget(Xid xid) throws XAException {
+    public void forget(Xid xid) {
         //do nothing
     }
 
-    public Xid[] recover(int xid) throws XAException {
+    public Xid[] recover(int xid) {
         return EMPTY_XID_ARRAY;
     }
 
-    public boolean isSameRM(XAResource xares) throws XAException {
+    public boolean isSameRM(XAResource xares) {
         return this == xares;
     }
 
-    public int getTransactionTimeout() throws XAException {
+    public int getTransactionTimeout() {
         return 0;
     }
 
-    public boolean setTransactionTimeout(int seconds) throws XAException {
+    public boolean setTransactionTimeout(int seconds) {
         return true;
     }
 }
