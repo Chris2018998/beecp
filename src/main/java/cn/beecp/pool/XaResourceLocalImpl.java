@@ -122,15 +122,10 @@ public class XaResourceLocalImpl implements XAResource {
     }
 
     public synchronized void forget(Xid xid) {
-
     }
 
     public Xid[] recover(int flag) {
         return new Xid[0];
-    }
-
-    public synchronized Xid getXid() {
-        return this.currentXid;
     }
 
     public boolean isSameRM(XAResource xaResource) {

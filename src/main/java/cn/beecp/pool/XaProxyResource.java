@@ -65,9 +65,9 @@ public final class XaProxyResource implements XAResource {
         return this.raw.recover(xid);
     }
 
-    public boolean isSameRM(XAResource xares) throws XAException {
+    public boolean isSameRM(XAResource res) throws XAException {
         this.checkClosed();
-        return this == xares;
+        return this == res;
     }
 
     public int getTransactionTimeout() throws XAException {
