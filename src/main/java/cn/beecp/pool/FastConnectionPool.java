@@ -28,7 +28,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.Random;
-import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
@@ -86,12 +85,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private ConnectionPoolMonitorVo monitorVo;
     private ConnectionPoolHook exitHook;
     private boolean printRuntimeLog;
-    private String monitorUUID;
     //***************************************************************************************************************//
     //               1: Pool initialize and Pooled connection create/remove methods(7)                               //                                                                                  //
     //***************************************************************************************************************//
 
-    //Method-1.1: check some proxy classes whether exists
+    //Method-1.1: check some statement classes whether exists
     private static void checkProxyClasses() throws SQLException {
         String[] classNames = {
                 "cn.beecp.pool.Borrower",
@@ -106,7 +104,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             for (String className : classNames)
                 Class.forName(className);
         } catch (ClassNotFoundException e) {
-            throw new PoolCreateFailedException("Jdbc proxy classes missed", e);
+            throw new PoolCreateFailedException("Jdbc statement classes missed", e);
         }
     }
 
@@ -859,8 +857,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         Thread currentThread = Thread.currentThread();
         monitorVo.setThreadId(currentThread.getId());
         monitorVo.setThreadName(currentThread.getName());
-        monitorUUID = "BeeCP_" + UUID.randomUUID().toString();
-        monitorVo.setUUID(monitorUUID);
         try {
             monitorVo.setHostIP(InetAddress.getLocalHost().getHostAddress());
         } catch (UnknownHostException e) {
@@ -873,7 +869,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     public ConnectionPoolMonitorVo getPoolMonitorVo() {
         int totSize = this.getTotalSize();
         int idleSize = this.getIdleSize();
-        this.monitorVo.setUUID(monitorUUID);
         this.monitorVo.setPoolState(poolState);
         this.monitorVo.setIdleSize(idleSize);
         this.monitorVo.setUsingSize(totSize - idleSize);

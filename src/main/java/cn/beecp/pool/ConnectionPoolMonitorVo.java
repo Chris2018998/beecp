@@ -14,7 +14,6 @@ package cn.beecp.pool;
  */
 
 public class ConnectionPoolMonitorVo {
-    private String UUID;
     private String hostIP;
     private long threadId;
     private String threadName;
@@ -27,14 +26,6 @@ public class ConnectionPoolMonitorVo {
     private int usingSize;
     private int semaphoreWaitingSize;
     private int transferWaitingSize;
-
-    public String getUUID() {
-        return UUID;
-    }
-
-    void setUUID(String UUID) {
-        this.UUID = UUID;
-    }
 
     public String getHostIP() {
         return hostIP;
