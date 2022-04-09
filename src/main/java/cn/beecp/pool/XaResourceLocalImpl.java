@@ -122,6 +122,7 @@ public class XaResourceLocalImpl implements XAResource {
     }
 
     public synchronized void forget(Xid xid) {
+        //do nothing
     }
 
     public Xid[] recover(int flag) {
