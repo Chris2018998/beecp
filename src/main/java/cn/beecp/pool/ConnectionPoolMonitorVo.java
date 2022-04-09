@@ -14,6 +14,8 @@ package cn.beecp.pool;
  */
 
 public class ConnectionPoolMonitorVo {
+    private String dsId;
+    private String dsUUId;
     private String hostIP;
     private long threadId;
     private String threadName;
@@ -26,6 +28,22 @@ public class ConnectionPoolMonitorVo {
     private int usingSize;
     private int semaphoreWaitingSize;
     private int transferWaitingSize;
+
+    public String getDsId() {
+        return dsId;
+    }
+
+    void setDsId(String dsId) {
+        this.dsId = dsId;
+    }
+
+    public String getDsUUId() {
+        return dsUUId;
+    }
+
+    void setDsUUId(String dsUUId) {
+        this.dsUUId = dsUUId;
+    }
 
     public String getHostIP() {
         return hostIP;
