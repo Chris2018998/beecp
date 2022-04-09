@@ -18,12 +18,4 @@ public class PoolClosedException extends PoolBaseException {
         super(s);
     }
 
-    public PoolClosedException(Throwable cause) {
-        super(cause);
-    }
-
-    public PoolClosedException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
 }

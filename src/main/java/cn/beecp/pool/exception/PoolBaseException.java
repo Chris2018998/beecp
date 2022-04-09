@@ -16,16 +16,15 @@ import java.sql.SQLException;
  */
 public class PoolBaseException extends SQLException {
 
-    public PoolBaseException(String s) {
+    PoolBaseException(String s) {
         super(s);
     }
 
-    public PoolBaseException(Throwable cause) {
+    PoolBaseException(Throwable cause) {
         super(cause);
     }
 
-    public PoolBaseException(String message, Throwable cause) {
+    PoolBaseException(String message, Throwable cause) {
         super(message, cause);
     }
-
 }

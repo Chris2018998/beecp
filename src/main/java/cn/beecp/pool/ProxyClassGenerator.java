@@ -15,7 +15,7 @@ import java.util.LinkedList;
 import static cn.beecp.pool.PoolStaticCenter.isBlank;
 
 /**
- * An independent execution toolkit class to generate JDBC proxy classes with javassist,
+ * An independent execution toolkit class to generate JDBC statement classes with javassist,
  * then write to class folder.
  *
  * @author Chris.Liao
@@ -201,7 +201,7 @@ final class ProxyClassGenerator {
     }
 
     /**
-     * create connection proxy class
+     * create connection statement class
      * *
      *
      * @param classPool                   javassist class pool

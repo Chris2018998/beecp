@@ -18,12 +18,4 @@ public class PoolNotCreateException extends PoolBaseException {
         super(s);
     }
 
-    public PoolNotCreateException(Throwable cause) {
-        super(cause);
-    }
-
-    public PoolNotCreateException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
 }

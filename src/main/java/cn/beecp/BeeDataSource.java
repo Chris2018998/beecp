@@ -65,7 +65,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             ds.pool = pool;
             ds.ready = true;
             return pool;
-        } catch (SQLException e) {
+        } catch (SQLException | RuntimeException e) {
             throw e;
         } catch (Exception e) {
             throw new PoolCreateFailedException("Failed to create connection pool by class:" + ds.getPoolImplementClassName(), e);

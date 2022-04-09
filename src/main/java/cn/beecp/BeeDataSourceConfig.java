@@ -585,7 +585,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                 if (this.printConfigInfo) CommonLog.info("{}.{}={}", this.poolName, fieldName, fieldValue);
                 field.set(config, fieldValue);
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new BeeDataSourceConfigException("Failed to copy field[" + fieldName + "]", e);
         }
 
@@ -694,9 +694,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                 } else {
                     throw new BeeDataSourceConfigException("Error connection factory type:" + this.connectionFactoryClassName);
                 }
-            } catch (BeeDataSourceConfigException e) {
+            } catch (RuntimeException e) {
                 throw e;
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 throw new BeeDataSourceConfigException("Failed to create connection factory by class:" + this.connectionFactoryClassName, e);
             }
         }

@@ -18,10 +18,6 @@ public class PoolCreateFailedException extends PoolBaseException {
         super(s);
     }
 
-    public PoolCreateFailedException(Throwable cause) {
-        super(cause);
-    }
-
     public PoolCreateFailedException(String message, Throwable cause) {
         super(message, cause);
     }

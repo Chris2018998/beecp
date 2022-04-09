@@ -14,7 +14,7 @@ import static cn.beecp.pool.PoolStaticCenter.CLOSED_RSLT;
 import static cn.beecp.pool.PoolStaticCenter.ResultSetClosedException;
 
 /**
- * ResultSet proxy base class
+ * ResultSet statement base class
  *
  * @author Chris.Liao
  * @version 1.0

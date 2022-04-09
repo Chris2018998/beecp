@@ -36,7 +36,6 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         if (value != null) return value;
 
         String newPropertyName = propertyName.substring(0, 1).toLowerCase(Locale.US) + propertyName.substring(1);
-
         value = BeeDataSourceFactory.readConfig(ref, newPropertyName);
         if (value != null) return value;
 
@@ -83,7 +82,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
             tm = (TransactionManager) nameCtx.lookup(tmJndiName);
         }
 
-        //2:create datasource config instance
+        //2:create dsnode config instance
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         //3:get all properties set methods
         Map<String, Method> setMethodMap = getClassSetMethodMap(config.getClass());

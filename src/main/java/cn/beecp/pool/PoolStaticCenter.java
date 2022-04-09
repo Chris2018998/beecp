@@ -145,7 +145,7 @@ public class PoolStaticCenter {
     }
 
     //***************************************************************************************************************//
-    //                               3: JDBC object close/proxy create methods(7)                                    //
+    //                               3: JDBC object close/statement create methods(7)                                    //
     //***************************************************************************************************************//
     public static void oclose(ResultSet r) {
         try {
@@ -471,7 +471,7 @@ public class PoolStaticCenter {
     }
 
     //***************************************************************************************************************//
-    //                               7: proxy close class(1)                                                         //
+    //                               7: statement close class(1)                                                         //
     //***************************************************************************************************************//
     static final class ProxyConnectionCloseTask implements Runnable {
         private final ProxyConnectionBase proxyCon;

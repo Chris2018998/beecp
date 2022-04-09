@@ -124,7 +124,7 @@ final class PooledConnection implements Cloneable {
         }
     }
 
-    //***************called by connection proxy ********//
+    //***************called by connection statement ********//
     final void recycleSelf() throws SQLException {
         try {
             this.proxyInUsing = null;
@@ -167,7 +167,7 @@ final class PooledConnection implements Cloneable {
         this.rawConn.clearWarnings();
     }
 
-    //****************below are some statement trace methods***************************/
+    //****************below are some statement statement methods***************************/
     final void registerStatement(ProxyStatementBase s) {
         if (this.openStmSize == this.openStatements.length) {//full
             ProxyStatementBase[] array = new ProxyStatementBase[this.openStmSize << 1];
