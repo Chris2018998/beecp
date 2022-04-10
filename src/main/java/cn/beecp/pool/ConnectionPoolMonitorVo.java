@@ -37,13 +37,9 @@ public class ConnectionPoolMonitorVo {
         this.dsId = dsId;
     }
 
-    public String getDsUUID() {
-        return dsUUID;
-    }
+    public String getDsUUID() { return dsUUID; }
 
-    void setDsUUID(String dsUUID) {
-        this.dsUUID = dsUUID;
-    }
+    void setDsUUID(String dsUUID) { this.dsUUID = dsUUID; }
 
     public String getHostIP() {
         return hostIP;
