@@ -140,7 +140,7 @@ BeeCP中部分灵感受启发于它们，感谢两位大师的贡献。
 
 ## 七：代码质量
 
-![图片](https://user-images.githubusercontent.com/32663325/162561198-4cbd8341-b628-4452-b3ef-15bf043e5832.png)
+![图片](https://user-images.githubusercontent.com/32663325/163173015-2ce906f3-1b83-419d-82aa-a42b5c8d92b8.png)
 
 ## 八：扩展接口
 
