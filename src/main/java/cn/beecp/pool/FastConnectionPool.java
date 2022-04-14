@@ -58,6 +58,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private String poolThreadName;
     private int poolMaxSize;
     private volatile int poolState;
+
     private int semaphoreSize;
     private PoolSemaphore semaphore;
     private long maxWaitNs;//nanoseconds
@@ -89,10 +90,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private ConnectionPoolMonitorVo monitorVo;
     private ConnectionPoolHook exitHook;
     private boolean printRuntimeLog;
+
     //***************************************************************************************************************//
     //               1: Pool initialize and Pooled connection create/remove methods(7)                               //                                                                                  //
     //***************************************************************************************************************//
-
     //Method-1.1: check some statement classes whether exists
     private static void checkProxyClasses() throws SQLException {
         String[] classNames = {
@@ -122,15 +123,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         if (config == null) throw new PoolCreateFailedException("Configuration can't be null");
         if (this.poolState != POOL_NEW) throw new PoolCreateFailedException("Pool has initialized");
 
-        //step1:check and create networkTimeoutExecutor
+        //step1:check
         checkProxyClasses();
         this.poolConfig = config.check();//why need a copy here?
         this.poolName = this.poolConfig.getPoolName();
         this.poolMaxSize = this.poolConfig.getMaxActive();
         Log.info("BeeCP({})starting....", this.poolName);
-        this.networkTimeoutExecutor = new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<Runnable>(this.poolMaxSize), new PoolThreadThreadFactory());
-        this.networkTimeoutExecutor.allowCoreThreadTimeOut(true);
 
         //step2;try to create initial pooled connection
         Object rawFactory = this.poolConfig.getConnectionFactory();
@@ -326,7 +324,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (this.printRuntimeLog)
                     Log.warn("BeeCP({})driver not support 'networkTimeout'", this.poolName);
             } else {
-                rawCon.setNetworkTimeout(this.networkTimeoutExecutor, defaultNetworkTimeout);
+                ThreadPoolExecutor networkTimeoutExecutor = new ThreadPoolExecutor(1, poolMaxSize, 10, TimeUnit.SECONDS,
+                        new LinkedBlockingQueue<Runnable>(this.poolMaxSize), new PoolThreadThreadFactory());
+                networkTimeoutExecutor.allowCoreThreadTimeOut(true);
+                rawCon.setNetworkTimeout(networkTimeoutExecutor, defaultNetworkTimeout);
+                this.networkTimeoutExecutor = networkTimeoutExecutor;
             }
         } catch (Throwable e) {
             supportNetworkTimeoutInd = false;
@@ -728,8 +730,10 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 this.shutdownPoolThread();
                 this.unregisterJmx();
                 this.removeAllConnections(this.poolConfig.isForceCloseUsingOnClear(), DESC_RM_DESTROY);
-                this.networkTimeoutExecutor.getQueue().clear();
-                this.networkTimeoutExecutor.shutdownNow();
+                if (networkTimeoutExecutor != null) {
+                    networkTimeoutExecutor.getQueue().clear();
+                    networkTimeoutExecutor.shutdownNow();
+                }
 
                 try {
                     Runtime.getRuntime().removeShutdownHook(this.exitHook);

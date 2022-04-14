@@ -78,13 +78,12 @@ public class PoolStaticCenter {
     static final SQLException ConnectionClosedException = new SQLException("No operations allowed after connection closed");
     static final SQLException StatementClosedException = new SQLException("No operations allowed after statement closed");
     static final SQLException ResultSetClosedException = new SQLException("No operations allowed after resultSet closed");
-    private static final ClassLoader PoolClassLoader = PoolStaticCenter.class.getClassLoader();
     //static final SQLException DirtyTransactionException = new SQLException("Access denied when connection in dirty transaction");
     //***************************************************************************************************************//
     //                                1: JDBC static global closed proxies(3)                                        //
     //***************************************************************************************************************//
     static final Connection CLOSED_CON = (Connection) Proxy.newProxyInstance(
-            PoolClassLoader,
+            PoolStaticCenter.class.getClassLoader(),
             new Class[]{Connection.class},
             new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -97,7 +96,7 @@ public class PoolStaticCenter {
             }
     );
     static final ResultSet CLOSED_RSLT = (ResultSet) Proxy.newProxyInstance(
-            PoolClassLoader,
+            PoolStaticCenter.class.getClassLoader(),
             new Class[]{ResultSet.class},
             new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -111,7 +110,7 @@ public class PoolStaticCenter {
     );
 
     static final CallableStatement CLOSED_CSTM = (CallableStatement) Proxy.newProxyInstance(
-            PoolClassLoader,
+            PoolStaticCenter.class.getClassLoader(),
             new Class[]{CallableStatement.class},
             new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
