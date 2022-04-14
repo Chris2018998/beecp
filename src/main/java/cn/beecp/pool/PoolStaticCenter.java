@@ -25,8 +25,8 @@ import java.util.*;
  * @version 1.0
  */
 public class PoolStaticCenter {
-    public static final Class[] EMPTY_CLASSES = new Class[0];
-    public static final Object[] EMPTY_PARAMETERS = new Class[0];
+    private static final Class[] EMPTY_CLASSES = new Class[0];
+    private static final Object[] EMPTY_PARAMETERS = new Object[0];
     public static final int NCPUS = Runtime.getRuntime().availableProcessors();
     public static final Logger CommonLog = LoggerFactory.getLogger(PoolStaticCenter.class);
 
@@ -42,6 +42,7 @@ public class PoolStaticCenter {
     public static final String CONFIG_CONNECT_PROP_SIZE = "connectProperties.size";
     //connect properties prefix for driver or driver dataSource
     public static final String CONFIG_CONNECT_PROP_KEY_PREFIX = "connectProperties.";
+
     //pool state
     public static final int POOL_NEW = 0;
     public static final int POOL_READY = 1;
