@@ -15,7 +15,6 @@ import javax.sql.DataSource;
 import javax.sql.XADataSource;
 import java.io.File;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
@@ -610,9 +609,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         }
 
         if (passwordDecoderClass != null) {
-            Constructor constructor = getClassConstructor(passwordDecoderClass, PasswordDecoder.class, "password decoder");
             try {
-                passwordDecoder = (PasswordDecoder) constructor.newInstance();
+                passwordDecoder = (PasswordDecoder) createClassInstance(passwordDecoderClass, PasswordDecoder.class, "password decoder");
             } catch (Throwable e) {
                 throw new BeeDataSourceConfigException("Failed to instantiate password decoder class:" + passwordDecoderClass.getName(), e);
             }
@@ -655,10 +653,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
                 //2: check connection factory class
                 Class[] parentClasses = {RawConnectionFactory.class, RawXaConnectionFactory.class, DataSource.class, XADataSource.class};
-                Constructor constructor = getClassConstructor(conFactClass, parentClasses, "connection factory");
 
                 //3:create connection factory instance
-                Object factory = constructor.newInstance();
+                Object factory = createClassInstance(conFactClass, parentClasses, "connection factory");
 
                 //4:copy properties to value map(inject to dataSource or factory)
                 Map<String, Object> propertyValueMap = new HashMap<String, Object>(this.connectProperties);//copy
