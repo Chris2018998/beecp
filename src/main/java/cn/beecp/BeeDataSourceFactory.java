@@ -82,7 +82,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
             tm = (TransactionManager) nameCtx.lookup(tmJndiName);
         }
 
-        //2:create dsnode config instance
+        //2:create config instance
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         //3:get all properties set methods
         Map<String, Method> setMethodMap = getClassSetMethodMap(config.getClass());

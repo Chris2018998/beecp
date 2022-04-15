@@ -26,7 +26,7 @@ public final class XaProxyResource implements XAResource {
     }
 
     private void checkClosed() throws XAException {
-        if (this.proxyConn.getClosedInd())
+        if (this.proxyConn.isClosed())
             throw new XAException("No operations allowed after XAConnection closed");
     }
 

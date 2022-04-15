@@ -30,13 +30,7 @@ abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Connectio
     //***************************************************************************************************************//
     //                                             self-define methods(4)                                            //
     //***************************************************************************************************************//
-    public boolean getClosedInd() {
-        return this.isClosed;
-    }
-
-    public final void checkClosed() throws SQLException {
-        if (this.isClosed) throw ConnectionClosedException;
-    }
+    final void checkClosed() throws SQLException { if (this.isClosed) throw ConnectionClosedException; }
 
     synchronized final void registerStatement(ProxyStatementBase s) {
         this.p.registerStatement(s);
