@@ -105,7 +105,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private Class connectionFactoryClass;
     //connection factory class name
     private String connectionFactoryClassName;
-
     //connection factory
     private Object connectionFactory;
     //password decoder
