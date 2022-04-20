@@ -12,6 +12,7 @@ import cn.beecp.RawXaConnectionFactory;
 import cn.beecp.pool.atomic.AtomicIntegerFieldUpdaterImpl;
 import cn.beecp.pool.atomic.AtomicReferenceFieldUpdaterImpl;
 import cn.beecp.pool.exception.PoolCreateFailedException;
+import cn.beecp.pool.exception.PoolInternalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,7 +120,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @param config pool configuration
      * @throws SQLException configuration check fail or initiated connection create failed
      */
-    public synchronized void init(BeeDataSourceConfig config) throws SQLException {
+    public void init(BeeDataSourceConfig config) throws SQLException {
         if (config == null) throw new PoolCreateFailedException("Configuration can't be null");
         if (this.poolState != POOL_NEW) throw new PoolCreateFailedException("Pool has initialized");
 
@@ -211,7 +212,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         } catch (Throwable e) {
             for (PooledConnection p : this.pooledArray)
                 this.removePooledConn(p, DESC_RM_INIT);
-            if (initSize > 0) throw e instanceof SQLException ? (SQLException) e : new SQLException(e);
+            if (initSize > 0) throw e instanceof SQLException ? (SQLException) e : new PoolInternalException(e);
         }
     }
 
@@ -251,7 +252,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 } catch (Throwable e) {
                     if (rawConn != null) oclose(rawConn);
                     else if (rawXaConn != null) oclose(rawXaConn);
-                    throw e instanceof SQLException ? (SQLException) e : new SQLException(e);
+                    throw e instanceof SQLException ? (SQLException) e : new PoolInternalException(e);
                 }
             } else {
                 return null;
@@ -439,7 +440,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     }
                 } else if (s instanceof Throwable) {
                     this.waitQueue.remove(b);
-                    throw s instanceof SQLException ? (SQLException) s : new SQLException((Throwable) s);
+                    throw s instanceof SQLException ? (SQLException) s : new PoolInternalException((Throwable) s);
                 }
 
                 if (failed) {
