@@ -59,6 +59,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private String poolThreadName;
     private int poolMaxSize;
     private volatile int poolState;
+    private boolean isFairMode;
+    private boolean isCompeteMode;
 
     private int semaphoreSize;
     private PoolSemaphore semaphore;
@@ -147,9 +149,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         //step3;create transfer policy by config
         if (this.poolConfig.isFairMode()) {
             poolMode = "fair";
+            isFairMode = true;
             this.transferPolicy = new FairTransferPolicy();
         } else {
             poolMode = "compete";
+            isCompeteMode = true;
             this.transferPolicy = this;
         }
         this.stateCodeOnRelease = this.transferPolicy.getStateCodeOnRelease();
@@ -164,7 +168,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         this.printRuntimeLog = this.poolConfig.isPrintRuntimeLog();
 
         this.semaphoreSize = this.poolConfig.getBorrowSemaphoreSize();
-        this.semaphore = new PoolSemaphore(this.semaphoreSize, this.poolConfig.isFairMode());
+        this.semaphore = new PoolSemaphore(this.semaphoreSize, isFairMode);
         this.waitQueue = new ConcurrentLinkedQueue<Borrower>();
         this.threadLocal = new ThreadLocal<WeakReference<Borrower>>();
         this.servantTryCount = new AtomicInteger(0);
@@ -504,8 +508,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * @param p target connection need release
      */
     public final void recycle(PooledConnection p) {
+        if (isCompeteMode) p.state = CON_IDLE;
         Iterator<Borrower> iterator = this.waitQueue.iterator();
-        transferPolicy.beforeTransfer(p);
         W:
         while (iterator.hasNext()) {
             Borrower b = iterator.next();
@@ -519,7 +523,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (state == BOWER_WAITING) LockSupport.unpark(b.thread);
             return;
         }
-        transferPolicy.onTransferFail(p);
+
+        if (isFairMode) p.state = CON_IDLE;
         tryWakeupServantThread();
     }
 
@@ -573,16 +578,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         return CON_IDLE;
     }
 
-    public final void beforeTransfer(PooledConnection p) {
-        p.state = CON_IDLE;
-    }
-
     public final boolean tryCatch(PooledConnection p) {
         return p.state == CON_IDLE && ConStUpd.compareAndSet(p, CON_IDLE, CON_USING);
-    }
-
-    public final void onTransferFail(PooledConnection p) {
-        //do nothing in compete transfer policy
     }
 
     //***************************************************************************************************************//
@@ -967,18 +964,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             return CON_USING;
         }
 
-        public final void beforeTransfer(PooledConnection p) {
-            //do nothing in fair transfer policy
-        }
-
         public final boolean tryCatch(PooledConnection p) {
             return p.state == CON_USING;
         }
-
-        public final void onTransferFail(PooledConnection p) {
-            p.state = CON_IDLE;
-        }
-
     }
 
     //class-6.6:PooledConnection Valid Test

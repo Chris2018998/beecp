@@ -16,10 +16,5 @@ interface PooledConnectionTransferPolicy {
 
     int getStateCodeOnRelease();
 
-    void beforeTransfer(PooledConnection p);
-
     boolean tryCatch(PooledConnection p);
-
-    void onTransferFail(PooledConnection p);
-
 }
