@@ -69,7 +69,7 @@ final class PooledConnection implements Cloneable {
         this.supportNetworkTimeoutInd = supportNetworkTimeoutInd;
         this.networkTimeoutExecutor = networkTimeoutExecutor;
         this.pool = pool;
-        curAutoCommit = defaultAutoCommit;
+        this.curAutoCommit = defaultAutoCommit;
     }
 
     final PooledConnection setDefaultAndCopy(Connection rawConn, int state, XAResource rawXaRes) throws SQLException, CloneNotSupportedException {
@@ -94,7 +94,7 @@ final class PooledConnection implements Cloneable {
         return p;
     }
 
-    boolean supportNetworkTimeoutSet() {
+    final boolean supportNetworkTimeoutSet() {
         return this.supportNetworkTimeoutInd;
     }
 

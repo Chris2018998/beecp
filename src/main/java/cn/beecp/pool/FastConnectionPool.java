@@ -456,7 +456,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     long t = deadline - System.nanoTime();
                     if (t > 0L) {
                         if (b.state == BOWER_NORMAL && BorrowStUpd.compareAndSet(b, BOWER_NORMAL, BOWER_WAITING)) {
-                            if (this.servantState.get() == THREAD_WAITING && this.servantTryCount.get() > 0 && this.servantState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
+                            if (this.servantTryCount.get() > 0 && this.servantState.get() == THREAD_WAITING && this.servantState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
                                 LockSupport.unpark(this);
 
                             LockSupport.parkNanos(t);//block exit:1:get transfer 2:interrupted 3:timeout 4:unpark before parkNanos
@@ -839,7 +839,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     //Method-5.12: pooledConnection valid test method by connection method 'isValid'
-    public final boolean isValid(PooledConnection p) {
+    public final boolean isValid(final PooledConnection p) {
         try {
             if (p.rawConn.isValid(this.validTestTimeout)) {
                 p.lastAccessTime = System.currentTimeMillis();
