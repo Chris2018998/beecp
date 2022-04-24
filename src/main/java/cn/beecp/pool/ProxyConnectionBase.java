@@ -30,7 +30,9 @@ abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Connectio
     //***************************************************************************************************************//
     //                                             self-define methods(4)                                            //
     //***************************************************************************************************************//
-    final void checkClosed() throws SQLException { if (this.isClosed) throw ConnectionClosedException; }
+    final void checkClosed() throws SQLException {
+        if (this.isClosed) throw ConnectionClosedException;
+    }
 
     synchronized final void registerStatement(ProxyStatementBase s) {
         this.p.registerStatement(s);
@@ -58,20 +60,20 @@ abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Connectio
         this.p.recycleSelf();
     }
 
-    public void setAutoCommit(boolean autoCommit) throws SQLException {
+    public final void setAutoCommit(boolean autoCommit) throws SQLException {
         //if (p.commitDirtyInd) throw DirtyTransactionException;
         this.raw.setAutoCommit(autoCommit);
         this.p.curAutoCommit = autoCommit;
         this.p.setResetInd(PS_AUTO, autoCommit != this.p.defaultAutoCommit);
     }
 
-    public void commit() throws SQLException {
+    public final void commit() throws SQLException {
         this.raw.commit();
         this.p.commitDirtyInd = false;
         this.p.lastAccessTime = System.currentTimeMillis();
     }
 
-    public void rollback() throws SQLException {
+    public final void rollback() throws SQLException {
         this.raw.rollback();
         this.p.commitDirtyInd = false;
         this.p.lastAccessTime = System.currentTimeMillis();
