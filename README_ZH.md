@@ -27,7 +27,7 @@
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>3.3.5</version>
+   <version>3.3.6</version>
 </dependency>
 ```
 
