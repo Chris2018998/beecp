@@ -20,6 +20,42 @@ import java.sql.Statement;
 public class ProxyObjectClosedStateTest extends TestCase {
     private BeeDataSource ds;
 
+    private static void statementProxy(Connection con) throws Exception {
+        Statement st = null;
+        try {
+            st = con.createStatement();
+            st.close();
+            if (!st.isClosed())
+                TestUtil.assertError("Statement is not closed");
+        } finally {
+            TestUtil.oclose(st);
+        }
+    }
+
+    private static void preparedStatementProxy(Connection con) throws Exception {
+        PreparedStatement ps = null;
+        try {
+            ps = con.prepareStatement("select 1 from dual");
+            ps.close();
+            if (!ps.isClosed())
+                TestUtil.assertError("PreparedStatement is not closed");
+        } finally {
+            TestUtil.oclose(ps);
+        }
+    }
+
+    private static void callableStatementProxy(Connection con) throws Exception {
+        CallableStatement cs = null;
+        try {
+            cs = con.prepareCall("?={call test(}");
+            cs.close();
+            if (!cs.isClosed())
+                TestUtil.assertError("CallableStatement is not closed");
+        } finally {
+            TestUtil.oclose(cs);
+        }
+    }
+
     public void setUp() throws Throwable {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         config.setJdbcUrl(JdbcConfig.JDBC_URL);
@@ -36,55 +72,19 @@ public class ProxyObjectClosedStateTest extends TestCase {
         ds.close();
     }
 
-    private void testStatement(Connection con) throws Exception {
-        Statement st = null;
-        try {
-            st = con.createStatement();
-            st.close();
-            if (!st.isClosed())
-                TestUtil.assertError("Statement is not closed");
-        } finally {
-            TestUtil.oclose(st);
-        }
-    }
-
-    private void testPreparedStatement(Connection con) throws Exception {
-        PreparedStatement ps = null;
-        try {
-            ps = con.prepareStatement("select 1 from dual");
-            ps.close();
-            if (!ps.isClosed())
-                TestUtil.assertError("PreparedStatement is not closed");
-        } finally {
-            TestUtil.oclose(ps);
-        }
-    }
-
-    private void testCallableStatement(Connection con) throws Exception {
-        CallableStatement cs = null;
-        try {
-            cs = con.prepareCall("?={call test(}");
-            cs.close();
-            if (!cs.isClosed())
-                TestUtil.assertError("CallableStatement is not closed");
-        } finally {
-            TestUtil.oclose(cs);
-        }
-    }
-
-    public void test() throws Exception {
+    public void testProxyObject() throws Exception {
         Connection con = null;
         try {
             con = ds.getConnection();
-            testStatement(con);
-            testPreparedStatement(con);
-            testCallableStatement(con);
+            statementProxy(con);
+            preparedStatementProxy(con);
+            callableStatementProxy(con);
+
             con.close();
             if (!con.isClosed())
                 TestUtil.assertError("Connection is not closed");
-            con = null;
         } finally {
-            TestUtil.oclose(con);
+            if (con != null) TestUtil.oclose(con);
         }
     }
 }
