@@ -7,9 +7,13 @@
 package cn.beecp.pool;
 
 import cn.beecp.BeeDataSourceConfig;
+import cn.beecp.RawConnectionFactory;
+import cn.beecp.RawXaConnectionFactory;
+import cn.beecp.pool.exception.PoolCreateFailedException;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+import javax.sql.XAConnection;
 import java.lang.management.ManagementFactory;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -37,14 +41,17 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
     private long defaultMaxWait;
     private Semaphore borrowSemaphore;
     private BeeDataSourceConfig poolConfig;
-    private AtomicInteger poolState = new AtomicInteger(POOL_UNINIT);
+    private boolean isRawXaConnFactory;
+    private RawConnectionFactory rawConnFactory;
+    private RawXaConnectionFactory rawXaConnFactory;
+    private AtomicInteger poolState = new AtomicInteger(POOL_NEW);
 
     /**
      * initialize pool with configuration
      *
      * @param config data source configuration
      */
-    public void init(BeeDataSourceConfig config) {
+    public void init(BeeDataSourceConfig config) throws SQLException {
         poolConfig = config;
         defaultMaxWait = MILLISECONDS.toNanos(poolConfig.getMaxWait());
         borrowSemaphore = new Semaphore(poolConfig.getBorrowSemaphoreSize(), poolConfig.isFairMode());
@@ -54,6 +61,16 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
             poolMode = "fair";
         } else {
             poolMode = "compete";
+        }
+
+        Object rawFactory = this.poolConfig.getConnectionFactory();
+        if (rawFactory instanceof RawXaConnectionFactory) {
+            this.isRawXaConnFactory = true;
+            this.rawXaConnFactory = (RawXaConnectionFactory) rawFactory;
+        } else if (rawFactory instanceof RawConnectionFactory) {
+            this.rawConnFactory = (RawConnectionFactory) rawFactory;
+        } else {
+            throw new PoolCreateFailedException("Invalid connection factory");
         }
 
         registerJMX();
@@ -66,7 +83,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
                 0,
                 poolConfig.getDriverClassName());
 
-        poolState.set(POOL_NORMAL);
+        poolState.set(POOL_READY);
     }
 
     /**
@@ -78,10 +95,33 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
      */
     public Connection getConnection() throws SQLException {
         try {
-            if (poolState.get() != POOL_NORMAL) throw PoolCloseException;
-
+            if (poolState.get() != POOL_READY) throw PoolCloseException;
             if (borrowSemaphore.tryAcquire(defaultMaxWait, NANOSECONDS)) {
-                return poolConfig.getConnectionFactory().create();
+                if (isRawXaConnFactory) {
+                    return rawXaConnFactory.create().getConnection();
+                } else {
+                    return rawConnFactory.create();
+                }
+            } else {
+                throw RequestTimeoutException;
+            }
+        } catch (InterruptedException e) {
+            throw RequestInterruptException;
+        } finally {
+            borrowSemaphore.release();
+        }
+    }
+
+    //borrow a connection from pool
+    public XAConnection getXAConnection() throws SQLException {
+        try {
+            if (poolState.get() != POOL_READY) throw PoolCloseException;
+            if (borrowSemaphore.tryAcquire(defaultMaxWait, NANOSECONDS)) {
+                if (isRawXaConnFactory) {
+                    return rawXaConnFactory.create();
+                } else {
+                    throw new SQLException("Not support");
+                }
             } else {
                 throw RequestTimeoutException;
             }
@@ -99,16 +139,16 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
      * @param p target connection need release
      */
     public void recycle(PooledConnection p) {
-          //do nothing
+        //do nothing
     }
 
     /**
      * close pool
      */
-    public void close() throws SQLException {
-        if (poolState.get() == POOL_CLOSED) throw PoolCloseException;
+    public void close() {
+        if (poolState.get() == POOL_CLOSED) return;
         while (true) {
-            if (poolState.compareAndSet(POOL_NORMAL, POOL_CLOSED)) {
+            if (poolState.compareAndSet(POOL_READY, POOL_CLOSED)) {
                 unregisterJMX();
                 break;
             } else if (poolState.get() == POOL_CLOSED) {
@@ -126,23 +166,23 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
 
     //******************************** JMX **************************************//
     // close all connections
-    public void clearAllConnections() {
-      //do nothing
+    public void clear() {
+        //do nothing
     }
 
-    public void clearAllConnections(boolean force) {
-      //do nothing
+    public void clear(boolean force) {
+        //do nothing
     }
 
-    public int getConnTotalSize() {
+    public int getTotalSize() {
         return 0;
     }
 
-    public int getConnIdleSize() {
+    public int getIdleSize() {
         return 0;
     }
 
-    public int getConnUsingSize() {
+    public int getUsingSize() {
         return 0;
     }
 
@@ -160,20 +200,20 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
 
     //set pool info debug switch
     public void setPrintRuntimeLog(boolean enabledDebug) {
-          //do nothing
+        //do nothing
     }
 
-    public ConnectionPoolMonitorVo getMonitorVo() {
-        int totSize = getConnTotalSize();
-        int idleSize = getConnIdleSize();
+    public ConnectionPoolMonitorVo getPoolMonitorVo() {
+        int totSize = getTotalSize();
+        int idleSize = getIdleSize();
         monitorVo.setPoolName(poolName);
         monitorVo.setPoolMode(poolMode);
-        monitorVo.setPoolState(POOL_NORMAL);
-        monitorVo.setMaxActive(poolConfig.getBorrowSemaphoreSize());
+        monitorVo.setPoolState(poolState.get());
+        monitorVo.setPoolMaxSize(poolConfig.getMaxActive());
         monitorVo.setIdleSize(idleSize);
         monitorVo.setUsingSize(totSize - idleSize);
-        monitorVo.setSemaphoreWaiterSize(getSemaphoreWaitingSize());
-        monitorVo.setTransferWaiterSize(getTransferWaitingSize());
+        monitorVo.setSemaphoreWaitingSize(getSemaphoreWaitingSize());
+        monitorVo.setTransferWaitingSize(getTransferWaitingSize());
         return monitorVo;
     }
 
