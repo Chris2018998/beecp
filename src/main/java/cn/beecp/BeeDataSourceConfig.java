@@ -44,7 +44,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private static final AtomicInteger PoolNameIndex = new AtomicInteger(1);
 
     //extra properties for jdbc driver to connect db
-    private final Map<String, Object> connectProperties = new HashMap<String, Object>(1);
+    private final Map<String, Object> connectProperties = new HashMap<String, Object>(2);
     //jdbc user name
     private String username;
     //jdbc password
@@ -122,7 +122,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private boolean printRuntimeLog;
 
     //***************************************************************************************************************//
-    //                                     1: constructors(4)                                                        //
+    //                                     1: constructors(5)                                                        //
     //***************************************************************************************************************//
     public BeeDataSourceConfig() {
     }
@@ -143,10 +143,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public BeeDataSourceConfig(String driver, String url, String user, String password) {
-        jdbcUrl = trimString(url);
-        username = trimString(user);
+        this.jdbcUrl = trimString(url);
+        this.username = trimString(user);
         this.password = trimString(password);
-        driverClassName = trimString(driver);
+        this.driverClassName = trimString(driver);
     }
 
     //***************************************************************************************************************//
@@ -228,7 +228,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         if (maxActive > 0) {
             this.maxActive = maxActive;
             //fix issue:#19 Chris-2020-08-16 begin
-            borrowSemaphoreSize = (maxActive > 1) ? Math.min(maxActive / 2, NCPUS) : 1;
+            this.borrowSemaphoreSize = maxActive > 1 ? Math.min(maxActive / 2, NCPUS) : 1;
             //fix issue:#19 Chris-2020-08-16 end
         }
     }
@@ -472,7 +472,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     //***************************************************************************************************************//
-    //                                     6: configuration load from properties load (3)                                                     //
+    //                                     6: properties configuration(3)                                            //
     //***************************************************************************************************************//
     public void loadFromPropertiesFile(String filename) {
         if (isBlank(filename)) throw new IllegalArgumentException("Properties file can't be null");
@@ -521,10 +521,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
         //3:try to find 'connectProperties' config value and put to ds config object
         this.addConnectProperty(getPropertyValue(configProperties, CONFIG_CONNECT_PROP));
-        String connectPropertiesCount = getPropertyValue(configProperties, CONFIG_CONNECT_PROP_SIZE);
-        if (!isBlank(connectPropertiesCount)) {
-            int count = Integer.parseInt(connectPropertiesCount.trim());
-            for (int i = 1; i <= count; i++)
+        String connectPropertiesSize = getPropertyValue(configProperties, CONFIG_CONNECT_PROP_SIZE);
+        if (!isBlank(connectPropertiesSize)) {
+            int size = Integer.parseInt(connectPropertiesSize.trim());
+            for (int i = 1; i <= size; i++)//properties index begin with 1
                 this.addConnectProperty(getPropertyValue(configProperties, CONFIG_CONNECT_PROP_KEY_PREFIX + i));
         }
     }
@@ -575,19 +575,18 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         String fieldName = "";
         try {
             for (Field field : BeeDataSourceConfig.class.getDeclaredFields()) {
-                if (Modifier.isFinal(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) || "connectProperties".equals(field.getName()))
-                    continue;
-
                 fieldName = field.getName();
-                Object fieldValue = field.get(this);
-                if (this.printConfigInfo) CommonLog.info("{}.{}={}", this.poolName, fieldName, fieldValue);
-                field.set(config, fieldValue);
+                if (!Modifier.isFinal(field.getModifiers()) && !Modifier.isStatic(field.getModifiers()) && !"connectProperties".equals(fieldName)) {
+                    Object fieldValue = field.get(this);
+                    if (this.printConfigInfo) CommonLog.info("{}.{}={}", this.poolName, fieldName, fieldValue);
+                    field.set(config, fieldValue);
+                }
             }
         } catch (Throwable e) {
             throw new BeeDataSourceConfigException("Failed to copy field[" + fieldName + "]", e);
         }
 
-        //2:copy 'connectProperties'
+        //2:copy  'connectProperties'
         for (Map.Entry<String, Object> entry : this.connectProperties.entrySet()) {
             if (this.printConfigInfo)
                 CommonLog.info("{}.connectProperties.{}={}", this.poolName, entry.getKey(), entry.getValue());
