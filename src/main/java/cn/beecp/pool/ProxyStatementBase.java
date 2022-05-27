@@ -79,7 +79,7 @@ abstract class ProxyStatementBase extends ProxyBaseWrapper implements Statement 
     //                                              Below are override methods                                       //
     //***************************************************************************************************************//
     public Connection getConnection() throws SQLException {
-        if (this.isClosed) throw StatementClosedException;
+        if (this.isClosed) throw new SQLException("No operations allowed after statement closed");
         return this.owner;
     }
 

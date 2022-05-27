@@ -11,6 +11,7 @@ import cn.beecp.RawConnectionFactory;
 import cn.beecp.RawXaConnectionFactory;
 import cn.beecp.pool.atomic.AtomicIntegerFieldUpdaterImpl;
 import cn.beecp.pool.atomic.AtomicReferenceFieldUpdaterImpl;
+import cn.beecp.pool.exception.PoolClosedException;
 import cn.beecp.pool.exception.PoolCreateFailedException;
 import cn.beecp.pool.exception.PoolInternalException;
 import org.slf4j.Logger;
@@ -396,7 +397,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
 
     //Method-2.3:borrow one connection from pool
     private PooledConnection getPooledConnection() throws SQLException {
-        if (this.poolState != POOL_READY) throw PoolCloseException;
+        if (this.poolState != POOL_READY) throw new PoolClosedException("Pool has shut down or in clearing");
 
         //0:try to get from threadLocal cache
         WeakReference<Borrower> r = this.threadLocal.get();
@@ -416,9 +417,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         try {
             //1:try to acquire a permit
             if (!this.semaphore.tryAcquire(this.maxWaitNs, TimeUnit.NANOSECONDS))
-                throw RequestTimeoutException;
+                throw new SQLException("Request timeout");
         } catch (InterruptedException e) {
-            throw RequestInterruptException;
+            throw new SQLException("Request interrupted");
         }
 
         try {//semaphore acquired
@@ -462,14 +463,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                             LockSupport.parkNanos(t);//block exit:1:get transfer 2:interrupted 3:timeout 4:unpark before parkNanos
                             if (thd.isInterrupted()) {
                                 failed = true;
-                                cause = RequestInterruptException;
+                                cause = new SQLException("Request interrupted");
                             }
                             if (b.state == BOWER_WAITING && BorrowStUpd.compareAndSet(b, BOWER_WAITING, failed ? cause : BOWER_NORMAL) && !failed)
                                 Thread.yield();
                         }
                     } else {//timeout
                         failed = true;
-                        cause = RequestTimeoutException;
+                        cause = new SQLException("Request timeout");
                     }
                 }//end (s == BOWER_NORMAL)
             } while (true);//while
@@ -683,7 +684,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     //Method-4.3: remove all connections from pool
     private void removeAllConnections(boolean force, String source) {
         this.semaphore.interruptWaitingThreads();
-        while (!this.waitQueue.isEmpty()) this.transferException(PoolCloseException);
+        PoolClosedException exception = new PoolClosedException("Pool has shut down or in clearing");
+        while (!this.waitQueue.isEmpty()) this.transferException(exception);
 
         while (this.pooledArray.length > 0) {
             PooledConnection[] array = this.pooledArray;

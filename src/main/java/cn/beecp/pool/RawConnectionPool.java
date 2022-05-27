@@ -9,6 +9,7 @@ package cn.beecp.pool;
 import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.RawConnectionFactory;
 import cn.beecp.RawXaConnectionFactory;
+import cn.beecp.pool.exception.PoolClosedException;
 import cn.beecp.pool.exception.PoolCreateFailedException;
 
 import javax.management.MBeanServer;
@@ -95,7 +96,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
      */
     public Connection getConnection() throws SQLException {
         try {
-            if (poolState.get() != POOL_READY) throw PoolCloseException;
+            if (poolState.get() != POOL_READY) new PoolClosedException("Pool has shut down or in clearing");
             if (borrowSemaphore.tryAcquire(defaultMaxWait, NANOSECONDS)) {
                 if (isRawXaConnFactory) {
                     return rawXaConnFactory.create().getConnection();
@@ -103,10 +104,10 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
                     return rawConnFactory.create();
                 }
             } else {
-                throw RequestTimeoutException;
+                throw new SQLException("Request timeout");
             }
         } catch (InterruptedException e) {
-            throw RequestInterruptException;
+            throw new SQLException("Request interrupted");
         } finally {
             borrowSemaphore.release();
         }
@@ -115,7 +116,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
     //borrow a connection from pool
     public XAConnection getXAConnection() throws SQLException {
         try {
-            if (poolState.get() != POOL_READY) throw PoolCloseException;
+            if (poolState.get() != POOL_READY) throw new PoolClosedException("Pool has shut down or in clearing");
             if (borrowSemaphore.tryAcquire(defaultMaxWait, NANOSECONDS)) {
                 if (isRawXaConnFactory) {
                     return rawXaConnFactory.create();
@@ -123,10 +124,10 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
                     throw new SQLException("Not support");
                 }
             } else {
-                throw RequestTimeoutException;
+                throw new SQLException("Request timeout");
             }
         } catch (InterruptedException e) {
-            throw RequestInterruptException;
+            throw new SQLException("Request interrupted");
         } finally {
             borrowSemaphore.release();
         }

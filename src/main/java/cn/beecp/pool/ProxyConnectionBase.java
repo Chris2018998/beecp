@@ -31,7 +31,7 @@ abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Connectio
     //                                             self-define methods(4)                                            //
     //***************************************************************************************************************//
     final void checkClosed() throws SQLException {
-        if (this.isClosed) throw ConnectionClosedException;
+        if (this.isClosed) throw new SQLException("No operations allowed after connection closed");
     }
 
     synchronized final void registerStatement(ProxyStatementBase s) {
@@ -105,7 +105,7 @@ abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Connectio
             this.raw.setNetworkTimeout(executor, milliseconds);
             this.p.setResetInd(PS_NETWORK, milliseconds != this.p.defaultNetworkTimeout);
         } else {
-            throw DriverNotSupportNetworkTimeoutException;
+            throw new SQLException("Driver not support 'networkTimeout'");
         }
     }
 
