@@ -7,7 +7,6 @@
 package cn.beecp.pool;
 
 import cn.beecp.BeeDataSourceConfigException;
-import cn.beecp.pool.exception.PoolClosedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +38,7 @@ public class PoolStaticCenter {
     public static final String CONFIG_CONNECT_PROP_SIZE = "connectProperties.size";
     //connect properties prefix for driver or driver dataSource
     public static final String CONFIG_CONNECT_PROP_KEY_PREFIX = "connectProperties.";
-    //pool state
+    //pool stateclose
     public static final int POOL_NEW = 0;
     public static final int POOL_READY = 1;
     public static final int POOL_CLOSED = 2;
@@ -66,14 +65,6 @@ public class PoolStaticCenter {
     static final String DESC_RM_CLOSED = "closed";
     static final String DESC_RM_CLEAR = "clear";
     static final String DESC_RM_DESTROY = "destroy";
-    static final SQLException RequestTimeoutException = new SQLException("Request timeout");
-    static final SQLException RequestInterruptException = new SQLException("Request interrupted");
-    static final SQLException PoolCloseException = new PoolClosedException("Pool has shut down or in clearing");
-    static final SQLException DriverNotSupportNetworkTimeoutException = new SQLException("Driver not support 'networkTimeout'");
-    static final SQLException ConnectionClosedException = new SQLException("No operations allowed after connection closed");
-    static final SQLException StatementClosedException = new SQLException("No operations allowed after statement closed");
-    static final SQLException ResultSetClosedException = new SQLException("No operations allowed after resultSet closed");
-    //static final SQLException DirtyTransactionException = new SQLException("Access denied when connection in dirty transaction");
     //***************************************************************************************************************//
     //                                1: JDBC static global closed proxies(3)                                        //
     //***************************************************************************************************************//
@@ -85,20 +76,7 @@ public class PoolStaticCenter {
                     if ("isClosed".equals(method.getName())) {
                         return Boolean.TRUE;
                     } else {
-                        throw ConnectionClosedException;
-                    }
-                }
-            }
-    );
-    static final ResultSet CLOSED_RSLT = (ResultSet) Proxy.newProxyInstance(
-            PoolStaticCenter.class.getClassLoader(),
-            new Class[]{ResultSet.class},
-            new InvocationHandler() {
-                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    if ("isClosed".equals(method.getName())) {
-                        return Boolean.TRUE;
-                    } else {
-                        throw ResultSetClosedException;
+                        throw new SQLException("No operations allowed after connection closed");
                     }
                 }
             }
@@ -111,11 +89,25 @@ public class PoolStaticCenter {
                     if ("isClosed".equals(method.getName())) {
                         return Boolean.TRUE;
                     } else {
-                        throw StatementClosedException;
+                        throw new SQLException("No operations allowed after statement closed");
                     }
                 }
             }
     );
+    static final ResultSet CLOSED_RSLT = (ResultSet) Proxy.newProxyInstance(
+            PoolStaticCenter.class.getClassLoader(),
+            new Class[]{ResultSet.class},
+            new InvocationHandler() {
+                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                    if ("isClosed".equals(method.getName())) {
+                        return Boolean.TRUE;
+                    } else {
+                        throw new SQLException("No operations allowed after resultSet closed");
+                    }
+                }
+            }
+    );
+
     private static final Class[] EMPTY_CLASSES = new Class[0];
     private static final Object[] EMPTY_PARAMETERS = new Object[0];
 
