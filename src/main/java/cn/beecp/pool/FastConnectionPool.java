@@ -417,9 +417,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         try {
             //1:try to acquire a permit
             if (!this.semaphore.tryAcquire(this.maxWaitNs, TimeUnit.NANOSECONDS))
-                throw new SQLException("Request timeout");
+                throw new SQLException("Get connection timeout");
         } catch (InterruptedException e) {
-            throw new SQLException("Request interrupted");
+            throw new SQLException("Interrupted during getting connection");
         }
 
         try {//semaphore acquired
@@ -463,14 +463,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                             LockSupport.parkNanos(t);//block exit:1:get transfer 2:interrupted 3:timeout 4:unpark before parkNanos
                             if (thd.isInterrupted()) {
                                 failed = true;
-                                cause = new SQLException("Request interrupted");
+                                cause = new SQLException("Interrupted during getting connection");
                             }
                             if (b.state == BOWER_WAITING && BorrowStUpd.compareAndSet(b, BOWER_WAITING, failed ? cause : BOWER_NORMAL) && !failed)
                                 Thread.yield();
                         }
                     } else {//timeout
                         failed = true;
-                        cause = new SQLException("Request timeout");
+                        cause = new SQLException("Get connection timeout");
                     }
                 }//end (s == BOWER_NORMAL)
             } while (true);//while
@@ -511,6 +511,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     public final void recycle(PooledConnection p) {
         if (isCompeteMode) p.state = CON_IDLE;
         Iterator<Borrower> iterator = this.waitQueue.iterator();
+
         W:
         while (iterator.hasNext()) {
             Borrower b = iterator.next();
