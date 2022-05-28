@@ -4,9 +4,9 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.chris2018998</groupId>
     <artifactId>beecp</artifactId>
-    <version>3.3.6</version>
+    <version>3.3.7</version>
     <name>beecp</name>
-    <url>https://github.com/Chris2018998/BeeCP</url>
+    <url>https://gitee.com/Chris2018998/BeeCP</url>
     <description>JDBC Connection Pool Implementation</description>
 
     <properties>
@@ -43,6 +43,7 @@
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
+
     <dependencies>
         <dependency>
             <groupId>javax.transaction</groupId>
