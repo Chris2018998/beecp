@@ -38,19 +38,23 @@ public class PoolStaticCenter {
     public static final String CONFIG_CONNECT_PROP_SIZE = "connectProperties.size";
     //connect properties prefix for driver or driver dataSource
     public static final String CONFIG_CONNECT_PROP_KEY_PREFIX = "connectProperties.";
-    //pool stateclose
+
+    //pool state
     public static final int POOL_NEW = 0;
     public static final int POOL_READY = 1;
     public static final int POOL_CLOSED = 2;
     public static final int POOL_CLEARING = 3;
+
     //connection state
     static final int CON_IDLE = 0;
     static final int CON_USING = 1;
     static final int CON_CLOSED = 2;
+
     //pool thread state
     static final int THREAD_WORKING = 0;
     static final int THREAD_WAITING = 1;
     static final int THREAD_EXIT = 2;
+
     //Connection reset pos in array
     static final int PS_AUTO = 0;
     static final int PS_TRANS = 1;
@@ -58,6 +62,7 @@ public class PoolStaticCenter {
     static final int PS_CATALOG = 3;
     static final int PS_SCHEMA = 4;
     static final int PS_NETWORK = 5;
+
     //remove reason
     static final String DESC_RM_INIT = "init";
     static final String DESC_RM_BAD = "bad";
