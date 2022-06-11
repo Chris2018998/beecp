@@ -200,6 +200,20 @@ final class ProxyClassGenerator {
                 ctProxyObjectFactoryClass};
     }
 
+
+    //find out methods,which not need add proxy
+    private static HashSet findMethodsNotNeedProxy(CtClass baseClass) {
+        HashSet notNeedAddProxyMethods = new HashSet(16);
+        for (CtMethod ctSuperClassMethod : baseClass.getMethods()) {
+            int modifiers = ctSuperClassMethod.getModifiers();
+            if ((!Modifier.isAbstract(modifiers) && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)))
+                    || Modifier.isFinal(modifiers) || Modifier.isStatic(modifiers) || Modifier.isNative(modifiers)) {
+                notNeedAddProxyMethods.add(ctSuperClassMethod.getName() + ctSuperClassMethod.getSignature());
+            }
+        }
+        return notNeedAddProxyMethods;
+    }
+
     /**
      * create connection statement class
      * *
@@ -211,16 +225,8 @@ final class ProxyClassGenerator {
      * @throws Exception some error occurred
      */
     private static void createProxyConnectionClass(ClassPool classPool, CtClass ctConnectionClassProxyClass, CtClass ctConnectionClass, CtClass ctConBaseClass) throws Exception {
-        HashSet notNeedAddProxyMethods = new HashSet(16);
-        for (CtMethod ctSuperClassMethod : ctConBaseClass.getMethods()) {
-            int modifiers = ctSuperClassMethod.getModifiers();
-            if ((!Modifier.isAbstract(modifiers) && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)))
-                    || Modifier.isFinal(modifiers) || Modifier.isStatic(modifiers) || Modifier.isNative(modifiers)) {
-                notNeedAddProxyMethods.add(ctSuperClassMethod.getName() + ctSuperClassMethod.getSignature());
-            }
-        }
-
         LinkedList<CtMethod> linkedList = new LinkedList<CtMethod>();
+        HashSet notNeedAddProxyMethods = findMethodsNotNeedProxy(ctConBaseClass);
         ProxyClassGenerator.resolveInterfaceMethods(ctConnectionClass, linkedList, notNeedAddProxyMethods);
 
         CtClass ctStatementClass = classPool.get(Statement.class.getName());
@@ -262,17 +268,9 @@ final class ProxyClassGenerator {
     }
 
     private static void createProxyStatementClass(ClassPool classPool, CtClass statementProxyClass, CtClass ctStatementClass, CtClass ctStatementSuperClass) throws Exception {
-        HashSet superClassSignatureSet = new HashSet(16);
-        for (CtMethod ctSuperClassMethod : ctStatementSuperClass.getMethods()) {
-            int modifiers = ctSuperClassMethod.getModifiers();
-            if ((!Modifier.isAbstract(modifiers) && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)))
-                    || Modifier.isFinal(modifiers) || Modifier.isStatic(modifiers) || Modifier.isNative(modifiers)) {
-                superClassSignatureSet.add(ctSuperClassMethod.getName() + ctSuperClassMethod.getSignature());
-            }
-        }
-
         LinkedList<CtMethod> linkedList = new LinkedList<CtMethod>();
-        ProxyClassGenerator.resolveInterfaceMethods(ctStatementClass, linkedList, superClassSignatureSet);
+        HashSet notNeedAddProxyMethods = findMethodsNotNeedProxy(ctStatementSuperClass);
+        ProxyClassGenerator.resolveInterfaceMethods(ctStatementClass, linkedList, notNeedAddProxyMethods);
 
         CtClass ctResultSetClass = classPool.get(ResultSet.class.getName());
         StringBuilder methodBuffer = new StringBuilder(50);
@@ -322,17 +320,9 @@ final class ProxyClassGenerator {
 
     //ctProxyDatabaseMetaDataClass,ctDatabaseMetaDataIntf,ctDatabaseMetaDataSuperClass
     private static void createProxyDatabaseMetaDataClass(ClassPool classPool, CtClass ctProxyDatabaseMetaDataClass, CtClass ctDatabaseMetaDataIntf, CtClass ctDatabaseMetaDataSuperClass) throws Exception {
-        HashSet superClassSignatureSet = new HashSet(16);
-        for (CtMethod ctSuperClassMethod : ctDatabaseMetaDataSuperClass.getMethods()) {
-            int modifiers = ctSuperClassMethod.getModifiers();
-            if ((!Modifier.isAbstract(modifiers) && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)))
-                    || Modifier.isFinal(modifiers) || Modifier.isStatic(modifiers) || Modifier.isNative(modifiers)) {
-                superClassSignatureSet.add(ctSuperClassMethod.getName() + ctSuperClassMethod.getSignature());
-            }
-        }
-
-        LinkedList<CtMethod> linkedList = new LinkedList();
-        ProxyClassGenerator.resolveInterfaceMethods(ctDatabaseMetaDataIntf, linkedList, superClassSignatureSet);
+        LinkedList<CtMethod> linkedList = new LinkedList<CtMethod>();
+        HashSet notNeedAddProxyMethods = findMethodsNotNeedProxy(ctDatabaseMetaDataSuperClass);
+        ProxyClassGenerator.resolveInterfaceMethods(ctDatabaseMetaDataIntf, linkedList, notNeedAddProxyMethods);
         CtClass ctResultSetClass = classPool.get(ResultSet.class.getName());
 
         StringBuilder methodBuffer = new StringBuilder(40);
@@ -359,17 +349,9 @@ final class ProxyClassGenerator {
     }
 
     private static void createProxyResultSetClass(CtClass ctResultSetClassProxyClass, CtClass ctResultSetClass, CtClass ctResultSetClassSuperClass) throws Exception {
-        HashSet superClassSignatureSet = new HashSet(16);
-        for (CtMethod ctSuperClassMethod : ctResultSetClassSuperClass.getMethods()) {
-            int modifiers = ctSuperClassMethod.getModifiers();
-            if ((!Modifier.isAbstract(modifiers) && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)))
-                    || Modifier.isFinal(modifiers) || Modifier.isStatic(modifiers) || Modifier.isNative(modifiers)) {
-                superClassSignatureSet.add(ctSuperClassMethod.getName() + ctSuperClassMethod.getSignature());
-            }
-        }
-
-        LinkedList<CtMethod> linkedList = new LinkedList();
-        ProxyClassGenerator.resolveInterfaceMethods(ctResultSetClass, linkedList, superClassSignatureSet);
+        LinkedList<CtMethod> linkedList = new LinkedList<CtMethod>();
+        HashSet notNeedAddProxyMethods = findMethodsNotNeedProxy(ctResultSetClassSuperClass);
+        ProxyClassGenerator.resolveInterfaceMethods(ctResultSetClass, linkedList, notNeedAddProxyMethods);
         StringBuilder methodBuffer = new StringBuilder(25);
 
         for (CtMethod ctMethod : linkedList) {
