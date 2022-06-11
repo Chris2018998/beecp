@@ -61,7 +61,7 @@ abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Connectio
     }
 
     public final void setAutoCommit(boolean autoCommit) throws SQLException {
-        //if (p.commitDirtyInd) throw DirtyTransactionException;
+        if (p.commitDirtyInd) throw new SQLException("Change forbidden during dirty transaction");
         this.raw.setAutoCommit(autoCommit);
         this.p.curAutoCommit = autoCommit;
         this.p.setResetInd(PS_AUTO, autoCommit != this.p.defaultAutoCommit);
