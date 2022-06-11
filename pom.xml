@@ -6,7 +6,7 @@
     <artifactId>beecp</artifactId>
     <version>3.3.7</version>
     <name>beecp</name>
-    <url>https://gitee.com/Chris2018998/BeeCP</url>
+    <url>https://github.com/Chris2018998/BeeCP https://gitee.com/Chris2018998/BeeCP</url>
     <description>JDBC Connection Pool Implementation</description>
 
     <properties>
