@@ -24,13 +24,13 @@
         <developer>
             <name>Chris2018998</name>
             <email>Chris2018998@tom.com</email>
-            <url>https://github.com/Chris2018998/BeePool</url>
+            <url>https://github.com/Chris2018998/BeeCP</url>
         </developer>
     </developers>
     <scm>
         <connection>scm:git:git@github.com:Chris2018998/BeePool.git</connection>
-        <developerConnection>scm:git:git@github.com:Chris2018998/BeePool.git</developerConnection>
-        <url>https://github.com/Chris2018998/BeePool</url>
+        <developerConnection>scm:git:git@github.com:Chris2018998/BeeCP.git</developerConnection>
+        <url>https://github.com/Chris2018998/BeeCP</url>
     </scm>
 
     <distributionManagement>
