@@ -11,7 +11,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 /**
- * DatabaseMetaDataBase wrapper
+ * DatabaseMetaData proxy
  *
  * @author Chris.Liao
  * @version 1.0

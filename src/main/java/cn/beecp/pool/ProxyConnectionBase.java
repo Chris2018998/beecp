@@ -13,7 +13,7 @@ import java.util.concurrent.Executor;
 import static cn.beecp.pool.PoolStaticCenter.*;
 
 /**
- * rawConn connection wrapper
+ * connection proxy
  *
  * @author Chris.Liao
  * @version 1.0
