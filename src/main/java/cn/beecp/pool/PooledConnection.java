@@ -88,7 +88,7 @@ final class PooledConnection implements Cloneable {
         p.state = state;
         p.rawConn = rawConn;
         p.rawXaRes = rawXaRes;
-        p.resetFlags = new boolean[6];
+        p.resetFlags = FALSE.clone();
         p.openStatements = new ProxyStatementBase[10];
         p.lastAccessTime = System.currentTimeMillis();//first time
         return p;
