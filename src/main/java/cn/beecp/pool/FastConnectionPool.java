@@ -186,8 +186,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         setName(this.poolName + "-workServant");
         this.idleScanThread.setDaemon(true);
         this.idleScanThread.setName(this.poolName + "-idleCheck");
-        setPriority(4);
-        this.idleScanThread.setPriority(4);
+        setPriority(3);
+        this.idleScanThread.setPriority(3);
 
         start();
         this.idleScanThread.start();
@@ -460,13 +460,16 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                             if (this.servantTryCount.get() > 0 && this.servantState.get() == THREAD_WAITING && this.servantState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
                                 LockSupport.unpark(this);
 
-                            LockSupport.parkNanos(t);//block exit:1:get transfer 2:interrupted 3:timeout 4:unpark before parkNanos
-                            if (thd.isInterrupted()) {
-                                failed = true;
-                                cause = new SQLException("Interrupted during getting connection");
+                            LockSupport.parkNanos(t);//block exit:1:get transfer 2:timeout 3:interrupted
+                            if (b.state == BOWER_WAITING) {//timeout or interrupted
+                                if (thd.isInterrupted()) {
+                                    failed = true;
+                                    cause = new SQLException("Interrupted during getting connection");
+                                    BorrowStUpd.compareAndSet(b, BOWER_WAITING, cause);
+                                } else if (BorrowStUpd.compareAndSet(b, BOWER_WAITING, BOWER_NORMAL)) {//timeout,give it one chance again
+                                    Thread.yield();
+                                }
                             }
-                            if (b.state == BOWER_WAITING && BorrowStUpd.compareAndSet(b, BOWER_WAITING, failed ? cause : BOWER_NORMAL) && !failed)
-                                Thread.yield();
                         }
                     } else {//timeout
                         failed = true;
