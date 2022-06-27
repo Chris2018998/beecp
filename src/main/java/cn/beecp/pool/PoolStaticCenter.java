@@ -130,7 +130,7 @@ public class PoolStaticCenter {
     public static boolean isBlank(String str) {
         if (str == null) return true;
         for (int i = 0, l = str.length(); i < l; ++i) {
-            if (!Character.isWhitespace(str.charAt(i)))
+            if (!Character.isWhitespace((int) str.charAt(i)))
                 return false;
         }
         return true;
