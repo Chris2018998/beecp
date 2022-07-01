@@ -20,12 +20,12 @@ import java.sql.SQLException;
  * @version 1.0
  */
 public final class XaProxyConnection implements XAConnection {
-    private final XAResource resource;
+    private final XAResource proxyResource;
     private final ProxyConnectionBase proxyConn;
 
-    XaProxyConnection(ProxyConnectionBase proxyBaseConn, XAResource resource) {
-        proxyConn = proxyBaseConn;
-        this.resource = resource;
+    XaProxyConnection(ProxyConnectionBase proxyConn, XAResource proxyResource) {
+        this.proxyConn = proxyConn;
+        this.proxyResource = proxyResource;
     }
 
     public void close() throws SQLException {
@@ -39,7 +39,7 @@ public final class XaProxyConnection implements XAConnection {
 
     public XAResource getXAResource() throws SQLException {
         this.proxyConn.checkClosed();
-        return this.resource;
+        return this.proxyResource;
     }
 
     public void addConnectionEventListener(ConnectionEventListener listener) {

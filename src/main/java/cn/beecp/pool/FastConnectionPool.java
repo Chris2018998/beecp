@@ -71,7 +71,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private long validAssumeTime;//milliseconds
     private int validTestTimeout;//seconds
     private long delayTimeForNextClearNs;//nanoseconds
-    private Boolean defaultAutoCommit;//maybe value from first raw connection
 
     private int stateCodeOnRelease;
     private PooledConnectionTransferPolicy transferPolicy;
@@ -289,8 +288,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     //Method-1.6: test first connection and create template pooled connection
     private PooledConnection createTemplatePooledConn(Connection rawCon) throws SQLException {
         //step1:get autoCommit default value
-        this.defaultAutoCommit = this.poolConfig.isDefaultAutoCommit();
-        if (this.defaultAutoCommit == null) this.defaultAutoCommit = rawCon.getAutoCommit();
+        Boolean defaultAutoCommit = this.poolConfig.isDefaultAutoCommit();
+        if (defaultAutoCommit == null) defaultAutoCommit = rawCon.getAutoCommit();
 
         //step2:get transactionIsolation default value
         Integer defaultTransactionIsolation = this.poolConfig.getDefaultTransactionIsolationCode();
@@ -362,13 +361,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         //step8: check driver support 'isValid' method
         if (!supportIsValid) {
             String conTestSql = this.poolConfig.getValidTestSql();
-            boolean supportQueryTimeout = validateTestSql(this.poolName, rawCon, conTestSql, this.validTestTimeout, this.defaultAutoCommit);//check sql
-            conValidTest = new PooledConnectionValidTestBySql(conTestSql, this.defaultAutoCommit, supportQueryTimeout);
+            boolean supportQueryTimeout = validateTestSql(this.poolName, rawCon, conTestSql, this.validTestTimeout, defaultAutoCommit);//check sql
+            conValidTest = new PooledConnectionValidTestBySql(conTestSql, defaultAutoCommit, supportQueryTimeout);
         }
 
         //step9:create a pooled connection with some value,other pooled connection will copy it
         return new PooledConnection(
-                this.defaultAutoCommit,
+                defaultAutoCommit,
                 defaultTransactionIsolation,
                 defaultReadOnly,
                 defaultCatalog,
@@ -391,8 +390,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     //Method-2.2:borrow one XaConnection from pool
     public final XAConnection getXAConnection() throws SQLException {
         PooledConnection p = this.getPooledConnection();
-        ProxyConnectionBase proxyCon = createProxyConnection(p);
-        return new XaProxyConnection(proxyCon, this.isRawXaConnFactory ? new XaProxyResource(p.rawXaRes, proxyCon) : new XaResourceLocalImpl(proxyCon, this.defaultAutoCommit));
+        ProxyConnectionBase proxyConn = createProxyConnection(p);
+        return new XaProxyConnection(proxyConn, this.isRawXaConnFactory ? new XaProxyResource(p.rawXaRes, proxyConn) : new XaResourceLocalImpl(proxyConn, p.defaultAutoCommit));
     }
 
     //Method-2.3:borrow one connection from pool

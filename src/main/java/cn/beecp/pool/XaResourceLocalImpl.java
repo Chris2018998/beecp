@@ -22,13 +22,11 @@ import static javax.transaction.xa.XAException.XAER_DUPID;
 public class XaResourceLocalImpl implements XAResource {
     private final ProxyConnectionBase proxyConn;
     private final boolean defaultAutoCommit;
-    private boolean currentAutoCommit;
     private Xid currentXid;//set from <method>start</method>
 
     XaResourceLocalImpl(ProxyConnectionBase proxyConn, boolean defaultAutoCommit) {
         this.proxyConn = proxyConn;
         this.defaultAutoCommit = defaultAutoCommit;
-        currentAutoCommit = defaultAutoCommit;
     }
 
     //***************************************************************************************************************//
@@ -36,13 +34,11 @@ public class XaResourceLocalImpl implements XAResource {
     //***************************************************************************************************************//
     //reset autoCommit to default
     private void resetAutoCommitToDefault() {
-        if (this.currentAutoCommit != this.defaultAutoCommit) {
-            try {
+        try {
+            if (proxyConn.getAutoCommit() != this.defaultAutoCommit)
                 this.proxyConn.setAutoCommit(this.defaultAutoCommit);
-                this.currentAutoCommit = this.defaultAutoCommit;
-            } catch (SQLException e) {
-                //do nothing
-            }
+        } catch (SQLException e) {
+            //do nothing
         }
     }
 
@@ -62,14 +58,13 @@ public class XaResourceLocalImpl implements XAResource {
         if (flags == XAResource.TMJOIN) {
             if (currentXid != null) throw new XAException("Resource has in a transaction");
 
-            if (this.currentAutoCommit) {
-                try {
+            try {
+                if (this.proxyConn.getAutoCommit())
                     this.proxyConn.setAutoCommit(false);//support transaction
-                    this.currentAutoCommit = false;
-                } catch (SQLException e) {
-                    throw new XAException("Failed to set 'autoCommit' to false for transaction");
-                }
+            } catch (SQLException e) {
+                throw new XAException("Failed to set 'autoCommit' to false for transaction");
             }
+
             currentXid = xid;
         } else if (flags == XAResource.TMRESUME) {
             if (currentXid == null) throw new XAException("Resource not join in a transaction");
