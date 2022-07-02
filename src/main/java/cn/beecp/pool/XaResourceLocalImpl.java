@@ -76,6 +76,10 @@ public class XaResourceLocalImpl implements XAResource {
         }
     }
 
+    public synchronized void end(Xid xid, int flags) throws XAException {
+        this.checkXid(xid);
+    }
+
     public synchronized int prepare(Xid xid) throws XAException {
         this.checkXid(xid);
         try {
@@ -96,6 +100,7 @@ public class XaResourceLocalImpl implements XAResource {
         } catch (SQLException e) {
             throw new XAException(e.getMessage());
         } finally {
+            this.currentXid = null;
             this.resetAutoCommitToDefault();
         }
     }
@@ -107,13 +112,9 @@ public class XaResourceLocalImpl implements XAResource {
         } catch (SQLException e) {
             throw (XAException) new XAException().initCause(e);
         } finally {
+            this.currentXid = null;
             this.resetAutoCommitToDefault();
         }
-    }
-
-    public synchronized void end(Xid xid, int flags) throws XAException {
-        this.checkXid(xid);
-        this.currentXid = null;
     }
 
     public synchronized void forget(Xid xid) {
