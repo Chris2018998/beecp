@@ -460,14 +460,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                                 LockSupport.unpark(this);
 
                             LockSupport.parkNanos(t);//block exit:1:get transfer 2:timeout 3:interrupted
-                            if (b.state == BOWER_WAITING) {//timeout or interrupted
-                                if (thd.isInterrupted()) {
-                                    failed = true;
-                                    cause = new SQLException("Interrupted during getting connection");
-                                    BorrowStUpd.compareAndSet(b, BOWER_WAITING, cause);
-                                } else if (BorrowStUpd.compareAndSet(b, BOWER_WAITING, BOWER_NORMAL)) {//timeout,give it one chance again
-                                    Thread.yield();
-                                }
+                            if (thd.isInterrupted()) {
+                                failed = true;
+                                cause = new SQLException("Interrupted during getting connection");
+                                BorrowStUpd.compareAndSet(b, BOWER_WAITING, cause);
+                            } else if (b.state == BOWER_WAITING && BorrowStUpd.compareAndSet(b, BOWER_WAITING, BOWER_NORMAL)) {//timeout,give it one chance again
+                                Thread.yield();
                             }
                         }
                     } else {//timeout
