@@ -96,7 +96,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
      */
     public Connection getConnection() throws SQLException {
         try {
-            if (poolState.get() != POOL_READY) new PoolClosedException("Pool has shut down or in clearing");
+            if (poolState.get() != POOL_READY) throw new PoolClosedException("Pool has shut down or in clearing");
             if (borrowSemaphore.tryAcquire(defaultMaxWait, NANOSECONDS)) {
                 if (isRawXaConnFactory) {
                     return rawXaConnFactory.create().getConnection();
