@@ -119,14 +119,13 @@ public class PoolStaticCenter {
     //***************************************************************************************************************//
     //                               2: String operation methods(3)                                                  //
     //***************************************************************************************************************//
+    static boolean stringEquals(String a, String b) {
+        return a != null ? a.equals(b) : b == null;
+    }
+
     public static String trimString(String value) {
         return value == null ? null : value.trim();
     }
-
-    public static boolean equalsString(String a, String b) {
-        return a == null ? b == null : a.equals(b);
-    }
-
     public static boolean isBlank(String str) {
         if (str == null) return true;
         for (int i = 0, l = str.length(); i < l; ++i) {
