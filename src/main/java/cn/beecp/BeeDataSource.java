@@ -18,6 +18,7 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
 import static cn.beecp.pool.PoolStaticCenter.CommonLog;
@@ -33,9 +34,12 @@ import static cn.beecp.pool.PoolStaticCenter.createClassInstance;
 //fix BeeCP-Starter-#6 Chris-2020-09-01 start
 //public final class BeeDataSource extends BeeDataSourceConfig implements DataSource {
 public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XADataSource {
-    private final Object synLock = new Object();
-    private volatile boolean ready;
     private ConnectionPool pool;
+    private boolean ready;
+    private SQLException failedCause;
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
+    private final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
 
     //***************************************************************************************************************//
     //                                             1:constructors(3)                                                 //
@@ -60,7 +64,6 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         try {
             Class<?> poolClass = Class.forName(ds.getPoolImplementClassName());
             ConnectionPool pool = (ConnectionPool) createClassInstance(poolClass, ConnectionPool.class, "pool");
-
             pool.init(ds);
             ds.pool = pool;
             ds.ready = true;
@@ -77,18 +80,37 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     //***************************************************************************************************************//
     public final Connection getConnection() throws SQLException {
         if (this.ready) return this.pool.getConnection();
-        synchronized (this.synLock) {
-            if (this.pool != null) return this.pool.getConnection();
-            return BeeDataSource.createPool(this).getConnection();
-        }
+        return getConnectionPool().getConnection();
     }
 
     public final XAConnection getXAConnection() throws SQLException {
         if (this.ready) return this.pool.getXAConnection();
-        synchronized (this.synLock) {
-            if (this.pool != null) return this.pool.getXAConnection();
-            return BeeDataSource.createPool(this).getXAConnection();
+        return getConnectionPool().getXAConnection();
+    }
+
+    private ConnectionPool getConnectionPool() throws SQLException {
+        if (writeLock.tryLock()) {
+            try {
+                if (!ready) {
+                    failedCause = null;
+                    createPool(this);
+                }
+            } catch (SQLException e) {
+                failedCause = e;
+            } finally {
+                writeLock.unlock();
+            }
+        } else {
+            try {
+                readLock.lock();
+            } finally {
+                readLock.unlock();
+            }
         }
+
+        //read lock will reach
+        if (failedCause != null) throw failedCause;
+        return pool;
     }
 
     public Connection getConnection(String username, String password) throws SQLException {
