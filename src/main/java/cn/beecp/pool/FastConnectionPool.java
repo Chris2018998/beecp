@@ -50,7 +50,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private static final AtomicIntegerFieldUpdater<PooledConnection> ConStUpd = AtomicIntegerFieldUpdaterImpl.newUpdater(PooledConnection.class, "state");
     private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowStUpd = AtomicReferenceFieldUpdaterImpl.newUpdater(Borrower.class, Object.class, "state");
     private static final AtomicIntegerFieldUpdater<FastConnectionPool> PoolStateUpd = AtomicIntegerFieldUpdaterImpl.newUpdater(FastConnectionPool.class, "poolState");
-    private static final ThreadLocal<WeakReference<Borrower>> threadLocal = new ThreadLocal<WeakReference<Borrower>>();
     private static final Logger Log = LoggerFactory.getLogger(FastConnectionPool.class);
     private final Object synLock = new Object();
 
@@ -89,6 +88,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private AtomicInteger idleScanState;
     private IdleTimeoutScanThread idleScanThread;
     private ConcurrentLinkedQueue<Borrower> waitQueue;
+    private ThreadLocal<WeakReference<Borrower>> threadLocal;
     private BeeDataSourceConfig poolConfig;
     private ConnectionPoolMonitorVo monitorVo;
     private ConnectionPoolHook exitHook;
@@ -170,6 +170,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         this.semaphoreSize = this.poolConfig.getBorrowSemaphoreSize();
         this.semaphore = new PoolSemaphore(this.semaphoreSize, isFairMode);
         this.waitQueue = new ConcurrentLinkedQueue<Borrower>();
+        this.threadLocal = new ThreadLocal<WeakReference<Borrower>>();
         this.servantTryCount = new AtomicInteger(0);
         this.servantState = new AtomicInteger(THREAD_WORKING);
         this.idleScanState = new AtomicInteger(THREAD_WORKING);
@@ -398,7 +399,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         if (this.poolState != POOL_READY) throw new PoolClosedException("Pool has shut down or in clearing");
 
         //0:try to get from threadLocal cache
-        WeakReference<Borrower> r = threadLocal.get();
+        WeakReference<Borrower> r = this.threadLocal.get();
         Borrower b = r != null ? r.get() : null;
         if (b != null) {
             PooledConnection p = b.lastUsed;
@@ -408,7 +409,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             }
         } else {
             b = new Borrower();
-            threadLocal.set(new WeakReference<Borrower>(b));
+            this.threadLocal.set(new WeakReference<Borrower>(b));
         }
 
         long deadline = System.nanoTime();
@@ -463,8 +464,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                                 failed = true;
                                 cause = new SQLException("Interrupted during getting connection");
                                 BorrowStUpd.compareAndSet(b, BOWER_WAITING, cause);
-                            } else if (b.state == BOWER_WAITING && BorrowStUpd.compareAndSet(b, BOWER_WAITING, BOWER_NORMAL)) {//timeout,give it one chance again
-                                Thread.yield();
+                                //} else if (b.state == BOWER_WAITING && BorrowStUpd.compareAndSet(b, BOWER_WAITING, BOWER_NORMAL)) {//timeout,give it one chance again
+                            } else if (b.state == BOWER_WAITING ){
+                                failed = true;
+                                cause = new SQLException("Get connection timeout");
+
                             }
                         }
                     } else {//timeout
