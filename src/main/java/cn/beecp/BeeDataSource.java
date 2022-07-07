@@ -34,12 +34,12 @@ import static cn.beecp.pool.PoolStaticCenter.createClassInstance;
 //fix BeeCP-Starter-#6 Chris-2020-09-01 start
 //public final class BeeDataSource extends BeeDataSourceConfig implements DataSource {
 public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XADataSource {
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
+    private final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
     private ConnectionPool pool;
     private boolean ready;
     private SQLException failedCause;
-    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-    private final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
-    private final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
 
     //***************************************************************************************************************//
     //                                             1:constructors(3)                                                 //
@@ -70,7 +70,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             return pool;
         } catch (SQLException e) {
             throw e;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new PoolCreateFailedException("Failed to create connection pool by class:" + ds.getPoolImplementClassName(), e);
         }
     }
@@ -80,15 +80,15 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     //***************************************************************************************************************//
     public final Connection getConnection() throws SQLException {
         if (this.ready) return this.pool.getConnection();
-        return getConnectionPool().getConnection();
+        return createPoolByLock().getConnection();
     }
 
     public final XAConnection getXAConnection() throws SQLException {
         if (this.ready) return this.pool.getXAConnection();
-        return getConnectionPool().getXAConnection();
+        return createPoolByLock().getXAConnection();
     }
 
-    private ConnectionPool getConnectionPool() throws SQLException {
+    private ConnectionPool createPoolByLock() throws SQLException {
         if (writeLock.tryLock()) {
             try {
                 if (!ready) {
