@@ -51,10 +51,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowStUpd = AtomicReferenceFieldUpdaterImpl.newUpdater(Borrower.class, Object.class, "state");
     private static final AtomicIntegerFieldUpdater<FastConnectionPool> PoolStateUpd = AtomicIntegerFieldUpdaterImpl.newUpdater(FastConnectionPool.class, "poolState");
     private static final Logger Log = LoggerFactory.getLogger(FastConnectionPool.class);
-    private final Object synLock = new Object();
+
+    static {
+        checkJdbcProxyClass();
+    }
 
     private String poolName;
     private String poolMode;
+    private Object synLock;
     private String poolHostIP;
     private long poolThreadId;
     private String poolThreadName;
@@ -62,7 +66,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private volatile int poolState;
     private boolean isFairMode;
     private boolean isCompeteMode;
-
     private int semaphoreSize;
     private PoolSemaphore semaphore;
     private long maxWaitNs;//nanoseconds
@@ -71,7 +74,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private long validAssumeTime;//milliseconds
     private int validTestTimeout;//seconds
     private long delayTimeForNextClearNs;//nanoseconds
-
     private int stateCodeOnRelease;
     private PooledConnectionTransferPolicy transferPolicy;
     private boolean templatePooledConnNotCreated = true;
@@ -82,7 +84,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private RawXaConnectionFactory rawXaConnFactory;
     private PooledConnectionValidTest conValidTest;
     private ThreadPoolExecutor networkTimeoutExecutor;
-
     private AtomicInteger servantState;
     private AtomicInteger servantTryCount;
     private AtomicInteger idleScanState;
@@ -95,29 +96,11 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private boolean printRuntimeLog;
 
     //***************************************************************************************************************//
-    //               1: Pool initialize and Pooled connection create/remove methods(7)                               //                                                                                  //
+    //               1: Pool initialize and Pooled connection create/remove methods(5)                               //                                                                                  //
     //***************************************************************************************************************//
-    //Method-1.1: check some statement classes whether exists
-    private static void checkProxyClasses() throws SQLException {
-        String[] classNames = {
-                "cn.beecp.pool.Borrower",
-                "cn.beecp.pool.PooledConnection",
-                "cn.beecp.pool.ProxyConnection",
-                "cn.beecp.pool.ProxyStatement",
-                "cn.beecp.pool.ProxyPsStatement",
-                "cn.beecp.pool.ProxyCsStatement",
-                "cn.beecp.pool.ProxyDatabaseMetaData",
-                "cn.beecp.pool.ProxyResultSet"};
-        try {
-            for (String className : classNames)
-                Class.forName(className);
-        } catch (ClassNotFoundException e) {
-            throw new PoolCreateFailedException("Jdbc statement classes missed", e);
-        }
-    }
 
     /**
-     * Method-1.2: pool initialize with configuration
+     * Method-1.1: pool initialize with configuration
      *
      * @param config pool configuration
      * @throws SQLException configuration check fail or initiated connection create failed
@@ -126,8 +109,6 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         if (config == null) throw new PoolCreateFailedException("Configuration can't be null");
         if (this.poolState != POOL_NEW) throw new PoolCreateFailedException("Pool has initialized");
 
-        //step1:check
-        checkProxyClasses();
         this.poolConfig = config.check();//why need a copy here?
         this.poolName = this.poolConfig.getPoolName();
         this.poolMaxSize = this.poolConfig.getMaxActive();
@@ -143,6 +124,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         } else {
             throw new PoolCreateFailedException("Invalid connection factory");
         }
+        this.synLock = new Object();
         this.pooledArray = new PooledConnection[0];
         this.createInitConnections(this.poolConfig.getInitialSize());
 
@@ -203,7 +185,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     }
 
     /**
-     * Method-1.3: create specified size connections at pool initialization,
+     * Method-1.2: create specified size connections at pool initialization,
      * if zero,then try to create one
      *
      * @throws SQLException error occurred in creating connections
@@ -220,7 +202,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    //Method-1.4: create one pooled connection
+    //Method-1.3: create one pooled connection
     private PooledConnection createPooledConn(int state) throws SQLException {
         synchronized (this.synLock) {
             int l = this.pooledArray.length;
@@ -264,7 +246,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    //Method-1.5: remove one pooled connection
+    //Method-1.4: remove one pooled connection
     private void removePooledConn(PooledConnection p, String removeType) {
         if (this.printRuntimeLog)
             Log.info("BeeCP({}))begin to remove pooled connection:{},reason:{}", this.poolName, p, removeType);
@@ -285,7 +267,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    //Method-1.6: test first connection and create template pooled connection
+    //Method-1.5: test first connection and create template pooled connection
     private PooledConnection createTemplatePooledConn(Connection rawCon) throws SQLException {
         //step1:get autoCommit default value
         Boolean defaultAutoCommit = this.poolConfig.isDefaultAutoCommit();

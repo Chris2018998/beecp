@@ -126,6 +126,7 @@ public class PoolStaticCenter {
     public static String trimString(String value) {
         return value == null ? null : value.trim();
     }
+
     public static boolean isBlank(String str) {
         if (str == null) return true;
         for (int i = 0, l = str.length(); i < l; ++i) {
@@ -136,7 +137,7 @@ public class PoolStaticCenter {
     }
 
     //***************************************************************************************************************//
-    //                               3: JDBC object close/statement create methods(7)                                    //
+    //                               3: JDBC object close/statement create methods(9)                                    //
     //***************************************************************************************************************//
     public static void oclose(ResultSet r) {
         try {
@@ -176,6 +177,24 @@ public class PoolStaticCenter {
 
     static ResultSet createProxyResultSet(ResultSet raw, ProxyStatementBase owner, PooledConnection p) throws SQLException {
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
+    }
+
+    static void checkJdbcProxyClass() {
+        String[] classNames = {
+                "cn.beecp.pool.Borrower",
+                "cn.beecp.pool.PooledConnection",
+                "cn.beecp.pool.ProxyConnection",
+                "cn.beecp.pool.ProxyStatement",
+                "cn.beecp.pool.ProxyPsStatement",
+                "cn.beecp.pool.ProxyCsStatement",
+                "cn.beecp.pool.ProxyDatabaseMetaData",
+                "cn.beecp.pool.ProxyResultSet"};
+        try {
+            for (String className : classNames)
+                Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Jdbc proxy classes missed", e);
+        }
     }
 
     static boolean validateTestSql(String poolName, Connection rawCon, String testSql, int validTestTimeout, boolean isDefaultAutoCommit) throws SQLException {
