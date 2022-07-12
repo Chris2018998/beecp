@@ -1,10 +1,8 @@
-![图片](https://user-images.githubusercontent.com/32663325/154847136-10e241ae-af4c-478a-a608-aaa685e0464b.png)
-<p align="left">
- <a><img src="https://img.shields.io/badge/JDK-1.7+-green.svg"></a>
- <a><img src="https://img.shields.io/badge/License-LGPL%202.1-blue.svg"></a>
- <a><img src="https://maven-badges.herokuapp.com/maven-central/com.github.chris2018998/beecp/badge.svg"></a>
-</p> 
-
+![图片](https://user-images.githubusercontent.com/32663325/154847136-10e241ae-af4c-478a-a608-aaa685e0464b.png)<br/>
+<a><img src="https://img.shields.io/badge/JDK-1.7+-green.svg"></a>
+<a><img src="https://img.shields.io/badge/License-LGPL%202.1-blue.svg"></a>
+<a><img src="https://maven-badges.herokuapp.com/maven-central/com.github.chris2018998/beecp/badge.svg"></a>
+ 
 ## :coffee: Introduction 
 
 Beecp is a fast, simple JDBC connection pool
@@ -28,3 +26,12 @@ Java6
    <version>1.6.10</version>
 </dependency>
 ```
+## :rocket: How to use
+
+&nbsp;&nbsp;&nbsp;&nbsp;
+
+
+## :computer: Pool monitor
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;
