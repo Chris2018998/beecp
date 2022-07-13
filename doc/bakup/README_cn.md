@@ -178,3 +178,7 @@ public class DataSourceConfig {
 |enableJmx                         |JMX监控支持开关                           |false                               | 
 |printConfigInfo                   |是否打印配置信息                           |false                               | 
 |printRuntimeLog                   |是否打印运行时日志                         |false                               | 
+
+## 感谢与动态
+
+项目坚持了5年多，付出了很多努力，尽管用户数没有达到预期的目标，但依然倍感欣慰，感谢网友们的大力支持，特别鸣谢中国开源社区，hutool，多米豆等，未来将持续深耕两个池子和Jdbc领域，一如既往维护好项目，个人坚信下一个10年它们将与众多开源伙伴一起前行成长。项目未来动态：由于Beecp与Beeop项目偏轻，未来将会有一次合并再开源，届时重新开张，欢迎更多网友提PR，发Issue ，提建议，也欢迎网友们拍砖。
