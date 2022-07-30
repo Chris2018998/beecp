@@ -140,7 +140,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
         this.stateCodeOnRelease = this.transferPolicy.getStateCodeOnRelease();
 
-        //step4;copy configuration to pool
+        //step4:copy configuration to pool
         this.maxWaitNs = TimeUnit.MILLISECONDS.toNanos(this.poolConfig.getMaxWait());
         this.idleTimeoutMs = this.poolConfig.getIdleTimeout();
         this.holdTimeoutMs = this.poolConfig.getHoldTimeout();
@@ -164,9 +164,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         this.registerJmx();
 
         setDaemon(true);
-        setName(this.poolName + "-workServant");
+        setName("BeeCP("+this.poolName +")-workServant");
         this.idleScanThread.setDaemon(true);
-        this.idleScanThread.setName(this.poolName + "-idleCheck");
+        this.idleScanThread.setName("BeeCP("+this.poolName +")-idleCheck");
         setPriority(3);
         this.idleScanThread.setPriority(3);
 
@@ -311,11 +311,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (this.printRuntimeLog)
                     Log.warn("BeeCP({})driver not support 'networkTimeout'", this.poolName);
             } else {
-                ThreadPoolExecutor networkTimeoutExecutor = new ThreadPoolExecutor(1, poolMaxSize, 10, TimeUnit.SECONDS,
-                        new LinkedBlockingQueue<Runnable>(this.poolMaxSize), new PoolThreadThreadFactory());
-                networkTimeoutExecutor.allowCoreThreadTimeOut(true);
+                if(this.networkTimeoutExecutor==null){//why? maybe failed on step8 first.
+                     this.networkTimeoutExecutor = new ThreadPoolExecutor(poolMaxSize, poolMaxSize, 10, TimeUnit.SECONDS,
+                            new LinkedBlockingQueue<Runnable>(this.poolMaxSize), new PoolThreadThreadFactory("BeeCP("+this.poolName +")"));
+                    networkTimeoutExecutor.allowCoreThreadTimeOut(true);
+                }
                 rawCon.setNetworkTimeout(networkTimeoutExecutor, defaultNetworkTimeout);
-                this.networkTimeoutExecutor = networkTimeoutExecutor;
             }
         } catch (Throwable e) {
             supportNetworkTimeoutInd = false;
@@ -346,8 +347,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             boolean supportQueryTimeout = validateTestSql(this.poolName, rawCon, conTestSql, this.validTestTimeout, defaultAutoCommit);//check sql
             conValidTest = new PooledConnectionValidTestBySql(conTestSql, defaultAutoCommit, supportQueryTimeout);
         }
-
-        //step9:create a pooled connection with some value,other pooled connection will copy it
+        
+        //step9:set networkTimeoutExecutor to null when not supprot network time set
+        if(!supportNetworkTimeoutInd && this.networkTimeoutExecutor!=null){
+            this.networkTimeoutExecutor.shutdown();
+            this.networkTimeoutExecutor=null;
+        }
+       
+        //step10:create a pooled connection with some value,other pooled connection will copy it
         return new PooledConnection(
                 defaultAutoCommit,
                 defaultTransactionIsolation,
@@ -714,11 +721,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 this.shutdownPoolThread();
                 this.unregisterJmx();
                 this.removeAllConnections(this.poolConfig.isForceCloseUsingOnClear(), DESC_RM_DESTROY);
-                if (networkTimeoutExecutor != null) {
-                    networkTimeoutExecutor.getQueue().clear();
-                    networkTimeoutExecutor.shutdownNow();
-                }
-
+                if (networkTimeoutExecutor != null)networkTimeoutExecutor.shutdown();
+                    
                 try {
                     Runtime.getRuntime().removeShutdownHook(this.exitHook);
                 } catch (Throwable e) {
@@ -879,10 +883,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     //***************************************************************************************************************//
     //class-6.1:Thread factory
     private static final class PoolThreadThreadFactory implements ThreadFactory {
+        private final String poolName;
         private final Random seqRandom = new Random();
+        public PoolThreadThreadFactory(String poolName){
+            this.poolName=poolName;
+        }
 
         public Thread newThread(Runnable r) {
-            Thread th = new Thread(r, "networkTimeoutRestThread-" + this.seqRandom.nextInt());
+            Thread th = new Thread(r, poolName+" - networkTimeoutRestThread -" + this.seqRandom.nextInt());
             th.setDaemon(true);
             return th;
         }
