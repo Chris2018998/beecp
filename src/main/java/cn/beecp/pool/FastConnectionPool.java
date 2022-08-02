@@ -27,6 +27,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.Random;
@@ -405,7 +406,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         try {
             //1:try to acquire a permit
             if (!this.semaphore.tryAcquire(this.maxWaitNs, TimeUnit.NANOSECONDS))
-                throw new SQLException("Get connection timeout");
+                throw new SQLTimeoutException("Get connection timeout");
         } catch (InterruptedException e) {
             throw new SQLException("Interrupted during getting connection");
         }
@@ -459,7 +460,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         }
                     } else {//timeout
                         failed = true;
-                        cause = new SQLException("Get connection timeout");
+                        cause = new SQLTimeoutException("Get connection timeout");
                     }
                 }//end (s == BOWER_NORMAL)
             } while (true);//while
