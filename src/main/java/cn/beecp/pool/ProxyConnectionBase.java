@@ -109,9 +109,21 @@ abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Connectio
         }
     }
 
+    //* Terminates an open connection.Calling <code>abort</code> results in:
+    //*<ul>
+    //*<li>The connection marked as closed
+    //*<li>Closes any physical connection to the database
+    //*<li>Releases resources used by the connection
+    //*<li>Insures that any thread that is currently accessing the connection
+    //*will either progress to completion or throw an <code>SQLException</code>.
     public void abort(Executor executor) throws SQLException {
-        if (executor == null) throw new SQLException("executor can't be null");
-        executor.execute(new ProxyConnectionCloseTask(this));
+        synchronized (this) {//safe close
+            if (this.isClosed) return;
+            this.isClosed = true;
+            this.raw = CLOSED_CON;
+            if (this.p.openStmSize > 0) this.p.clearStatement();
+        }
+        this.p.removeSelf();//close raw connection and remove from pool
     }
     //for JDK1.7 end
 }
