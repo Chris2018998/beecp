@@ -66,6 +66,7 @@ public class PoolStaticCenter {
     //remove reason
     static final String DESC_RM_INIT = "init";
     static final String DESC_RM_BAD = "bad";
+    static final String DESC_RM_ABORT = "abort";
     static final String DESC_RM_IDLE = "idle";
     static final String DESC_RM_CLOSED = "closed";
     static final String DESC_RM_CLEAR = "clear";
@@ -474,24 +475,5 @@ public class PoolStaticCenter {
             buf.append(clazz.getName());
         }
         return buf.toString();
-    }
-
-    //***************************************************************************************************************//
-    //                               7: statement close class(1)                                                      //
-    //***************************************************************************************************************//
-    static final class ProxyConnectionCloseTask implements Runnable {
-        private final ProxyConnectionBase proxyCon;
-
-        ProxyConnectionCloseTask(ProxyConnectionBase proxyCon) {
-            this.proxyCon = proxyCon;
-        }
-
-        public void run() {
-            try {
-                this.proxyCon.close();
-            } catch (Throwable e) {
-                CommonLog.warn("Warning:Error at closing connection in executor,cause:", e);
-            }
-        }
     }
 }
