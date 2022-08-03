@@ -136,7 +136,7 @@ final class PooledConnection implements Cloneable {
             this.resetRawConn();
             this.pool.recycle(this);
         } catch (Throwable e) {
-            this.pool.abandonOnReturn(this);
+            this.pool.abandonOnReturn(this, DESC_RM_BAD);
             throw e instanceof SQLException ? (SQLException) e : new SQLException(e);
         }
     }
