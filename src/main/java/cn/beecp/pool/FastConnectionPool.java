@@ -302,30 +302,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                     Log.warn("BeeCP({})driver not support 'schema'", this.poolName);
             }
 
-        //step6: check driver whether support networkTimeout
-        int defaultNetworkTimeout = 0;
-        boolean supportNetworkTimeoutInd = true;//assume support
-        try {
-            defaultNetworkTimeout = rawCon.getNetworkTimeout();
-            if (defaultNetworkTimeout < 0) {
-                supportNetworkTimeoutInd = false;
-                if (this.printRuntimeLog)
-                    Log.warn("BeeCP({})driver not support 'networkTimeout'", this.poolName);
-            } else {
-                if(this.networkTimeoutExecutor==null){//why? maybe failed on step8 first.
-                     this.networkTimeoutExecutor = new ThreadPoolExecutor(poolMaxSize, poolMaxSize, 10, TimeUnit.SECONDS,
-                            new LinkedBlockingQueue<Runnable>(this.poolMaxSize), new PoolThreadThreadFactory("BeeCP("+this.poolName +")"));
-                    networkTimeoutExecutor.allowCoreThreadTimeOut(true);
-                }
-                rawCon.setNetworkTimeout(networkTimeoutExecutor, defaultNetworkTimeout);
-            }
-        } catch (Throwable e) {
-            supportNetworkTimeoutInd = false;
-            if (this.printRuntimeLog)
-                Log.warn("BeeCP({})driver not support 'networkTimeout',cause:", this.poolName, e);
-        }
-
-        //step7: check driver whether support 'isValid' method
+        //step6: check driver whether support 'isValid' method
         boolean supportIsValid = true;//assume support
         try {
             if (rawCon.isValid(this.validTestTimeout)) {
@@ -342,20 +319,42 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 Log.warn("BeeCP({})driver not support 'isValid',cause:", this.poolName, e);
         }
 
-        //step8: check driver support 'isValid' method
-        if (!supportIsValid) {
+        //step7: check driver support 'isValid' method
+        if (!supportIsValid) {//create statement to valid test sql
             String conTestSql = this.poolConfig.getValidTestSql();
-            boolean supportQueryTimeout = validateTestSql(this.poolName, rawCon, conTestSql, this.validTestTimeout, defaultAutoCommit);//check sql
+            boolean supportQueryTimeout = validateTestSql(this.poolName, rawCon, conTestSql, this.validTestTimeout, defaultAutoCommit);//failed then throws Exception
             conValidTest = new PooledConnectionValidTestBySql(conTestSql, defaultAutoCommit, supportQueryTimeout);
         }
         
-        //step9:set networkTimeoutExecutor to null when not supprot network time set
-        if(!supportNetworkTimeoutInd && this.networkTimeoutExecutor!=null){
-            this.networkTimeoutExecutor.shutdown();
-            this.networkTimeoutExecutor=null;
+        //step8: check driver whether support networkTimeout
+        int defaultNetworkTimeout = 0;
+        boolean supportNetworkTimeoutInd = true;//assume support
+        try {
+            defaultNetworkTimeout = rawCon.getNetworkTimeout();
+            if (defaultNetworkTimeout < 0) {
+                supportNetworkTimeoutInd = false;
+                if (this.printRuntimeLog)
+                    Log.warn("BeeCP({})driver not support 'networkTimeout'", this.poolName);
+            } else {
+                if(this.networkTimeoutExecutor==null){
+                     this.networkTimeoutExecutor = new ThreadPoolExecutor(poolMaxSize, poolMaxSize, 10, TimeUnit.SECONDS,
+                            new LinkedBlockingQueue<Runnable>(this.poolMaxSize), new PoolThreadThreadFactory("BeeCP("+this.poolName +")"));
+                    networkTimeoutExecutor.allowCoreThreadTimeOut(true);
+                }
+                rawCon.setNetworkTimeout(networkTimeoutExecutor, defaultNetworkTimeout);
+            }
+        } catch (Throwable e) {
+            supportNetworkTimeoutInd = false;
+            if (this.printRuntimeLog)
+                Log.warn("BeeCP({})driver not support 'networkTimeout',cause:", this.poolName, e);
+        }finally{
+             if(!supportNetworkTimeoutInd && this.networkTimeoutExecutor!=null){
+                 this.networkTimeoutExecutor.shutdown();
+                this.networkTimeoutExecutor=null;
+            }
         }
-       
-        //step10:create a pooled connection with some value,other pooled connection will copy it
+      
+        //step9:create a pooled connection with some value,other pooled connection will copy it
         return new PooledConnection(
                 defaultAutoCommit,
                 defaultTransactionIsolation,
