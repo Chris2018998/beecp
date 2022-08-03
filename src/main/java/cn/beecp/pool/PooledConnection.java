@@ -109,7 +109,12 @@ final class PooledConnection implements Cloneable {
             this.resetCnt += changed ? 1 : -1;
         }
     }
-
+    
+    //support <method> Connection.abort</method>
+    final void removeSelf() {
+        pool.abandonOnReturn(this, DESC_RM_ABORT);
+    }
+    
     //called by pool before remove from pool
     final void onBeforeRemove() {
         try {
