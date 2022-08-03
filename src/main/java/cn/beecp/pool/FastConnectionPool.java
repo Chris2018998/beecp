@@ -546,8 +546,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *
      * @param p target connection need release
      */
-    final void abandonOnReturn(PooledConnection p) {
-        this.removePooledConn(p, DESC_RM_BAD);
+    final void abandonOnReturn(PooledConnection p,String reason) {
+        this.removePooledConn(p, reason);
         this.tryWakeupServantThread();
     }
 
