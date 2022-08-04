@@ -14,6 +14,7 @@ import cn.beecp.pool.atomic.AtomicReferenceFieldUpdaterImpl;
 import cn.beecp.pool.exception.PoolClosedException;
 import cn.beecp.pool.exception.PoolCreateFailedException;
 import cn.beecp.pool.exception.PoolInternalException;
+import cn.beecp.pool.exception.TestSQLFailException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -165,9 +166,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         this.registerJmx();
 
         setDaemon(true);
-        setName("BeeCP("+this.poolName +")-workServant");
+        setName("BeeCP(" + this.poolName + ")-workServant");
         this.idleScanThread.setDaemon(true);
-        this.idleScanThread.setName("BeeCP("+this.poolName +")-idleCheck");
+        this.idleScanThread.setName("BeeCP(" + this.poolName + ")-idleCheck");
         setPriority(3);
         this.idleScanThread.setPriority(3);
 
@@ -199,6 +200,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         } catch (Throwable e) {
             for (PooledConnection p : this.pooledArray)
                 this.removePooledConn(p, DESC_RM_INIT);
+
+            if (e instanceof TestSQLFailException) throw (TestSQLFailException) e;
             if (initSize > 0) throw e instanceof SQLException ? (SQLException) e : new PoolInternalException(e);
         }
     }
@@ -325,7 +328,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             boolean supportQueryTimeout = validateTestSql(this.poolName, rawCon, conTestSql, this.validTestTimeout, defaultAutoCommit);//failed then throws Exception
             conValidTest = new PooledConnectionValidTestBySql(conTestSql, defaultAutoCommit, supportQueryTimeout);
         }
-        
+
         //step8: check driver whether support networkTimeout
         int defaultNetworkTimeout = 0;
         boolean supportNetworkTimeoutInd = true;//assume support
@@ -336,9 +339,9 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (this.printRuntimeLog)
                     Log.warn("BeeCP({})driver not support 'networkTimeout'", this.poolName);
             } else {
-                if(this.networkTimeoutExecutor==null){
-                     this.networkTimeoutExecutor = new ThreadPoolExecutor(poolMaxSize, poolMaxSize, 10, TimeUnit.SECONDS,
-                            new LinkedBlockingQueue<Runnable>(this.poolMaxSize), new PoolThreadThreadFactory("BeeCP("+this.poolName +")"));
+                if (this.networkTimeoutExecutor == null) {
+                    this.networkTimeoutExecutor = new ThreadPoolExecutor(poolMaxSize, poolMaxSize, 10, TimeUnit.SECONDS,
+                            new LinkedBlockingQueue<Runnable>(this.poolMaxSize), new PoolThreadThreadFactory("BeeCP(" + this.poolName + ")"));
                     networkTimeoutExecutor.allowCoreThreadTimeOut(true);
                 }
                 rawCon.setNetworkTimeout(networkTimeoutExecutor, defaultNetworkTimeout);
@@ -347,13 +350,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             supportNetworkTimeoutInd = false;
             if (this.printRuntimeLog)
                 Log.warn("BeeCP({})driver not support 'networkTimeout',cause:", this.poolName, e);
-        }finally{
-             if(!supportNetworkTimeoutInd && this.networkTimeoutExecutor!=null){
-                 this.networkTimeoutExecutor.shutdown();
-                this.networkTimeoutExecutor=null;
+        } finally {
+            if (!supportNetworkTimeoutInd && this.networkTimeoutExecutor != null) {
+                this.networkTimeoutExecutor.shutdown();
+                this.networkTimeoutExecutor = null;
             }
         }
-      
+
         //step9:create a pooled connection with some value,other pooled connection will copy it
         return new PooledConnection(
                 defaultAutoCommit,
@@ -545,7 +548,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *
      * @param p target connection need release
      */
-    final void abandonOnReturn(PooledConnection p,String reason) {
+    final void abandonOnReturn(PooledConnection p, String reason) {
         this.removePooledConn(p, reason);
         this.tryWakeupServantThread();
     }
@@ -721,8 +724,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 this.shutdownPoolThread();
                 this.unregisterJmx();
                 this.removeAllConnections(this.poolConfig.isForceCloseUsingOnClear(), DESC_RM_DESTROY);
-                if (networkTimeoutExecutor != null)networkTimeoutExecutor.shutdown();
-                    
+                if (networkTimeoutExecutor != null) networkTimeoutExecutor.shutdown();
+
                 try {
                     Runtime.getRuntime().removeShutdownHook(this.exitHook);
                 } catch (Throwable e) {
@@ -885,12 +888,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     private static final class PoolThreadThreadFactory implements ThreadFactory {
         private final String poolName;
         private final Random seqRandom = new Random();
-        public PoolThreadThreadFactory(String poolName){
-            this.poolName=poolName;
+
+        public PoolThreadThreadFactory(String poolName) {
+            this.poolName = poolName;
         }
 
         public Thread newThread(Runnable r) {
-            Thread th = new Thread(r, poolName+" - networkTimeoutRestThread -" + this.seqRandom.nextInt());
+            Thread th = new Thread(r, poolName + " - networkTimeoutRestThread -" + this.seqRandom.nextInt());
             th.setDaemon(true);
             return th;
         }

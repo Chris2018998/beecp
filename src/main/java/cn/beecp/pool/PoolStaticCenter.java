@@ -7,6 +7,7 @@
 package cn.beecp.pool;
 
 import cn.beecp.BeeDataSourceConfigException;
+import cn.beecp.pool.exception.TestSQLFailException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -226,7 +227,7 @@ public class PoolStaticCenter {
             try {
                 st.execute(testSql);
             } catch (Throwable e) {
-                throw new SQLException("Invalid test sql:" + testSql, e);
+                throw new TestSQLFailException("Failed to execute test sql:" + testSql, e);
             } finally {
                 rawCon.rollback();//why? maybe store procedure in test sql
             }
