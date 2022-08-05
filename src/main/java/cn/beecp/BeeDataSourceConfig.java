@@ -385,13 +385,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setDefaultTransactionIsolationCode(Integer transactionIsolationCode) {
-        String transactionIsolationName = TransactionIsolationLevel.getTransactionIsolationName(transactionIsolationCode);
-        if (!isBlank(transactionIsolationName)) {
-            defaultTransactionIsolationCode = transactionIsolationCode;
-            defaultTransactionIsolationName = transactionIsolationName;
-        } else {
-            throw new BeeDataSourceConfigException("Invalid isolation code:" + transactionIsolationCode);
-        }
+        this.defaultTransactionIsolationCode = transactionIsolationCode;//support not standard isolation setting
     }
 
     public String getDefaultTransactionIsolationName() {
