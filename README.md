@@ -171,5 +171,5 @@ If ciphertext is used to connect to the database, an extensible decryption class
 |timerCheckInterval                |milliseconds:interval time to run timer check task|18000                               |
 |connectionFactoryClassName        |raw JDBC connection factory class name            |empty                               |
 |enableJmx                         |boolean indicator,true:register dataSource to jmx |false                               | 
-|enableConfigLog                   |boolean indicator,true:print config item info on pool starting|false                   | 
-|enableRuntimeLog                  |boolean indicator,true:print runtime log                      |false                   | 
+|printConfigInfo                   |boolean indicator,true:print config item info on pool starting|false                   | 
+|printRuntimeLog                   |boolean indicator,true:print runtime log                      |false                   | 
