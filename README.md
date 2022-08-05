@@ -11,7 +11,7 @@ BeeCP, a small JDBC connection pool component, has the characteristics of high p
 *  Based on parameter driving, support multiple parameter settings and import of configuration files
 *  Applicable to a variety of database drivers (up to now, mainstream databases can be adapted)
 *  Support local transaction and distributed transaction
-*  Developed by JUC technology, with highlights such as single point cache, semaphore control, queue multiplexing, non mobile waiting, spin control, transfer connection and exception , asynchronous add , and safe close
+*  Developed by JUC technology, with highlights such as single point cache, semaphore control, queue multiplexing, non move waiting, spin control, transfer connection and exception , asynchronous add , and safe close
 *  Provide log output and monitoring tools  
 *  Good robustness and quick response to unexpected situations (such as network disconnection and database service crash)
 *  Good interface extensibility
@@ -103,8 +103,20 @@ In order to better monitor  the pool (* idle connections, in use connections, wa
 
 In addition to the above methods, we have prepared a set of solutions with monitoring interface：<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a>
 
-![图片](https://user-images.githubusercontent.com/32663325/154832186-be2b2c34-8765-4be8-8435-b97c6c1771df.png)
+![图片](https://user-images.githubusercontent.com/32663325/178511569-8f6e16f4-92fc-41ee-ba6b-960e54bf364b.png)
 
-![图片](https://user-images.githubusercontent.com/32663325/178511569-8f6e16f4-92fc-41ee-ba6b-960e54bf364b.png
+## ：Compare to HikariCP
+
+| **Compare Item**                |**BeeCP**                                               |       **HikariCP**                                |
+|---------------------------------|--------------------------------------------------------| ------------------------------------------------- |
+| key technology                  |ThreadLocal，Semaphore，ConcurrentLinkedQueue，Thread    | FastList，ConcurrentBag，ThreadPoolExecutor        |
+| Similarities                    |CAS，Proxy pre-generate，driver Statement cache          |                                                   |
+| Difference                      |fair mode，supprt XA，recyle using connection，single point cache，queue multiplexing，non move waiting，sping contro|pool pause|
+| Files                           |37 files，95KB Jar                                      |44 files，158KB Jar                                 |
+| Performance                     |40 percent faster （HikariCP bench）                    |               
+
+
+
+
 
 
