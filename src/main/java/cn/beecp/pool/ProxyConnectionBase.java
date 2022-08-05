@@ -4,18 +4,18 @@
  *
  * Licensed under GNU Lesser General Public License v2.1
  */
-package cn.beecp.pool;
+package org.jmin.beecp.pool;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.Executor;
 
-import static cn.beecp.pool.PoolStaticCenter.*;
+import static org.jmin.beecp.pool.ConnectionPoolStatics.*;
 
 /**
  * connection proxy
  *
- * @author Chris.Liao
+ * @author Chris Liao
  * @version 1.0
  */
 abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Connection {
@@ -109,14 +109,14 @@ abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Connectio
         }
     }
 
-    //* Terminates an open connection.Calling <code>abort</code> results in:
+    //*Terminates an open connection.Calling <code>abort</code> results in:
     //*<ul>
     //*<li>The connection marked as closed
     //*<li>Closes any physical connection to the database
     //*<li>Releases resources used by the connection
     //*<li>Insures that any thread that is currently accessing the connection
     //*will either progress to completion or throw an <code>SQLException</code>.
-    public void abort(Executor executor) throws SQLException {
+    public void abort(Executor executor) {
         synchronized (this) {//safe close
             if (this.isClosed) return;
             this.isClosed = true;
