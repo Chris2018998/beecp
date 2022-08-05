@@ -4,18 +4,18 @@
  *
  * Licensed under GNU Lesser General Public License v2.1
  */
-package org.jmin.beecp.pool;
+package cn.beecp.pool;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.Executor;
 
-import static org.jmin.beecp.pool.ConnectionPoolStatics.*;
+import static cn.beecp.pool.PoolStaticCenter.*;
 
 /**
  * connection proxy
  *
- * @author Chris Liao
+ * @author Chris.Liao
  * @version 1.0
  */
 abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Connection {
