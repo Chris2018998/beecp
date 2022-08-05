@@ -116,7 +116,30 @@ In addition to the above methods, we have prepared a set of solutions with monit
 | Performance                     |40 percent faster （HikariCP bench）                    |               
 
 
+## ：Code quality
+
+![图片](https://user-images.githubusercontent.com/32663325/163173015-2ce906f3-1b83-419d-82aa-a42b5c8d92b8.png)
 
 
+## ：Extension interface
 
+### 1：Connect factory interface
+
+Two factory interfaces are provided in the product to create local connection and XA connection respectively (* * self expansion is not recommended in general * *)
+ 
+![图片](https://user-images.githubusercontent.com/32663325/153597017-2f3ba479-8f3f-4a82-949b-275068c287cd.png)
+ 
+There is a factory class name configuration item in the data source configuration class (beedatasourceconfig), which supports four types
+
+![图片](https://user-images.githubusercontent.com/32663325/153597130-a22c0d92-2899-46db-b982-35b998434eae.png)
+ 
+Example
+
+![图片](https://user-images.githubusercontent.com/32663325/153597143-3a8e45f8-4894-4e98-913d-63994d3486c6.png)
+
+### 2：Decryption interface of connection ciphertext
+
+If ciphertext is used to connect to the database, an extensible decryption class is provided inside the product, and the implementation class name can be injected into the configuration 
+
+![图片](https://user-images.githubusercontent.com/32663325/153597176-e48382b9-7395-4c6c-9f34-425072d7c510.png)
 
