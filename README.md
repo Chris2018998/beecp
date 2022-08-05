@@ -5,7 +5,7 @@
  
 ## :coffee: Introduction 
 
-BeeCP, a small JDBC connection pool component, has the characteristics of high performance, light code and good stability.
+BeeCP, a small JDBC connection pool component, high performance, lightway code and good stability.
 
 *  Java language development, with cross platform advantages
 *  Based on parameter driving, support multiple parameter settings and import of configuration files
@@ -105,7 +105,7 @@ In addition to the above methods, we have prepared a set of solutions with monit
 
 ![图片](https://user-images.githubusercontent.com/32663325/178511569-8f6e16f4-92fc-41ee-ba6b-960e54bf364b.png)
 
-## ：Compare to HikariCP
+## Compare to HikariCP
 
 | **Compare Item**                |**BeeCP**                                               |       **HikariCP**                                |
 |---------------------------------|--------------------------------------------------------| ------------------------------------------------- |
@@ -121,7 +121,7 @@ In addition to the above methods, we have prepared a set of solutions with monit
 ![图片](https://user-images.githubusercontent.com/32663325/163173015-2ce906f3-1b83-419d-82aa-a42b5c8d92b8.png)
 
 
-## ：Extension interface
+## Extension interface
 
 ### 1：Connect factory interface
 
@@ -143,7 +143,7 @@ If ciphertext is used to connect to the database, an extensible decryption class
 
 ![图片](https://user-images.githubusercontent.com/32663325/153597176-e48382b9-7395-4c6c-9f34-425072d7c510.png)
 
-## ：Configuration 
+## Configuration 
 |**Item Name**                     |**Desc**                              |**Default**                          |
 | ---------------------------------| ------------------------------------- | ----------------------------------- |
 |username                          |jdbc username                          |empty                                |
