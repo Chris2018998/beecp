@@ -88,7 +88,6 @@ public class DataSourceConfig {
 ## :book: Function map
 ![图片](https://user-images.githubusercontent.com/32663325/153597592-c7d36f14-445a-454b-9db4-2289e1f92ed6.png)
 
-
 ## :computer: Runtime monitor
 
 Three ways are provided in pool
@@ -117,8 +116,7 @@ Three ways are provided in pool
 
 ![图片](https://user-images.githubusercontent.com/32663325/163173015-2ce906f3-1b83-419d-82aa-a42b5c8d92b8.png)
 
-
-## :factory: Interfaces
+## :factory: User Extend
 
 ### 1：Connection factory interfaces
 
@@ -130,16 +128,14 @@ Two interfaces,which are using to create raw connection or raw XAConnection for 
  
 Example
 
-![图片](https://user-images.githubusercontent.com/32663325/153597143-3a8e45f8-4894-4e98-913d-63994d3486c6.png)
+![图片](https://user-images.githubusercontent.com/32663325/183244013-e2b32f8b-40d7-45d4-add2-e5394bddae3a.png)
 
-### 2：Decryption interface of connection ciphertext
-
-If ciphertext is used to connect to the database, an extensible decryption class is provided inside the product, and the implementation class name can be injected into the configuration 
+### 2：Jdbc password ciphertext decrypt class
 
 ![图片](https://user-images.githubusercontent.com/32663325/153597176-e48382b9-7395-4c6c-9f34-425072d7c510.png)
 
 ## :blue_book: Configuration 
-|**Item Name**                     |**Desc**                              |**Default**                          |
+|**Item Name**                     |**Desc**                               |**Default**                          |
 | ---------------------------------| ------------------------------------- | ----------------------------------- |
 |username                          |jdbc username                          |empty                                |
 |password                          |jdbc password                          |empty                                |
