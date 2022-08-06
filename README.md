@@ -91,7 +91,8 @@ public class DataSourceConfig {
 
 ## :computer: Runtime monitor
 
-In order to better monitor the pool, three ways are provided   
+Three ways are provided in pool
+
 * slf4j log
 * Jmx mbean
 * Pool Vo(get it by call datasource method:getPoolMonitorVo)
@@ -106,8 +107,8 @@ In order to better monitor the pool, three ways are provided
 | **Compare Item**                |**BeeCP**                                               |       **HikariCP**                                |
 |---------------------------------|--------------------------------------------------------| ------------------------------------------------- |
 | key technology                  |ThreadLocal，Semaphore，ConcurrentLinkedQueue，Thread    | FastList，ConcurrentBag，ThreadPoolExecutor        |
-| Similarities                    |CAS，Proxy pre-generate，driver Statement cache          |                                                   |
-| Difference                      |fair mode，supprt XA，recyle using connection，single point cache，queue multiplexing，non move waiting，sping contro|pool pause|
+| Similarities                    |CAS，pre-generate proxy，driver statement cache          |                                                   |
+| Difference                      |fair mode，supprt XA，recycle hold-timeout connection，single connection cache，queue reuse，non move waiting spin|pool pause|
 | Files                           |37 files，95KB Jar                                      |44 files，158KB Jar                                 |
 | Performance                     |40 percent faster （HikariCP bench）                    |               
 
@@ -117,16 +118,14 @@ In order to better monitor the pool, three ways are provided
 ![图片](https://user-images.githubusercontent.com/32663325/163173015-2ce906f3-1b83-419d-82aa-a42b5c8d92b8.png)
 
 
-## :factory: Extension interface
+## :factory: Interfaces
 
-### 1：Connect factory interface
+### 1：Connection factory interfaces
 
-Two factory interfaces are provided in the product to create local connection and XA connection respectively (* * self expansion is not recommended in general * *)
+Two interfaces,which are using to create raw connection or raw XAConnection for self-implement and its subclass name need set to 'connectionFactoryClassName' in Bee DataSourceConfig object.
  
 ![图片](https://user-images.githubusercontent.com/32663325/153597017-2f3ba479-8f3f-4a82-949b-275068c287cd.png)
  
-There is a factory class name configuration item in the data source configuration class (beedatasourceconfig), which supports four types
-
 ![图片](https://user-images.githubusercontent.com/32663325/153597130-a22c0d92-2899-46db-b982-35b998434eae.png)
  
 Example
