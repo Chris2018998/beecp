@@ -96,8 +96,8 @@ public class DataSourceConfig {
 
 In order to better monitor the pool, three ways are provided   
 * slf4j log
-* Jmx monitor
-* Provide method level monitoring (access the monitoring method of the data source to obtain a VO result object that can reflect the status in the pool)
+* Jmx mbean
+* Pool Vo(get it by call datasource method:getPoolMonitorVo)
 
 :sunny: *If your project is using beecp and base on springboot, we recommend our datasource management tool:<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a> (web ui, no code development ,just some configuration)*
 
