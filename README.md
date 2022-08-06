@@ -94,7 +94,7 @@ public class DataSourceConfig {
 
 ## :computer: Runtime monitor
 
-In order to better monitor the pool (* idle connections, in use connections, waiting connections *), three ways are provided   
+In order to better monitor the pool, three ways are provided   
 * slf4j log
 * Jmx monitor
 * Provide method level monitoring (access the monitoring method of the data source to obtain a VO result object that can reflect the status in the pool)
