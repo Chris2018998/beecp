@@ -115,7 +115,7 @@ In order to better monitor the pool, three ways are provided
 | Performance                     |40 percent faster （HikariCP bench）                    |               
 
 
-## :green_apple: Source quality
+## :green_apple: Code quality
 
 ![图片](https://user-images.githubusercontent.com/32663325/163173015-2ce906f3-1b83-419d-82aa-a42b5c8d92b8.png)
 
