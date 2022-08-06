@@ -9,7 +9,7 @@ BeeCP, a small JDBC connection pool component, high performance, light code and 
 
 *  Java language development, with cross platform advantages
 *  Based on parameter driving, support multiple parameter settings and import of configuration files
-*  Applicable to a variety of database drivers (up to now, mainstream databases can be adapted)
+*  Applicable to a variety of database drivers (popular)
 *  Support local transaction and distributed transaction
 *  Developed by JUC technology, with highlights such as single point cache, semaphore control, queue multiplexing, non move waiting, spin control, transfer connection and exception , asynchronous add , and safe close
 *  Provide log output and monitoring tools  
