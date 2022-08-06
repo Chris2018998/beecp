@@ -10,7 +10,7 @@ BeeCP, a small JDBC connection pool: high performance, lightweight code and good
 *  Support main popular database drivers
 *  Support XAConnection/JTA 
 *  Pool features:CAS,single connection cache, queue reuse, non move waiting self spin, asynchronous add , safe close,web monitor and so on
-*  Good Robustness and quick response to unexpected situations (such as network disconnection and database service crash)
+*  Good robustness and quick response to unexpected situations (such as network disconnection and database service crash)
 *  Good interface extensibility
 
 ## :arrow_down: Download 
