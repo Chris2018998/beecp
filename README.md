@@ -88,7 +88,7 @@ public class DataSourceConfig {
 }
 ```
 
-## :book: Function list
+## :book: Function map
 ![图片](https://user-images.githubusercontent.com/32663325/153597592-c7d36f14-445a-454b-9db4-2289e1f92ed6.png)
 
 
