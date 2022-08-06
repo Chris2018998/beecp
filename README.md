@@ -5,7 +5,7 @@
  
 ## :coffee: Introduction 
 
-BeeCP, a small JDBC connection pool component, high performance, lightway code and good stability.
+BeeCP, a small JDBC connection pool component, high performance, light code and good stability.
 
 *  Java language development, with cross platform advantages
 *  Based on parameter driving, support multiple parameter settings and import of configuration files
@@ -13,7 +13,7 @@ BeeCP, a small JDBC connection pool component, high performance, lightway code a
 *  Support local transaction and distributed transaction
 *  Developed by JUC technology, with highlights such as single point cache, semaphore control, queue multiplexing, non move waiting, spin control, transfer connection and exception , asynchronous add , and safe close
 *  Provide log output and monitoring tools  
-*  Good robustness and quick response to unexpected situations (such as network disconnection and database service crash)
+*  Good stability and quick response to unexpected situations (such as network disconnection and database service crash)
 *  Good interface extensibility
 
 ## :arrow_down: Download 
@@ -88,20 +88,19 @@ public class DataSourceConfig {
 }
 ```
 
-:sunny: *If your project is of springboot type, we recommended to use the data source management tool:<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a> (without code development and configuration, and with its own monitoring interface)*
-
 ## :book: Function list
 ![图片](https://user-images.githubusercontent.com/32663325/153597592-c7d36f14-445a-454b-9db4-2289e1f92ed6.png)
 
 
 ## :computer: Runtime monitor
 
-In order to better monitor  the pool (* idle connections, in use connections, waiting connections *), three ways are provided   
+In order to better monitor the pool (* idle connections, in use connections, waiting connections *), three ways are provided   
 * slf4j log
 * Jmx monitor
 * Provide method level monitoring (access the monitoring method of the data source to obtain a VO result object that can reflect the status in the pool)
 
-In addition to the above methods, we have prepared a set of solutions with monitoring interface：<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a>
+:sunny: *If your project is using beecp and base on springboot, we recommend our datasource management tool:<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a> (web ui, no code development ,just some configuration)*
+
 
 ![图片](https://user-images.githubusercontent.com/32663325/178511569-8f6e16f4-92fc-41ee-ba6b-960e54bf364b.png)
 
