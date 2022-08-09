@@ -1,3 +1,10 @@
+/*
+ * Copyright(C) Chris2018998
+ *
+ * Contact:Chris2018998@tom.com
+ *
+ * Licensed under GNU Lesser General Public License v2.1
+ */
 package org.jmin.util.queue;
 
 import sun.misc.Unsafe;
@@ -75,7 +82,7 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
     }
 
     /**
-     * Lookup a valid node,then remove from pool and return its value
+     * Lookup a valid node,then remove from chain and return its value
      */
     public E poll() {
         E targetValue = null;
