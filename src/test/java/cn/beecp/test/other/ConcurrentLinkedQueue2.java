@@ -68,7 +68,7 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
 
         while (true) {
             Node<E> t = tail;
-            if (t == null || t.value == null) {//means tail not set or removed
+            if (t == null || t.value == null) {//means tail not set or remark as removed
                 if (setAsNewTail(t, node)) {
                     if (head.next == null) casNodeNext(head, null, node);//link to head
                     break;
