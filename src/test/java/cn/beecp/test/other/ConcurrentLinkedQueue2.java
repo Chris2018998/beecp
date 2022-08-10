@@ -5,7 +5,7 @@
  *
  * Licensed under GNU Lesser General Public License v2.1
  */
-package org.jmin.util.queue;
+package cn.beecp.test.other;
 
 import sun.misc.Unsafe;
 
