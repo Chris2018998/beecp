@@ -13,6 +13,7 @@ import java.lang.reflect.Field;
 import java.util.AbstractQueue;
 import java.util.Iterator;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * ConcurrentLinkedQueue impl
@@ -34,7 +35,7 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
             U = (Unsafe) uField.get(null);
             itemOffSet = U.objectFieldOffset(Node.class.getDeclaredField("value"));
             nextOffSet = U.objectFieldOffset(Node.class.getDeclaredField("next"));
-            tailOffSet = U.objectFieldOffset(ConcurrentLinkedQueue2.class.getDeclaredField("tail"));
+            tailOffSet = U.objectFieldOffset(ConcurrentLinkedQueue.class.getDeclaredField("tail"));
         } catch (Throwable e) {
             throw new Error(e);
         }
@@ -120,18 +121,25 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
     }
 
     public boolean remove(Object o) {
-        boolean abandon = false;//means remark as removed
-
+        if (o == null) throw new NullPointerException();
         for (Node<E> preNode = head, curNode = head.next; curNode != null; preNode = curNode, curNode = curNode.next) {
             E nodeValue = curNode.value;
             if (nodeValue != null && (nodeValue == o || nodeValue.equals(o)) && abandonNodeValue(curNode, nodeValue)) {//remark as abandon
-                abandon = true;
                 casNodeNext(preNode, curNode, curNode.next);
-                break;
+                return true;
             }
         }
 
-        return abandon;
+        return false;
+    }
+
+    public boolean contains(Object o) {
+        if (o == null) throw new NullPointerException();
+        for (Node<E> curNode = head.next; curNode != null; curNode = curNode.next) {
+            E nodeValue = curNode.value;
+            if (nodeValue != null && (nodeValue == o || nodeValue.equals(o))) return true;
+        }
+        return false;
     }
 
     public E peek() {
