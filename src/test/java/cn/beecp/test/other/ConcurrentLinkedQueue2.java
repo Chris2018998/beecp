@@ -112,9 +112,9 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
 
         //step2: node handle
         if (node != null) {//found
-            casNodeNext(head, head.next, node.next);//remove from chain
-            if (head.next == null) tail = null;
-            return value;
+           if(casNodeNext(head, head.next, node.next))//remove from chain
+               if (head.next == null) tail = null;
+           return value;
         } else if (value != null) {//means all node is invalid then clean
             head.next = null;
             tail = null;
