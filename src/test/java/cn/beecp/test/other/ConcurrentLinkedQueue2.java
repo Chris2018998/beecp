@@ -40,7 +40,7 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
         }
     }
 
-    private final transient Node<E> head = new Node<>(null);
+    private transient final Node<E> head = new Node<>(null);
     private transient volatile Node<E> tail = null;
 
     public static void main(String[] args) {
@@ -49,6 +49,8 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
             queue.offer(i);
         }
         queue.remove(6);
+        queue.remove(9);
+        queue.remove(1);
         for (int i = 1; i < 10; i++) {
             System.out.println(queue.poll());
         }
@@ -96,27 +98,28 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
      * Lookup a valid node,then remove from chain and return its value
      */
     public E poll() {
-        E targetValue = null;
-        Node<E> targetNode = null;
+        E value = null;
+        Node<E> node = null;
 
         //step1; find out a valid node and break loop
         for (Node<E> curNode = head.next; curNode != null; curNode = curNode.next) {
-            targetValue = curNode.value;
-            if (targetValue != null && abandonNodeValue(curNode, targetValue)) {//remark as removed
-                targetNode = curNode;
+            value = curNode.value;
+            if (value != null && abandonNodeValue(curNode, value)) {//remark as removed
+                node = curNode;
                 break;
             }
         }
 
-        //step2; node handle
-        if (targetNode == null) {//not found valid node,then clean chain
+        //step2: node handle
+        if (node != null) {//found
+            casNodeNext(head, head.next, node.next);//remove from chain
+            if (head.next == null) tail = null;
+            return value;
+        } else if (value != null) {//means all node is invalid then clean
             head.next = null;
             tail = null;
-        } else if (casNodeNext(head, head.next, targetNode.next)) {
-            if (head.next == null) tail = null;
         }
-
-        return targetValue;
+        return null;
     }
 
     public boolean remove(Object o) {
