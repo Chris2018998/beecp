@@ -13,7 +13,6 @@ import java.lang.reflect.Field;
 import java.util.AbstractQueue;
 import java.util.Iterator;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * ConcurrentLinkedQueue impl
@@ -35,7 +34,7 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
             U = (Unsafe) uField.get(null);
             itemOffSet = U.objectFieldOffset(Node.class.getDeclaredField("value"));
             nextOffSet = U.objectFieldOffset(Node.class.getDeclaredField("next"));
-            tailOffSet = U.objectFieldOffset(ConcurrentLinkedQueue.class.getDeclaredField("tail"));
+            tailOffSet = U.objectFieldOffset(ConcurrentLinkedQueue2.class.getDeclaredField("tail"));
         } catch (Throwable e) {
             throw new Error(e);
         }
