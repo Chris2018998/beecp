@@ -43,7 +43,18 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
     private final transient Node<E> head = new Node<>(null);
     private transient volatile Node<E> tail = null;
 
-    private boolean removeNodeValue(Node<E> node, E cmp) {
+    public static void main(String[] args) {
+        ConcurrentLinkedQueue2 queue = new ConcurrentLinkedQueue2();
+        for (int i = 1; i < 10; i++) {
+            queue.offer(i);
+        }
+        queue.remove(6);
+        for (int i = 1; i < 10; i++) {
+            System.out.println(queue.poll());
+        }
+    }
+
+    private boolean abandonNodeValue(Node<E> node, E cmp) {
         return U.compareAndSwapObject(node, itemOffSet, cmp, null);
     }
 
@@ -68,12 +79,12 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
 
         while (true) {
             Node<E> t = tail;
-            if (t == null || t.value == null) {//means tail not set or remark as removed
+            if (t == null) {//means tail not set
                 if (setAsNewTail(t, node)) {
-                    if (head.next == null) casNodeNext(head, null, node);//link to head
+                    head.next = node;
                     break;
                 }
-            } else if (casNodeNext(t, null, node)) {//append to tail.next
+            } else if (t.value != null && casNodeNext(t, null, node)) {//append to tail.next
                 setAsNewTail(t, node);//try to set as new tail
                 break;
             }
@@ -91,42 +102,42 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
         //step1; find out a valid node and break loop
         for (Node<E> curNode = head.next; curNode != null; curNode = curNode.next) {
             targetValue = curNode.value;
-            if (targetValue != null && removeNodeValue(curNode, targetValue)) {//remark as removed
+            if (targetValue != null && abandonNodeValue(curNode, targetValue)) {//remark as removed
                 targetNode = curNode;
                 break;
             }
         }
 
         //step2; node handle
-        if (targetNode == null) {//not found valid node
-            casNodeNext(head, head.next, null);//head link to null;
-            setAsNewTail(tail, null);//remove tail
-        } else if (casNodeNext(head, head.next, targetNode.next)) {// remove the target node from chain if found
-            if (head.next == null) setAsNewTail(tail, null);//remove tail
+        if (targetNode == null) {//not found valid node,then clean chain
+            head.next = null;
+            tail = null;
+        } else if (casNodeNext(head, head.next, targetNode.next)) {
+            if (head.next == null) tail = null;
         }
 
         return targetValue;
     }
 
     public boolean remove(Object o) {
-        boolean removed = false;//means remark as removed
+        boolean abandon = false;//means remark as removed
 
         for (Node<E> preNode = head, curNode = head.next; curNode != null; preNode = curNode, curNode = curNode.next) {
             E nodeValue = curNode.value;
-            if (nodeValue != null && (nodeValue == o || nodeValue.equals(o)) && removeNodeValue(curNode, nodeValue)) {//remark as removed
-                removed = true;
+            if (nodeValue != null && (nodeValue == o || nodeValue.equals(o)) && abandonNodeValue(curNode, nodeValue)) {//remark as abandon
+                abandon = true;
                 casNodeNext(preNode, curNode, curNode.next);
                 break;
             }
         }
 
-        return removed;
+        return abandon;
     }
 
     public E peek() {
-        for (Node<E> preNode = head, curNode = head.next; curNode != null; preNode = curNode, curNode = curNode.next) {
-            E nodeValue = curNode.value;
-            if (nodeValue != null) return nodeValue;
+        for (Node<E> curNode = head.next; curNode != null; curNode = curNode.next) {
+            E value = curNode.value;
+            if (value != null) return value;
         }
         return null;
     }
@@ -144,7 +155,7 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
 
     private static class Node<E> {
         volatile E value;
-        volatile Node<E> next;
+        volatile Node<E> next;//null means abandon and need remove
 
         private Node(E value) {
             this.value = value;
@@ -166,7 +177,7 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
         }
 
         public void remove() {//remark curNode as remove
-            removeNodeValue(curNode, curNode.value);
+            abandonNodeValue(curNode, curNode.value);
         }
     }
 }
