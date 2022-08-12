@@ -176,10 +176,6 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
         return null;
     }
 
-    //***************************************************************************************************************//
-    //                                          5: Collection Methods                                                //
-    //***************************************************************************************************************//
-
     /**
      * Retrieves, but does not remove, the head of this queue,
      * or returns {@code null} if this queue is empty.
@@ -198,6 +194,9 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
         return null;
     }
 
+    //***************************************************************************************************************//
+    //                                          5: Collection Methods                                                //
+    //***************************************************************************************************************//
     /**
      * @return {@code true} if this queue contains no elements
      */
