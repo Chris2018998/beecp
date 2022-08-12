@@ -11,6 +11,7 @@ import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * ConcurrentLinkedQueue impl
@@ -64,23 +65,52 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
         }
     }
 
+    public static void main(String[] args) {
+        int size = 1000;
+        ConcurrentLinkedQueue<Integer> queue1 = new ConcurrentLinkedQueue<Integer>();
+        ConcurrentLinkedQueue2<Integer> queue2 = new ConcurrentLinkedQueue2<Integer>();
+        long time1 = System.nanoTime();
+        for (int i = 1; i < size; i++) {
+            queue2.offer(i);
+        }
+        long time2 = System.nanoTime();
+        for (int i = 1; i < size; i++) {
+            queue1.offer(i);
+        }
+        long time3 = System.nanoTime();
+        System.out.println("ConcurrentLinkedQueue2 offer time:" + (time2 - time1));
+        System.out.println("ConcurrentLinkedQueue1 offer time:" + (time3 - time2));
+
+        long time4 = System.nanoTime();
+        for (int i = 1; i < size; i++) {
+            queue2.poll();
+        }
+        long time5 = System.nanoTime();
+        for (int i = 1; i < size; i++) {
+            queue1.poll();
+        }
+        long time6 = System.nanoTime();
+        System.out.println("ConcurrentLinkedQueue2 poll time:" + (time5 - time4));
+        System.out.println("ConcurrentLinkedQueue1 poll time:" + (time6 - time5));
+    }
+
     //***************************************************************************************************************//
     //                                          3: CAS Methods                                                       //
     //***************************************************************************************************************//
-    private void lazySetNext(Node<E> preNode, Node<E> nextNode) {
+    private static void lazySetNext(Node preNode, Node nextNode) {
         U.putOrderedObject(preNode, nextOffSet, nextNode);
     }
 
-    private boolean casNodeNext(Node<E> preNode, Node<E> next, Node<E> newNext) {
+    private static boolean abandonNodeValue(Node node, Object cmp) {
+        return U.compareAndSwapObject(node, itemOffSet, cmp, null);
+    }
+
+    private static boolean casNodeNext(Node preNode, Node next, Node newNext) {
         return U.compareAndSwapObject(preNode, nextOffSet, next, newNext);
     }
 
-    private boolean setAsNewTail(Node<E> curTail, Node<E> newTail) {
-        return U.compareAndSwapObject(this, tailOffSet, curTail, newTail);
-    }
-
-    private boolean abandonNodeValue(Node<E> node, E cmp) {
-        return U.compareAndSwapObject(node, itemOffSet, cmp, null);
+    private static boolean setAsNewTail(ConcurrentLinkedQueue2 q, Node curTail, Node newTail) {
+        return U.compareAndSwapObject(q, tailOffSet, curTail, newTail);
     }
 
     //***************************************************************************************************************//
@@ -110,19 +140,18 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
         if (e == null) throw new NullPointerException();
         final Node<E> node = new Node<>(e);
 
-        while (true) {
+        for (; ; ) {
             Node<E> t = tail;
             if (t == null) {//means tail not set
-                if (setAsNewTail(t, node)) {
+                if (setAsNewTail(this, null, node)) {
                     head.next = node;
-                    break;
+                    return true;
                 }
             } else if (t.value != null && casNodeNext(t, null, node)) {//append to tail.next
-                setAsNewTail(t, node);//try to set as new tail
-                break;
+                setAsNewTail(this, t, node);//try to set as new tail
+                return true;
             }
         }
-        return true;
     }
 
     /**
@@ -132,58 +161,18 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
      * @return the head of this queue, or {@code null} if this queue is empty
      */
     public E poll() {
-        E value = null;//valid node value
-        Node<E> node = null;//valid node
-
-        //step1:search a valid node
-        for (Node<E> curNode = head.next; curNode != null; curNode = curNode.next) {
-            value = curNode.value;
-            if (value != null && abandonNodeValue(curNode, value)) {//remark as removed
-                node = curNode;
-                break;
-            }
-        }
-
-        //step2:node handle
-        if (node != null) {//found a valid node
-            if (casNodeNext(head, head.next, node.next))//remove invalid nodes and searched node from chain
-                if (head.next == null) tail = null;
-            return value;
-        } else if (value != null) {//means all nodes are invalid then clean them
-            head.next = null;
-            tail = null;
-        }
-        return null;
-    }
-
-    /**
-     * Retrieves, but does not remove, the head of this queue,
-     * or returns {@code null} if this queue is empty.
-     *
-     * @return the head of this queue, or {@code null} if this queue is empty
-     */
-    public E peek() {
-        E value = null;//valid node value
-        Node<E> node = null;//valid node
-
-        //step1:search a valid node
-        for (Node<E> curNode = head.next; curNode != null; curNode = curNode.next) {
-            value = curNode.value;
+        for (Node<E> node = head.next; node != null; node = node.next) {
+            E value = node.value;
             if (value != null) {
-                node = curNode;
-                break;
-            }
-        }
-
-        //step2:
-        if (node != null) {//found a valid node
-            if (head.next != node && casNodeNext(head, head.next, node))//remove invalid nodes from chain
+                if (abandonNodeValue(node, value)) {//mark as removed
+                    if (casNodeNext(head, head.next, node.next))//remove current node
+                        if (head.next == null) tail = null;
+                    return value;
+                }
+            } else if (casNodeNext(head, head.next, node.next)) {//remove invalid node
                 if (head.next == null) tail = null;
-            return value;
-        } else if (value != null) {//means all nodes are invalid then clean them
-            head.next = null;
-            tail = null;
-        }
+            }
+        }//for loop
         return null;
     }
 
@@ -192,8 +181,24 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
     //***************************************************************************************************************//
 
     /**
-     * Returns {@code true} if this queue contains no elements.
+     * Retrieves, but does not remove, the head of this queue,
+     * or returns {@code null} if this queue is empty.
      *
+     * @return the head of this queue, or {@code null} if this queue is empty
+     */
+    public E peek() {
+        for (Node<E> node = head.next; node != null; node = node.next) {
+            E value = node.value;
+            if (value != null) {
+                return value;
+            } else if (casNodeNext(head, head.next, node.next)) {//remove invalid node
+                if (head.next == null) tail = null;
+            }
+        }//for loop
+        return null;
+    }
+
+    /**
      * @return {@code true} if this queue contains no elements
      */
     public boolean isEmpty() {
@@ -201,36 +206,29 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
     }
 
     /**
-     * Returns valid node size in chain
+     * Returns valid node size of chain
      */
     public int size() {
         int size = 0;
-        for (Node node = head.next; node.value != null; node = node.next)
+        for (Node node = head.next; node != null && node.value != null; node = node.next)
             size++;
         return size;
     }
 
     /**
-     * {@inheritDoc}
-     *
      * <p>This implementation iterates over the elements in the collection,
-     * checking each element in turn for equality with the specified element.
-     *
-     * @throws ClassCastException   {@inheritDoc}
-     * @throws NullPointerException {@inheritDoc}
+     * checking each element in turn for equality with the specified element
      */
     public boolean contains(Object o) {
-        if (o == null) throw new NullPointerException();
-        for (Node<E> curNode = head.next; curNode != null; curNode = curNode.next) {
-            E nodeValue = curNode.value;
-            if (nodeValue != null && (nodeValue == o || nodeValue.equals(o))) return true;
+        if (o == null) return false;
+        for (Node<E> node = head.next; node != null; node = node.next) {
+            E value = node.value;
+            if (value != null && (value == o || o.equals(value))) return true;
         }
         return false;
     }
 
     /**
-     * {@inheritDoc}
-     *
      * <p>This implementation iterates over the collection looking for the
      * specified element.  If it finds the element, it removes the element
      * from the collection using the iterator's remove method.
@@ -240,17 +238,20 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
      * collection's iterator method does not implement the <tt>remove</tt>
      * method and this collection contains the specified object.
      *
-     * @throws UnsupportedOperationException {@inheritDoc}
-     * @throws ClassCastException            {@inheritDoc}
-     * @throws NullPointerException          {@inheritDoc}
+     * @throws NullPointerException
      */
     public boolean remove(Object o) {
         if (o == null) throw new NullPointerException();
         for (Node<E> preNode = head, curNode = head.next; curNode != null; preNode = curNode, curNode = curNode.next) {
-            E nodeValue = curNode.value;
-            if (nodeValue != null && (nodeValue == o || nodeValue.equals(o)) && abandonNodeValue(curNode, nodeValue)) {//remark as abandon
-                casNodeNext(preNode, curNode, curNode.next);
-                return true;
+            E value = curNode.value;
+            if (value != null) {
+                if ((value == o || value.equals(o)) && abandonNodeValue(curNode, value)) {//mark as abandon
+                    casNodeNext(preNode, curNode, curNode.next);//remove current node
+                    if (head.next == null) tail = null;
+                    return true;
+                }
+            } else if (casNodeNext(head, head.next, curNode.next)) {//remove invalid node
+                if (head.next == null) tail = null;
             }
         }
         return false;
@@ -292,8 +293,9 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
      */
     public Object[] toArray() {
         List elementList = new LinkedList();
-        for (Node node = head.next; node.value != null; node = node.next) {
-            elementList.add(node.value);
+        for (Node node = head.next; node != null; node = node.next) {
+            Object value = node.value;
+            if (value != null) elementList.add(value);
         }
         return elementList.toArray();
     }
@@ -333,16 +335,20 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
      *                              this queue
      * @throws NullPointerException if the specified array is null
      */
-    @SuppressWarnings("unchecked")
     public <T> T[] toArray(T[] a) {
-        //@todo
-        return null;
+        if (a == null) throw new NullPointerException();
+        int i = 0;
+        int arraySize = a.length;
+        for (Node node = head.next; node != null; node = node.next) {
+            Object value = node.value;
+            if (value != null) a[i++] = (T) node.value;
+            if (i == arraySize) break;
+        }
+        return a;
     }
 
     /**
      * Returns an iterator over the elements contained in this collection.
-     *
-     * @return an iterator over the elements contained in this collection
      */
     public Iterator<E> iterator() {
         return new Itr();
@@ -371,22 +377,8 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
             return null;
         }
 
-        public void remove() {//remark curNode as remove
+        public void remove() {//mark curNode as remove
             abandonNodeValue(curNode, curNode.value);
-        }
-    }
-
-
-    public static void main(String[] args) {
-        ConcurrentLinkedQueue2 queue = new ConcurrentLinkedQueue2();
-        for (int i = 1; i < 10; i++) {
-            queue.offer(i);
-        }
-        queue.remove(6);
-        queue.remove(9);
-        queue.remove(1);
-        for (int i = 1; i < 10; i++) {
-            System.out.println(queue.poll());
         }
     }
 }
