@@ -24,14 +24,14 @@ import java.util.*;
  *
  * 2:snapshot at queue offer two elements(node box contains element value)
  * <pre>
- *    +------+                +-----+                  +-----+
- *   | head | next --------> | first| next -------->  | tail| next --------> null
- *   +------+                +-----+                  +-----+
+ *   +------+                +-----+                  +----- +
+ *   | head | next --------> | first| next -------->  | tail | next --------> null
+ *   +------+                +-----+                  +----- +
  * </pre>
  *
  * 3:snapshot at queue remove tail node (just clear node value and set to null,then kept as empty box node)
  * <pre>
- *    +------+                +-----+                  +-----------------+
+ *   +------+                +-----+                  +-----------------+
  *   | head | next --------> | first| next -------->  | tail(value==null)| next --------> null
  *   +------+                +-----+                  +------------------+
  * </pre>
