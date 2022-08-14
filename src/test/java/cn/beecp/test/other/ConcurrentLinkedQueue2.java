@@ -14,21 +14,21 @@ import java.util.*;
 
 /**
  * ConcurrentLinkedQueue2,A FIFO unbounded queue impl based on linked nodes,which has a fixed head node and kept tail node(not remove)
- *
+ * <p>
  * 1: snapshot at queue creation
  * <pre>
  *  +--------+
  *  |  head  | next --------> null
  *  +--------+
  * </pre>
- *
- * 2:snapshot at queue offer two elements(node box contains element value)
+ * <p>
+ * 2:snapshot at queue offer two elements(tail node box contains element value)
  * <pre>
- *   +------+                +-----+                  +----- +
- *   | head | next --------> | first| next -------->  | tail | next --------> null
- *   +------+                +-----+                  +----- +
+ *   +------+                +-----+                  +-----+
+ *   | head | next --------> | first| next -------->  | tail| next --------> null
+ *   +------+                +-----+                  +-----+
  * </pre>
- *
+ * <p>
  * 3:snapshot at queue remove tail node (just clear node value and set to null,then kept as empty box node)
  * <pre>
  *   +------+                +-----+                  +-----------------+
@@ -154,8 +154,9 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
     public E poll() {
         for (Node<E> node = head.next; node != null; node = node.next) {//must exists tail
             E value = node.value;
-            if (value != null && setNodeValueToNull(node, value)) {//mark as abandon(need removed)
-                if (node != tail) casNodeNext(head, head.next, node.next);
+            if (value != null && setNodeValueToNull(node, value)) {
+                Node<E> nextNode = node.next;
+                casNodeNext(head, head.next, nextNode != null ? nextNode : tail);
                 return value;
             }
         }//loop for
@@ -228,22 +229,16 @@ public class ConcurrentLinkedQueue2<E> extends AbstractQueue<E> implements Queue
      */
     public boolean remove(Object o) {
         if (o == null) throw new NullPointerException();
-        //if o==tail.value then set value to null and keep in chain，it will be remove util become a empty middle node
-		
-        //@todo need re-think logic
-//        for (Node<E> preNode = head, curNode = head.next; curNode != null; preNode = curNode, curNode = curNode.next) {
-//            E value = curNode.value;
-//            if (value != null) {
-//                if ((value == o || value.equals(o)) && setNodeValueToNull(curNode, value)) {//mark as abandon
-//                    if (preNode.value != null) casNodeNext(preNode, curNode, curNode.next);//remove current node
-//                    if (head.next == null) tail = null;
-//                    return true;
-//                }
-//            } else if (casNodeNext(head, head.next, curNode.next)) {//remove invalid node
-//                if (head.next == null) tail = null;
-//            }
-//        }
-
+        for (Node<E> preNode = head, curNode = preNode.next; curNode != null; preNode = curNode, curNode = curNode.next) {
+            E value = curNode.value;
+            if (value != null && (value == o || o.equals(value))) {//found
+                if (setNodeValueToNull(curNode, value)) {//dummy remove
+                    Node<E> nextNode = curNode.next;
+                    casNodeNext(preNode, curNode, nextNode != null ? nextNode : tail);//cas remove node
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
