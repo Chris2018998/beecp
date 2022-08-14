@@ -13,7 +13,28 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 /**
- * ConcurrentLinkedQueue impl
+ * ConcurrentLinkedQueue2,A FIFO unbounded queue impl based on linked nodes,which has a fixed head node and kept tail node(not remove)
+ *
+ * 1: snapshot at queue creation
+ * <pre>
+ *  +--------+
+ *  |  head  | next --------> null
+ *  +--------+
+ * </pre>
+ *
+ * 2:snapshot at queue offer two elements(node box contains element value)
+ * <pre>
+ *    +------+                +-----+                  +-----+
+ *   | head | next --------> | first| next -------->  | tail| next --------> null
+ *   +------+                +-----+                  +-----+
+ * </pre>
+ *
+ * 3:snapshot at queue remove tail node (just clear node value and set to null,then kept as empty box node)
+ * <pre>
+ *    +------+                +-----+                  +-----------------+
+ *   | head | next --------> | first| next -------->  | tail(value==null)| next --------> null
+ *   +------+                +-----+                  +------------------+
+ * </pre>
  *
  * @author Chris Liao
  * @version 1.0
