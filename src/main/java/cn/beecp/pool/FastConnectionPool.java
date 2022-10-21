@@ -424,8 +424,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             boolean failed = false;
             Throwable cause = null;
             deadline += this.maxWaitNs;
-            Thread thd = b.thread;
-
+         
             do {
                 Object s = b.state;//PooledConnection,Throwable,BOWER_NORMAL
                 if (s instanceof PooledConnection) {
@@ -452,7 +451,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                                 LockSupport.unpark(this);
 
                             LockSupport.parkNanos(t);//block exit:1:get transfer 2:timeout 3:interrupted
-                            if (thd.isInterrupted()) {
+                            if (Thread.interrupted()) {//auto clear interrupted status
                                 failed = true;
                                 cause = new SQLException("Interrupted during getting connection");
                                 BorrowStUpd.compareAndSet(b, BOWER_WAITING, cause);
