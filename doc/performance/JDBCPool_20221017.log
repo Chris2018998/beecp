@@ -1,0 +1,114 @@
+[INFO]2022-07-23 15:04:37-[JDBC INFO]
+[INFO]2022-07-23 15:04:37-[Driver:com.mysql.jdbc.Driver]
+[INFO]2022-07-23 15:04:37-[URL:JDBC:MYSQL://localhost/test]
+[INFO]2022-07-23 15:04:37-
+
+[INFO]2022-07-23 15:04:37-BeeCP(FastPool-1)starting....
+[INFO]2022-07-23 15:04:38-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.mysql.jdbc.Driver}
+[INFO]2022-07-23 15:04:38-Pool[BeeCP_Compete -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
+[INFO]2022-07-23 15:04:38-Pool[BeeCP_Compete -- Multiple thread borrow] -- Execution count:1000000,total time:787ms,avg time:0.000787ms,min time:0ms,max time:52ms
+[INFO]2022-07-23 15:04:38-success count       :1000000
+[INFO]2022-07-23 15:04:38-fail count          :0
+[INFO]2022-07-23 15:04:38-avr(ms)             :0.000787
+[INFO]2022-07-23 15:04:38-min(ms)             :0
+[INFO]2022-07-23 15:04:38-max(ms)             :52
+[INFO]2022-07-23 15:04:38-time==0ms           :999958
+[INFO]2022-07-23 15:04:38-1ms=<time<=10ms     :23
+[INFO]2022-07-23 15:04:38-10ms<time<=50ms     :17
+[INFO]2022-07-23 15:04:38-50ms<time<=100ms    :2
+[INFO]2022-07-23 15:04:38-100ms<time<=200ms   :0
+[INFO]2022-07-23 15:04:38-200ms<time<=500ms   :0
+[INFO]2022-07-23 15:04:38-500ms<time<=1000ms  :0
+[INFO]2022-07-23 15:04:38-1000ms<time<=2000ms :0
+[INFO]2022-07-23 15:04:38-2000ms<time<=8000ms :0
+[INFO]2022-07-23 15:04:38-time>8000ms         :0
+[INFO]2022-07-23 15:04:38-
+
+[INFO]2022-07-23 15:04:38-BeeCP(FastPool-1)begin to shutdown
+[INFO]2022-07-23 15:04:38-BeeCP(FastPool-1)has shutdown
+[INFO]2022-07-23 15:04:48-[JDBC INFO]
+[INFO]2022-07-23 15:04:48-[Driver:com.mysql.jdbc.Driver]
+[INFO]2022-07-23 15:04:48-[URL:JDBC:MYSQL://localhost/test]
+[INFO]2022-07-23 15:04:48-
+
+[INFO]2022-07-23 15:04:48-BeeCP(FastPool-1)starting....
+[INFO]2022-07-23 15:04:49-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.mysql.jdbc.Driver}
+[INFO]2022-07-23 15:04:49-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2022-07-23 15:05:41-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:1000000,total time:17175771ms,avg time:17.207553ms,min time:0ms,max time:8838ms
+[INFO]2022-07-23 15:05:41-success count       :998153
+[INFO]2022-07-23 15:05:41-fail count          :1847
+[INFO]2022-07-23 15:05:41-avr(ms)             :17.207553
+[INFO]2022-07-23 15:05:41-min(ms)             :0
+[INFO]2022-07-23 15:05:41-max(ms)             :8838
+[INFO]2022-07-23 15:05:41-time==0ms           :959841
+[INFO]2022-07-23 15:05:41-1ms=<time<=10ms     :32986
+[INFO]2022-07-23 15:05:41-10ms<time<=50ms     :1517
+[INFO]2022-07-23 15:05:41-50ms<time<=100ms    :225
+[INFO]2022-07-23 15:05:41-100ms<time<=200ms   :180
+[INFO]2022-07-23 15:05:41-200ms<time<=500ms   :263
+[INFO]2022-07-23 15:05:41-500ms<time<=1000ms  :123
+[INFO]2022-07-23 15:05:41-1000ms<time<=2000ms :171
+[INFO]2022-07-23 15:05:41-2000ms<time<=8000ms :2794
+[INFO]2022-07-23 15:05:41-time>8000ms         :53
+[INFO]2022-07-23 15:05:41-
+
+[INFO]2022-07-23 15:05:41-BeeCP(FastPool-1)begin to shutdown
+[INFO]2022-07-23 15:05:41-BeeCP(FastPool-1)has shutdown
+
+
+[INFO]2022-10-17 20:27:24-[JDBC INFO]
+[INFO]2022-10-17 20:27:24-[Driver:com.mysql.jdbc.Driver]
+[INFO]2022-10-17 20:27:24-[URL:JDBC:MYSQL://localhost/test]
+[INFO]2022-10-17 20:27:24-
+
+[INFO]2022-10-17 20:27:25-BeeCP(FastPool-1)starting....
+[INFO]2022-10-17 20:27:25-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.mysql.jdbc.Driver}
+[INFO]2022-10-17 20:27:25-Pool[BeeCP_Compete -- Multiple thread borrow] -- Begin{1000threads X 1000iterate}
+[INFO]2022-10-17 20:27:26-Pool[BeeCP_Compete -- Multiple thread borrow] -- Execution count:1000000,total time:272ms,avg time:0.000272ms,min time:0ms,max time:18ms
+[INFO]2022-10-17 20:27:26-success count       :1000000
+[INFO]2022-10-17 20:27:26-fail count          :0
+[INFO]2022-10-17 20:27:26-avr(ms)             :0.000272
+[INFO]2022-10-17 20:27:26-min(ms)             :0
+[INFO]2022-10-17 20:27:26-max(ms)             :18
+[INFO]2022-10-17 20:27:26-time==0ms           :999992
+[INFO]2022-10-17 20:27:26-1ms=<time<=10ms     :6
+[INFO]2022-10-17 20:27:26-10ms<time<=50ms     :2
+[INFO]2022-10-17 20:27:26-50ms<time<=100ms    :0
+[INFO]2022-10-17 20:27:26-100ms<time<=200ms   :0
+[INFO]2022-10-17 20:27:26-200ms<time<=500ms   :0
+[INFO]2022-10-17 20:27:26-500ms<time<=1000ms  :0
+[INFO]2022-10-17 20:27:26-1000ms<time<=2000ms :0
+[INFO]2022-10-17 20:27:26-2000ms<time<=8000ms :0
+[INFO]2022-10-17 20:27:26-time>8000ms         :0
+[INFO]2022-10-17 20:27:26-
+
+[INFO]2022-10-17 20:27:26-BeeCP(FastPool-1)begin to shutdown
+[INFO]2022-10-17 20:27:26-BeeCP(FastPool-1)has shutdown
+[INFO]2022-10-17 20:27:37-[JDBC INFO]
+[INFO]2022-10-17 20:27:37-[Driver:com.mysql.jdbc.Driver]
+[INFO]2022-10-17 20:27:37-[URL:JDBC:MYSQL://localhost/test]
+[INFO]2022-10-17 20:27:37-
+
+[INFO]2022-10-17 20:27:37-BeeCP(FastPool-1)starting....
+[INFO]2022-10-17 20:27:37-BeeCP(FastPool-1)has startup{mode:compete,init size:10,max size:10,semaphore size:4,max wait:8000ms,driver:com.mysql.jdbc.Driver}
+[INFO]2022-10-17 20:27:37-Pool[BeeCP_Compete -- Multiple thread query] -- Begin{1000threads X 1000iterate}
+[INFO]2022-10-17 20:28:21-Pool[BeeCP_Compete -- Multiple thread query] -- Execution count:1000000,total time:21744046ms,avg time:21.760410ms,min time:0ms,max time:8079ms
+[INFO]2022-10-17 20:28:21-success count       :999248
+[INFO]2022-10-17 20:28:21-fail count          :752
+[INFO]2022-10-17 20:28:21-avr(ms)             :21.760410
+[INFO]2022-10-17 20:28:21-min(ms)             :0
+[INFO]2022-10-17 20:28:21-max(ms)             :8079
+[INFO]2022-10-17 20:28:21-time==0ms           :967909
+[INFO]2022-10-17 20:28:21-1ms=<time<=10ms     :24116
+[INFO]2022-10-17 20:28:21-10ms<time<=50ms     :1868
+[INFO]2022-10-17 20:28:21-50ms<time<=100ms    :221
+[INFO]2022-10-17 20:28:21-100ms<time<=200ms   :166
+[INFO]2022-10-17 20:28:21-200ms<time<=500ms   :313
+[INFO]2022-10-17 20:28:21-500ms<time<=1000ms  :301
+[INFO]2022-10-17 20:28:21-1000ms<time<=2000ms :601
+[INFO]2022-10-17 20:28:21-2000ms<time<=8000ms :3742
+[INFO]2022-10-17 20:28:21-time>8000ms         :11
+[INFO]2022-10-17 20:28:21-
+
+[INFO]2022-10-17 20:28:21-BeeCP(FastPool-1)begin to shutdown
+[INFO]2022-10-17 20:28:21-BeeCP(FastPool-1)has shutdown
