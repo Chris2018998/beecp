@@ -423,7 +423,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             deadline += this.maxWaitNs;
 
             do {
-                Object s = b.state;//PooledConnection,Throwable,BOWER_NORMAL
+                Object s = b.state;//PooledConnection,Throwable,null
                 if (s instanceof PooledConnection) {
                     p = (PooledConnection) s;
                     if (this.transferPolicy.tryCatch(p) && this.testOnBorrow(p)) {
