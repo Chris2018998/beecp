@@ -456,7 +456,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                         failed = true;
                         cause = new SQLTimeoutException("Get connection timeout");
                     }
-                }//end (s == BOWER_NORMAL)
+                }//end 
             } while (true);//while
         } finally {
             this.semaphore.release();
