@@ -47,8 +47,6 @@ import static cn.beecp.pool.PoolStaticCenter.*;
  * @version 1.0
  */
 public final class FastConnectionPool extends Thread implements ConnectionPool, ConnectionPoolJmxBean, PooledConnectionValidTest, PooledConnectionTransferPolicy {
-    private static final BorrowerState BOWER_NORMAL = new BorrowerState();
-    private static final BorrowerState BOWER_WAITING = new BorrowerState();
     private static final AtomicIntegerFieldUpdater<PooledConnection> ConStUpd = AtomicIntegerFieldUpdaterImpl.newUpdater(PooledConnection.class, "state");
     private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowStUpd = AtomicReferenceFieldUpdaterImpl.newUpdater(Borrower.class, Object.class, "state");
     private static final AtomicIntegerFieldUpdater<FastConnectionPool> PoolStateUpd = AtomicIntegerFieldUpdaterImpl.newUpdater(FastConnectionPool.class, "poolState");
@@ -154,7 +152,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         this.semaphoreSize = this.poolConfig.getBorrowSemaphoreSize();
         this.semaphore = new PoolSemaphore(this.semaphoreSize, isFairMode);
         this.waitQueue = new ConcurrentLinkedQueue<Borrower>();
-        this.threadLocal = new ThreadLocal<WeakReference<Borrower>>();
+        this.threadLocal = new BorrowerThreadLocal();
         this.servantTryCount = new AtomicInteger(0);
         this.servantState = new AtomicInteger(THREAD_WORKING);
         this.idleScanState = new AtomicInteger(THREAD_WORKING);
@@ -391,8 +389,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         if (this.poolState != POOL_READY) throw new PoolClosedException("Pool has shut down or in clearing");
 
         //0:try to get from threadLocal cache
-        WeakReference<Borrower> r = this.threadLocal.get();
-        Borrower b = r != null ? r.get() : null;
+        Borrower b = this.threadLocal.get().get();
         if (b != null) {
             PooledConnection p = b.lastUsed;
             if (p != null && p.state == CON_IDLE && ConStUpd.compareAndSet(p, CON_IDLE, CON_USING)) {
@@ -419,12 +416,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             if (p != null) return b.lastUsed = p;
 
             //3:try to get one transferred connection
-            b.state = BOWER_NORMAL;
+            b.state = null;
             this.waitQueue.offer(b);
             boolean failed = false;
             Throwable cause = null;
             deadline += this.maxWaitNs;
-         
+
             do {
                 Object s = b.state;//PooledConnection,Throwable,BOWER_NORMAL
                 if (s instanceof PooledConnection) {
@@ -441,23 +438,19 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (failed) {
                     BorrowStUpd.compareAndSet(b, s, cause);
                 } else if (s instanceof PooledConnection) {
-                    b.state = BOWER_NORMAL;
+                    b.state = null;
                     Thread.yield();
-                } else {//here:(s == BOWER_NORMAL)
+                } else {//here:(s == null)
                     long t = deadline - System.nanoTime();
                     if (t > 0L) {
-                        if (b.state == BOWER_NORMAL && BorrowStUpd.compareAndSet(b, BOWER_NORMAL, BOWER_WAITING)) {
-                            if (this.servantTryCount.get() > 0 && this.servantState.get() == THREAD_WAITING && this.servantState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
-                                LockSupport.unpark(this);
+                        if (this.servantTryCount.get() > 0 && this.servantState.get() == THREAD_WAITING && this.servantState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
+                            LockSupport.unpark(this);
 
-                            LockSupport.parkNanos(t);//block exit:1:get transfer 2:timeout 3:interrupted
-                            if (Thread.interrupted()) {//auto clear interrupted status
-                                failed = true;
-                                cause = new SQLException("Interrupted during getting connection");
-                                BorrowStUpd.compareAndSet(b, BOWER_WAITING, cause);
-                            } else if (b.state == BOWER_WAITING && BorrowStUpd.compareAndSet(b, BOWER_WAITING, BOWER_NORMAL)) {//timeout,give it one chance again
-                                yield();
-                            }
+                        LockSupport.parkNanos(t);//block exit:1:get transfer 2:timeout 3:interrupted
+                        if (Thread.interrupted()) {
+                            failed = true;
+                            cause = new SQLException("Interrupted during getting connection");
+                            if (b.state == null) BorrowStUpd.compareAndSet(b, null, cause);
                         }
                     } else {//timeout
                         failed = true;
@@ -503,18 +496,13 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         if (isCompeteMode) p.state = CON_IDLE;
         Iterator<Borrower> iterator = this.waitQueue.iterator();
 
-        W:
         while (iterator.hasNext()) {
             Borrower b = iterator.next();
-            Object state;
-            do {
-                if (p.state != stateCodeOnRelease)
-                    return;
-                state = b.state;
-                if (!(state instanceof BorrowerState)) continue W;
-            } while (!BorrowStUpd.compareAndSet(b, state, p));
-            if (state == BOWER_WAITING) LockSupport.unpark(b.thread);
-            return;
+            if (p.state != stateCodeOnRelease) return;
+            if (BorrowStUpd.compareAndSet(b, null, p)) {
+                LockSupport.unpark(b.thread);
+                return;
+            }
         }
 
         if (isFairMode) p.state = CON_IDLE;
@@ -529,16 +517,12 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      */
     private void transferException(Throwable e) {
         Iterator<Borrower> iterator = waitQueue.iterator();
-        W:
         while (iterator.hasNext()) {
             Borrower b = iterator.next();
-            Object state;
-            do {
-                state = b.state;
-                if (!(state instanceof BorrowerState)) continue W;
-            } while (!BorrowStUpd.compareAndSet(b, state, e));
-            if (state == BOWER_WAITING) LockSupport.unpark(b.thread);
-            return;
+            if (BorrowStUpd.compareAndSet(b, null, e)) {
+                LockSupport.unpark(b.thread);
+                return;
+            }
         }
     }
 
@@ -785,7 +769,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
     public int getTransferWaitingSize() {
         int size = 0;
         for (Borrower borrower : this.waitQueue)
-            if (borrower.state instanceof BorrowerState) size++;
+            if (borrower.state == null) size++;
         return size;
     }
 
@@ -967,7 +951,14 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
     }
 
-    //class-6.6:PooledConnection Valid Test
+    //class-6.6:Borrower ThreadLocal
+    private static final class BorrowerThreadLocal extends ThreadLocal<WeakReference<Borrower>> {
+        protected WeakReference<Borrower> initialValue() {
+            return new WeakReference<Borrower>(new Borrower());
+        }
+    }
+
+    //class-6.7:PooledConnection Valid Test
     private final class PooledConnectionValidTestBySql implements PooledConnectionValidTest {
         private final String testSql;
         private final boolean isDefaultAutoCommit;
