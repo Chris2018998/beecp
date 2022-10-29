@@ -20,7 +20,7 @@ Java7 or higher
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>3.3.8</version>
+   <version>3.3.9</version>
 </dependency>
 ```
 
