@@ -419,7 +419,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             b.state = null;
             this.waitQueue.offer(b);
             boolean failed = false;
-            Throwable cause = null;
+            SQLException cause = null;
             deadline += this.maxWaitNs;
 
             do {
