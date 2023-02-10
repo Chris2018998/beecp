@@ -606,36 +606,42 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      * or dead connections,or long time not active connections in using state
      */
     private void closeIdleTimeoutConnection() {
-        if (this.poolState == POOL_READY) {
-            PooledConnection[] array = this.pooledArray;
-            for (PooledConnection p : array) {
-                final int state = p.state;
-                if (state == CON_IDLE && !this.existBorrower()) {
-                    boolean isTimeoutInIdle = System.currentTimeMillis() - p.lastAccessTime >= this.idleTimeoutMs;
-                    if (isTimeoutInIdle && ConStUpd.compareAndSet(p, state, CON_CLOSED)) {//need close idle
-                        this.removePooledConn(p, DESC_RM_IDLE);
-                        this.tryWakeupServantThread();
-                    }
-                } else if (state == CON_USING) {
-                    if (System.currentTimeMillis() - p.lastAccessTime >= this.holdTimeoutMs) {//hold timeout
-                        ProxyConnectionBase proxyInUsing = p.proxyInUsing;
-                        if (proxyInUsing != null) {
-                            oclose(proxyInUsing);
-                        } else {
-                            this.removePooledConn(p, DESC_RM_BAD);
-                            this.tryWakeupServantThread();
-                        }
-                    }
-                } else if (state == CON_CLOSED) {
-                    this.removePooledConn(p, DESC_RM_CLOSED);
+        //step1:print pool info before clean
+        if (printRuntimeLog) {
+            ConnectionPoolMonitorVo vo = getPoolMonitorVo();
+            Log.info("BeeCP({})-before idle clean,{idle:{},using:{},semaphore-waiting:{},transfer-waiting:{}}", this.poolName, vo.getIdleSize(), vo.getUsingSize(), vo.getSemaphoreWaitingSize(), vo.getTransferWaitingSize());
+        }
+
+        //step2:remove idle timeout and hold timeout
+        PooledConnection[] array = this.pooledArray;
+        for (PooledConnection p : array) {
+            final int state = p.state;
+            if (state == CON_IDLE && !this.existBorrower()) {
+                boolean isTimeoutInIdle = System.currentTimeMillis() - p.lastAccessTime >= this.idleTimeoutMs;
+                if (isTimeoutInIdle && ConStUpd.compareAndSet(p, state, CON_CLOSED)) {//need close idle
+                    this.removePooledConn(p, DESC_RM_IDLE);
                     this.tryWakeupServantThread();
                 }
+            } else if (state == CON_USING) {
+                if (System.currentTimeMillis() - p.lastAccessTime >= this.holdTimeoutMs) {//hold timeout
+                    ProxyConnectionBase proxyInUsing = p.proxyInUsing;
+                    if (proxyInUsing != null) {
+                        oclose(proxyInUsing);
+                    } else {
+                        this.removePooledConn(p, DESC_RM_BAD);
+                        this.tryWakeupServantThread();
+                    }
+                }
+            } else if (state == CON_CLOSED) {
+                this.removePooledConn(p, DESC_RM_CLOSED);
+                this.tryWakeupServantThread();
             }
         }
 
+        //step3: print pool info after idle clean
         if (printRuntimeLog) {
             ConnectionPoolMonitorVo vo = getPoolMonitorVo();
-            Log.info("BeeCP({})-{idle:{},using:{},semaphore-waiting:{},transfer-waiting:{}}", this.poolName, vo.getIdleSize(), vo.getUsingSize(), vo.getSemaphoreWaitingSize(), vo.getTransferWaitingSize());
+            Log.info("BeeCP({})-after idle clean,{idle:{},using:{},semaphore-waiting:{},transfer-waiting:{}}", this.poolName, vo.getIdleSize(), vo.getUsingSize(), vo.getSemaphoreWaitingSize(), vo.getTransferWaitingSize());
         }
     }
 
@@ -914,7 +920,8 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
             while (this.idleScanState.get() == THREAD_WORKING) {
                 LockSupport.parkNanos(checkTimeIntervalNanos);
                 try {
-                    this.pool.closeIdleTimeoutConnection();
+                    if (pool.poolState == POOL_READY)
+                        pool.closeIdleTimeoutConnection();
                 } catch (Throwable e) {
                     Log.warn("BeeCP({})Error at closing idle timeout connections,cause:", this.pool.poolName, e);
                 }
