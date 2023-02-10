@@ -14,7 +14,6 @@ import cn.beecp.pool.atomic.AtomicReferenceFieldUpdaterImpl;
 import cn.beecp.pool.exception.PoolClosedException;
 import cn.beecp.pool.exception.PoolCreateFailedException;
 import cn.beecp.pool.exception.PoolInternalException;
-import cn.beecp.pool.exception.TestSQLFailException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,7 +125,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         }
         this.synLock = new Object();
         this.pooledArray = new PooledConnection[0];
-        this.createInitConnections(this.poolConfig.getInitialSize());
+        if (!config.isAsyncCreateInitConnection()) createInitConnections(config.getInitialSize(), true);
 
         //step3;create transfer policy by config
         if (this.poolConfig.isFairMode()) {
@@ -173,7 +172,7 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
         start();
         this.idleScanThread.start();
         this.poolState = POOL_READY;
-
+        if (config.isAsyncCreateInitConnection()) new PoolInitAsynCreateThread(this).start();
         Log.info("BeeCP({})has startup{mode:{},init size:{},max size:{},semaphore size:{},max wait:{}ms,driver:{}}",
                 this.poolName,
                 poolMode,
@@ -190,17 +189,23 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
      *
      * @throws SQLException error occurred in creating connections
      */
-    private void createInitConnections(int initSize) throws SQLException {
+    private void createInitConnections(int initSize, boolean syn) throws SQLException {
+        int size = initSize > 0 ? initSize : 1;
         try {
-            int size = initSize > 0 ? initSize : 1;
             for (int i = 0; i < size; i++)
                 this.createPooledConn(CON_IDLE);
         } catch (Throwable e) {
             for (PooledConnection p : this.pooledArray)
                 this.removePooledConn(p, DESC_RM_INIT);
 
-            if (e instanceof TestSQLFailException) throw (TestSQLFailException) e;
-            if (initSize > 0) throw e instanceof SQLException ? (SQLException) e : new PoolInternalException(e);
+            if (syn && initSize > 0) {//throw exception on syn mode
+                if (e instanceof SQLException)
+                    throw (SQLException) e;
+                else
+                    throw new PoolInternalException(e);
+            } else {
+                Log.warn("Failed to create connections on pool initialization,cause:" + e);
+            }
         }
     }
 
@@ -901,6 +906,26 @@ public final class FastConnectionPool extends Thread implements ConnectionPool, 
                 if (state == Thread.State.WAITING || state == Thread.State.TIMED_WAITING) {
                     thread.interrupt();
                 }
+            }
+        }
+    }
+
+    //class-6.3: add new objects on pool initialized by asynchronization
+    private static final class PoolInitAsynCreateThread extends Thread {
+        private final FastConnectionPool pool;
+
+        PoolInitAsynCreateThread(FastConnectionPool pool) {
+            this.pool = pool;
+        }
+
+        public void run() {
+            try {
+                pool.createInitConnections(pool.poolConfig.getInitialSize(), false);
+                pool.servantState.getAndSet(pool.pooledArray.length);
+                if (!pool.waitQueue.isEmpty() && pool.servantState.get() == THREAD_WAITING && pool.servantState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
+                    LockSupport.unpark(pool);
+            } catch (Throwable e) {
+                //do nothing
             }
         }
     }
