@@ -222,14 +222,14 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         if (initialSize >= 0) this.initialSize = initialSize;
     }
 
-     public boolean isAsyncCreateInitConnection() {
+    public boolean isAsyncCreateInitConnection() {
         return asyncCreateInitConnection;
     }
 
     public void setAsyncCreateInitConnection(boolean asyncCreateInitConnection) {
         this.asyncCreateInitConnection = asyncCreateInitConnection;
     }
-   
+
     public int getMaxActive() {
         return this.maxActive;
     }
@@ -417,6 +417,15 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //***************************************************************************************************************//
     public Object getConnectionFactory() {
         return this.connectionFactory;
+    }
+
+    //connection factory
+    public void setRawConnectionFactory(RawConnectionFactory factory) {
+        this.connectionFactory = factory;
+    }
+
+    public void setRawXaConnectionFactory(RawXaConnectionFactory factory) {
+        this.connectionFactory = factory;
     }
 
     public Class getConnectionFactoryClass() {
