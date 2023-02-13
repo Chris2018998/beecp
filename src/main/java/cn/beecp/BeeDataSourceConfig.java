@@ -574,7 +574,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             throw new BeeDataSourceConfigException("validTestSql must be start with 'select '");
         }
 
-        connectionFactory = createConnectionFactory();
+        if (connectionFactory == null) connectionFactory = createConnectionFactory();
         if (isBlank(poolName)) poolName = "FastPool-" + BeeDataSourceConfig.PoolNameIndex.getAndIncrement();
 
         BeeDataSourceConfig configCopy = new BeeDataSourceConfig();
