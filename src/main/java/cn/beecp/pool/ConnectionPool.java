@@ -36,10 +36,10 @@ public interface ConnectionPool {
     void close();
 
     //remove all pooled connections,if exists using connections,then wait util them idle,and close them and remove
-    void clear();
+    void restartPool();
 
-    //clear all connections from pool,forceCloseUsingOnClear is true,then close using connection directly
-    void clear(boolean forceCloseUsingOnClear);
+    //restartPool all connections from pool,forceCloseUsingOnClear is true,then close using connection directly
+    void restartPool(boolean forceCloseUsingOnClear);
 
     //check pool is closed
     boolean isClosed();
