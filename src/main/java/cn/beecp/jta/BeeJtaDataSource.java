@@ -121,13 +121,13 @@ public class BeeJtaDataSource extends TimerTask implements DataSource {
     //***************************************************************************************************************//
     //                   statement call BeeDataSource methods  (Begin)                                                   //
     //****************************************************************************************************************//
-    public void clear() throws SQLException {
-        clear(false);
+    public void restartPool() throws SQLException {
+        restartPool(false);
     }
 
-    public void clear(boolean force) throws SQLException {
+    public void restartPool(boolean force) throws SQLException {
         checkDataSource();
-        this.ds.clear(force);
+        this.ds.restartPool(force);
     }
 
     public boolean isClosed() throws SQLException {
