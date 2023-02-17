@@ -32,12 +32,12 @@ public class PoolForceClearTest extends TestCase {
 
     public void testForceClear() throws Throwable {
         long time1 = System.currentTimeMillis();
-        ds.clear(true);
+        ds.restartPool(true);
         long tookTime = System.currentTimeMillis() - time1;
         if (tookTime > delayTimeForNextClear) {
-            TestUtil.assertError("Pool force clear test failed");
+            TestUtil.assertError("Pool force restartPool test failed");
         } else {
-            System.out.println("Pool force clear time: " + tookTime + "ms");
+            System.out.println("Pool force restartPool time: " + tookTime + "ms");
         }
     }
 
