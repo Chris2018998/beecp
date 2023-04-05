@@ -42,10 +42,10 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         value = readConfig(ref, newPropertyName);
         if (value != null) return value;
 
-        value = readConfig(ref,propertyNameToFieldId(newPropertyName,Separator_MiddleLine));
+        value = readConfig(ref, propertyNameToFieldId(newPropertyName, Separator_MiddleLine));
         if (value != null) return value;
 
-        return readConfig(ref, propertyNameToFieldId(newPropertyName,Separator_UnderLine));
+        return readConfig(ref, propertyNameToFieldId(newPropertyName, Separator_UnderLine));
     }
 
     private static String readConfig(Reference ref, String propertyName) {
@@ -80,7 +80,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         Reference ref = (Reference) obj;
         //1:try to lookup transactionManager if configured
         TransactionManager tm = null;
-        String tmJndiName = getConfigValue(ref,CONFIG_TM_JNDI);
+        String tmJndiName = getConfigValue(ref, CONFIG_TM_JNDI);
         if (!isBlank(tmJndiName) && nameCtx != null) {
             tm = (TransactionManager) nameCtx.lookup(tmJndiName);
         }
@@ -102,11 +102,11 @@ public final class BeeDataSourceFactory implements ObjectFactory {
 
         //7:try to find 'connectProperties' config value and put to ds config object
         config.addConnectProperty(getConfigValue(ref, CONFIG_CONNECT_PROP));
-        String connectPropertiesCount = getConfigValue(ref,CONFIG_CONNECT_PROP_SIZE);
+        String connectPropertiesCount = getConfigValue(ref, CONFIG_CONNECT_PROP_SIZE);
         if (!isBlank(connectPropertiesCount)) {
             int count = Integer.parseInt(connectPropertiesCount.trim());
             for (int i = 1; i <= count; i++)
-                config.addConnectProperty(getConfigValue(ref,CONFIG_CONNECT_PROP_KEY_PREFIX + i));
+                config.addConnectProperty(getConfigValue(ref, CONFIG_CONNECT_PROP_KEY_PREFIX + i));
         }
 
         //8:create dataSource by config

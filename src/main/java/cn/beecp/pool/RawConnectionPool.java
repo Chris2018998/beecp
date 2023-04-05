@@ -206,7 +206,7 @@ public final class RawConnectionPool implements BeeConnectionPool, BeeConnection
         //do nothing
     }
 
-    public ConnectionPoolMonitorVo getPoolMonitorVo() {
+    public BeeConnectionPoolMonitorVo getPoolMonitorVo() {
         int totSize = getTotalSize();
         int idleSize = getIdleSize();
         monitorVo.setPoolName(poolName);
