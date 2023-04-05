@@ -1,13 +1,16 @@
 /*
- * Copyright(C) Chris2018998
- * Contact:Chris2018998@tom.com
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
- * Licensed under GNU Lesser General Public License v2.1
+ * Copyright(C) Chris2018998,All rights reserved.
+ *
+ * Project owner contact:Chris2018998@tom.com.
+ *
+ * Project Licensed under GNU Lesser General Public License v2.1.
  */
 package cn.beecp.jta;
 
+import cn.beecp.BeeConnectionPoolMonitorVo;
 import cn.beecp.BeeDataSource;
-import cn.beecp.pool.ConnectionPoolMonitorVo;
 
 import javax.sql.DataSource;
 import javax.sql.XAConnection;
@@ -31,7 +34,7 @@ import static javax.transaction.Status.STATUS_ACTIVE;
 /**
  * DataSource implementation for jta
  *
- * @author Chris.Liao
+ * @author Chris Liao
  * @version 1.0
  */
 public class BeeJtaDataSource extends TimerTask implements DataSource {
@@ -121,13 +124,13 @@ public class BeeJtaDataSource extends TimerTask implements DataSource {
     //***************************************************************************************************************//
     //                   statement call BeeDataSource methods  (Begin)                                                   //
     //****************************************************************************************************************//
-    public void restartPool() throws SQLException {
-        restartPool(false);
+    public void clear() throws SQLException {
+        clear(false);
     }
 
-    public void restartPool(boolean force) throws SQLException {
+    public void clear(boolean force) throws SQLException {
         checkDataSource();
-        this.ds.restartPool(force);
+        this.ds.clear(force);
     }
 
     public boolean isClosed() throws SQLException {
@@ -146,7 +149,7 @@ public class BeeJtaDataSource extends TimerTask implements DataSource {
         ds.setPrintRuntimeLog(printRuntimeLog);
     }
 
-    public ConnectionPoolMonitorVo getPoolMonitorVo() throws SQLException {
+    public BeeConnectionPoolMonitorVo getPoolMonitorVo() throws SQLException {
         checkDataSource();
         return ds.getPoolMonitorVo();
     }
