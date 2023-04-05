@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static cn.beecp.TransactionIsolationLevel.TRANS_LEVEL_CODE_LIST;
+import static cn.beecp.TransactionIsolation.TRANS_LEVEL_CODE_LIST;
 import static cn.beecp.pool.PoolStaticCenter.*;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
