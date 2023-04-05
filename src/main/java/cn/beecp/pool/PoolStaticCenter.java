@@ -9,10 +9,10 @@
  */
 package cn.beecp.pool;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import cn.beecp.BeeDataSourceConfigException;
 import cn.beecp.pool.exception.TestSqlExecFailedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.XAConnection;
 import java.lang.reflect.*;
@@ -251,14 +251,6 @@ public final class PoolStaticCenter {
         } finally {
             if (st != null) oclose(st);
             if (changed) rawCon.setAutoCommit(true);//reset to default
-        }
-    }
-
-    public static Driver loadDriver(String driverClassName) throws BeeDataSourceConfigException {
-        try {
-            return (Driver) Class.forName(driverClassName).newInstance();
-        } catch (Throwable e) {
-            throw new BeeDataSourceConfigException("Failed to create jdbc driver by class:" + driverClassName, e);
         }
     }
 
