@@ -1,15 +1,16 @@
 /*
- * Copyright(C) Chris2018998
- * Contact:Chris2018998@tom.com
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
- * Licensed under GNU Lesser General Public License v2.1
+ * Copyright(C) Chris2018998,All rights reserved.
+ *
+ * Project owner contact:Chris2018998@tom.com.
+ *
+ * Project Licensed under GNU Lesser General Public License v2.1.
  */
 package cn.beecp.pool;
 
-import cn.beecp.BeeDataSourceConfig;
-import cn.beecp.RawConnectionFactory;
-import cn.beecp.RawXaConnectionFactory;
-import cn.beecp.pool.exception.PoolClosedException;
+import cn.beecp.*;
+import cn.beecp.pool.exception.ConnectionGetForbiddenException;
 import cn.beecp.pool.exception.PoolCreateFailedException;
 
 import javax.management.MBeanServer;
@@ -30,12 +31,12 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
  * <p>
  * return raw connections to borrowers directly.
  *
- * @author Chris.Liao
+ * @author Chris Liao
  * @version 1.0
  */
-public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJmxBean {
+public final class RawConnectionPool implements BeeConnectionPool, BeeConnectionPoolJmxBean {
     private static final AtomicInteger poolNameIndex = new AtomicInteger(1);
-    private static final ConnectionPoolMonitorVo monitorVo = new ConnectionPoolMonitorVo();
+    private static final FastConnectionPoolMonitorVo monitorVo = new FastConnectionPoolMonitorVo();
 
     private String poolName = "";
     private String poolMode = "";
@@ -75,7 +76,7 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
         }
 
         registerJMX();
-        CommonLog.info("BeeCP({})has been startup{init size:{},max size:{},concurrent size:{},mode:{},max wait:{}ms},driver:{}}",
+        CommonLog.info("BeeCP({})has been startup{init size:{},max size:{}, size:{},mode:{},max wait:{}ms},driver:{}}",
                 poolName,
                 0,
                 0,
@@ -96,7 +97,8 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
      */
     public Connection getConnection() throws SQLException {
         try {
-            if (poolState.get() != POOL_READY) throw new PoolClosedException("Pool has shut down or in clearing");
+            if (poolState.get() != POOL_READY)
+                throw new ConnectionGetForbiddenException("Access forbidden,connection pool was closed or in clearing");
             if (borrowSemaphore.tryAcquire(defaultMaxWait, NANOSECONDS)) {
                 if (isRawXaConnFactory) {
                     return rawXaConnFactory.create().getConnection();
@@ -116,7 +118,8 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
     //borrow a connection from pool
     public XAConnection getXAConnection() throws SQLException {
         try {
-            if (poolState.get() != POOL_READY) throw new PoolClosedException("Pool has shut down or in clearing");
+            if (poolState.get() != POOL_READY)
+                throw new ConnectionGetForbiddenException("Access forbidden,connection pool was closed or in clearing");
             if (borrowSemaphore.tryAcquire(defaultMaxWait, NANOSECONDS)) {
                 if (isRawXaConnFactory) {
                     return rawXaConnFactory.create();
@@ -166,12 +169,11 @@ public final class RawConnectionPool implements ConnectionPool, ConnectionPoolJm
     }
 
     //******************************** JMX **************************************//
-    // close all connections
-    public void restartPool() {
+    public void clear(boolean force) {
         //do nothing
     }
 
-    public void restartPool(boolean force) {
+    public void clear(boolean force, BeeDataSourceConfig config) {
         //do nothing
     }
 

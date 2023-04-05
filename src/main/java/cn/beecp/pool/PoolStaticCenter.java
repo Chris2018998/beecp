@@ -1,15 +1,18 @@
 /*
- * Copyright(C) Chris2018998
- * Contact:Chris2018998@tom.com
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
- * Licensed under GNU Lesser General Public License v2.1
+ * Copyright(C) Chris2018998,All rights reserved.
+ *
+ * Project owner contact:Chris2018998@tom.com.
+ *
+ * Project Licensed under GNU Lesser General Public License v2.1.
  */
 package cn.beecp.pool;
 
-import cn.beecp.BeeDataSourceConfigException;
-import cn.beecp.pool.exception.TestSQLFailException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import cn.beecp.BeeDataSourceConfigException;
+import cn.beecp.pool.exception.TestSqlExecFailedException;
 
 import javax.sql.XAConnection;
 import java.lang.reflect.*;
@@ -21,10 +24,10 @@ import java.util.*;
 /**
  * Pool Static Center
  *
- * @author Chris.Liao
+ * @author Chris Liao
  * @version 1.0
  */
-public class PoolStaticCenter {
+public final class PoolStaticCenter {
     public static final int NCPUS = Runtime.getRuntime().availableProcessors();
     public static final Logger CommonLog = LoggerFactory.getLogger(PoolStaticCenter.class);
     //properties configuration separator
@@ -39,12 +42,12 @@ public class PoolStaticCenter {
     public static final String CONFIG_CONNECT_PROP_SIZE = "connectProperties.size";
     //connect properties prefix for driver or driver dataSource
     public static final String CONFIG_CONNECT_PROP_KEY_PREFIX = "connectProperties.";
-
     //pool state
-    public static final int POOL_NEW = 0;
-    public static final int POOL_READY = 1;
-    public static final int POOL_CLOSED = 2;
-    public static final int POOL_CLEARING = 3;
+    static final int POOL_NEW = 0;
+    static final int POOL_STARTING = 1;
+    static final int POOL_READY = 2;
+    static final int POOL_CLOSED = 3;
+    static final int POOL_CLEARING = 4;
 
     //connection state
     static final int CON_IDLE = 0;
@@ -55,7 +58,6 @@ public class PoolStaticCenter {
     static final int THREAD_WORKING = 0;
     static final int THREAD_WAITING = 1;
     static final int THREAD_EXIT = 2;
-
     //Connection reset pos in array
     static final int PS_AUTO = 0;
     static final int PS_TRANS = 1;
@@ -63,7 +65,6 @@ public class PoolStaticCenter {
     static final int PS_CATALOG = 3;
     static final int PS_SCHEMA = 4;
     static final int PS_NETWORK = 5;
-
     //remove reason
     static final String DESC_RM_INIT = "init";
     static final String DESC_RM_BAD = "bad";
@@ -73,7 +74,7 @@ public class PoolStaticCenter {
     static final String DESC_RM_CLEAR = "clear";
     static final String DESC_RM_DESTROY = "destroy";
     //***************************************************************************************************************//
-    //                                1: JDBC static global closed proxies(3)                                        //
+    //                                1: jdbc global proxy (3)                                                       //
     //***************************************************************************************************************//
     static final Connection CLOSED_CON = (Connection) Proxy.newProxyInstance(
             PoolStaticCenter.class.getClassLoader(),
@@ -173,12 +174,26 @@ public class PoolStaticCenter {
         }
     }
 
+    //***************************************************************************************************************//
+    //                               3: JDBC body auto fill by javassist methods(2)                                  //
+    //***************************************************************************************************************//
     static ProxyConnectionBase createProxyConnection(PooledConnection p) throws SQLException {
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
     }
 
     static ResultSet createProxyResultSet(ResultSet raw, ProxyStatementBase owner, PooledConnection p) throws SQLException {
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
+    }
+
+    //***************************************************************************************************************//
+    //                               4: JDBC other help methods(3)                                                   //
+    //***************************************************************************************************************//
+    public static Driver loadDriver(String driverClassName) throws BeeDataSourceConfigException {
+        try {
+            return (Driver) Class.forName(driverClassName).newInstance();
+        } catch (Throwable e) {
+            throw new BeeDataSourceConfigException("Failed to create jdbc driver by class:" + driverClassName, e);
+        }
     }
 
     static void checkJdbcProxyClass() {
@@ -215,11 +230,11 @@ public class PoolStaticCenter {
 
             //step2: create statement and test 'QueryTimeout'
             st = rawCon.createStatement();
-            boolean supportQueryTimeout = false;
+            boolean supportQueryTimeout = true;
             try {
                 st.setQueryTimeout(validTestTimeout);
-                supportQueryTimeout = true;
             } catch (Throwable e) {
+                supportQueryTimeout = false;
                 CommonLog.warn("BeeCP({})driver not support 'queryTimeout',cause:", poolName, e);
             }
 
@@ -227,7 +242,7 @@ public class PoolStaticCenter {
             try {
                 st.execute(testSql);
             } catch (Throwable e) {
-                throw new TestSQLFailException("Failed to execute test sql:" + testSql, e);
+                throw new TestSqlExecFailedException("Invalid test sql:" + testSql, e);
             } finally {
                 rawCon.rollback();//why? maybe store procedure in test sql
             }
@@ -248,7 +263,7 @@ public class PoolStaticCenter {
     }
 
     //***************************************************************************************************************//
-    //                               4: configuration read methods(5)                                                //
+    //                               5: configuration read methods(5)                                                //
     //***************************************************************************************************************//
 
     /**
@@ -343,7 +358,7 @@ public class PoolStaticCenter {
 
 
     //***************************************************************************************************************//
-    //                               5: bean property set methods(3)                                                 //
+    //                               6: bean property set methods(3)                                                 //
     //***************************************************************************************************************//
     public static void setPropertiesValue(Object bean, Map<String, Object> valueMap) throws BeeDataSourceConfigException {
         if (bean == null) throw new BeeDataSourceConfigException("Bean can't be null");
@@ -438,7 +453,7 @@ public class PoolStaticCenter {
     }
 
     //***************************************************************************************************************//
-    //                               6: class check(3)                                                               //
+    //                               7: class check(3)                                                               //
     //***************************************************************************************************************//
     //check subclass,if failed,then return error message;
     public static Object createClassInstance(Class objectClass, Class parentClass, String objectClassType) throws Exception {

@@ -1,8 +1,11 @@
 /*
- * Copyright(C) Chris2018998
- * Contact:Chris2018998@tom.com
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
- * Licensed under GNU Lesser General Public License v2.1
+ * Copyright(C) Chris2018998,All rights reserved.
+ *
+ * Project owner contact:Chris2018998@tom.com.
+ *
+ * Project Licensed under GNU Lesser General Public License v2.1.
  */
 package cn.beecp.pool;
 
@@ -16,7 +19,7 @@ import java.util.Properties;
 /**
  * Raw connection factory by jdbc driver
  *
- * @author Chris.liao
+ * @author Chris liao
  * @version 1.0
  */
 public final class ConnectionFactoryByDriver implements RawConnectionFactory {
