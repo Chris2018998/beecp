@@ -38,7 +38,7 @@ public class PoolRestTest extends TestCase {
         if (pool.getIdleSize() != initSize)
             TestUtil.assertError("connections expected:%s,current is:%s", initSize, pool.getIdleSize());
 
-        pool.clear();
+        pool.clear(false);
 
         if (pool.getTotalSize() != 0)
             TestUtil.assertError("Total connections not as expected 0,but current is:%s", pool.getTotalSize(), "");

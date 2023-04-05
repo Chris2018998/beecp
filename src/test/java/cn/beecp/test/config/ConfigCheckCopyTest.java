@@ -69,6 +69,7 @@ public class ConfigCheckCopyTest extends TestCase {
         if (config2 == config) throw new BeeDataSourceConfigException("Configuration check copy failed");
 
         List<String> excludeNames = new LinkedList<String>();
+        excludeNames.add("poolName");
         excludeNames.add("connectProperties");
         excludeNames.add("connectionFactory");
 

@@ -6,7 +6,8 @@
  */
 package cn.beecp.test.pool;
 
-import cn.beecp.*;
+import cn.beecp.BeeDataSource;
+import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.pool.FastConnectionPool;
 import cn.beecp.test.JdbcConfig;
 import cn.beecp.test.TestCase;
