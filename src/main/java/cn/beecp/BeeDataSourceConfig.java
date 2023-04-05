@@ -39,7 +39,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 /**
  * Connection pool configuration under dataSource
  *
- * @author Chris.Liao
+ * @author Chris Liao
  * @version 1.0
  */
 public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
