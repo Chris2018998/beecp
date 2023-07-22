@@ -293,6 +293,8 @@ final class ProxyClassGenerator {
             methodBuffer.delete(0, methodBuffer.length());
             methodBuffer.append("{");
 
+            boolean existsSQLException = exitsSQLException(ctMethod.getExceptionTypes());
+            if (existsSQLException) methodBuffer.append("  try{");
             if (ctMethod.getReturnType() == CtClass.voidType) {
                 if (methodName.startsWith("execute")) methodBuffer.append("p.commitDirtyInd=!p.curAutoCommit;");
                 methodBuffer.append(rawName + methodName + "($$);");
@@ -315,6 +317,9 @@ final class ProxyClassGenerator {
                         methodBuffer.append("return " + rawName + methodName + "($$);");
                 }
             }
+
+            if (existsSQLException)
+                methodBuffer.append("  }catch(SQLException e){ p.checkErrorCode(e.getErrorCode());throw e;}");
             methodBuffer.append("}");
             newCtMethod.setBody(methodBuffer.toString());
             statementProxyClass.addMethod(newCtMethod);
@@ -336,7 +341,10 @@ final class ProxyClassGenerator {
 
             methodBuffer.delete(0, methodBuffer.length());
             methodBuffer.append("{")
-                    .append("checkClosed();");
+                    .append("  checkClosed();");
+
+            boolean existsSQLException = exitsSQLException(ctMethod.getExceptionTypes());
+            if (existsSQLException) methodBuffer.append("  try{");
             if (ctMethod.getReturnType() == ctResultSetClass) {
                 methodBuffer.append("return new ProxyResultSet(raw." + methodName + "($$),p);");
             } else if (ctMethod.getReturnType() == CtClass.voidType) {
@@ -345,6 +353,8 @@ final class ProxyClassGenerator {
                 methodBuffer.append("return raw." + methodName + "($$);");
             }
 
+            if (existsSQLException)
+                methodBuffer.append("  }catch(SQLException e){ p.checkErrorCode(e.getErrorCode());throw e;}");
             methodBuffer.append("}");
             newCtMethod.setBody(methodBuffer.toString());
             ctProxyDatabaseMetaDataClass.addMethod(newCtMethod);
@@ -366,6 +376,9 @@ final class ProxyClassGenerator {
             methodBuffer.append("{");
             if (methodName.equals("close"))
                 continue;
+
+            boolean existsSQLException = exitsSQLException(ctMethod.getExceptionTypes());
+            if (existsSQLException) methodBuffer.append("  try{");
             if (methodName.startsWith("insert") || methodName.startsWith("update") || methodName.startsWith("delete")) {
                 if (ctMethod.getReturnType() == CtClass.voidType) {
                     methodBuffer.append("raw." + methodName + "($$);").append(" p.updateAccessTime();");
@@ -381,10 +394,21 @@ final class ProxyClassGenerator {
                 }
             }
 
+            if (existsSQLException)
+                methodBuffer.append("  }catch(SQLException e){ p.checkErrorCode(e.getErrorCode());throw e;}");
             methodBuffer.append("}");
             newCtMethodm.setBody(methodBuffer.toString());
             ctResultSetClassProxyClass.addMethod(newCtMethodm);
         }
+    }
+
+    private static boolean exitsSQLException(CtClass[] exceptionTypes) throws Exception {
+        if (exceptionTypes == null || exceptionTypes.length == 0) return false;
+        for (CtClass exceptionClass : exceptionTypes) {
+            if ("java.sql.SQLException".equals(exceptionClass.getName()))
+                return true;
+        }
+        return false;
     }
 }
 
