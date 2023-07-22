@@ -45,6 +45,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowStUpd = AtomicReferenceFieldUpdaterImpl.newUpdater(Borrower.class, Object.class, "state");
     private static final AtomicIntegerFieldUpdater<FastConnectionPool> PoolStateUpd = AtomicIntegerFieldUpdaterImpl.newUpdater(FastConnectionPool.class, "poolState");
     private static final Logger Log = LoggerFactory.getLogger(FastConnectionPool.class);
+    private static final long spinForTimeoutThreshold = 1023L;
 
     private String poolName;
     private String poolMode;
@@ -488,14 +489,14 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     Thread.yield();
                 } else {//here:(s == null)
                     long t = deadline - System.nanoTime();
-                    if (t > 0L) {
+                    if (t > spinForTimeoutThreshold) {
                         if (this.servantTryCount.get() > 0 && this.servantState.get() == THREAD_WAITING && this.servantState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
                             LockSupport.unpark(this);
 
                         LockSupport.parkNanos(t);//block exit:1:get transfer 2:timeout 3:interrupted
                         if (Thread.interrupted())
                             cause = new ConnectionGetInterruptedException("Connection get request interrupted in wait queue");
-                    } else {//timeout
+                    } else if (t <= 0L) {//timeout
                         cause = new ConnectionGetTimeoutException("Connection get timeout in wait queue");
                     }
                 }//end
