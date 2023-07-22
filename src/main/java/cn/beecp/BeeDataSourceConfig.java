@@ -682,7 +682,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
         //3:copy  'fatalErrorCodeList'
         if (this.fatalErrorCodeList != null && !fatalErrorCodeList.isEmpty()) {
-            config.fatalErrorCodeList = new ArrayList<>(fatalErrorCodeList);
+            config.fatalErrorCodeList = new ArrayList<Integer>(fatalErrorCodeList);
         }
     }
 
