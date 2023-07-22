@@ -25,10 +25,7 @@ import java.nio.file.Paths;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static cn.beecp.TransactionIsolation.TRANS_LEVEL_CODE_LIST;
@@ -86,6 +83,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private boolean forceCloseUsingOnClear;
     //milliseconds:delay parkTime for next clear using connections util them return to pool,when<config>forceCloseUsingOnClear</config> is false
     private long delayTimeForNextClear = 3000L;
+    //store some fatal sql exception code(@see SQLException vendorCode)
+    private List<Integer> fatalErrorCodeList;
 
     //connection default value:catalog <code>Connection.setAutoCommit(String)</code>
     private String defaultCatalog;
@@ -336,6 +335,19 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
     public void setDelayTimeForNextClear(long delayTimeForNextClear) {
         if (delayTimeForNextClear >= 0) this.delayTimeForNextClear = delayTimeForNextClear;
+    }
+
+    public List<Integer> getFatalErrorCodeList() {
+        return fatalErrorCodeList;
+    }
+
+    public void addFatalErrorCode(int code) {
+        if (fatalErrorCodeList == null) fatalErrorCodeList = new ArrayList<Integer>(2);
+        this.fatalErrorCodeList.add(code);
+    }
+
+    public void removeFatalErrorCode(int code) {
+        if (fatalErrorCodeList != null) this.fatalErrorCodeList.remove(code);
     }
 
     public String getPoolImplementClassName() {
@@ -651,7 +663,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         try {
             for (Field field : BeeDataSourceConfig.class.getDeclaredFields()) {
                 fieldName = field.getName();
-                if (!Modifier.isFinal(field.getModifiers()) && !Modifier.isStatic(field.getModifiers()) && !"connectProperties".equals(fieldName)) {
+                if (!Modifier.isFinal(field.getModifiers()) && !Modifier.isStatic(field.getModifiers()) && !"connectProperties".equals(fieldName) && !"fatalErrorCodeList".equals(fieldName)) {
                     Object fieldValue = field.get(this);
                     if (this.printConfigInfo) CommonLog.info("{}.{}={}", this.poolName, fieldName, fieldValue);
                     field.set(config, fieldValue);
@@ -666,6 +678,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             if (this.printConfigInfo)
                 CommonLog.info("{}.connectProperties.{}={}", this.poolName, entry.getKey(), entry.getValue());
             config.addConnectProperty(entry.getKey(), entry.getValue());
+        }
+
+        //3:copy  'fatalErrorCodeList'
+        if (this.fatalErrorCodeList != null && !fatalErrorCodeList.isEmpty()) {
+            config.fatalErrorCodeList = new ArrayList<>(fatalErrorCodeList);
         }
     }
 
