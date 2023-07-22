@@ -231,7 +231,7 @@ final class PooledConnection implements Cloneable {
 
     //****************Fatal error code check*******************************************************************************/
     void checkErrorCode(int code) {
-        if (proxyInUsing != null && fatalErrorCodeList != null && fatalErrorCodeList.contains(code)) {
+        if (code != 0 && proxyInUsing != null && fatalErrorCodeList != null && fatalErrorCodeList.contains(code)) {
             this.proxyInUsing.abort(null);//will remove from pool
             this.proxyInUsing = null;
         }
