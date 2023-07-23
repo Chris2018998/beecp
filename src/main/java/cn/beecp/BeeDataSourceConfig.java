@@ -84,7 +84,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //milliseconds:delay parkTime for next clear using connections util them return to pool,when<config>forceCloseUsingOnClear</config> is false
     private long delayTimeForNextClear = 3000L;
     //store some fatal sql exception code(@see SQLException vendorCode)
-    private List<Integer> fatalErrorCodeList;
+    private List<Integer> sqlExceptionCodeList;
+    //store some fatal sql exception state(@see SQLException SQLState)
+    private List<String> sqlExceptionStateList;
 
     //connection default value:catalog <code>Connection.setAutoCommit(String)</code>
     private String defaultCatalog;
@@ -337,17 +339,30 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         if (delayTimeForNextClear >= 0) this.delayTimeForNextClear = delayTimeForNextClear;
     }
 
-    public List<Integer> getFatalErrorCodeList() {
-        return fatalErrorCodeList;
+    public List<Integer> getSqlExceptionCodeList() {
+        return sqlExceptionCodeList;
     }
 
-    public void addFatalErrorCode(int code) {
-        if (fatalErrorCodeList == null) fatalErrorCodeList = new ArrayList<Integer>(2);
-        this.fatalErrorCodeList.add(code);
+    public void addSqlExceptionCode(int code) {
+        if (sqlExceptionCodeList == null) sqlExceptionCodeList = new ArrayList<Integer>(1);
+        this.sqlExceptionCodeList.add(code);
     }
 
-    public void removeFatalErrorCode(int code) {
-        if (fatalErrorCodeList != null) this.fatalErrorCodeList.remove(code);
+    public void removeSqlExceptionCode(int code) {
+        if (sqlExceptionCodeList != null) this.sqlExceptionCodeList.remove(code);
+    }
+
+    public List<String> getSqlExceptionStateList() {
+        return sqlExceptionStateList;
+    }
+
+    public void addSqlExceptionState(String state) {
+        if (sqlExceptionStateList == null) sqlExceptionStateList = new ArrayList<String>(1);
+        this.sqlExceptionStateList.add(state);
+    }
+
+    public void removeSqlExceptionState(String state) {
+        if (sqlExceptionStateList != null) this.sqlExceptionStateList.remove(state);
     }
 
     public String getPoolImplementClassName() {
@@ -663,7 +678,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         try {
             for (Field field : BeeDataSourceConfig.class.getDeclaredFields()) {
                 fieldName = field.getName();
-                if (!Modifier.isFinal(field.getModifiers()) && !Modifier.isStatic(field.getModifiers()) && !"connectProperties".equals(fieldName) && !"fatalErrorCodeList".equals(fieldName)) {
+                if (!Modifier.isFinal(field.getModifiers()) && !Modifier.isStatic(field.getModifiers())
+                        && !"connectProperties".equals(fieldName) && !"fatalErrorCodeList".equals(fieldName)) {
                     Object fieldValue = field.get(this);
                     if (this.printConfigInfo) CommonLog.info("{}.{}={}", this.poolName, fieldName, fieldValue);
                     field.set(config, fieldValue);
@@ -680,9 +696,14 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             config.addConnectProperty(entry.getKey(), entry.getValue());
         }
 
-        //3:copy  'fatalErrorCodeList'
-        if (this.fatalErrorCodeList != null && !fatalErrorCodeList.isEmpty()) {
-            config.fatalErrorCodeList = new ArrayList<Integer>(fatalErrorCodeList);
+        //3:copy  'sqlExceptionCodeList'
+        if (this.sqlExceptionCodeList != null && !sqlExceptionCodeList.isEmpty()) {
+            config.sqlExceptionCodeList = new ArrayList<Integer>(sqlExceptionCodeList);
+        }
+
+        //4:copy  'sqlExceptionStateList'
+        if (this.sqlExceptionStateList != null && !sqlExceptionStateList.isEmpty()) {
+            config.sqlExceptionStateList = new ArrayList<String>(sqlExceptionStateList);
         }
     }
 
