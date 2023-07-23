@@ -413,7 +413,8 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                 poolConfig.isEnableDefaultOnReadOnly(),
                 poolConfig.isEnableDefaultOnAutoCommit(),
                 poolConfig.isEnableDefaultOnTransactionIsolation(),
-                poolConfig.getFatalErrorCodeList());
+                poolConfig.getSqlExceptionCodeList(),
+                poolConfig.getSqlExceptionStateList());
     }
 
     //***************************************************************************************************************//

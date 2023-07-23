@@ -319,7 +319,7 @@ final class ProxyClassGenerator {
             }
 
             if (existsSQLException)
-                methodBuffer.append("  }catch(SQLException e){ p.checkErrorCode(e.getErrorCode());throw e;}");
+                methodBuffer.append("  }catch(SQLException e){ p.checkSQLException(e);throw e;}");
             methodBuffer.append("}");
             newCtMethod.setBody(methodBuffer.toString());
             statementProxyClass.addMethod(newCtMethod);
@@ -354,7 +354,7 @@ final class ProxyClassGenerator {
             }
 
             if (existsSQLException)
-                methodBuffer.append("  }catch(SQLException e){ p.checkErrorCode(e.getErrorCode());throw e;}");
+                methodBuffer.append("  }catch(SQLException e){ p.checkSQLException(e);throw e;}");
             methodBuffer.append("}");
             newCtMethod.setBody(methodBuffer.toString());
             ctProxyDatabaseMetaDataClass.addMethod(newCtMethod);
@@ -395,7 +395,7 @@ final class ProxyClassGenerator {
             }
 
             if (existsSQLException)
-                methodBuffer.append("  }catch(SQLException e){ p.checkErrorCode(e.getErrorCode());throw e;}");
+                methodBuffer.append("  }catch(SQLException e){ p.checkSQLException(e);throw e;}");
             methodBuffer.append("}");
             newCtMethodm.setBody(methodBuffer.toString());
             ctResultSetClassProxyClass.addMethod(newCtMethodm);
