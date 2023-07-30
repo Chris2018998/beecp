@@ -199,7 +199,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             new PoolInitAsynCreateThread(this).start();
 
         //step9: print pool info
-        Log.info("BeeCP({})has afterStartup{mode:{},init size:{},max size:{},semaphore size:{},max wait:{}ms,driver:{}}",
+        Log.info("BeeCP({})has startup{mode:{},init size:{},max size:{},semaphore size:{},max wait:{}ms,driver:{}}",
                 poolName,
                 poolMode,
                 this.pooledArray.length,
@@ -295,9 +295,9 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             for (int l = this.pooledArray.length, i = l - 1; i >= 0; i--) {
                 if (this.pooledArray[i] == p) {
                     PooledConnection[] arrayNew = new PooledConnection[l - 1];
-                    System.arraycopy(this.pooledArray, 0, arrayNew, 0, i);//copy pre
+                    System.arraycopy(this.pooledArray, 0, arrayNew, 0, i);//before copying
                     int m = l - i - 1;
-                    if (m > 0) System.arraycopy(this.pooledArray, i + 1, arrayNew, i, m);//copy after
+                    if (m > 0) System.arraycopy(this.pooledArray, i + 1, arrayNew, i, m);//after copying
                     this.pooledArray = arrayNew;
                     if (this.printRuntimeLog)
                         Log.info("BeeCP({}))has removed pooled connection:{},reason:{}", this.poolName, p, removeType);
@@ -531,7 +531,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     }
 
     /**
-     * Method-2.6: Connection return to pool after it end use,if exist waiter in pool,
+     * Method-2.6: Connection return to pool,if exist waiter in pool,
      * then try to transfer the connection to one waiting borrower
      *
      * @param p target connection need release
@@ -1095,7 +1095,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     try {
                         rawConn.setAutoCommit(true);
                     } catch (Throwable e) {
-                        Log.warn("BeeCP({})failed to rest autoCommit to default value:true after sql-test", poolName, e);
+                        Log.warn("BeeCP({})failed to rest autoCommit to default value[true] after sql-test", poolName, e);
                         checkPassed = false;
                     }
                 }
