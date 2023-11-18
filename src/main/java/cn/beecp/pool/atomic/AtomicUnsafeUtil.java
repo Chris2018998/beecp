@@ -21,7 +21,7 @@ import static cn.beecp.pool.PoolStaticCenter.CommonLog;
  * @version 1.0
  */
 class AtomicUnsafeUtil {
-    private static Unsafe unsafe;
+    static Unsafe unsafe;
 
     static {
         try {
@@ -37,7 +37,7 @@ class AtomicUnsafeUtil {
         }
     }
 
-    static Unsafe getUnsafe() {
-        return AtomicUnsafeUtil.unsafe;
-    }
+//    static Unsafe getUnsafe() {
+//        return AtomicUnsafeUtil.unsafe;
+//    }
 }

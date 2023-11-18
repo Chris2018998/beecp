@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  * @version 1.0
  */
 public final class AtomicReferenceFieldUpdaterImpl<T, V> extends AtomicReferenceFieldUpdater<T, V> {
-    private final static Unsafe unsafe = AtomicUnsafeUtil.getUnsafe();
+    private final static Unsafe unsafe = AtomicUnsafeUtil.unsafe;
     private final long offset;
     private final Class<V> fieldType;
 

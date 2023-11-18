@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
  * @version 1.0
  */
 public final class AtomicIntegerFieldUpdaterImpl<T> extends AtomicIntegerFieldUpdater<T> {
-    private final static Unsafe unsafe = AtomicUnsafeUtil.getUnsafe();
+    private final static Unsafe unsafe = AtomicUnsafeUtil.unsafe;
     private final long offset;
 
     private AtomicIntegerFieldUpdaterImpl(long offset) {
