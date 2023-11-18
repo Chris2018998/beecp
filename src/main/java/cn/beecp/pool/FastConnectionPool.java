@@ -44,6 +44,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     private static final AtomicIntegerFieldUpdater<PooledConnection> ConStUpd = AtomicIntegerFieldUpdaterImpl.newUpdater(PooledConnection.class, "state");
     private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowStUpd = AtomicReferenceFieldUpdaterImpl.newUpdater(Borrower.class, Object.class, "state");
     private static final AtomicIntegerFieldUpdater<FastConnectionPool> PoolStateUpd = AtomicIntegerFieldUpdaterImpl.newUpdater(FastConnectionPool.class, "poolState");
+
     private static final Logger Log = LoggerFactory.getLogger(FastConnectionPool.class);
     private static final long spinForTimeoutThreshold = 1023L;
 
@@ -59,6 +60,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     private boolean isCompeteMode;
     private int semaphoreSize;
     private PoolSemaphore semaphore;
+
     private long maxWaitNs;//nanoseconds
     private long idleTimeoutMs;//milliseconds
     private long holdTimeoutMs;//milliseconds
@@ -459,52 +461,58 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             throw new ConnectionGetInterruptedException("Connection get request interrupted at semaphore");
         }
 
+        //2:try search one or create one
+        PooledConnection p;
         try {//semaphore acquired
-            //2:try search one or create one
-            PooledConnection p = this.searchOrCreate();
-            if (p != null) return b.lastUsed = p;
-
-            //3:try to get one transferred connection
-            b.state = null;
-            this.waitQueue.offer(b);
-            SQLException cause = null;
-            deadline += this.maxWaitNs;
-
-            do {
-                Object s = b.state;//PooledConnection,Throwable,null
-                if (s instanceof PooledConnection) {
-                    p = (PooledConnection) s;
-                    if (this.transferPolicy.tryCatch(p) && this.testOnBorrow(p)) {
-                        this.waitQueue.remove(b);
-                        return b.lastUsed = p;
-                    }
-                } else if (s instanceof Throwable) {
-                    this.waitQueue.remove(b);
-                    throw s instanceof SQLException ? (SQLException) s : new ConnectionGetException((Throwable) s);
-                }
-
-                if (cause != null) {
-                    BorrowStUpd.compareAndSet(b, s, cause);
-                } else if (s instanceof PooledConnection) {
-                    b.state = null;
-                    Thread.yield();
-                } else {//here:(s == null)
-                    long t = deadline - System.nanoTime();
-                    if (t > spinForTimeoutThreshold) {
-                        if (this.servantTryCount.get() > 0 && this.servantState.get() == THREAD_WAITING && this.servantState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
-                            LockSupport.unpark(this);
-
-                        LockSupport.parkNanos(t);//block exit:1:get transfer 2:timeout 3:interrupted
-                        if (Thread.interrupted())
-                            cause = new ConnectionGetInterruptedException("Connection get request interrupted in wait queue");
-                    } else if (t <= 0L) {//timeout
-                        cause = new ConnectionGetTimeoutException("Connection get timeout in wait queue");
-                    }
-                }//end
-            } while (true);//while
-        } finally {
-            this.semaphore.release();
+            p = this.searchOrCreate();
+            if (p != null) {
+                semaphore.release();
+                return b.lastUsed = p;
+            }
+        } catch (SQLException e) {
+            semaphore.release();
+            throw e;
         }
+
+        //3:try to get one transferred connection
+        b.state = null;
+        this.waitQueue.offer(b);
+        SQLException cause = null;
+        deadline += this.maxWaitNs;
+
+        do {
+            Object s = b.state;//PooledConnection,Throwable,null
+            if (s instanceof PooledConnection) {
+                p = (PooledConnection) s;
+                if (this.transferPolicy.tryCatch(p) && this.testOnBorrow(p)) {
+                    this.waitQueue.remove(b);
+                    this.semaphore.release();
+                    return b.lastUsed = p;
+                }
+            } else if (s instanceof Throwable) {
+                this.waitQueue.remove(b);
+                this.semaphore.release();
+                throw s instanceof SQLException ? (SQLException) s : new ConnectionGetException((Throwable) s);
+            }
+
+            if (cause != null) {
+                BorrowStUpd.compareAndSet(b, s, cause);
+            } else if (s != null) {//here:s must be a PooledConnection
+                b.state = null;
+            } else {//here:(s == null)
+                long t = deadline - System.nanoTime();
+                if (t > spinForTimeoutThreshold) {
+                    if (this.servantTryCount.get() > 0 && this.servantState.get() == THREAD_WAITING && this.servantState.compareAndSet(THREAD_WAITING, THREAD_WORKING))
+                        LockSupport.unpark(this);
+
+                    LockSupport.parkNanos(t);//park exit:1:get transfer 2:timeout 3:interrupted
+                    if (Thread.interrupted())
+                        cause = new ConnectionGetInterruptedException("Connection get request interrupted in wait queue");
+                } else if (t <= 0L) {//timeout
+                    cause = new ConnectionGetTimeoutException("Connection get timeout in wait queue");
+                }
+            }//end
+        } while (true);//while
     }
 
     //Method-2.4: search one idle connection,if not found,then try to create one
