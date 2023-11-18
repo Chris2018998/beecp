@@ -41,22 +41,22 @@ public final class TransactionIsolation {
     private static final Map<String, Integer> IsolationLevelMap = new HashMap<String, Integer>(5);
 
     static {
-        TransactionIsolation.IsolationLevelMap.put(TransactionIsolation.LEVEL_NONE, TRANSACTION_NONE);
-        TransactionIsolation.IsolationLevelMap.put(TransactionIsolation.LEVEL_READ_COMMITTED, TRANSACTION_READ_COMMITTED);
-        TransactionIsolation.IsolationLevelMap.put(TransactionIsolation.LEVEL_READ_UNCOMMITTED, TRANSACTION_READ_UNCOMMITTED);
-        TransactionIsolation.IsolationLevelMap.put(TransactionIsolation.LEVEL_REPEATABLE_READ, TRANSACTION_REPEATABLE_READ);
-        TransactionIsolation.IsolationLevelMap.put(TransactionIsolation.LEVEL_SERIALIZABLE, TRANSACTION_SERIALIZABLE);
+        IsolationLevelMap.put(LEVEL_NONE, TRANSACTION_NONE);
+        IsolationLevelMap.put(LEVEL_READ_COMMITTED, TRANSACTION_READ_COMMITTED);
+        IsolationLevelMap.put(LEVEL_READ_UNCOMMITTED, TRANSACTION_READ_UNCOMMITTED);
+        IsolationLevelMap.put(LEVEL_REPEATABLE_READ, TRANSACTION_REPEATABLE_READ);
+        IsolationLevelMap.put(LEVEL_SERIALIZABLE, TRANSACTION_SERIALIZABLE);
     }
 
     static Integer getTransactionIsolationCode(String name) {
-        return TransactionIsolation.IsolationLevelMap.get(name.toUpperCase(Locale.US));
+        return IsolationLevelMap.get(name.toUpperCase(Locale.US));
     }
 
-    static String getTransactionIsolationName(Integer code) {
-        for (Map.Entry<String, Integer> entry : TransactionIsolation.IsolationLevelMap.entrySet()) {
-            if (entry.getValue().equals(code))
-                return entry.getKey();
-        }
-        return null;
-    }
+//    static String getTransactionIsolationName(Integer code) {
+//        for (Map.Entry<String, Integer> entry : TransactionIsolation.IsolationLevelMap.entrySet()) {
+//            if (entry.getValue().equals(code))
+//                return entry.getKey();
+//        }
+//        return null;
+//    }
 }
