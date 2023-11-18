@@ -42,6 +42,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XADataSource {
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
+    private final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
     private long maxWaitNanos = SECONDS.toNanos(8);//default vale same to config
     private BeeConnectionPool pool;
     private boolean ready;//true,means that inner pool has created
@@ -61,7 +62,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         try {
             config.copyTo(this);
             BeeDataSource.createPool(this);
-            this.maxWaitNanos = MILLISECONDS.toNanos(config.getMaxWait());
+            this.maxWaitNanos = MILLISECONDS.toNanos(config.getMaxWait());//read configured max wait time and convert to nanoSeconds seconds from milliseconds
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -95,7 +96,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     }
 
     private BeeConnectionPool createPoolByLock() throws SQLException {
-        if (!lock.isWriteLocked() && lock.writeLock().tryLock()) {
+        if (!lock.isWriteLocked() && writeLock.tryLock()) {
             try {
                 if (!ready) {
                     cause = null;
@@ -104,7 +105,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             } catch (SQLException e) {
                 cause = e;
             } finally {
-                lock.writeLock().unlock();
+                writeLock.unlock();
             }
         } else {
             try {
