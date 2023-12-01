@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.chris2018998</groupId>
     <artifactId>beecp</artifactId>
-    <version>3.4.2</version>
+    <version>3.4.3</version>
     <name>beecp</name>
     <url>https://github.com/Chris2018998/BeeCP</url>
     <description>JDBC Connection Pool Implementation</description>
