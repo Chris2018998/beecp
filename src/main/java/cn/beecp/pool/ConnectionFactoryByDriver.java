@@ -17,7 +17,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 /**
- * Raw connection factory by jdbc driver
+ * Creates raw connection by jdbc driver
  *
  * @author Chris liao
  * @version 1.0

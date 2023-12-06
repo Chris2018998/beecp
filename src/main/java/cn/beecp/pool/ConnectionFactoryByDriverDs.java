@@ -18,7 +18,7 @@ import java.sql.SQLException;
 import static cn.beecp.pool.PoolStaticCenter.isBlank;
 
 /**
- * Raw connection factory by datasource implementation in driver package
+ * Creates raw connection by data source
  *
  * @author Chris liao
  * @version 1.0
