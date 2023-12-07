@@ -829,7 +829,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
     //Method-5.6: using size of semaphore permit
     public int getSemaphoreAcquiredSize() {
-        return this.poolConfig.getBorrowSemaphoreSize() - this.semaphore.availablePermits();
+        return this.semaphoreSize - this.semaphore.availablePermits();
     }
 
     //Method-5.7: waiting size in transfer queue
