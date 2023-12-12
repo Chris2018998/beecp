@@ -283,9 +283,8 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     else if (rawXaConn != null) oclose(rawXaConn);
                     throw e instanceof SQLException ? (SQLException) e : new ConnectionCreateException(e);
                 }
-            } else {
-                return null;
             }
+            return null;
         } finally {
             this.pooledArrayLock.unlock();
         }
