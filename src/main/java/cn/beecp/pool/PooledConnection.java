@@ -61,42 +61,57 @@ final class PooledConnection implements Cloneable {
 
     //template pooled connection to create other pooled connections with clone way
     PooledConnection(
-            boolean defaultAutoCommit,
-            int defaultTransactionIsolation,
-            boolean defaultReadOnly,
-            String defaultCatalog,
-            String defaultSchema,
-            int defaultNetworkTimeout,
-            boolean supportNetworkTimeoutInd,
-            ThreadPoolExecutor networkTimeoutExecutor,
             FastConnectionPool pool,
-            boolean enableDefaultOnCatalog,
-            boolean enableDefaultOnSchema,
-            boolean enableDefaultOnReadOnly,
+            //1:defaultAutoCommit
             boolean enableDefaultOnAutoCommit,
+            boolean defaultAutoCommit,
+            //2:defaultTransactionIsolation
             boolean enableDefaultOnTransactionIsolation,
+            int defaultTransactionIsolation,
+            //3:defaultReadOnly
+            boolean enableDefaultOnReadOnly,
+            boolean defaultReadOnly,
+            //4:defaultCatalog
+            boolean enableDefaultOnCatalog,
+            String defaultCatalog,
+            //5:defaultSchema
+            boolean enableDefaultOnSchema,
+            String defaultSchema,
+            //6:defaultNetworkTimeout
+            boolean supportNetworkTimeoutInd,
+            int defaultNetworkTimeout,
+            ThreadPoolExecutor networkTimeoutExecutor,
+            //7:others
             List<Integer> sqlExceptionCodeList,
             List<String> sqlExceptionStateList) {
 
-        this.defaultAutoCommit = defaultAutoCommit;
-        this.defaultTransactionIsolation = defaultTransactionIsolation;
-        this.defaultReadOnly = defaultReadOnly;
-        this.defaultCatalog = defaultCatalog;
-        this.defaultSchema = defaultSchema;
-        this.defaultNetworkTimeout = defaultNetworkTimeout;
-        this.defaultCatalogIsNotBlank = !isBlank(defaultCatalog);
-        this.defaultSchemaIsNotBlank = !isBlank(defaultSchema);
-        this.supportNetworkTimeoutInd = supportNetworkTimeoutInd;
-        this.networkTimeoutExecutor = networkTimeoutExecutor;
-        this.pool = pool;
-        this.enableDefaultOnCatalog = enableDefaultOnCatalog;
-        this.enableDefaultOnSchema = enableDefaultOnSchema;
-        this.enableDefaultOnReadOnly = enableDefaultOnReadOnly;
+        //1:defaultAutoCommit
         this.enableDefaultOnAutoCommit = enableDefaultOnAutoCommit;
+        this.defaultAutoCommit = defaultAutoCommit;
+        //2:defaultTransactionIsolation
         this.enableDefaultOnTransactionIsolation = enableDefaultOnTransactionIsolation;
-        this.curAutoCommit = defaultAutoCommit;
+        this.defaultTransactionIsolation = defaultTransactionIsolation;
+        //3:defaultReadOnly
+        this.enableDefaultOnReadOnly = enableDefaultOnReadOnly;
+        this.defaultReadOnly = defaultReadOnly;
+        //4:defaultCatalog
+        this.enableDefaultOnCatalog = enableDefaultOnCatalog;
+        this.defaultCatalog = defaultCatalog;
+        this.defaultCatalogIsNotBlank = !isBlank(defaultCatalog);
+        //5:defaultSchema
+        this.enableDefaultOnSchema = enableDefaultOnSchema;
+        this.defaultSchema = defaultSchema;
+        this.defaultSchemaIsNotBlank = !isBlank(defaultSchema);
+        //6:defaultNetworkTimeout
+        this.supportNetworkTimeoutInd = supportNetworkTimeoutInd;
+        this.defaultNetworkTimeout = defaultNetworkTimeout;
+        this.networkTimeoutExecutor = networkTimeoutExecutor;
+        //7:others
         this.sqlExceptionCodeList = sqlExceptionCodeList;
         this.sqlExceptionStateList = sqlExceptionStateList;
+
+        this.pool = pool;
+        this.curAutoCommit = defaultAutoCommit;
     }
 
     PooledConnection setDefaultAndCopy(Connection rawConn, int state, XAResource rawXaRes) throws SQLException, CloneNotSupportedException {

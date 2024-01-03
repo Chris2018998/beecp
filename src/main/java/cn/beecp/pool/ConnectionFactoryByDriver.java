@@ -17,17 +17,17 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 /**
- * Creates raw connection by jdbc driver
+ * Connection factory Implementation with a JDBC Driver
  *
  * @author Chris liao
  * @version 1.0
  */
 public final class ConnectionFactoryByDriver implements RawConnectionFactory {
-    //url link
+    //Jdbc url to db
     private final String url;
-    //connection driver
+    //creator of raw connections
     private final Driver driver;
-    //connection extra properties
+    //extra properties to link db
     private final Properties properties;
 
     //Constructor
@@ -37,7 +37,7 @@ public final class ConnectionFactoryByDriver implements RawConnectionFactory {
         this.properties = properties;
     }
 
-    //create one connection
+    //return a connection if link successful to db,otherwise,throws a failure exception
     public final Connection create() throws SQLException {
         return this.driver.connect(this.url, this.properties);
     }

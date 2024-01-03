@@ -18,7 +18,7 @@ import java.sql.SQLException;
 import static cn.beecp.pool.PoolStaticCenter.isBlank;
 
 /**
- * Creates raw connection by data source
+ * Connection factory Implementation with a JDBC DataSource
  *
  * @author Chris liao
  * @version 1.0
@@ -41,7 +41,7 @@ public final class ConnectionFactoryByDriverDs implements RawConnectionFactory {
         this.useUsername = !isBlank(username);
     }
 
-    //create one connection
+    //return a connection when creates successful,otherwise,throws a failure exception
     public final Connection create() throws SQLException {
         return this.useUsername ? this.driverDataSource.getConnection(this.username, this.password) : this.driverDataSource.getConnection();
     }

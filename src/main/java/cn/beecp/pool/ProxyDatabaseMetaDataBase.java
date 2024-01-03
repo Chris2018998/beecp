@@ -29,7 +29,7 @@ abstract class ProxyDatabaseMetaDataBase extends ProxyBaseWrapper implements Dat
         owner = p.proxyInUsing;
     }
 
-    protected void checkClosed() throws SQLException {
+    final void checkClosed() throws SQLException {
         this.owner.checkClosed();
     }
 
