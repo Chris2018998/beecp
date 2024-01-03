@@ -59,9 +59,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //indicator to create initial connections by synchronization mode
     private boolean asyncCreateInitConnection;
     //max reachable size of pooled connections
-    private int maxActive = Math.min(Math.max(10, PoolStaticCenter.NCPUS), 50);
+    private int maxActive = Math.min(Math.max(10, NCPU), 50);
     //max permit size of pool semaphore
-    private int borrowSemaphoreSize = Math.min(this.maxActive / 2, NCPUS);
+    private int borrowSemaphoreSize = Math.min(this.maxActive / 2, NCPU);
     //milliseconds:max wait time of a borrower to get a idle connection from pool,if not get one,then throws an exception
     private long maxWait = SECONDS.toMillis(8);
     //milliseconds:max idle time of pooled connections,if time reached and not be borrowed out,then be removed from pool
@@ -111,7 +111,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
 
     /**
-     * connection factory class,which is one implementation class of
+     * connection factory class,which must be implement one of the below four interfaces
      * 1:<class>RawConnectionFactory</class>
      * 2:<class>RawXaConnectionFactory</class>
      * 3:<class>DataSource</class>
@@ -252,7 +252,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         if (maxActive > 0) {
             this.maxActive = maxActive;
             //fix issue:#19 Chris-2020-08-16 begin
-            this.borrowSemaphoreSize = maxActive > 1 ? Math.min(maxActive / 2, NCPUS) : 1;
+            this.borrowSemaphoreSize = maxActive > 1 ? Math.min(maxActive / 2, NCPU) : 1;
             //fix issue:#19 Chris-2020-08-16 end
         }
     }
@@ -717,7 +717,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             try {
                 jdbcLinkInfoDecoderClass = Class.forName(this.jdbcLinkInfDecoderClassName);
             } catch (Throwable e) {
-                throw new BeeDataSourceConfigException("Failed to create jdbc link-info decoder by class:" + this.jdbcLinkInfDecoderClassName, e);
+                throw new BeeDataSourceConfigException("Failed to create jdbc link info decoder by class:" + this.jdbcLinkInfDecoderClassName, e);
             }
         }
 
