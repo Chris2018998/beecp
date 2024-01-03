@@ -13,7 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static cn.beecp.pool.PoolStaticCenter.CLOSED_RSLT;
+import static cn.beecp.pool.ConnectionPoolStatics.CLOSED_RSLT;
 
 /**
  * ResultSet statement base class

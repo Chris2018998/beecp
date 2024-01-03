@@ -25,8 +25,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
-import static cn.beecp.pool.PoolStaticCenter.CommonLog;
-import static cn.beecp.pool.PoolStaticCenter.createClassInstance;
+import static cn.beecp.pool.ConnectionPoolStatics.CommonLog;
+import static cn.beecp.pool.ConnectionPoolStatics.createClassInstance;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 

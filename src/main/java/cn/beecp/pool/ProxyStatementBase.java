@@ -15,7 +15,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-import static cn.beecp.pool.PoolStaticCenter.*;
+import static cn.beecp.pool.ConnectionPoolStatics.*;
 
 /**
  * ProxyStatementBase

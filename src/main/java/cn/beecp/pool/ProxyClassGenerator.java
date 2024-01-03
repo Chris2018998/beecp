@@ -15,7 +15,7 @@ import java.sql.*;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-import static cn.beecp.pool.PoolStaticCenter.isBlank;
+import static cn.beecp.pool.ConnectionPoolStatics.isBlank;
 
 /**
  * An independent execution toolkit class to generate JDBC statement classes with javassist,
@@ -184,7 +184,7 @@ final class ProxyClassGenerator {
         ProxyClassGenerator.createProxyResultSetClass(ctProxyResultSetClass, ctResultSetClass, ctProxyResultSetBaseClass);
 
         //............... ProxyObjectFactory Begin..................
-        CtClass ctProxyObjectFactoryClass = classPool.get(PoolStaticCenter.class.getName());
+        CtClass ctProxyObjectFactoryClass = classPool.get(ConnectionPoolStatics.class.getName());
         for (CtMethod method : ctProxyObjectFactoryClass.getDeclaredMethods()) {
             if ("createProxyConnection".equals(method.getName())) {
                 method.setBody("{return new ProxyConnection($$);}");

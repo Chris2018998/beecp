@@ -13,7 +13,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.Executor;
 
-import static cn.beecp.pool.PoolStaticCenter.*;
+import static cn.beecp.pool.ConnectionPoolStatics.*;
 
 /**
  * connection proxy

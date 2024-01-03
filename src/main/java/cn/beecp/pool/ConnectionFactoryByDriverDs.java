@@ -15,7 +15,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import static cn.beecp.pool.PoolStaticCenter.isBlank;
+import static cn.beecp.pool.ConnectionPoolStatics.isBlank;
 
 /**
  * Connection factory Implementation with a JDBC DataSource

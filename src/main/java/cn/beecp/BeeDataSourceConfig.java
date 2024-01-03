@@ -9,7 +9,10 @@
  */
 package cn.beecp;
 
-import cn.beecp.pool.*;
+import cn.beecp.pool.ConnectionFactoryByDriver;
+import cn.beecp.pool.ConnectionFactoryByDriverDs;
+import cn.beecp.pool.FastConnectionPool;
+import cn.beecp.pool.XaConnectionFactoryByDriverDs;
 
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
@@ -26,7 +29,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static cn.beecp.TransactionIsolation.TRANS_LEVEL_CODE_LIST;
-import static cn.beecp.pool.PoolStaticCenter.*;
+import static cn.beecp.pool.ConnectionPoolStatics.*;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 

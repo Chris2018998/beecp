@@ -22,7 +22,7 @@ import java.sql.SQLException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static cn.beecp.pool.PoolStaticCenter.*;
+import static cn.beecp.pool.ConnectionPoolStatics.*;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
@@ -225,7 +225,7 @@ public final class RawConnectionPool implements BeeConnectionPool, BeeConnection
         if (poolConfig.isEnableJmx()) {
             final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
             try {
-                final ObjectName poolRegName = new ObjectName("cn.beecp.pool.RawConnectionPool:type=BeeCP(" + poolName + ")");
+                final ObjectName poolRegName = new ObjectName("RawConnectionPool:type=BeeCP(" + poolName + ")");
                 if (!mBeanServer.isRegistered(poolRegName)) {
                     mBeanServer.registerMBean(this, poolRegName);
                     CommonLog.info("Registered BeeCP({})as jmx-bean", poolName);
@@ -237,7 +237,7 @@ public final class RawConnectionPool implements BeeConnectionPool, BeeConnection
             }
 
             try {
-                final ObjectName configRegName = new ObjectName("cn.beecp.BeeDataSourceConfig:type=BeeCP(" + poolName + ")-config");
+                final ObjectName configRegName = new ObjectName("BeeDataSourceConfig:type=BeeCP(" + poolName + ")-config");
                 if (!mBeanServer.isRegistered(configRegName)) {
                     mBeanServer.registerMBean(poolConfig, configRegName);
                     CommonLog.info("Registered BeeCP({})config as jmx-bean", poolName);
@@ -255,7 +255,7 @@ public final class RawConnectionPool implements BeeConnectionPool, BeeConnection
         if (poolConfig.isEnableJmx()) {
             final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
             try {
-                final ObjectName poolRegName = new ObjectName("cn.beecp.pool.RawConnectionPool:type=BeeCP(" + poolName + ")");
+                final ObjectName poolRegName = new ObjectName("RawConnectionPool:type=BeeCP(" + poolName + ")");
                 if (mBeanServer.isRegistered(poolRegName)) {
                     mBeanServer.unregisterMBean(poolRegName);
                 }
@@ -264,7 +264,7 @@ public final class RawConnectionPool implements BeeConnectionPool, BeeConnection
             }
 
             try {
-                final ObjectName configRegName = new ObjectName("cn.beecp.BeeDataSourceConfig:type=BeeCP(" + poolName + ")-config");
+                final ObjectName configRegName = new ObjectName("BeeDataSourceConfig:type=BeeCP(" + poolName + ")-config");
                 if (mBeanServer.isRegistered(configRegName)) {
                     mBeanServer.unregisterMBean(configRegName);
                 }

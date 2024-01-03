@@ -15,7 +15,7 @@ import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 import java.sql.SQLException;
 
-import static cn.beecp.pool.PoolStaticCenter.isBlank;
+import static cn.beecp.pool.ConnectionPoolStatics.isBlank;
 
 /**
  * XaConnection Factory implementation by XADataSource

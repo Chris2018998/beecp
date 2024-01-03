@@ -24,7 +24,7 @@ import java.util.Hashtable;
 import java.util.Locale;
 import java.util.Map;
 
-import static cn.beecp.pool.PoolStaticCenter.*;
+import static cn.beecp.pool.ConnectionPoolStatics.*;
 
 /**
  * BeeDataSource factory

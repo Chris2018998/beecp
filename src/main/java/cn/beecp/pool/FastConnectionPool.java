@@ -1,14 +1,16 @@
 /*
- * Copyright(C) Chris2018998
- * Contact:Chris2018998@tom.com
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
- * Licensed under GNU Lesser General Public License v2.1
+ * Copyright(C) Chris2018998,All rights reserved.
+ *
+ * Project owner contact:Chris2018998@tom.com.
+ *
+ * Project Licensed under GNU Lesser General Public License v2.1.
  */
 package cn.beecp.pool;
 
 import cn.beecp.*;
 import cn.beecp.pool.atomic.AtomicIntegerFieldUpdaterImpl;
-import cn.beecp.pool.atomic.AtomicReferenceFieldUpdaterImpl;
 import cn.beecp.pool.exception.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +34,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static cn.beecp.pool.PoolStaticCenter.*;
+import static cn.beecp.pool.ConnectionPoolStatics.*;
 
 /**
  * JDBC Connection Pool Implementation
@@ -42,9 +44,8 @@ import static cn.beecp.pool.PoolStaticCenter.*;
  */
 public final class FastConnectionPool extends Thread implements BeeConnectionPool, BeeConnectionPoolJmxBean, PooledConnectionValidTest, PooledConnectionTransferPolicy {
     private static final AtomicIntegerFieldUpdater<PooledConnection> ConStUpd = AtomicIntegerFieldUpdaterImpl.newUpdater(PooledConnection.class, "state");
-    private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowStUpd = AtomicReferenceFieldUpdaterImpl.newUpdater(Borrower.class, Object.class, "state");
+    private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowStUpd = AtomicReferenceFieldUpdater.newUpdater(Borrower.class, Object.class, "state");
     private static final AtomicIntegerFieldUpdater<FastConnectionPool> PoolStateUpd = AtomicIntegerFieldUpdaterImpl.newUpdater(FastConnectionPool.class, "poolState");
-
     private static final Logger Log = LoggerFactory.getLogger(FastConnectionPool.class);
     private static final long spinForTimeoutThreshold = 1023L;
 
@@ -60,7 +61,6 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     private boolean isCompeteMode;
     private int semaphoreSize;
     private PoolSemaphore semaphore;
-
     private long maxWaitNs;//nanoseconds
     private long idleTimeoutMs;//milliseconds
     private long holdTimeoutMs;//milliseconds
@@ -92,65 +92,67 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     private boolean printRuntimeLog;
 
     //***************************************************************************************************************//
-    //               1: Pool initialize and Pooled connection create/remove methods(5)                               //                                                                                  //
+    //               1: Pool initializes and maintenance on pooled connections(5)                                    //                                                                                  //
     //***************************************************************************************************************//
 
     /**
-     * Method-1.1: pool initialize with configuration
+     * Method-1.1: pool initializes.
      *
-     * @param config pool configuration
-     * @throws SQLException configuration check fail or initiated connection create failed
+     * @param config is a pool initialization object contains some field-level items as parameters.
+     * @throws SQLException when configuration check failed or some initializes failed.
      */
     public void init(BeeDataSourceConfig config) throws SQLException {
-        checkJdbcProxyClass();
-        if (config == null) throw new PoolCreateFailedException("Configuration can't be null");
-        BeeDataSourceConfig checkedConfig = config.check();
+        if (PoolStateUpd.compareAndSet(this, POOL_NEW, POOL_STARTING)) {//initializes after pool state cas success from new to starting
+            try {
+                checkJdbcProxyClass();
+                if (config == null)
+                    throw new PoolCreateFailedException("Configuration of pool initialization can't be null");
 
-        if (!PoolStateUpd.compareAndSet(this, POOL_NEW, POOL_STARTING))
-            throw new PoolCreateFailedException("Pool has been initialized");
-
-        try {
-            this.poolConfig = checkedConfig;
-            startup(poolConfig);
-            this.poolState = POOL_READY;
-        } catch (SQLException e) {
-            this.poolState = POOL_NEW;
-            throw e;
+                this.poolConfig = config.check();
+                startup();//Go,go! launch the pool
+                this.poolState = POOL_READY;//ready to accept coming requests(love u,my pool)
+            } catch (Throwable e) {
+                Log.info("BeeCP({})Initialized failed", e);
+                this.poolState = POOL_NEW;//reset state to new when failed
+                throw e instanceof SQLException ? (SQLException) e : new PoolInitializedException(e);
+            }
+        } else {
+            throw new PoolCreateFailedException("Pool has already been initialized or in initializing");
         }
     }
 
-    // Method-1.2: running pool
-    private void startup(BeeDataSourceConfig config) throws SQLException {
-        this.poolName = config.getPoolName();
-        Log.info("BeeCP({})starting....", this.poolName);
+    // Method-1.2: launch the pool
+    private void startup() throws SQLException {
+        this.poolName = poolConfig.getPoolName();
+        Log.info("BeeCP({})starting up....", this.poolName);
 
-        //step1: set connection factory
-        Object rawFactory = config.getConnectionFactory();
+        //step1: copy connection factory from config object
+        Object rawFactory = poolConfig.getConnectionFactory();
         if (rawFactory instanceof RawXaConnectionFactory) {
             this.isRawXaConnFactory = true;
             this.rawXaConnFactory = (RawXaConnectionFactory) rawFactory;
         } else if (rawFactory instanceof RawConnectionFactory) {
             this.rawConnFactory = (RawConnectionFactory) rawFactory;
         } else {
-            throw new PoolCreateFailedException("Invalid connection factory");
+            throw new PoolCreateFailedException("Connection factory must implement one of interfaces[RawConnectionFactory,RawXaConnectionFactory]");
         }
 
-        //step2: create connections
+        //step2: creates objects related with pooled connections
         this.templatePooledConn = null;
         this.templatePooledConnNotCreated = true;
-        this.poolMaxSize = config.getMaxActive();
+        this.poolMaxSize = poolConfig.getMaxActive();
         if (POOL_STARTING == this.poolState) {//just create once
             this.pooledArrayLock = new ReentrantLock();
             this.pooledArray = new PooledConnection[0];
         }
 
-        //step3: create init connections by syn mode
-        this.maxWaitNs = TimeUnit.MILLISECONDS.toNanos(config.getMaxWait());//lock time or acquire time
-        if (config.getInitialSize() > 0 && !config.isAsyncCreateInitConnection())
-            createInitConnections(config.getInitialSize(), true);
+        //step3: creates initial connections by syn mode or async mode
+        this.maxWaitNs = TimeUnit.MILLISECONDS.toNanos(poolConfig.getMaxWait());//time out on acquiring for a semaphore or a lock
+        if (poolConfig.getInitialSize() > 0 && !poolConfig.isAsyncCreateInitConnection())
+            createInitConnections(poolConfig.getInitialSize(), true);
 
-        //step4: create transfer policy
-        if (config.isFairMode()) {
+        //step4: creates connections transfer policy
+        if (poolConfig.isFairMode()) {
             poolMode = "fair";
             isFairMode = true;
             this.transferPolicy = new FairTransferPolicy();
@@ -161,35 +163,35 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
         this.stateCodeOnRelease = this.transferPolicy.getStateCodeOnRelease();
 
-        //step5: copy some properties as pool local variable
-        this.idleTimeoutMs = config.getIdleTimeout();
-        this.holdTimeoutMs = config.getHoldTimeout();
+        //step5: copy some properties to pool local variables
+        this.idleTimeoutMs = poolConfig.getIdleTimeout();
+        this.holdTimeoutMs = poolConfig.getHoldTimeout();
         this.supportHoldTimeout = holdTimeoutMs > 0L;
-        this.validAssumeTimeMs = config.getValidAssumeTime();
-        this.validTestTimeout = config.getValidTestTimeout();
-        this.delayTimeForNextClearNs = TimeUnit.MILLISECONDS.toNanos(config.getDelayTimeForNextClear());
-        this.printRuntimeLog = config.isPrintRuntimeLog();
-        this.semaphoreSize = config.getBorrowSemaphoreSize();
+        this.validAssumeTimeMs = poolConfig.getValidAssumeTime();
+        this.validTestTimeout = poolConfig.getValidTestTimeout();
+        this.delayTimeForNextClearNs = TimeUnit.MILLISECONDS.toNanos(poolConfig.getDelayTimeForNextClear());
+        this.printRuntimeLog = poolConfig.isPrintRuntimeLog();
+        this.semaphoreSize = poolConfig.getBorrowSemaphoreSize();
 
-        //step6: create semaphore and threadLocal
+        //step6: creates a pool semaphore and threadLocal
         this.semaphore = new PoolSemaphore(this.semaphoreSize, isFairMode);
-        this.threadLocal = new BorrowerThreadLocal();
+        this.threadLocal = new BorrowerThreadLocal();//as a cache to store one used connection
 
-        //step7: create some work threads
+        //step7: creates pool others objects
         if (POOL_STARTING == this.poolState) {
-            this.waitQueue = new ConcurrentLinkedQueue<Borrower>();
-            this.servantTryCount = new AtomicInteger(0);
-            this.servantState = new AtomicInteger(THREAD_WORKING);
-            this.idleScanState = new AtomicInteger(THREAD_WORKING);
+            this.waitQueue = new ConcurrentLinkedQueue<Borrower>();//wait queue(transfer released connections and exceptions of creation)
+            this.servantTryCount = new AtomicInteger(0);//count of retry chance applied in a transfer thread
+            this.servantState = new AtomicInteger(THREAD_WORKING);//work state of the servant thread
+            this.idleScanState = new AtomicInteger(THREAD_WORKING);//work state of idle-scan thread
             this.idleScanThread = new IdleTimeoutScanThread(this);
-            this.monitorVo = this.createPoolMonitorVo();
-            this.exitHook = new ConnectionPoolHook(this);
+            this.monitorVo = this.createPoolMonitorVo();//a view object contains pool info,such state,idle,using
+            this.exitHook = new ConnectionPoolHook(this);//a hook works when JVM exit
             Runtime.getRuntime().addShutdownHook(this.exitHook);
-            this.registerJmx();
+            this.registerJmx();//registers configuration and pool into JMX
 
             setDaemon(true);
-            setPriority(3);
-            setName("BeeCP(" + poolName + ")" + "-asynAdd");
+            //setPriority(3);
+            setName("BeeCP(" + poolName + ")" + "-asyncAdd");
             start();
 
             this.idleScanThread.setDaemon(true);
@@ -198,60 +200,59 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             this.idleScanThread.start();
         }
 
-        //step8: create connections to pool by async
-        if (config.getInitialSize() > 0 && config.isAsyncCreateInitConnection())
-            new PoolInitAsynCreateThread(this).start();
+        //step8: creates initial connections(by async mode or sync mode)
+        if (poolConfig.getInitialSize() > 0 && poolConfig.isAsyncCreateInitConnection())
+            new PoolInitAsyncCreateThread(this).start();
 
-        //step9: print pool info
+        //step9: print info of pool initialization after completion
         Log.info("BeeCP({})has startup{mode:{},init size:{},max size:{},semaphore size:{},max wait:{}ms,driver:{}}",
                 poolName,
                 poolMode,
                 this.pooledArray.length,
                 this.poolMaxSize,
                 this.semaphoreSize,
-                config.getMaxWait(),
-                config.getDriverClassName());
+                poolConfig.getMaxWait(),
+                poolConfig.getDriverClassName());
     }
 
-    //Method-1.3: create specified size connections at pool initialization,
+    //Method-1.3: creates initial connections with specified size
     private void createInitConnections(int initSize, boolean syn) throws SQLException {
-        this.pooledArrayLock.lock();
+        pooledArrayLock.lock();
         try {
             for (int i = 0; i < initSize; i++)
                 this.createPooledConn(CON_IDLE);
         } catch (Throwable e) {
             for (PooledConnection p : this.pooledArray)
                 this.removePooledConn(p, DESC_RM_INIT);
-
-            if (syn) {//throw exception on syn mode
+            if (syn) {//throws failed exception on syn mode
                 if (e instanceof SQLException)
                     throw (SQLException) e;
                 else
                     throw new PoolInitializedException(e);
             } else {
-                Log.warn("Failed to create connections on pool initialization,cause:" + e);
+                Log.warn("Failed to create initial connections" + e);
             }
         } finally {
-            this.pooledArrayLock.unlock();
+            pooledArrayLock.unlock();
         }
     }
 
-    //Method-1.4: create one pooled connection
+    //Method-1.4: creates one pooled connection under lock
     private PooledConnection createPooledConn(int state) throws SQLException {
-        //1:try to acquire lock
+        //1:try to acquire lock for creating one pooled connection
         try {
             if (!this.pooledArrayLock.tryLock(this.maxWaitNs, TimeUnit.NANOSECONDS))
-                throw new ConnectionCreateException("Pooled connection create timeout at lock");
+                throw new ConnectionCreateException("Timeout at acquiring lock to create a pooled connection");
         } catch (InterruptedException e) {
-            throw new ConnectionCreateException("Pooled connection create interrupted at lock");
+            throw new ConnectionCreateException("Interrupted at acquiring lock to create a pooled connection");
         }
 
-        //2:try to create a pooled connection
+        //2:creates one pooled connection if not reach max capacity,otherwise return null
         try {
             int l = this.pooledArray.length;
             if (l < this.poolMaxSize) {
                 if (this.printRuntimeLog)
-                    Log.info("BeeCP({}))begin to create a new pooled connection,state:{}", this.poolName, state);
+                    Log.info("BeeCP({}))Begin to create a new pooled connection with state:{}", this.poolName, state);
 
                 Connection rawConn = null;
                 XAConnection rawXaConn = null;
@@ -272,7 +273,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
                     PooledConnection p = this.templatePooledConn.setDefaultAndCopy(rawConn, state, rawXaRes);
                     if (this.printRuntimeLog)
-                        Log.info("BeeCP({}))has created a new pooled connection:{},state:{}", this.poolName, p, state);
+                        Log.info("BeeCP({}))Created a new pooled connection:{} with state:{}", this.poolName, p, state);
                     PooledConnection[] arrayNew = new PooledConnection[l + 1];
                     System.arraycopy(this.pooledArray, 0, arrayNew, 0, l);
                     arrayNew[l] = p;// tail
@@ -290,10 +291,10 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
     }
 
-    //Method-1.5: remove one pooled connection
+    //Method-1.5: remove one pooled connection under lock
     private void removePooledConn(PooledConnection p, String removeType) {
         if (this.printRuntimeLog)
-            Log.info("BeeCP({}))begin to remove pooled connection:{},reason:{}", this.poolName, p, removeType);
+            Log.info("BeeCP({}))Begin to remove a pooled connection:{} for reason:{}", this.poolName, p, removeType);
         p.onBeforeRemove();
 
         this.pooledArrayLock.lock();
@@ -301,12 +302,12 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             for (int l = this.pooledArray.length, i = l - 1; i >= 0; i--) {
                 if (this.pooledArray[i] == p) {
                     PooledConnection[] arrayNew = new PooledConnection[l - 1];
-                    System.arraycopy(this.pooledArray, 0, arrayNew, 0, i);//before copying
+                    System.arraycopy(this.pooledArray, 0, arrayNew, 0, i);//copy pre
                     int m = l - i - 1;
-                    if (m > 0) System.arraycopy(this.pooledArray, i + 1, arrayNew, i, m);//after copying
+                    if (m > 0) System.arraycopy(this.pooledArray, i + 1, arrayNew, i, m);//copy after
                     this.pooledArray = arrayNew;
                     if (this.printRuntimeLog)
-                        Log.info("BeeCP({}))has removed pooled connection:{},reason:{}", this.poolName, p, removeType);
+                        Log.info("BeeCP({}))Removed a pooled connection:{} for reason:{}", this.poolName, p, removeType);
                     break;
                 }
             }
@@ -315,40 +316,44 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
     }
 
-    //Method-1.6: test first connection and create template pooled connection
+    //Method-1.6: creates a template connection used to create new pooled connections by cloning
     private PooledConnection createTemplatePooledConn(Connection rawCon) throws SQLException {
-        //step1:get autoCommit default value
+        //step1:prepare default value for autoCommit property
         Boolean defaultAutoCommit = poolConfig.isDefaultAutoCommit();
         if (defaultAutoCommit == null && poolConfig.isEnableDefaultOnAutoCommit())
             defaultAutoCommit = rawCon.getAutoCommit();
+        if (defaultAutoCommit == null) defaultAutoCommit = Boolean.TRUE;
 
-        //step2:get transactionIsolation default value
+        //step2:prepare default value for transactionIsolation property
         Integer defaultTransactionIsolation = poolConfig.getDefaultTransactionIsolationCode();
         if (defaultTransactionIsolation == null && poolConfig.isEnableDefaultOnTransactionIsolation())
             defaultTransactionIsolation = rawCon.getTransactionIsolation();
+        if (defaultTransactionIsolation == null) defaultTransactionIsolation = Connection.TRANSACTION_READ_COMMITTED;
 
-        //step3:get readOnly default value
+        //step3: prepare default value for readOnly property
         Boolean defaultReadOnly = poolConfig.isDefaultReadOnly();
-        if (defaultReadOnly == null && poolConfig.isEnableDefaultOnReadOnly()) defaultReadOnly = rawCon.isReadOnly();
+        if (defaultReadOnly == null && poolConfig.isEnableDefaultOnReadOnly())
+            defaultReadOnly = rawCon.isReadOnly();
+        if (defaultReadOnly == null) defaultReadOnly = Boolean.FALSE;
 
-        //step4:get catalog default value
+        //step4:prepare default value for catalog property
         String defaultCatalog = poolConfig.getDefaultCatalog();
         if (isBlank(defaultCatalog) && poolConfig.isEnableDefaultOnCatalog())
             try {
                 defaultCatalog = rawCon.getCatalog();
             } catch (Throwable e) {
                 if (this.printRuntimeLog)
-                    Log.warn("BeeCP({})driver not support 'catalog'", this.poolName);
+                    Log.warn("BeeCP({})'catalog' property of connection not supported by driver", this.poolName);
             }
 
-        //step5:get schema default value
+        //step5:prepare default value for schema property
         String defaultSchema = poolConfig.getDefaultSchema();
         if (isBlank(defaultSchema) && poolConfig.isEnableDefaultOnSchema())
             try {
                 defaultSchema = rawCon.getSchema();
             } catch (Throwable e) {
                 if (this.printRuntimeLog)
-                    Log.warn("BeeCP({})driver not support 'schema'", this.poolName);
+                    Log.warn("BeeCP({})'schema' property of connection not supported by driver", this.poolName);
             }
 
         //step6: check driver whether support 'isValid' method
@@ -359,16 +364,16 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             } else {
                 supportIsValid = false;
                 if (this.printRuntimeLog) {
-                    Log.warn("BeeCP({})driver not support 'isValid'", this.poolName);
+                    Log.warn("BeeCP({})'isValid' method of connection not supported by driver", this.poolName);
                 }
             }
         } catch (Throwable e) {
             supportIsValid = false;
             if (this.printRuntimeLog)
-                Log.warn("BeeCP({})driver not support 'isValid',cause:", this.poolName, e);
+                Log.warn("BeeCP({}) 'isValid' method check failed for driver", this.poolName, e);
         }
 
-        //step7:test validate sql if not support 'isValid'
+        //step7:test validate sql if not support 'isValid' in driver
         if (!supportIsValid) {
             String conTestSql = this.poolConfig.getValidTestSql();
             boolean supportQueryTimeout = validateTestSql(poolName, rawCon, conTestSql, validTestTimeout, defaultAutoCommit);//check test sql
@@ -383,7 +388,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             if (defaultNetworkTimeout < 0) {
                 supportNetworkTimeoutInd = false;
                 if (this.printRuntimeLog)
-                    Log.warn("BeeCP({})driver not support 'networkTimeout'", this.poolName);
+                    Log.warn("BeeCP({})'networkTimeout' property of connection not supported by driver", this.poolName);
             } else {//driver support networkTimeout
                 if (this.networkTimeoutExecutor == null) {
                     this.networkTimeoutExecutor = new ThreadPoolExecutor(poolMaxSize, poolMaxSize, 10, TimeUnit.SECONDS,
@@ -395,7 +400,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         } catch (Throwable e) {
             supportNetworkTimeoutInd = false;
             if (this.printRuntimeLog)
-                Log.warn("BeeCP({})driver not support 'networkTimeout',cause:", this.poolName, e);
+                Log.warn("BeeCP({}) 'networkTimeout' property check failed for driver", this.poolName, e);
         } finally {
             if (!supportNetworkTimeoutInd && networkTimeoutExecutor != null) {
                 networkTimeoutExecutor.shutdown();
@@ -403,22 +408,29 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             }
         }
 
-        //step9:create a pooled connection with some value,other pooled connection will copy it
+        //step9: create a base pooled connection for creation by clone
         return new PooledConnection(
-                defaultAutoCommit,
-                defaultTransactionIsolation,
-                defaultReadOnly,
-                defaultCatalog,
-                defaultSchema,
-                defaultNetworkTimeout,
-                supportNetworkTimeoutInd,
-                networkTimeoutExecutor,
                 this,
-                poolConfig.isEnableDefaultOnCatalog(),
-                poolConfig.isEnableDefaultOnSchema(),
-                poolConfig.isEnableDefaultOnReadOnly(),
+                //1:defaultAutoCommit
                 poolConfig.isEnableDefaultOnAutoCommit(),
+                defaultAutoCommit,
+                //2:defaultTransactionIsolation
                 poolConfig.isEnableDefaultOnTransactionIsolation(),
+                defaultTransactionIsolation,
+                //3:defaultReadOnly
+                poolConfig.isEnableDefaultOnReadOnly(),
+                defaultReadOnly,
+                //4:defaultCatalog
+                poolConfig.isEnableDefaultOnCatalog(),
+                defaultCatalog,
+                //5:defaultCatalog
+                poolConfig.isEnableDefaultOnSchema(),
+                defaultSchema,
+                //6:defaultNetworkTimeout
+                supportNetworkTimeoutInd,
+                defaultNetworkTimeout,
+                networkTimeoutExecutor,
+                //7:others
                 poolConfig.getSqlExceptionCodeList(),
                 poolConfig.getSqlExceptionStateList());
     }
@@ -426,24 +438,24 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     //***************************************************************************************************************//
     //                               2: Pooled connection borrow and release methods(8)                              //                                                                                  //
     //***************************************************************************************************************//
-    //Method-2.1:borrow one connection from pool
+    //Method-2.1:borrows a connection from pool(return a resulted wrapper on connection)
     public final Connection getConnection() throws SQLException {
         return createProxyConnection(this.getPooledConnection());
     }
 
-    //Method-2.2:borrow one XaConnection from pool
+    //Method-2.2:borrows a XaConnection from pool(return a XA resulted wrapper on connection)
     public final XAConnection getXAConnection() throws SQLException {
         PooledConnection p = this.getPooledConnection();
         ProxyConnectionBase proxyConn = createProxyConnection(p);
         return new XaProxyConnection(proxyConn, this.isRawXaConnFactory ? new XaProxyResource(p.rawXaRes, proxyConn) : new XaResourceLocalImpl(proxyConn, p.defaultAutoCommit));
     }
 
-    //Method-2.3:borrow one connection from pool
+    //Method-2.3:borrows a pooled connection from pool
     private PooledConnection getPooledConnection() throws SQLException {
         if (this.poolState != POOL_READY)
-            throw new ConnectionGetForbiddenException("Access forbidden,connection pool was closed or in clearing");
+            throw new ConnectionGetForbiddenException("Access rejected,cause:pool was closed or in clearing");
 
-        //0:try to get from threadLocal cache
+        //0: get the last used connection from threadLocal and try to hold it via cas
         Borrower b = this.threadLocal.get().get();
         if (b != null) {
             PooledConnection p = b.lastUsed;
@@ -458,16 +470,16 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
         long deadline = System.nanoTime();
         try {
-            //1:try to acquire a permit
+            //1: Acquires a permit from pool semaphore
             if (!this.semaphore.tryAcquire(this.maxWaitNs, TimeUnit.NANOSECONDS))
-                throw new ConnectionGetTimeoutException("Connection get timeout at semaphore");
+                throw new ConnectionGetTimeoutException("Timeout at acquiring semaphore to get a idle connection");
         } catch (InterruptedException e) {
-            throw new ConnectionGetInterruptedException("Connection get request interrupted at semaphore");
+            throw new ConnectionGetInterruptedException("Interrupted at acquiring semaphore to get a idle connection");
         }
 
-        //2:try search one or create one
+        //2: try to search idle one,if not get,then try to create new one when pool not full
         PooledConnection p;
-        try {//semaphore acquired
+        try {
             p = this.searchOrCreate();
             if (p != null) {
                 semaphore.release();
@@ -478,9 +490,9 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             throw e;
         }
 
-        //3:try to get one transferred connection
+        //3:try to get a transferred connection
         b.state = null;
-        this.waitQueue.offer(b);
+        this.waitQueue.offer(b);//self in,self out
         SQLException cause = null;
         deadline += this.maxWaitNs;
 
@@ -501,7 +513,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
             if (cause != null) {
                 BorrowStUpd.compareAndSet(b, s, cause);
-            } else if (s != null) {//here:s must be a PooledConnection
+            } else if (s != null) {//here:variable s must be a PooledConnection
                 b.state = null;
             } else {//here:(s == null)
                 long t = deadline - System.nanoTime();
@@ -511,15 +523,15 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
                     LockSupport.parkNanos(t);//park exit:1:get transfer 2:timeout 3:interrupted
                     if (Thread.interrupted())
-                        cause = new ConnectionGetInterruptedException("Connection get request interrupted in wait queue");
+                        cause = new ConnectionGetInterruptedException("Interrupted while waiting in queue");
                 } else if (t <= 0L) {//timeout
-                    cause = new ConnectionGetTimeoutException("Connection get timeout in wait queue");
+                    cause = new ConnectionGetTimeoutException("Timeout in wait queue");
                 }
             }//end
         } while (true);//while
     }
 
-    //Method-2.4: search one idle connection,if not found,then try to create one
+    //Method-2.4: search an idle connection,if not get,then try to create new one when capacity not reach max
     private PooledConnection searchOrCreate() throws SQLException {
         PooledConnection[] array = this.pooledArray;
         for (PooledConnection p : array) {
@@ -531,7 +543,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         return null;
     }
 
-    //Method-2.5: try to wakeup servant thread to work if it waiting
+    //Method-2.5: try to wake up the servant thread in waiting state
     private void tryWakeupServantThread() {
         int c;
         do {
@@ -543,10 +555,9 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     }
 
     /**
-     * Method-2.6: Connection return to pool,if exist waiter in pool,
-     * then try to transfer the connection to one waiting borrower
+     * Method-2.6: return a borrowed connection to pool,and try to transfer it  to one of waiters
      *
-     * @param p target connection need release
+     * @param p released connection
      */
     public final void recycle(PooledConnection p) {
         if (isCompeteMode) p.state = CON_IDLE;
@@ -566,10 +577,9 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     }
 
     /**
-     * Method-2.7: Connection create failed by creator,then transfer the failed cause exception to one waiting borrower,
-     * which will end wait and throw the exception.
+     * Method-2.7: transfer an exception to one of waiters in queue
      *
-     * @param e: transfer Exception to waiter
+     * @param e transferred exception
      */
     private void transferException(Throwable e) {
         Iterator<Borrower> iterator = waitQueue.iterator();
@@ -583,9 +593,9 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     }
 
     /**
-     * Method-2.8: when exception occur on return,then remove it from pool
+     * Method-2.8: remove a bad connection with specified reason
      *
-     * @param p target connection need release
+     * @param p bad connection
      */
     final void abandonOnReturn(PooledConnection p, String reason) {
         this.removePooledConn(p, reason);
@@ -593,9 +603,9 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     }
 
     /**
-     * Method-2.9: check one borrowed connection alive state,if not alive,then remove it from pool
+     * Method-2.9: alive test on a borrowed connection
      *
-     * @return boolean, true:alive
+     * @return boolean true means the checked connection is alive;false,it is bad
      */
     private boolean testOnBorrow(PooledConnection p) {
         if (System.currentTimeMillis() - p.lastAccessTime > this.validAssumeTimeMs && !this.conValidTest.isValid(p)) {
@@ -618,7 +628,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     //***************************************************************************************************************//
     //                       3: Pooled connection idle-timeout/hold-timeout scan methods(3)                          //                                                                                  //
     //***************************************************************************************************************//
-    //Method-3.1 shutdown two work threads in pool
+    //Method-3.1: stop all inner threads of pool
     private void shutdownPoolThread() {
         int curState = this.servantState.get();
         this.servantState.set(THREAD_EXIT);
@@ -629,7 +639,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         if (curState == THREAD_WAITING) LockSupport.unpark(this.idleScanThread);
     }
 
-    //Method-3.2: pool servant thread run method
+    //Method-3.2: thread override method to do search or creating new one
     public void run() {
         while (poolState != POOL_CLOSED) {
             while (servantState.get() == THREAD_WORKING) {
@@ -653,8 +663,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     }
 
     /**
-     * Method-3.3: inner timer will call the method to clear some idle timeout connections
-     * or dead connections,or long parkTime not active connections in using state
+     * Method-3.3: close idle timeout connections when available permit size of semaphore is full
      */
     private void closeIdleTimeoutConnection() {
         //step1:print pool info before clean
@@ -664,7 +673,6 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
 
         //step2:remove idle timeout and hold timeout
-
         PooledConnection[] array = this.pooledArray;
         for (PooledConnection p : array) {
             final int state = p.state;
@@ -675,7 +683,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     this.tryWakeupServantThread();
                 }
             } else if (state == CON_USING && supportHoldTimeout) {
-                if (System.currentTimeMillis() - p.lastAccessTime >= this.holdTimeoutMs) {//hold timeout
+                if (System.currentTimeMillis() - p.lastAccessTime >= holdTimeoutMs) {//hold timeout
                     ProxyConnectionBase proxyInUsing = p.proxyInUsing;
                     if (proxyInUsing != null) {
                         oclose(proxyInUsing);
@@ -701,36 +709,49 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     //                                  4: Pool clear/close methods(5)                                               //                                                                                  //
     //***************************************************************************************************************//
     //Method-4.1: remove all connections from pool
-    public void clear(boolean forceCloseUsing) throws SQLException {
-        clear(forceCloseUsing, null);
+    public void clear(boolean forceCloseUsing) {
+        try {
+            clear(forceCloseUsing, null);
+        } catch (SQLException e) {
+            //do nothing
+        }
     }
 
-    //Method-4.2: clear all connections from pool,forceCloseUsingOnClear is true,then close using connection directly
+    //Method-4.2: removes all pooled connections,then startup with new configuration when it not be null and valid
     public void clear(boolean forceCloseUsing, BeeDataSourceConfig config) throws SQLException {
-        BeeDataSourceConfig tempConfig = null;
-        if (config != null) tempConfig = config.check();
         if (PoolStateUpd.compareAndSet(this, POOL_READY, POOL_CLEARING)) {
-            Log.info("BeeCP({})begin to cleared all connections", this.poolName);
+            Log.info("BeeCP({})begin to remove all connections", this.poolName);
             this.removeAllConnections(forceCloseUsing, DESC_RM_CLEAR);
-            Log.info("BeeCP({})has cleared all connections", this.poolName);
+            Log.info("BeeCP({})removed all connections", this.poolName);
 
-            if (tempConfig != null) {
-                this.poolConfig = tempConfig;
-                startup(tempConfig);
+            try {
+                if (config != null) {
+                    Log.info("BeeCP({})begin to restart with new configuration", this.poolName);
+                    this.poolConfig = config.check();
+
+                    /*
+                     * maybe pool re-initialized failed with error config,in order to let pool stable,
+                     * so still reset pool state to ready,but just do clear again with right configuration to fix it
+                     */
+                    startup();
+                }
+            } catch (Throwable e) {
+                Log.error("BeeCP({})Restarted failed", e);
+                throw e instanceof SQLException ? (SQLException) e : new PoolInitializedException(e);
+            } finally {
+                this.poolState = POOL_READY;//reset pool state to be ready once pool restart failed with the new config
+                Log.info("BeeCP({})reset pool state to ready after clearing", this.poolName);
             }
-
-            this.poolState = POOL_READY;// restore state;
-            Log.info("BeeCP({})pool has cleared all connections", this.poolName);
         }
     }
 
     //Method-4.3: remove all connections from pool
     private void removeAllConnections(boolean force, String source) {
         this.semaphore.interruptWaitingThreads();
-        PoolInClearingException exception = new PoolInClearingException("Connection Pool was in clearing");
+        PoolInClearingException exception = new PoolInClearingException("Access rejected,pool in clearing");
         while (!this.waitQueue.isEmpty()) this.transferException(exception);
 
-        while (this.pooledArray.length > 0) {
+        while (true) {
             PooledConnection[] array = this.pooledArray;
             for (PooledConnection p : array) {
                 final int state = p.state;
@@ -739,7 +760,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                 } else if (state == CON_USING) {
                     ProxyConnectionBase proxyInUsing = p.proxyInUsing;
                     if (proxyInUsing != null) {
-                        if (force || (this.supportHoldTimeout && System.currentTimeMillis() - p.lastAccessTime >= this.holdTimeoutMs)) {//force close or hold timeout
+                        if (force || (supportHoldTimeout && System.currentTimeMillis() - p.lastAccessTime >= holdTimeoutMs)) {//force close or hold timeout
                             oclose(proxyInUsing);
                             if (ConStUpd.compareAndSet(p, CON_IDLE, CON_CLOSED))
                                 this.removePooledConn(p, source);
@@ -751,7 +772,9 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     this.removePooledConn(p, source);
                 }
             } // for
-            if (this.pooledArray.length > 0) LockSupport.parkNanos(this.delayTimeForNextClearNs);
+
+            if (this.pooledArray.length == 0) break;
+            LockSupport.parkNanos(this.delayTimeForNextClearNs);//delay to clear remained pooled connections
         } // while
 
         if (printRuntimeLog) {
@@ -765,12 +788,12 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         return this.poolState == POOL_CLOSED;
     }
 
-    //Method-4.5: close pool
+    //Method-4.5: shut down the pool and set its state to closed
     public void close() {
         do {
             int poolStateCode = this.poolState;
             if ((poolStateCode == POOL_NEW || poolStateCode == POOL_READY) && PoolStateUpd.compareAndSet(this, poolStateCode, POOL_CLOSED)) {
-                Log.info("BeeCP({})begin to shutdown", this.poolName);
+                Log.info("BeeCP({})Begin to shutdown", this.poolName);
                 this.shutdownPoolThread();
                 this.unregisterJmx();
                 this.removeAllConnections(this.poolConfig.isForceCloseUsingOnClear(), DESC_RM_DESTROY);
@@ -781,7 +804,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                 } catch (Throwable e) {
                     //do nothing
                 }
-                Log.info("BeeCP({})has shutdown", this.poolName);
+                Log.info("BeeCP({})Has shutdown", this.poolName);
                 break;
             } else if (poolStateCode == POOL_CLOSED) {
                 break;
@@ -794,12 +817,12 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     //***************************************************************************************************************//
     //                                  5: Pool controller/jmx methods(15)                                              //                                                                                  //
     //***************************************************************************************************************//
-    //Method-5.1: set pool info debug switch
+    //Method-5.1: indicator on runtime log print,true:enable on;false: enable off
     public void setPrintRuntimeLog(boolean indicator) {
         printRuntimeLog = indicator;
     }
 
-    //Method-5.2: size of all pooled connections
+    //Method-5.2: the length of array stores pooled connections
     public int getTotalSize() {
         return this.pooledArray.length;
     }
@@ -821,17 +844,17 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         return (active > 0) ? active : 0;
     }
 
-    //Method-5.5: waiting size for semaphore
+    //Method-5.5: size of waiting on semaphore
     public int getSemaphoreWaitingSize() {
         return this.semaphore.getQueueLength();
     }
 
-    //Method-5.6: using size of semaphore permit
+    //Method-5.6: acquired count of semaphore permit
     public int getSemaphoreAcquiredSize() {
-        return this.semaphoreSize - this.semaphore.availablePermits();
+        return semaphoreSize - this.semaphore.availablePermits();
     }
 
-    //Method-5.7: waiting size in transfer queue
+    //Method-5.7: count of waiters in queue
     public int getTransferWaitingSize() {
         int size = 0;
         for (Borrower borrower : this.waitQueue)
@@ -839,16 +862,16 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         return size;
     }
 
-    //Method-5.8: assembly pool to jmx
+    //Method-5.8: register jmx
     private void registerJmx() {
-        if (this.poolConfig.isEnableJmx()) {
+        if (poolConfig.isEnableJmx()) {
             MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
             this.registerJmxBean(mBeanServer, String.format("FastConnectionPool:type=BeeCP(%s)", this.poolName), this);
-            this.registerJmxBean(mBeanServer, String.format("BeeDataSourceConfig:type=BeeCP(%s)-config", this.poolName), this.poolConfig);
+            this.registerJmxBean(mBeanServer, String.format("BeeDataSourceConfig:type=BeeCP(%s)-config", this.poolName), poolConfig);
         }
     }
 
-    //Method-5.9: jmx assembly
+    //Method-5.9: register jmx bean of pool
     private void registerJmxBean(MBeanServer mBeanServer, String regName, Object bean) {
         try {
             ObjectName jmxRegName = new ObjectName(regName);
@@ -856,11 +879,11 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                 mBeanServer.registerMBean(bean, jmxRegName);
             }
         } catch (Exception e) {
-            Log.warn("BeeCP({})failed to assembly jmx-bean:{}", this.poolName, regName, e);
+            Log.warn("BeeCP({})Failed to assembly jmx-bean:{}", this.poolName, regName, e);
         }
     }
 
-    //Method-5.10: pool unregister from jmx
+    //Method-5.10: unregister jmx
     private void unregisterJmx() {
         if (this.poolConfig.isEnableJmx()) {
             MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
@@ -877,7 +900,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                 mBeanServer.unregisterMBean(jmxRegName);
             }
         } catch (Exception e) {
-            Log.warn("BeeCP({})failed to unregister jmx-bean:{}", this.poolName, regName, e);
+            Log.warn("BeeCP({})Failed to unregister jmx-bean:{}", this.poolName, regName, e);
         }
     }
 
@@ -890,12 +913,12 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             }
         } catch (Throwable e) {
             if (this.printRuntimeLog)
-                Log.warn("BeeCP({})failed to test connection with 'isValid' method", this.poolName, e);
+                Log.warn("BeeCP({})Failed to test connection with 'isValid' method", this.poolName, e);
         }
         return false;
     }
 
-    //Method-5.13 create controller vo
+    //Method-5.13: creates monitor view object,some runtime info of pool may filled into this object
     private FastConnectionPoolMonitorVo createPoolMonitorVo() {
         Thread currentThread = Thread.currentThread();
         this.poolThreadId = currentThread.getId();
@@ -904,12 +927,12 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         try {
             this.poolHostIP = (InetAddress.getLocalHost().getHostAddress());
         } catch (UnknownHostException e) {
-            Log.info("BeeCP({})failed to resolve pool hose ip", this.poolName);
+            Log.info("BeeCP({})Failed to resolve host IP", this.poolName);
         }
         return new FastConnectionPoolMonitorVo();
     }
 
-    //Method-5.14: pool controller vo
+    //Method-5.14: pool monitor vo
     public BeeConnectionPoolMonitorVo getPoolMonitorVo() {
         monitorVo.setPoolName(poolName);
         monitorVo.setPoolMode(poolMode);
@@ -947,7 +970,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
     }
 
-    //class-6.2:Semaphore extend
+    //class-6.2: sub class supports interruption on blocking waiters of semaphore
     private static final class PoolSemaphore extends Semaphore {
         PoolSemaphore(int permits, boolean fair) {
             super(permits, fair);
@@ -955,19 +978,19 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
         void interruptWaitingThreads() {
             for (Thread thread : getQueuedThreads()) {
-                Thread.State state = thread.getState();
-                if (state == Thread.State.WAITING || state == Thread.State.TIMED_WAITING) {
-                    thread.interrupt();
-                }
+                //State state = thread.getState();
+                //if (state == State.WAITING || state == State.TIMED_WAITING) {//
+                thread.interrupt();//maybe this operation before parking in semaphore
+                //}
             }
         }
     }
 
-    //class-6.3: add new objects on pool initialized by asynchronization
-    private static final class PoolInitAsynCreateThread extends Thread {
+    //class-6.3: A thread running to create new connections when pool starting up
+    private static final class PoolInitAsyncCreateThread extends Thread {
         private final FastConnectionPool pool;
 
-        PoolInitAsynCreateThread(FastConnectionPool pool) {
+        PoolInitAsyncCreateThread(FastConnectionPool pool) {
             this.pool = pool;
         }
 
@@ -983,25 +1006,24 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
     }
 
-    //class-6.4:Idle scan thread
+    //class-6.4: A timed thead to scan idle connections and close them
     private static final class IdleTimeoutScanThread extends Thread {
         private final FastConnectionPool pool;
-        private final AtomicInteger idleScanState;
 
         IdleTimeoutScanThread(FastConnectionPool pool) {
             this.pool = pool;
-            idleScanState = pool.idleScanState;
         }
 
         public void run() {
-            long checkTimeIntervalNanos = TimeUnit.MILLISECONDS.toNanos(this.pool.poolConfig.getTimerCheckInterval());
-            while (this.idleScanState.get() == THREAD_WORKING) {
+            final AtomicInteger idleScanState = pool.idleScanState;
+            final long checkTimeIntervalNanos = TimeUnit.MILLISECONDS.toNanos(this.pool.poolConfig.getTimerCheckInterval());
+            while (idleScanState.get() == THREAD_WORKING) {
                 LockSupport.parkNanos(checkTimeIntervalNanos);
                 try {
                     if (pool.poolState == POOL_READY)
                         pool.closeIdleTimeoutConnection();
                 } catch (Throwable e) {
-                    Log.warn("BeeCP({})Error at closing idle timeout connections,cause:", this.pool.poolName, e);
+                    Log.warn("BeeCP({})Error at closing idle timeout connections", this.pool.poolName, e);
                 }
             }
         }
@@ -1016,11 +1038,11 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
 
         public void run() {
+            Log.info("BeeCP({})Hook is running", this.pool.poolName);
             try {
-                Log.info("BeeCP({})ConnectionPoolHook Running", this.pool.poolName);
                 this.pool.close();
             } catch (Throwable e) {
-                Log.error("BeeCP({})Error at closing connection pool,cause:", this.pool.poolName, e);
+                Log.error("BeeCP({})Error at closing connection pool", this.pool.poolName, e);
             }
         }
     }
@@ -1036,14 +1058,14 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
     }
 
-    //class-6.7:Borrower ThreadLocal
+    //class-6.7: threadLocal caches the last used connections of borrowers(only cache one per borrower)
     private static final class BorrowerThreadLocal extends ThreadLocal<WeakReference<Borrower>> {
         protected WeakReference<Borrower> initialValue() {
             return new WeakReference<Borrower>(new Borrower());
         }
     }
 
-    //class-6.8:PooledConnection Valid Test
+    //class-6.8: alive test on borrowed connections by executing a SQL
     private static final class PooledConnectionValidTestBySql implements PooledConnectionValidTest {
         private final String testSql;
         private final String poolName;
@@ -1058,11 +1080,12 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             this.testSql = testSql;
             this.printRuntimeLog = printRuntimeLog;
             this.validTestTimeout = validTestTimeout;
-            this.isDefaultAutoCommit = isDefaultAutoCommit;
+            this.isDefaultAutoCommit = isDefaultAutoCommit;//default
             this.supportQueryTimeout = supportQueryTimeout;
         }
 
-        public final boolean isValid(PooledConnection p) {
+        //method must work in transaction and rollback final to avoid testing dirty data into db
+        public final boolean isValid(PooledConnection p) {//
             Statement st = null;
             boolean changed = false;
             Connection rawConn = p.rawConn;
@@ -1082,7 +1105,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                         st.setQueryTimeout(validTestTimeout);
                     } catch (Throwable e) {
                         if (printRuntimeLog)
-                            Log.warn("BeeCP({})failed to setQueryTimeout", poolName, e);
+                            Log.warn("BeeCP({})Called failed on method 'setQueryTimeout' in sql tester", poolName, e);
                     }
                 }
 
@@ -1091,19 +1114,19 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     st.execute(this.testSql);
                     p.lastAccessTime = System.currentTimeMillis();
                 } finally {
-                    rawConn.rollback();
+                    rawConn.rollback();//must rollback avoid dirty data into db.if rollback failed,the connection need be abandon
                 }
             } catch (Throwable e) {
                 checkPassed = false;
                 if (printRuntimeLog)
-                    Log.warn("BeeCP({})failed to test connection by sql", poolName, e);
+                    Log.warn("BeeCP({})SQL tested failed on borrowed connection", poolName, e);
             } finally {
                 if (st != null) oclose(st);
                 if (changed) {
                     try {
                         rawConn.setAutoCommit(true);
                     } catch (Throwable e) {
-                        Log.warn("BeeCP({})failed to rest autoCommit to default value[true] after sql-test", poolName, e);
+                        Log.warn("BeeCP({})Default value(true) reset failed on borrowed connection after sql test", poolName, e);
                         checkPassed = false;
                     }
                 }

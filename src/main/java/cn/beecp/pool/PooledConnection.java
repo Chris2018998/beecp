@@ -17,7 +17,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static cn.beecp.pool.PoolStaticCenter.*;
+import static cn.beecp.pool.ConnectionPoolStatics.*;
 
 /**
  * Pooled Connection

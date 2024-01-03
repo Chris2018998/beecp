@@ -12,7 +12,7 @@ import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
 
-import static cn.beecp.pool.PoolStaticCenter.CommonLog;
+import static cn.beecp.pool.ConnectionPoolStatics.CommonLog;
 
 /**
  * Atomic Unsafe Util
