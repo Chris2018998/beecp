@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.chris2018998</groupId>
     <artifactId>beecp</artifactId>
-    <version>3.4.4</version>
+    <version>3.5.0</version>
     <name>beecp</name>
     <url>https://github.com/Chris2018998/BeeCP</url>
     <description>JDBC Connection Pool Implementation</description>
@@ -45,6 +45,8 @@
     </distributionManagement>
 
     <dependencies>
+
+
         <dependency>
             <groupId>javax.transaction</groupId>
             <artifactId>jta</artifactId>
@@ -66,7 +68,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.13</version>
+            <version>1.4.14</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
