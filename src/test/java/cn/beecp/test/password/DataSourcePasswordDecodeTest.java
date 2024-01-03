@@ -25,7 +25,7 @@ public class DataSourcePasswordDecodeTest extends TestCase {
         config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
         config.setUsername(JdbcConfig.JDBC_USER);
         config.setPassword("123");
-        config.setPasswordDecoderClassName("cn.beecp.test.password.DatabasePasswordDecoder");
+        config.setJdbcLinkInfDecoderClassName("cn.beecp.test.password.DatabasePasswordDecoder");
         ds = new BeeDataSource(config);
     }
 

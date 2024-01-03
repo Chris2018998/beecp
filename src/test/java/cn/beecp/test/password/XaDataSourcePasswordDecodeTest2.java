@@ -14,6 +14,7 @@ import cn.beecp.test.TestCase;
 import cn.beecp.test.TestUtil;
 import cn.beecp.test.mock.MockXaDataSource;
 
+
 public class XaDataSourcePasswordDecodeTest2 extends TestCase {
     private final String url = "jdbc:mock:test";
     private final String user = "mock";
@@ -23,7 +24,7 @@ public class XaDataSourcePasswordDecodeTest2 extends TestCase {
     public void setUp() throws Throwable {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         config.setConnectionFactoryClassName("cn.beecp.test.mock.MockXaDataSource");
-        config.setPasswordDecoderClassName("cn.beecp.test.password.DatabasePasswordDecoder");
+        config.setJdbcLinkInfDecoderClassName("cn.beecp.test.password.DatabasePasswordDecoder");
         config.addConnectProperty("URL", url);
         config.addConnectProperty("user", user);
         config.addConnectProperty("password", password);

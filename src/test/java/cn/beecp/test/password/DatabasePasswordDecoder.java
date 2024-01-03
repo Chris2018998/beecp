@@ -6,21 +6,21 @@
  */
 package cn.beecp.test.password;
 
-import cn.beecp.PasswordDecoder;
+import cn.beecp.BeeJdbcLinkInfoDecoder;
 
 /**
  * Password Decoder
  *
- * @author chris.liao
+ * @author chris liao
  */
-public class DatabasePasswordDecoder extends PasswordDecoder {
+public class DatabasePasswordDecoder extends BeeJdbcLinkInfoDecoder {
     private static final String new_password = "abc";
 
     public static final String password() {
         return new_password;
     }
 
-    public String decode(String password) {
+    public String decodePassword(String password) {
         return new_password;
     }
 }
