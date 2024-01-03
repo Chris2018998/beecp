@@ -8,7 +8,7 @@ package cn.beecp.test.config;
 
 import cn.beecp.BeeDataSourceConfig;
 import cn.beecp.BeeDataSourceConfigException;
-import cn.beecp.pool.PoolStaticCenter;
+import cn.beecp.pool.ConnectionPoolStatics;
 import cn.beecp.test.TestCase;
 
 import java.lang.reflect.Field;
@@ -35,7 +35,7 @@ public class PropertiesFileLoadTest extends TestCase {
 
     public void test() throws Exception {
         String msg = check();
-        if (!PoolStaticCenter.isBlank(msg)) throw new BeeDataSourceConfigException(msg);
+        if (!ConnectionPoolStatics.isBlank(msg)) throw new BeeDataSourceConfigException(msg);
     }
 
     private String check() throws Exception {
