@@ -13,7 +13,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * Connection factory
+ * Connection factory interface
  *
  * @author Chris
  * @version 1.0

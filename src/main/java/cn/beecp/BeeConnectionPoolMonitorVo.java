@@ -10,7 +10,7 @@
 package cn.beecp;
 
 /**
- * Connection pool monitor interface
+ * A monitor interface on Connection pool
  *
  * @author Chris Liao
  * @version 1.0

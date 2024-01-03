@@ -12,7 +12,7 @@ package cn.beecp;
 import java.sql.SQLException;
 
 /**
- * pool exception
+ * A base exception when failure occurs in pool,for example: pool initialization,pool clearing
  *
  * @author Chris Liao
  * @version 1.0

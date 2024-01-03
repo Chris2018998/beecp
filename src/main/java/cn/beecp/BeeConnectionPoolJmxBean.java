@@ -10,7 +10,7 @@
 package cn.beecp;
 
 /**
- * Pool JMX Bean interface
+ * JMX Bean interface on {@link BeeConnectionPool}
  *
  * @author Chris Liao
  * @version 1.0

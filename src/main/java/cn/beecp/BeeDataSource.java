@@ -31,6 +31,8 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
+ * A entrance object to operation on connection pool
+ * <p>
  * Email: Chris2018998@tom.com
  * Project: https://github.com/Chris2018998/BeeCP
  *
@@ -173,7 +175,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             try {
                 this.pool.close();
             } catch (Throwable e) {
-                CommonLog.error("Error at closing connection pool,cause:", e);
+                CommonLog.error("Error at closing connection pool", e);
             }
         }
     }

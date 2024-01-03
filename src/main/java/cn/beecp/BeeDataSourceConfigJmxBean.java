@@ -10,7 +10,7 @@
 package cn.beecp;
 
 /**
- * Bee DataSourceConfig JMX Bean interface
+ * JMX Bean interface on {@link BeeDataSourceConfig}
  *
  * @author Chris Liao
  * @version 1.0
