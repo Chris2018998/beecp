@@ -5,8 +5,7 @@
 <p align="left">
  <a><img src="https://img.shields.io/badge/JDK-1.7+-green.svg"></a>
  <a><img src="https://img.shields.io/badge/License-LGPL%202.1-blue.svg"></a>
- <a><img src="https://maven-badges.herokuapp.com/maven-central/com.github.chris2018998/beecp/badge.svg"></a>
-</p>  
+</p> 
 ## :coffee: Introduction 
 
 BeeCP, a small JDBC connection pool: high performance, lightweight code and good stability.
