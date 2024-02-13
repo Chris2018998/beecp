@@ -98,16 +98,14 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     /**
      * Method-1.1: pool initializes.
      *
-     * @param config is a pool initialization object contains some field-level items as parameters.
-     * @throws SQLException when configuration check failed or some initializes failed.
+     * @param config is a pool initialization object contains some field level items.
+     * @throws SQLException when check failed on configuration or a error occurs during initialization
      */
     public void init(BeeDataSourceConfig config) throws SQLException {
+        if (config == null) throw new PoolCreateFailedException("Configuration of pool initialization can't be null");
         if (PoolStateUpd.compareAndSet(this, POOL_NEW, POOL_STARTING)) {//initializes after pool state cas success from new to starting
             try {
                 checkJdbcProxyClass();
-                if (config == null)
-                    throw new PoolCreateFailedException("Configuration of pool initialization can't be null");
-
                 this.poolConfig = config.check();
                 startup();//Go,go! launch the pool
                 this.poolState = POOL_READY;//ready to accept coming requests(love u,my pool)
@@ -224,13 +222,13 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         } catch (Throwable e) {
             for (PooledConnection p : this.pooledArray)
                 this.removePooledConn(p, DESC_RM_INIT);
-            if (syn) {//throws failed exception on syn mode
+            if (syn) {//throws failure exception on syn mode
                 if (e instanceof SQLException)
                     throw (SQLException) e;
                 else
                     throw new PoolInitializedException(e);
             } else {
-                Log.warn("Failed to create initial connections" + e);
+                Log.warn("Failed to create initial connections", e);
             }
         } finally {
             pooledArrayLock.unlock();
@@ -423,9 +421,11 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                 //4:defaultCatalog
                 poolConfig.isEnableDefaultOnCatalog(),
                 defaultCatalog,
+                poolConfig.isEnableFastDirtyOnCatalog(),
                 //5:defaultCatalog
                 poolConfig.isEnableDefaultOnSchema(),
                 defaultSchema,
+                poolConfig.isEnableFastDirtyOnSchema(),
                 //6:defaultNetworkTimeout
                 supportNetworkTimeoutInd,
                 defaultNetworkTimeout,

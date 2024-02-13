@@ -33,6 +33,8 @@ final class PooledConnection implements Cloneable {
     final String defaultCatalog;
     final String defaultSchema;
     final int defaultNetworkTimeout;
+    final boolean enableFastDirtyOnSchema;
+    final boolean enableFastDirtyOnCatalog;
     private final boolean defaultCatalogIsNotBlank;
     private final boolean defaultSchemaIsNotBlank;
     private final boolean supportNetworkTimeoutInd;
@@ -74,9 +76,11 @@ final class PooledConnection implements Cloneable {
             //4:defaultCatalog
             boolean enableDefaultOnCatalog,
             String defaultCatalog,
+            boolean enableFastDirtyOnCatalog,
             //5:defaultSchema
             boolean enableDefaultOnSchema,
             String defaultSchema,
+            boolean enableFastDirtyOnSchema,
             //6:defaultNetworkTimeout
             boolean supportNetworkTimeoutInd,
             int defaultNetworkTimeout,
@@ -98,10 +102,12 @@ final class PooledConnection implements Cloneable {
         this.enableDefaultOnCatalog = enableDefaultOnCatalog;
         this.defaultCatalog = defaultCatalog;
         this.defaultCatalogIsNotBlank = !isBlank(defaultCatalog);
+        this.enableFastDirtyOnCatalog = enableFastDirtyOnCatalog;
         //5:defaultSchema
         this.enableDefaultOnSchema = enableDefaultOnSchema;
         this.defaultSchema = defaultSchema;
         this.defaultSchemaIsNotBlank = !isBlank(defaultSchema);
+        this.enableFastDirtyOnSchema = enableFastDirtyOnSchema;
         //6:defaultNetworkTimeout
         this.supportNetworkTimeoutInd = supportNetworkTimeoutInd;
         this.defaultNetworkTimeout = defaultNetworkTimeout;
@@ -136,42 +142,22 @@ final class PooledConnection implements Cloneable {
         return p;
     }
 
-    final boolean supportNetworkTimeoutSet() {
-        return this.supportNetworkTimeoutInd;
-    }
+    //***************************************************************************************************************//
+    //                                      1:connection recycle(call by proxy connection)                           //                                                                                  //
+    //***************************************************************************************************************//
 
-    final void updateAccessTime() {//for update,insert.select,delete and so on DML
-        this.commitDirtyInd = !this.curAutoCommit;
-        this.lastAccessTime = System.currentTimeMillis();
-    }
-
-    final void setResetInd(int i, boolean changed) {
-        if (this.resetFlags[i] != changed) {
-            this.resetFlags[i] = changed;
-            this.resetCnt += changed ? 1 : -1;
-        }
-    }
-
-    //support <method> Connection.abort</method>
+    /**
+     * remove connection from pool,method called by {@link ProxyConnectionBase#abort}
+     */
     final void removeSelf() {
         pool.abandonOnReturn(this, DESC_RM_ABORT);
     }
 
-    //called by pool before remove from pool
-    final void onBeforeRemove() {
-        try {
-            this.state = CON_CLOSED;
-            this.resetRawConn();
-        } catch (Throwable e) {
-            CommonLog.error("Connection close error", e);
-        } finally {
-            oclose(this.rawConn);
-            this.rawXaRes = null;
-            //rawXaConn = null;
-        }
-    }
-
-    //***************called by connection statement ********//
+    /**
+     * return borrowed connection to pool,method called by {@link ProxyConnectionBase#close}
+     *
+     * @throws SQLException when error occurs during recycle
+     */
     final void recycleSelf() throws SQLException {
         try {
             this.proxyInUsing = null;
@@ -183,38 +169,28 @@ final class PooledConnection implements Cloneable {
         }
     }
 
-    private void resetRawConn() throws SQLException {
-        if (this.commitDirtyInd) { //Roll back when commit dirty
-            this.rawConn.rollback();
-            this.commitDirtyInd = false;
-        }
-        //reset begin
-        if (this.resetCnt > 0) {
-            if (this.resetFlags[PS_AUTO]) {//reset autoCommit
-                this.rawConn.setAutoCommit(this.defaultAutoCommit);
-                this.curAutoCommit = this.defaultAutoCommit;
-            }
-            if (this.resetFlags[PS_TRANS])
-                this.rawConn.setTransactionIsolation(this.defaultTransactionIsolation);
-            if (this.resetFlags[PS_READONLY]) //reset readonly
-                this.rawConn.setReadOnly(this.defaultReadOnly);
-            if (this.defaultCatalogIsNotBlank && this.resetFlags[PS_CATALOG]) //reset catalog
-                this.rawConn.setCatalog(this.defaultCatalog);
+    //***************************************************************************************************************//
+    //                                    2:call back method                                                         //                                                                                  //
+    //***************************************************************************************************************//
 
-            //for JDK1.7 begin
-            if (this.defaultSchemaIsNotBlank && this.resetFlags[PS_SCHEMA]) //reset schema
-                this.rawConn.setSchema(this.defaultSchema);
-            if (this.resetFlags[PS_NETWORK]) //reset networkTimeout
-                this.rawConn.setNetworkTimeout(this.networkTimeoutExecutor, this.defaultNetworkTimeout);
-            //for JDK1.7 end
-            this.resetCnt = 0;
-            System.arraycopy(PooledConnection.FALSE, 0, this.resetFlags, 0, 6);
-        }//reset end
-        //clear warnings
-        this.rawConn.clearWarnings();
+    /**
+     * call back while remove pooledConnection from pool
+     */
+    final void onBeforeRemove() {
+        try {
+            this.state = CON_CLOSED;
+            this.resetRawConn();
+        } catch (Throwable e) {
+            CommonLog.error("Connection close error", e);
+        } finally {
+            oclose(this.rawConn);
+            this.rawXaRes = null;
+        }
     }
 
-    //****************below are some statement statement methods***************************/
+    //***************************************************************************************************************//
+    //                                     3:statement cache maintenance                                             //                                                                                  //
+    //***************************************************************************************************************//
     final void registerStatement(ProxyStatementBase s) {
         if (this.openStmSize == this.openStatements.length) {//full
             ProxyStatementBase[] array = new ProxyStatementBase[this.openStmSize << 1];
@@ -247,8 +223,15 @@ final class PooledConnection implements Cloneable {
         this.openStmSize = 0;
     }
 
-    //****************Fatal error code check*******************************************************************************/
-    void checkSQLException(SQLException e) {
+    //***************************************************************************************************************//
+    //                                     4:other methods                                                           //                                                                                  //
+    //***************************************************************************************************************//
+    final void updateAccessTime() {//for update,insert.select,delete and so on DML
+        this.commitDirtyInd = !this.curAutoCommit;
+        this.lastAccessTime = System.currentTimeMillis();
+    }
+
+    void checkSQLException(SQLException e) {//Fatal error code check
         int code = e.getErrorCode();
         if (code != 0 && proxyInUsing != null && sqlExceptionCodeList != null && sqlExceptionCodeList.contains(code)) {
             this.proxyInUsing.abort(null);//will remove from pool
@@ -261,5 +244,50 @@ final class PooledConnection implements Cloneable {
             this.proxyInUsing.abort(null);//will remove from pool
             this.proxyInUsing = null;
         }
+    }
+
+    //***************************************************************************************************************//
+    //                                     5:dirty record or reset                                                   //                                                                                  //
+    //***************************************************************************************************************//
+    final boolean supportNetworkTimeoutSet() {
+        return this.supportNetworkTimeoutInd;
+    }
+
+    final void setResetInd(int i, boolean changed) {
+        if (this.resetFlags[i] != changed) {
+            this.resetFlags[i] = changed;
+            this.resetCnt += changed ? 1 : -1;
+        }
+    }
+
+    private void resetRawConn() throws SQLException {
+        if (this.commitDirtyInd) { //Roll back when commit dirty
+            this.rawConn.rollback();
+            this.commitDirtyInd = false;
+        }
+        //reset begin
+        if (this.resetCnt > 0) {
+            if (this.resetFlags[PS_AUTO]) {//reset autoCommit
+                this.rawConn.setAutoCommit(this.defaultAutoCommit);
+                this.curAutoCommit = this.defaultAutoCommit;
+            }
+            if (this.resetFlags[PS_TRANS])
+                this.rawConn.setTransactionIsolation(this.defaultTransactionIsolation);
+            if (this.resetFlags[PS_READONLY]) //reset readonly
+                this.rawConn.setReadOnly(this.defaultReadOnly);
+            if (this.defaultCatalogIsNotBlank && this.resetFlags[PS_CATALOG]) //reset catalog
+                this.rawConn.setCatalog(this.defaultCatalog);
+
+            //for JDK1.7 begin
+            if (this.defaultSchemaIsNotBlank && this.resetFlags[PS_SCHEMA]) //reset schema
+                this.rawConn.setSchema(this.defaultSchema);
+            if (this.resetFlags[PS_NETWORK]) //reset networkTimeout
+                this.rawConn.setNetworkTimeout(this.networkTimeoutExecutor, this.defaultNetworkTimeout);
+            //for JDK1.7 end
+            this.resetCnt = 0;
+            System.arraycopy(PooledConnection.FALSE, 0, this.resetFlags, 0, 6);
+        }//reset end
+        //clear warnings
+        this.rawConn.clearWarnings();
     }
 }
