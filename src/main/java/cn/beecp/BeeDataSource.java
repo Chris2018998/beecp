@@ -14,6 +14,7 @@ import cn.beecp.pool.exception.ConnectionGetTimeoutException;
 import cn.beecp.pool.exception.PoolCreateFailedException;
 import cn.beecp.pool.exception.PoolNotCreatedException;
 
+import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
@@ -25,8 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
-import static cn.beecp.pool.ConnectionPoolStatics.CommonLog;
-import static cn.beecp.pool.ConnectionPoolStatics.createClassInstance;
+import static cn.beecp.pool.ConnectionPoolStatics.*;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -44,9 +44,9 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XADataSource {
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
-    private final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
     private long maxWaitNanos = SECONDS.toNanos(8);//default vale same to config
     private BeeConnectionPool pool;
+    private CommonDataSource subDs;//used to set loginTimeout
     private boolean ready;//true,means that inner pool has created
     private SQLException cause;//inner pool create failed cause
 
@@ -64,7 +64,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         try {
             config.copyTo(this);
             BeeDataSource.createPool(this);
-            this.maxWaitNanos = MILLISECONDS.toNanos(config.getMaxWait());//read configured max wait time and convert to nanoSeconds seconds from milliseconds
+            this.maxWaitNanos = MILLISECONDS.toNanos(config.getMaxWait());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -76,6 +76,15 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             BeeConnectionPool pool = (BeeConnectionPool) createClassInstance(poolClass, BeeConnectionPool.class, "pool");
             pool.init(ds);
             ds.pool = pool;
+
+            Object connectionFactory = ds.getConnectionFactory();
+            if (connectionFactory instanceof CommonDataSource)
+                ds.subDs = (CommonDataSource) connectionFactory;
+            else
+                ds.subDs = Dummy_CommonDataSource;
+
+            //timeout on connect to db
+            if (ds.getCreateTimeout() > 0) ds.subDs.setLoginTimeout(ds.getCreateTimeout());
             ds.ready = true;
         } catch (SQLException e) {
             throw e;
@@ -98,7 +107,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     }
 
     private BeeConnectionPool createPoolByLock() throws SQLException {
-        if (!lock.isWriteLocked() && writeLock.tryLock()) {
+        if (!lock.isWriteLocked() && lock.writeLock().tryLock()) {
             try {
                 if (!ready) {
                     cause = null;
@@ -107,7 +116,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             } catch (SQLException e) {
                 cause = e;
             } finally {
-                writeLock.unlock();
+                lock.writeLock().unlock();
             }
         } else {
             try {
@@ -132,25 +141,29 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         throw new SQLFeatureNotSupportedException("Not support");
     }
 
+    //***************************************************************************************************************//
+    //                                      Override methods from CommonDataSource                                   //
+    //***************************************************************************************************************//
     public PrintWriter getLogWriter() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return subDs.getLogWriter();
     }
 
     public void setLogWriter(PrintWriter out) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        subDs.setLogWriter(out);
     }
 
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return subDs.getParentLogger();
     }
 
     public int getLoginTimeout() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        return subDs.getLoginTimeout();
     }
 
     public void setLoginTimeout(int seconds) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+        subDs.setLoginTimeout(seconds);
     }
+    //******************************************************** Override End ******************************************//
 
     public boolean isWrapperFor(Class<?> clazz) {
         return clazz != null && clazz.isInstance(this);

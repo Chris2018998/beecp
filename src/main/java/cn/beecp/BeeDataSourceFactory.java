@@ -77,7 +77,10 @@ public final class BeeDataSourceFactory implements ObjectFactory {
      * @see NamingManager#getURLContext
      */
     public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
+        if (!(obj instanceof Reference)) return null;
         Reference ref = (Reference) obj;
+        if (!"javax.sql.DataSource".equals(ref.getClassName())) return null;
+
         //1:try to lookup transactionManager if configured
         TransactionManager tm = null;
         String tmJndiName = getConfigValue(ref, CONFIG_TM_JNDI);

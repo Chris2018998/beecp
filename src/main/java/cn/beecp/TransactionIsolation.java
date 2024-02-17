@@ -51,12 +51,4 @@ public final class TransactionIsolation {
     static Integer getTransactionIsolationCode(String name) {
         return IsolationLevelMap.get(name.toUpperCase(Locale.US));
     }
-
-//    static String getTransactionIsolationName(Integer code) {
-//        for (Map.Entry<String, Integer> entry : TransactionIsolation.IsolationLevelMap.entrySet()) {
-//            if (entry.getValue().equals(code))
-//                return entry.getKey();
-//        }
-//        return null;
-//    }
 }
