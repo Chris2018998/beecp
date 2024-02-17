@@ -144,8 +144,8 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             this.pooledArray = new PooledConnection[0];
         }
 
-        //step3: creates initial connections by syn mode or async mode
-        this.maxWaitNs = TimeUnit.MILLISECONDS.toNanos(poolConfig.getMaxWait());//time out on acquiring for a semaphore or a lock
+        //step3: creates initial connections by syn mode
+        this.maxWaitNs = TimeUnit.MILLISECONDS.toNanos(poolConfig.getMaxWait());//timeout for acquiring on a semaphore or a lock
         if (poolConfig.getInitialSize() > 0 && !poolConfig.isAsyncCreateInitConnection())
             createInitConnections(poolConfig.getInitialSize(), true);
 
@@ -266,7 +266,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
                     if (this.templatePooledConnNotCreated) {
                         templatePooledConn = this.createTemplatePooledConn(rawConn);
-                        templatePooledConnNotCreated = false;//template pooled connection remark as created
+                        templatePooledConnNotCreated = false;//template pooled connection is ready
                     }
 
                     PooledConnection p = this.templatePooledConn.setDefaultAndCopy(rawConn, state, rawXaRes);
@@ -274,7 +274,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                         Log.info("BeeCP({}))Created a new pooled connection:{} with state:{}", this.poolName, p, state);
                     PooledConnection[] arrayNew = new PooledConnection[l + 1];
                     System.arraycopy(this.pooledArray, 0, arrayNew, 0, l);
-                    arrayNew[l] = p;// tail
+                    arrayNew[l] = p;//tail
                     this.pooledArray = arrayNew;
                     return p;
                 } catch (Throwable e) {
@@ -289,10 +289,10 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
     }
 
-    //Method-1.5: remove one pooled connection under lock
+    //Method-1.5: remove a pooled connection under lock
     private void removePooledConn(PooledConnection p, String removeType) {
         if (this.printRuntimeLog)
-            Log.info("BeeCP({}))Begin to remove a pooled connection:{} for reason:{}", this.poolName, p, removeType);
+            Log.info("BeeCP({}))Begin to remove a pooled connection:{} by reason:{}", this.poolName, p, removeType);
         p.onBeforeRemove();
 
         this.pooledArrayLock.lock();
@@ -683,7 +683,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     this.tryWakeupServantThread();
                 }
             } else if (state == CON_USING && supportHoldTimeout) {
-                if (System.currentTimeMillis() - p.lastAccessTime >= holdTimeoutMs) {//hold timeout
+                if (System.currentTimeMillis() - p.lastAccessTime - holdTimeoutMs >= 0L) {//hold timeout
                     ProxyConnectionBase proxyInUsing = p.proxyInUsing;
                     if (proxyInUsing != null) {
                         oclose(proxyInUsing);
@@ -747,10 +747,19 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
     //Method-4.3: remove all connections from pool
     private void removeAllConnections(boolean force, String source) {
+        //1:interrupt waiters on lock(maybe stuck on socket)
+        try {
+            interruptWaitersOnLock(this.pooledArrayLock);
+        } catch (Throwable e) {
+            Log.info("BeeCP({})Failed to interrupt threads on lock", e);
+        }
+
+        //2:interrupt waiters on semaphore
         this.semaphore.interruptWaitingThreads();
         PoolInClearingException exception = new PoolInClearingException("Access rejected,pool in clearing");
         while (!this.waitQueue.isEmpty()) this.transferException(exception);
 
+        //3:clear all connections
         while (true) {
             PooledConnection[] array = this.pooledArray;
             for (PooledConnection p : array) {
@@ -783,12 +792,12 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
     }
 
-    //Method-4.4: closed check
+    //Method-4.5: closed check
     public boolean isClosed() {
         return this.poolState == POOL_CLOSED;
     }
 
-    //Method-4.5: shut down the pool and set its state to closed
+    //Method-4.6: shut down the pool and set its state to closed
     public void close() {
         do {
             int poolStateCode = this.poolState;

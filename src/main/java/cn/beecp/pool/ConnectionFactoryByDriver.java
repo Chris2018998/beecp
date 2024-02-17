@@ -11,10 +11,11 @@ package cn.beecp.pool;
 
 import cn.beecp.RawConnectionFactory;
 
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.SQLException;
+import javax.sql.CommonDataSource;
+import java.io.PrintWriter;
+import java.sql.*;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 /**
  * Connection factory Implementation with a JDBC Driver
@@ -22,7 +23,7 @@ import java.util.Properties;
  * @author Chris liao
  * @version 1.0
  */
-public final class ConnectionFactoryByDriver implements RawConnectionFactory {
+public final class ConnectionFactoryByDriver implements RawConnectionFactory, CommonDataSource {
     //Jdbc url to db
     private final String url;
     //creator of raw connections
@@ -40,5 +41,28 @@ public final class ConnectionFactoryByDriver implements RawConnectionFactory {
     //return a connection if link successful to db,otherwise,throws a failure exception
     public final Connection create() throws SQLException {
         return this.driver.connect(this.url, this.properties);
+    }
+
+    //***************************************************************************************************************//
+    //                                      Override methods from CommonDataSource                                   //
+    //***************************************************************************************************************//
+    public final PrintWriter getLogWriter() {
+        return DriverManager.getLogWriter();
+    }
+
+    public final void setLogWriter(PrintWriter out) {
+        DriverManager.setLogWriter(out);
+    }
+
+    public int getLoginTimeout() {
+        return DriverManager.getLoginTimeout();
+    }
+
+    public final void setLoginTimeout(int seconds) {
+        DriverManager.setLoginTimeout(seconds);
+    }
+
+    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+        return driver.getParentLogger();
     }
 }

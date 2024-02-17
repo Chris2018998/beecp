@@ -14,12 +14,17 @@ import cn.beecp.pool.exception.TestSqlExecFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.CommonDataSource;
 import javax.sql.XAConnection;
+import java.io.PrintWriter;
 import java.lang.reflect.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.locks.AbstractOwnableSynchronizer;
+import java.util.concurrent.locks.AbstractQueuedSynchronizer;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Pool Static Center
@@ -44,6 +49,27 @@ public final class ConnectionPoolStatics {
     public static final String CONFIG_CONNECT_PROP_SIZE = "connectProperties.size";
     //connect properties prefix for driver or driver dataSource
     public static final String CONFIG_CONNECT_PROP_KEY_PREFIX = "connectProperties.";
+    public static final CommonDataSource Dummy_CommonDataSource = new CommonDataSource() {
+        public final PrintWriter getLogWriter() throws SQLException {
+            throw new SQLFeatureNotSupportedException("Not supported");
+        }
+
+        public final void setLogWriter(PrintWriter out) throws SQLException {
+            throw new SQLFeatureNotSupportedException("Not supported");
+        }
+
+        public int getLoginTimeout() throws SQLException {
+            throw new SQLFeatureNotSupportedException("Not supported");
+        }
+
+        public final void setLoginTimeout(int seconds) throws SQLException {
+            throw new SQLFeatureNotSupportedException("Not supported");
+        }
+
+        public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
+            throw new SQLFeatureNotSupportedException("Not supported");
+        }
+    };
     //pool state
     static final int POOL_NEW = 0;
     static final int POOL_STARTING = 1;
@@ -256,8 +282,36 @@ public final class ConnectionPoolStatics {
         }
     }
 
+    static void interruptWaitersOnLock(ReentrantLock lock) throws Exception {
+        //1: get syn field value from lock
+        Field syncField = lock.getClass().getDeclaredField("sync");
+        syncField.setAccessible(true);
+        Object sync = syncField.get(lock);
+
+        //2: get reflection methods about lock threads
+        Method ownerThreadsMethod = AbstractOwnableSynchronizer.class.getDeclaredMethod("getExclusiveOwnerThread");
+        Method waitingThreadsMethod = AbstractQueuedSynchronizer.class.getDeclaredMethod("getExclusiveQueuedThreads");
+        ownerThreadsMethod.setAccessible(true);
+        waitingThreadsMethod.setAccessible(true);
+
+        /*
+         * 3:interrupt threads on lock
+         * if interruption flag updated after lock acquiring success, and interrupted exception thrown from AQS method at next acquiring
+         * should add a cas <method>cancelAcquire(Thread thread)</method>to do interruption in AQS?
+         */
+        Object[] parameters = new Object[0];
+        Thread ownerThread = (Thread) ownerThreadsMethod.invoke(sync, parameters);
+        if (ownerThread != null) ownerThread.interrupt();//owner thread maybe stuck on socket
+        Collection<Thread> waitingThreads = (Collection<Thread>) waitingThreadsMethod.invoke(sync, parameters);//waiting for lock
+        if (waitingThreads != null) {
+            for (Thread thread : waitingThreads) {
+                thread.interrupt();
+            }
+        }
+    }
+
     //***************************************************************************************************************//
-    //                               5: configuration read methods(5)                                                //
+    //                               6: configuration read methods(5)                                                //
     //***************************************************************************************************************//
 
     /**
@@ -350,9 +404,8 @@ public final class ConnectionPoolStatics {
         }
     }
 
-
     //***************************************************************************************************************//
-    //                               6: bean property set methods(3)                                                 //
+    //                               7: bean property set methods(3)                                                 //
     //***************************************************************************************************************//
     public static void setPropertiesValue(Object bean, Map<String, Object> valueMap) throws BeeDataSourceConfigException {
         if (bean == null) throw new BeeDataSourceConfigException("Bean can't be null");
@@ -447,7 +500,7 @@ public final class ConnectionPoolStatics {
     }
 
     //***************************************************************************************************************//
-    //                               7: class check(3)                                                               //
+    //                               8: class check(3)                                                               //
     //***************************************************************************************************************//
     //check subclass,if failed,then return error message;
     public static Object createClassInstance(Class objectClass, Class parentClass, String objectClassType) throws Exception {
