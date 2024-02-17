@@ -27,6 +27,10 @@ public final class AtomicIntegerFieldUpdaterImpl<T> extends AtomicIntegerFieldUp
     public static <T> AtomicIntegerFieldUpdater<T> newUpdater(Class<T> beanClass, String fieldName) {
         try {
             return new AtomicIntegerFieldUpdaterImpl<T>(unsafe.objectFieldOffset(beanClass.getDeclaredField(fieldName)));
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        } catch (SecurityException e) {
+            throw e;
         } catch (Throwable e) {
             return AtomicIntegerFieldUpdater.newUpdater(beanClass, fieldName);
         }

@@ -29,6 +29,10 @@ public final class AtomicReferenceFieldUpdaterImpl<T, V> extends AtomicReference
     public static <T, V> AtomicReferenceFieldUpdater<T, V> newUpdater(Class<T> beanClass, Class<V> fieldType, String fieldName) {
         try {
             return new AtomicReferenceFieldUpdaterImpl<T, V>(unsafe.objectFieldOffset(beanClass.getDeclaredField(fieldName)), fieldType);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        } catch (SecurityException e) {
+            throw e;
         } catch (Throwable e) {
             return AtomicReferenceFieldUpdater.newUpdater(beanClass, fieldType, fieldName);
         }
