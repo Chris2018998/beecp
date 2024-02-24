@@ -40,35 +40,35 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  * @version 1.0
  */
 public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
-    //index on generating default pool name,atomic value starts with 1
+    //atomic index at pool name generation,its value starts with 1
     private static final AtomicInteger PoolNameIndex = new AtomicInteger(1);
 
-    //properties map apply in jdbc driver to connect db
+    //a map store some properties for driver connects to db,@see{@code Driver.connect(url,properties)}
     private final Map<String, Object> connectProperties = new HashMap<String, Object>(2);
-    //jdbc user name
+    //user name applied at connecting to db
     private String username;
-    //jdbc password
+    //password applied at connecting to db
     private String password;
-    //jdbc link url
+    //link url of db server applied at connecting to db
     private String jdbcUrl;
     //jdbc driver class name
     private String driverClassName;
-    //a default name generated on pool starting up when this value is null or empty
+    //a name assign to pool,if null or empty,then set a generated name to pool on initialization
     private String poolName;
-    //fair boolean indicator applied to pool semaphore
+    //enable pool semaphore works in fair mode
     private boolean fairMode;
-    //creation size of connections on starting up
+    //creation size of connections on pool starting up
     private int initialSize;
-    //indicator to create initial connections by synchronization mode
+    //indicator to create initial connections by async mode
     private boolean asyncCreateInitConnection;
     //max reachable size of pooled connections
     private int maxActive = Math.min(Math.max(10, NCPU), 50);
-    //max permit size of pool semaphore
+    //permit size of pool semaphore
     private int borrowSemaphoreSize = Math.min(this.maxActive / 2, NCPU);
     //milliseconds:max wait time of a borrower to get a idle connection from pool,if not get one,then throws an exception
     private long maxWait = SECONDS.toMillis(8);
-    //seconds:max wait time in {@link RawConnectionFactory} and {@link RawXaConnectionFactory} to create connections.
-    //this item can be set into raw datasource or DriverManager as loginTimeout on initialization if its value is greater than zero,
+    //seconds:max wait time in {@code RawConnectionFactory.create()} and {@code RawXaConnectionFactory.create()} to create connections.
+    //this item value can be set into raw datasource or DriverManager as loginTimeout on pool initialization if its value is greater than zero,
     //but field loginTimeout of DriverManager is shareable info and whose setting change is global to all drivers,and maybe some drivers
     //read loginTimeout from DriverManager as a working control field,so need more careful and set an appropriate value to this field when necessary
     private int createTimeout;
@@ -77,7 +77,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //milliseconds:max hold time and not be active on borrowed connections,which may be force released to pool if this value greater than zero
     private long holdTimeout;
 
-    //a test sql to validate borrowed connections whether be alive
+    //an alive test sql running on borrowed connections,if dead remove them from pool
     private String validTestSql = "SELECT 1";
     //seconds:max wait time to get validation result on testing connections
     private int validTestTimeout = 3;
@@ -94,34 +94,34 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //store some fatal sql exception state(@see field SQLState in SQLException class),if one of these state contains in SQLException thrown from borrowed out connections,then remove them from pool
     private List<String> sqlExceptionStateList;
 
-    //default value to catalog<code>Connection.setCatalog(String)</code>
+    //default value set on property catalog of new connections,@see set method{@code Connection.setCatalog(String)}
     private String defaultCatalog;
-    //default value to schema<code>Connection.setSchema(String)</code>
+    //default value set on property schema of new connections,@see set method{@code Connection.setSchema(String)}
     private String defaultSchema;
-    //default value to readOnly<code>Connection.setReadOnly(boolean)</code>
+    //default value set on property read-only of new connections,@see set method{@code Connection.setReadOnly(boolean)}
     private Boolean defaultReadOnly;
-    //default value to autoCommit<code>Connection.setAutoCommit(boolean)</code>
+    //default value set on property auto-commit of new connections,@see set method{@code Connection.setAutoCommit(boolean)}
     private Boolean defaultAutoCommit;
-    //default value to transactionIsolation<code>Connection.setTransactionIsolation(int)</code>
+    //default value set on property transaction-isolation of new connections,@see set method{@code Connection.setTransactionIsolation(int)}
     private Integer defaultTransactionIsolationCode;
-    //description of default transactionIsolation level code
+    //description of default transaction-isolation level code
     private String defaultTransactionIsolationName;
 
-    //enable indicator on using default catalog(connection property)
+    //indicator to set default value on property catalog of new connections
     private boolean enableDefaultOnCatalog = true;
-    //enable indicator on using default schema(connection property)
+    //indicator to set default value on property schema of new connections
     private boolean enableDefaultOnSchema = true;
-    //enable indicator on using default readOnly(connection property)
+    //indicator to set default value on property read-only of new connections
     private boolean enableDefaultOnReadOnly = true;
-    //enable indicator on using default autoCommit(connection property)
+    //indicator to set default value on property auto-commit of new connections
     private boolean enableDefaultOnAutoCommit = true;
-    //enable indicator on using default transactionIsolation(connection property)
+    //indicator to set default value on property transaction-isolation of new connections
     private boolean enableDefaultOnTransactionIsolation = true;
 
-    //invocation on <method>Connection.setSchema</method) regards as schema dirty(should set to true when using postgres driver)
-    private boolean enableFastDirtyOnSchema;
-    //invocation on <method>Connection.setCatalog</method) regards as catalog dirty(should set to true when using postgres driver)
-    private boolean enableFastDirtyOnCatalog;
+    //put a dirty flag on schema when invocation success at method {@code Connection.setSchema()} and ignore change on schema
+    private boolean forceDirtyOnSchemaAfterSet;
+    //put a dirty flag on catalog when invocation success at method {@code Connection.setCatalog()} and ignore change on catalog
+    private boolean forceDirtyOnCatalogAfterSet;
 
     /**
      * connection factory class,which must be implement one of the below four interfaces
@@ -516,20 +516,20 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.enableDefaultOnTransactionIsolation = enableDefaultOnTransactionIsolation;
     }
 
-    public boolean isEnableFastDirtyOnSchema() {
-        return enableFastDirtyOnSchema;
+    public boolean isForceDirtyOnSchemaAfterSet() {
+        return forceDirtyOnSchemaAfterSet;
     }
 
-    public void setEnableFastDirtyOnSchema(boolean enableFastDirtyOnSchema) {
-        this.enableFastDirtyOnSchema = enableFastDirtyOnSchema;
+    public void setForceDirtyOnSchemaAfterSet(boolean forceDirtyOnSchemaAfterSet) {
+        this.forceDirtyOnSchemaAfterSet = forceDirtyOnSchemaAfterSet;
     }
 
-    public boolean isEnableFastDirtyOnCatalog() {
-        return enableFastDirtyOnCatalog;
+    public boolean isForceDirtyOnCatalogAfterSet() {
+        return forceDirtyOnCatalogAfterSet;
     }
 
-    public void setEnableFastDirtyOnCatalog(boolean enableFastDirtyOnCatalog) {
-        this.enableFastDirtyOnCatalog = enableFastDirtyOnCatalog;
+    public void setForceDirtyOnCatalogAfterSet(boolean forceDirtyOnCatalogAfterSet) {
+        this.forceDirtyOnCatalogAfterSet = forceDirtyOnCatalogAfterSet;
     }
 
     //****************************************************************************************************************//
@@ -663,7 +663,22 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                 for (int i = 1; i <= size; i++)//properties index begin with 1
                     this.addConnectProperty(getPropertyValue(configProperties, CONFIG_CONNECT_PROP_KEY_PREFIX + i));
             }
-        }
+
+            //4:try to load sql exception fatal code and fatal state
+            String sqlExceptionCode = getPropertyValue(configProperties, CONFIG_SQL_EXCEPTION_CODE);
+            String sqlExceptionState = getPropertyValue(configProperties, CONFIG_SQL_EXCEPTION_STATE);
+            if (!isBlank(sqlExceptionCode)) {
+                for (String code : sqlExceptionCode.trim().split(",")) {
+                    this.addSqlExceptionCode(Integer.parseInt(code));
+                }
+            }
+
+            if (!isBlank(sqlExceptionState)) {
+                for (String state : sqlExceptionState.trim().split(",")) {
+                    this.addSqlExceptionState(state);
+                }
+            }
+        }//synchronized end
     }
 
 
