@@ -61,7 +61,7 @@ public class CommonUtil {
         Method ownerThreadsMethod = AbstractOwnableSynchronizer.class.getDeclaredMethod("getExclusiveOwnerThread");//protected
         ownerThreadsMethod.setAccessible(true);
         Thread ownerThread = (Thread) ownerThreadsMethod.invoke(sync, new Object[0]);
-        ownerThread.interrupt();
+       if(ownerThread!=null) ownerThread.interrupt();
     }
 
     public static void interruptQueuedWaitersOnLock(ReentrantLock lock) throws Exception {
