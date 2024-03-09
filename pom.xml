@@ -16,8 +16,8 @@
 
     <licenses>
         <license>
-            <name>Licensed under GNU Lesser General Public License v2.1</name>
-            <url>http://www.gnu.de/documents/lgpl-2.1.en.html</url>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
     <developers>
@@ -45,8 +45,6 @@
     </distributionManagement>
 
     <dependencies>
-
-
         <dependency>
             <groupId>javax.transaction</groupId>
             <artifactId>jta</artifactId>
@@ -78,17 +76,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5</version>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <configuration>
-                            <source>1.7</source>
-                            <target>1.7</target>
-                            <encoding>UTF-8</encoding>
-                        </configuration>
-                    </execution>
-                </executions>
+                <version>3.6.2</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -101,7 +94,7 @@
                         </goals>
                         <phase>generate-test-sources</phase>
                         <configuration>
-                            <mainClass>cn.beecp.pool.ProxyClassGenerator</mainClass>
+                            <mainClass>org.stone.beecp.pool.ProxyClassGenerator</mainClass>
                             <arguments>
                                 <argument>${project.basedir}/target/classes</argument>
                             </arguments>
@@ -116,7 +109,7 @@
                 <configuration>
                     <skipTests>false</skipTests>
                     <includes>
-                        <include>cn/beecp/test/TestRunner.java</include>
+                        <include>org/stone/beecp/TestRunner.java</include>
                     </includes>
                 </configuration>
             </plugin>
