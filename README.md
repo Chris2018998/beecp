@@ -1,11 +1,14 @@
+<p align="left">
+<a><img src="https://img.shields.io/badge/JDK-1.7+-green.svg"></a>
+<a><img src="https://img.shields.io/github/license/Chris2018998/BeeCP?color=4D7A97&logo=apache"></a>
+<a><img src="https://maven-badges.herokuapp.com/maven-central/com.github.chris2018998/beecp/badge.svg"></a>
+</p>
+
 ![图片](https://user-images.githubusercontent.com/32663325/154847136-10e241ae-af4c-478a-a608-aaa685e0464b.png)
 &nbsp;<a href="https://github.com/Chris2018998/stone/blob/main/README.md">:house:</a>| 
 <a href="https://github.com/Chris2018998/BeeCP/edit/master/README_cn.md">中文</a>|
 <a href="https://github.com/Chris2018998/BeeCP/edit/master/README.md">English</a>
-<p align="left">
- <a><img src="https://img.shields.io/badge/JDK-1.7+-green.svg"></a>
- <a><img src="https://img.shields.io/badge/License-LGPL%202.1-blue.svg"></a>
-</p> 
+
 ## :coffee: Introduction 
 
 BeeCP, a small JDBC connection pool: high performance, lightweight code and good stability.
