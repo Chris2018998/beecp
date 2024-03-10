@@ -1,1 +1,9 @@
+beecp changes
 
+Changes in 4.0.0
+
+* change project LICENSE from LGPL2.1 to Apache2.0
+* change top level folder from cn to org.stone
+* add connection eviction predication to support customization on SQLException check
+* add a operation method which can be used to try interrupt blocking on Driver.getConencton/DataSource.getConencton
+* rename a config item: createTimeout ---> connctTimeout,which is equivalent to loginTimeout field in DriverManager
