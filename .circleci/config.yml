@@ -1,9 +1,8 @@
  jobs:
-  build: # name of your job
-    machine: true # executor type
+  build: 
+    machine: true 
     resource_class: "medium"
 
     steps:
-      # Commands run in a Linux virtual machine environment
       - checkout
       - run: mvn clean package
