@@ -1,0 +1,8 @@
+ jobs:
+  build: 
+    machine: true 
+    resource_class: "medium"
+
+    steps:
+      - checkout
+      - run: mvn clean package
