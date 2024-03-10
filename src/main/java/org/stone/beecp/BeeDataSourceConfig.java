@@ -735,7 +735,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                     try {
                         this.addSqlExceptionCode(Integer.parseInt(code));
                     } catch (NumberFormatException e) {
-                        throw new BeeDataSourceConfigException(code + " is not valid error code");
+                        throw new BeeDataSourceConfigException(code + " is not a valid SQLException error code");
                     }
                 }
             }
