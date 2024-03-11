@@ -1,8 +1,27 @@
- jobs:
-  build: 
-    machine: true 
-    resource_class: "medium"
+version: 2.1
 
+jobs:
+  build-and-test:
+    docker:
+      - image: cimg/openjdk:11.0
+      
     steps:
+      # Checkout the code as the first step.
       - checkout
-      - run: mvn clean package
+
+      # Use mvn clean and package as the standard maven build phase
+      - run:
+          name: Build
+          command: mvn clean package
+      # Then run your tests!
+      - run:
+          name: Test
+          command: mvn test
+
+# Orchestrate jobs using workflows
+# See: https://circleci.com/docs/workflows/ & https://circleci.com/docs/configuration-reference/#workflows
+workflows:
+  sample: # This is the name of the workflow, feel free to change it to better match your workflow.
+    # Inside the workflow, you define the jobs you want to run.
+    jobs:
+      - build-and-test
