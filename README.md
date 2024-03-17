@@ -1,6 +1,6 @@
 <p align="left">
 <a><img src="https://img.shields.io/circleci/build/github/Chris2018998/beecp"></a>
-<!-- <a><img src="https://img.shields.io/codecov/c/github/Chris2018998/beeop"></a> -->
+<a><img src="https://codecov.io/gh/Chris2018998/beecp/graph/badge.svg?token=JLS7NFR3NP"/></a>
 <a><img src="https://maven-badges.herokuapp.com/maven-central/com.github.chris2018998/beecp/badge.svg"></a>
 <a><img src="https://img.shields.io/badge/JDK-1.7+-green.svg"></a>
 <a><img src="https://img.shields.io/github/license/Chris2018998/BeeCP"></a>
