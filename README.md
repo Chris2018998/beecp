@@ -1,7 +1,9 @@
 <p align="left">
-<a><img src="https://img.shields.io/badge/JDK-1.7+-green.svg"></a>
-<a><img src="https://img.shields.io/github/license/Chris2018998/BeeCP?color=4D7A97&logo=apache"></a>
+<a><img src="https://img.shields.io/circleci/build/github/Chris2018998/beecp"></a>
+<!-- <a><img src="https://img.shields.io/codecov/c/github/Chris2018998/beeop"></a> -->
 <a><img src="https://maven-badges.herokuapp.com/maven-central/com.github.chris2018998/beecp/badge.svg"></a>
+<a><img src="https://img.shields.io/badge/JDK-1.7+-green.svg"></a>
+<a><img src="https://img.shields.io/github/license/Chris2018998/BeeCP"></a>
 </p>
 
 ![图片](https://user-images.githubusercontent.com/32663325/154847136-10e241ae-af4c-478a-a608-aaa685e0464b.png)
