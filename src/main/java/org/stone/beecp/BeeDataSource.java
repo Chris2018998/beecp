@@ -128,7 +128,6 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             readLock.unlock();
         }
 
-        //read lock will reach
         if (cause != null) throw cause;
         return pool;
     }
@@ -149,23 +148,23 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     //                                      Override methods from CommonDataSource                                   //
     //***************************************************************************************************************//
     public PrintWriter getLogWriter() throws SQLException {
-        return subDs.getLogWriter();
+        return subDs != null ? subDs.getLogWriter() : null;
     }
 
     public void setLogWriter(PrintWriter out) throws SQLException {
-        subDs.setLogWriter(out);
+        if (subDs != null) subDs.setLogWriter(out);
     }
 
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-        return subDs.getParentLogger();
+        return subDs != null ? subDs.getParentLogger() : null;
     }
 
     public int getLoginTimeout() throws SQLException {
-        return subDs.getLoginTimeout();
+        return subDs != null ? subDs.getLoginTimeout() : 0;
     }
 
     public void setLoginTimeout(int seconds) throws SQLException {
-        subDs.setLoginTimeout(seconds);
+        if (subDs != null) subDs.setLoginTimeout(seconds);
     }
     //******************************************************** Override End ******************************************//
 
@@ -199,7 +198,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
 
     //override method
     public void setMaxWait(long maxWait) {
-        if (maxWait > 0) {
+        if (maxWait > 0L) {
             super.setMaxWait(maxWait);
             this.maxWaitNanos = MILLISECONDS.toNanos(maxWait);
         }
@@ -214,19 +213,21 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         return this.pool.getPoolMonitorVo();
     }
 
-    public void clear(boolean forceCloseUsing) throws SQLException {
-        if (this.pool == null) throw new PoolNotCreatedException("Connection pool not initialized");
-        this.pool.clear(forceCloseUsing);
-    }
-
+    //return lock hold time on creation
     public long getElapsedTimeSinceCreationLock() throws SQLException {
         if (this.pool == null) throw new PoolNotCreatedException("Connection pool not initialized");
         return this.pool.getElapsedTimeSinceCreationLock();
     }
 
+    //try this method when pool blocked on creation
     public void interruptThreadsOnCreationLock() throws SQLException {
         if (this.pool == null) throw new PoolNotCreatedException("Connection pool not initialized");
         this.pool.interruptThreadsOnCreationLock();
+    }
+
+    public void clear(boolean forceCloseUsing) throws SQLException {
+        if (this.pool == null) throw new PoolNotCreatedException("Connection pool not initialized");
+        this.pool.clear(forceCloseUsing);
     }
 
     public void clear(boolean forceCloseUsing, BeeDataSourceConfig config) throws SQLException {
