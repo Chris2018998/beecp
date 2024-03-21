@@ -1,5 +1,11 @@
 beecp changes
 
+Changes in 4.0.1[unrelease]
+
+* [beecp]enhance interruption handling on conneciton creation 
+* [beecp]rename a pool inner fiel and add volatile type to this field[startTimeAtLockedSuccess ----> pooledArrayLockedTimePoint]
+* [beecp]fix a NullPointException in method BeeDataSource.getLogWriter
+
 Changes in 4.0.0
 
 * change project LICENSE from LGPL2.1 to Apache2.0
