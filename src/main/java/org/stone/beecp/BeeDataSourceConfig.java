@@ -790,6 +790,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
         //set some factories to config
         checkedConfig.threadFactory = threadFactory;
+        this.connectionFactory = connectionFactory;
         checkedConfig.connectionFactory = connectionFactory;
         checkedConfig.sqlExceptionPredication = predication;
         if (isBlank(checkedConfig.poolName)) checkedConfig.poolName = "FastPool-" + PoolNameIndex.getAndIncrement();
