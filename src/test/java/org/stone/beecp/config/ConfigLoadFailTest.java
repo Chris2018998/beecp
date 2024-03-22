@@ -9,7 +9,7 @@
  */
 package org.stone.beecp.config;
 
-import org.stone.beecp.BeeJdbcLinkInfoDecoder;
+import junit.framework.TestCase;
 
-public class DummyJdbcLinkInfoDecoder extends BeeJdbcLinkInfoDecoder {
+public class ConfigLoadFailTest extends TestCase {
 }
