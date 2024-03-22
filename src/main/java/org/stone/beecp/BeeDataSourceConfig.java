@@ -14,6 +14,7 @@ import org.stone.beecp.pool.*;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -320,7 +321,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setHoldTimeout(long holdTimeout) {
-        this.holdTimeout = holdTimeout;
+        if (holdTimeout >= 0L) this.holdTimeout = holdTimeout;
     }
 
     public String getValidTestSql() {
@@ -671,7 +672,23 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     public void loadFromPropertiesFile(String filename) {
         if (isBlank(filename))
             throw new IllegalArgumentException("Configuration properties file name can't be null or empty");
-        this.loadFromPropertiesFile(new File(filename));
+
+        File file = new File(filename);
+        if (file.exists()) {
+            this.loadFromPropertiesFile(file);
+        } else {//try to load config from classpath
+            Class selfClass = BeeDataSourceConfig.class;
+            InputStream propertiesStream = selfClass.getResourceAsStream(filename);
+            if (propertiesStream == null) propertiesStream = selfClass.getClassLoader().getResourceAsStream(filename);
+
+            Properties prop = new Properties();
+            try {
+                prop.load(propertiesStream);
+                loadFromProperties(prop);
+            } catch (IOException e) {
+                throw new IllegalArgumentException("Configuration properties file load failed", e);
+            }
+        }
     }
 
     public void loadFromPropertiesFile(File file) {
@@ -754,24 +771,24 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //****************************************************************************************************************//
     //check pool configuration
     public BeeDataSourceConfig check() throws SQLException {
-        if (maxActive <= 0)
-            throw new BeeDataSourceConfigException("maxActive must be greater than zero");
-        if (initialSize < 0)
-            throw new BeeDataSourceConfigException("initialSize must not be less than zero");
+//        if (maxActive <= 0)
+//            throw new BeeDataSourceConfigException("maxActive must be greater than zero");
+//        if (initialSize < 0)
+//            throw new BeeDataSourceConfigException("initialSize must not be less than zero");
         if (initialSize > this.maxActive)
             throw new BeeDataSourceConfigException("initialSize must not be greater than maxActive");
-        if (borrowSemaphoreSize <= 0)
-            throw new BeeDataSourceConfigException("borrowSemaphoreSize must be greater than zero");
+//        if (borrowSemaphoreSize <= 0)
+//            throw new BeeDataSourceConfigException("borrowSemaphoreSize must be greater than zero");
         //fix issue:#19 Chris-2020-08-16 begin
         //if (this.borrowConcurrentSize > maxActive)
         //throw new BeeDataSourceConfigException("Pool 'borrowConcurrentSize' must not be greater than pool max size");
         //fix issue:#19 Chris-2020-08-16 end
-        if (idleTimeout <= 0L)
-            throw new BeeDataSourceConfigException("idleTimeout must be greater than zero");
-        if (holdTimeout < 0L)
-            throw new BeeDataSourceConfigException("holdTimeout must be greater than zero");
-        if (maxWait <= 0L)
-            throw new BeeDataSourceConfigException("maxWait must be greater than zero");
+//        if (idleTimeout <= 0L)
+//            throw new BeeDataSourceConfigException("idleTimeout must be greater than zero");
+//        if (holdTimeout < 0L)
+//            throw new BeeDataSourceConfigException("holdTimeout must be greater than zero");
+//        if (maxWait <= 0L)
+//            throw new BeeDataSourceConfigException("maxWait must be greater than zero");
         //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 begin
         //if (this.validationQuerySQL != null && validationQuerySQL.trim().length() == 0) {
         if (isBlank(validTestSql))
