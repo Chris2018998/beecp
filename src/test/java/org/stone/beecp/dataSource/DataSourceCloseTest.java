@@ -12,27 +12,30 @@ package org.stone.beecp.dataSource;
 import junit.framework.TestCase;
 import org.stone.base.TestException;
 import org.stone.beecp.BeeDataSource;
-import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.JdbcConfig;
+import org.stone.beecp.pool.ConnectionPoolStatics;
+
+import java.sql.Connection;
 
 public class DataSourceCloseTest extends TestCase {
-    private BeeDataSource ds;
-
-    public void setUp() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setJdbcUrl(JdbcConfig.JDBC_URL);// give valid URL
-        config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
-        config.setUsername(JdbcConfig.JDBC_USER);
-        ds = new BeeDataSource(config);
-    }
-
-    public void tearDown() {
-        ds.close();
-    }
 
     public void testDataSourceClose() throws Exception {
-        if (ds.isClosed()) throw new TestException();
+        BeeDataSource ds = new BeeDataSource();
+        ds.setJdbcUrl(JdbcConfig.JDBC_URL);
+        ds.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+        ds.setUsername(JdbcConfig.JDBC_USER);
+
+        if (!ds.isClosed()) throw new TestException();//pool null
+        Connection con = null;
+        try {
+            con = ds.getConnection();
+        } finally {
+            ConnectionPoolStatics.oclose(con);
+        }
+
+        if (ds.isClosed()) throw new TestException();//pool is alive
+
         ds.close();
-        if (!ds.isClosed()) throw new TestException();
+        if (!ds.isClosed()) throw new TestException();//pool closed
     }
 }
