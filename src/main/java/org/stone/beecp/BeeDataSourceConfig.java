@@ -154,6 +154,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private Class jdbcLinkInfoDecoderClass;
     //encryption decoder classname on jdbc link info
     private String jdbcLinkInfDecoderClassName;
+    //decoder instance on jdbc link info
+    private BeeJdbcLinkInfoDecoder jdbcLinkInfoDecoder;
+
     //pool implementation class name,if not be set,a default implementation applied in bee datasource
     private String poolImplementClassName = FastConnectionPool.class.getName();
 
@@ -642,6 +645,14 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.jdbcLinkInfDecoderClassName = jdbcLinkInfDecoderClassName;
     }
 
+    public BeeJdbcLinkInfoDecoder getJdbcLinkInfoDecoder() {
+        return jdbcLinkInfoDecoder;
+    }
+
+    public void setJdbcLinkInfoDecoder(BeeJdbcLinkInfoDecoder jdbcLinkInfoDecoder) {
+        this.jdbcLinkInfoDecoder = jdbcLinkInfoDecoder;
+    }
+
     public void removeConnectProperty(String key) {
         if (!isBlank(key)) this.connectProperties.remove(key);
     }
@@ -862,7 +873,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
     //create BeeJdbcLinkInfoDecoder instance
     private BeeJdbcLinkInfoDecoder createJdbcLinkInfoDecoder() {
-        BeeJdbcLinkInfoDecoder jdbcLinkInfoDecoder = null;
+        if (jdbcLinkInfoDecoder != null) return this.jdbcLinkInfoDecoder;
+
+        BeeJdbcLinkInfoDecoder decoder = null;
         Class<?> jdbcLinkInfoDecoderClass = this.jdbcLinkInfoDecoderClass;
         if (jdbcLinkInfoDecoderClass == null && !isBlank(this.jdbcLinkInfDecoderClassName)) {
             try {
@@ -874,12 +887,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
         if (jdbcLinkInfoDecoderClass != null) {
             try {
-                jdbcLinkInfoDecoder = (BeeJdbcLinkInfoDecoder) createClassInstance(jdbcLinkInfoDecoderClass, BeeJdbcLinkInfoDecoder.class, "jdbc link info decoder");
+                decoder = (BeeJdbcLinkInfoDecoder) createClassInstance(jdbcLinkInfoDecoderClass, BeeJdbcLinkInfoDecoder.class, "jdbc link info decoder");
             } catch (Throwable e) {
                 throw new BeeDataSourceConfigException("Failed to instantiate jdbc link info decoder class:" + jdbcLinkInfoDecoderClass.getName(), e);
             }
         }
-        return jdbcLinkInfoDecoder;
+        return decoder;
     }
 
     //create Connection factory
@@ -897,16 +910,15 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             if (isBlank(url)) throw new BeeDataSourceConfigException("jdbcUrl can't be null");
             if (jdbcLinkInfoDecoder != null) url = jdbcLinkInfoDecoder.decodeUrl(url);//decode url
 
-            //step2.2: prepare jdbc driver
-            Driver connectDriver = null;
-            if (!isBlank(this.driverClassName))
-                connectDriver = loadDriver(this.driverClassName);
-            if (connectDriver == null)//try to resolve matched driver from DriverManager by url
-                connectDriver = DriverManager.getDriver(url);
-            if (connectDriver == null)
-                throw new BeeDataSourceConfigException("Not found driver by url:" + url);
-            if (!connectDriver.acceptsURL(url))
-                throw new BeeDataSourceConfigException("jdbcUrl(" + url + ")can not match driver:" + connectDriver.getClass().getName());
+            //step2.2: try to create a driver or find out a matched driver
+            Driver driver;
+            if (!isBlank(this.driverClassName)) {
+                driver = loadDriver(this.driverClassName);
+                if (!driver.acceptsURL(url))
+                    throw new BeeDataSourceConfigException("jdbcUrl(" + url + ")can not match configured driver:" + driverClassName);
+            } else {
+                driver = DriverManager.getDriver(url);//try to get a matched driver by url,if not found,a SQLException will be thrown from driverManager
+            }
 
             //step2.3: create a new jdbc connecting properties object and set default value from local properties
             Properties configProperties = new Properties();
@@ -937,7 +949,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             }
 
             //step2.6: create a new connection factory by a driver and jdbc link info
-            return new ConnectionFactoryByDriver(url, connectDriver, configProperties);
+            return new ConnectionFactoryByDriver(url, driver, configProperties);
         } else {//step3:create connection factory by connection factory class
             try {
                 //1:load connection factory class by class name
