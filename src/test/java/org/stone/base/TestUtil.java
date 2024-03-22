@@ -47,6 +47,12 @@ public class TestUtil {
         return field.get(ob);
     }
 
+    public static void setFieldValue(Object ob, String fieldName, Object value) throws Exception {
+        Field field = ob.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(ob, value);
+    }
+
     public static Object invokeMethod(Object ob, String methodName) {
         try {
             Method method = ob.getClass().getMethod(methodName);
