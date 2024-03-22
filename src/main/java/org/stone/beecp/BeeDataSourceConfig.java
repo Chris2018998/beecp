@@ -382,7 +382,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void removeSqlExceptionCode(int code) {
-        if (sqlExceptionCodeList != null) this.sqlExceptionCodeList.remove(code);
+        if (sqlExceptionCodeList != null) this.sqlExceptionCodeList.remove(Integer.valueOf(code));
     }
 
     public List<String> getSqlExceptionStateList() {
