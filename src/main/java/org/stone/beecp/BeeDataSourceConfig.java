@@ -791,8 +791,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 //            throw new BeeDataSourceConfigException("maxWait must be greater than zero");
         //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 begin
         //if (this.validationQuerySQL != null && validationQuerySQL.trim().length() == 0) {
-        if (isBlank(validTestSql))
-            throw new BeeDataSourceConfigException("validTestSql can't be null or empty");
+//        if (isBlank(validTestSql))
+//            throw new BeeDataSourceConfigException("validTestSql can't be null or empty");
         if (!validTestSql.toUpperCase(Locale.US).startsWith("SELECT ")) {
             //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end
             throw new BeeDataSourceConfigException("validTestSql must be start with 'select '");
