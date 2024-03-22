@@ -1,6 +1,6 @@
 beecp changes
 
-Changes in 4.0.1[unrelease]
+Changes in 4.0.1 
 
 * [beecp]enhance interruption handling on conneciton creation 
 * [beecp]rename a pool inner fiel and add volatile type to this field[startTimeAtLockedSuccess ----> pooledArrayLockedTimePoint]
