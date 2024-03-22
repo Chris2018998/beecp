@@ -12,4 +12,8 @@ package org.stone.beecp.config;
 import junit.framework.TestCase;
 
 public class ConfigLoadFailTest extends TestCase {
+
+    public void test() throws Exception {
+
+    }
 }
