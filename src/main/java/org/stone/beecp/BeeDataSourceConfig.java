@@ -684,10 +684,19 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             Properties prop = new Properties();
             try {
                 prop.load(propertiesStream);
-                loadFromProperties(prop);
             } catch (IOException e) {
                 throw new IllegalArgumentException("Configuration properties file load failed", e);
+            } finally {
+                if (propertiesStream != null) {
+                    try {
+                        propertiesStream.close();
+                    } catch (Throwable e) {
+                        //do nothing
+                    }
+                }
             }
+
+            loadFromProperties(prop);
         }
     }
 
@@ -721,7 +730,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
     public void loadFromProperties(Properties configProperties) {
         if (configProperties == null || configProperties.isEmpty())
-            throw new BeeDataSourceConfigException("Configuration properties can't be null or empty");
+            throw new IllegalArgumentException("Configuration properties can't be null or empty");
 
         //1:load configuration item values from outside properties
         synchronized (configProperties) {//synchronization mode
