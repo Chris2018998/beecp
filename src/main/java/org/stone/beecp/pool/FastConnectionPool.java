@@ -66,8 +66,8 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     private long idleTimeoutMs;//milliseconds
     private long holdTimeoutMs;//milliseconds
     private boolean supportHoldTimeout;
-    private long validAssumeTimeMs;//milliseconds
-    private int validTestTimeout;//seconds
+    private long aliveAssumeTimeMs;//milliseconds
+    private int aliveTestTimeout;//seconds
     private long delayTimeForNextClearNs;//nanoseconds
     private int stateCodeOnRelease;
 
@@ -167,8 +167,8 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         this.idleTimeoutMs = poolConfig.getIdleTimeout();
         this.holdTimeoutMs = poolConfig.getHoldTimeout();
         this.supportHoldTimeout = holdTimeoutMs > 0L;
-        this.validAssumeTimeMs = poolConfig.getValidAssumeTime();
-        this.validTestTimeout = poolConfig.getAliveTestTimeout();
+        this.aliveAssumeTimeMs = poolConfig.getAliveAssumeTime();
+        this.aliveTestTimeout = poolConfig.getAliveTestTimeout();
         this.delayTimeForNextClearNs = TimeUnit.MILLISECONDS.toNanos(poolConfig.getDelayTimeForNextClear());
         this.printRuntimeLog = poolConfig.isPrintRuntimeLog();
         this.semaphoreSize = poolConfig.getBorrowSemaphoreSize();
@@ -472,7 +472,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         //step6: check driver whether support 'isAlive' method
         boolean supportIsValid = true;//assume support
         try {
-            if (rawCon.isValid(this.validTestTimeout)) {
+            if (rawCon.isValid(this.aliveTestTimeout)) {
                 conValidTest = this;
             } else {
                 supportIsValid = false;
@@ -489,8 +489,8 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         //step7:test driver whether support sql query timeout
         if (!supportIsValid) {
             String conTestSql = this.poolConfig.getAliveTestSql();
-            boolean supportQueryTimeout = validateTestSql(poolName, rawCon, conTestSql, validTestTimeout, defaultAutoCommit);//check test sql
-            conValidTest = new PooledConnectionAliveTestBySql(poolName, conTestSql, validTestTimeout, defaultAutoCommit, supportQueryTimeout, printRuntimeLog);
+            boolean supportQueryTimeout = validateTestSql(poolName, rawCon, conTestSql, aliveTestTimeout, defaultAutoCommit);//check test sql
+            conValidTest = new PooledConnectionAliveTestBySql(poolName, conTestSql, aliveTestTimeout, defaultAutoCommit, supportQueryTimeout, printRuntimeLog);
         }
 
         //step8: check driver whether support networkTimeout
@@ -724,7 +724,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
      * @return boolean true means the checked connection is alive;false,it is bad
      */
     private boolean testOnBorrow(PooledConnection p) {
-        if (System.currentTimeMillis() - p.lastAccessTime > this.validAssumeTimeMs && !this.conValidTest.isAlive(p)) {
+        if (System.currentTimeMillis() - p.lastAccessTime > this.aliveAssumeTimeMs && !this.conValidTest.isAlive(p)) {
             this.removePooledConn(p, DESC_RM_BAD);
             this.tryWakeupServantThread();
             return false;
@@ -1042,7 +1042,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     //Method-5.12: pooledConnection valid test method by connection method 'isAlive'
     public final boolean isAlive(final PooledConnection p) {
         try {
-            if (p.rawConn.isValid(this.validTestTimeout)) {
+            if (p.rawConn.isValid(this.aliveTestTimeout)) {
                 p.lastAccessTime = System.currentTimeMillis();
                 return true;
             }
