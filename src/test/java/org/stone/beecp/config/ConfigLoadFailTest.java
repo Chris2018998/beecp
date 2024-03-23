@@ -10,13 +10,16 @@
 package org.stone.beecp.config;
 
 import junit.framework.TestCase;
+import org.stone.base.TestException;
 import org.stone.beecp.BeeDataSourceConfig;
+import org.stone.beecp.BeeDataSourceConfigException;
 
 import java.io.File;
+import java.util.Properties;
 
 public class ConfigLoadFailTest extends TestCase {
 
-    public void test() throws Exception {
+    public void testNullLoad() throws Exception {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         try {
             config.loadFromProperties(null);
@@ -35,6 +38,26 @@ public class ConfigLoadFailTest extends TestCase {
             //do noting
         }
 
+        try {
+            config.loadFromPropertiesFile(new File("dd/dd/dd/dd/config1"));
+        } catch (IllegalArgumentException e) {
+            //do noting
+        }
 
+        try {
+            config.loadFromPropertiesFile(new File("dd/dd/dd/dd/config1.properties"));
+        } catch (IllegalArgumentException e) {
+            //do noting
+        }
+
+        try {
+            Properties configProperties = new Properties();
+            configProperties.put("sqlExceptionCodeList", "1,A,C");//test on invalid error code
+            config.loadFromProperties(configProperties);
+        } catch (BeeDataSourceConfigException e) {
+            String msg = e.getMessage();
+            if (!(msg != null && msg.contains("SQLException error code")))
+                throw new TestException();
+        }
     }
 }

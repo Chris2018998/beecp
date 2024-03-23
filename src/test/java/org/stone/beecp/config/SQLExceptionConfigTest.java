@@ -45,6 +45,8 @@ public class SQLExceptionConfigTest extends TestCase {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         config.setJdbcUrl(JdbcConfig.JDBC_URL);
         config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+        config.setPrintConfigInfo(true);
+
         Class predicationClass = DummySqlExceptionPredication.class;
         config.setSqlExceptionPredicationClass(predicationClass);
         if (!predicationClass.equals(config.getSqlExceptionPredicationClass())) throw new TestException();

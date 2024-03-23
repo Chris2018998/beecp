@@ -72,8 +72,7 @@ public class ConnectionFactoryTest extends TestCase {
             config.check();
         } catch (BeeDataSourceConfigException e) {
             Throwable cause = e.getCause();
-            if (!(cause != null && cause instanceof ClassNotFoundException)) throw new TestException();
+            if (!(cause instanceof ClassNotFoundException)) throw new TestException();
         }
     }
-
 }
