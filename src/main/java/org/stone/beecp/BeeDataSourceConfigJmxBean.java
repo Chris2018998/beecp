@@ -55,7 +55,7 @@ public interface BeeDataSourceConfigJmxBean {
 
     int getAliveTestTimeout();
 
-    long getValidAssumeTime();
+    long getAliveAssumeTime();
 
     boolean isForceCloseUsingOnClear();
 

@@ -82,7 +82,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //seconds:max wait time to get validation result on testing connections
     private int aliveTestTimeout = 3;
     //milliseconds:max gap time between last activity time and borrowed time point,if less this gap value,assume connections in alive state,otherwise test them
-    private long validAssumeTime = 500L;
+    private long aliveAssumeTime = 500L;
     //milliseconds:working interval time of a timer thread to scan idle-timeout connections and hold-timeout connections
     private long timerCheckInterval = MINUTES.toMillis(3);
     //indicator to whether force close using connections when pool clears connections
@@ -343,12 +343,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         if (aliveTestTimeout >= 0) this.aliveTestTimeout = aliveTestTimeout;
     }
 
-    public long getValidAssumeTime() {
-        return this.validAssumeTime;
+    public long getAliveAssumeTime() {
+        return this.aliveAssumeTime;
     }
 
-    public void setValidAssumeTime(long validAssumeTime) {
-        if (validAssumeTime >= 0L) this.validAssumeTime = validAssumeTime;
+    public void setAliveAssumeTime(long aliveAssumeTime) {
+        if (aliveAssumeTime >= 0L) this.aliveAssumeTime = aliveAssumeTime;
     }
 
     public long getTimerCheckInterval() {
