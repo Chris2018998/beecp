@@ -51,9 +51,9 @@ public interface BeeDataSourceConfigJmxBean {
 
     long getHoldTimeout();
 
-    String getValidTestSql();
+    String getAliveTestSql();
 
-    int getValidTestTimeout();
+    int getAliveTestTimeout();
 
     long getValidAssumeTime();
 

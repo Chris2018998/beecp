@@ -78,9 +78,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private long holdTimeout;
 
     //an alive test sql running on borrowed connections,if dead remove them from pool
-    private String validTestSql = "SELECT 1";
+    private String aliveTestSql = "SELECT 1";
     //seconds:max wait time to get validation result on testing connections
-    private int validTestTimeout = 3;
+    private int aliveTestTimeout = 3;
     //milliseconds:max gap time between last activity time and borrowed time point,if less this gap value,assume connections in alive state,otherwise test them
     private long validAssumeTime = 500L;
     //milliseconds:working interval time of a timer thread to scan idle-timeout connections and hold-timeout connections
@@ -327,20 +327,20 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         if (holdTimeout >= 0L) this.holdTimeout = holdTimeout;
     }
 
-    public String getValidTestSql() {
-        return this.validTestSql;
+    public String getAliveTestSql() {
+        return this.aliveTestSql;
     }
 
-    public void setValidTestSql(String validTestSql) {
-        if (!isBlank(validTestSql)) this.validTestSql = trimString(validTestSql);
+    public void setAliveTestSql(String aliveTestSql) {
+        if (!isBlank(aliveTestSql)) this.aliveTestSql = trimString(aliveTestSql);
     }
 
-    public int getValidTestTimeout() {
-        return this.validTestTimeout;
+    public int getAliveTestTimeout() {
+        return this.aliveTestTimeout;
     }
 
-    public void setValidTestTimeout(int validTestTimeout) {
-        if (validTestTimeout >= 0) this.validTestTimeout = validTestTimeout;
+    public void setAliveTestTimeout(int aliveTestTimeout) {
+        if (aliveTestTimeout >= 0) this.aliveTestTimeout = aliveTestTimeout;
     }
 
     public long getValidAssumeTime() {
@@ -815,11 +815,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 //            throw new BeeDataSourceConfigException("maxWait must be greater than zero");
         //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 begin
         //if (this.validationQuerySQL != null && validationQuerySQL.trim().length() == 0) {
-//        if (isBlank(validTestSql))
-//            throw new BeeDataSourceConfigException("validTestSql can't be null or empty");
-        if (!validTestSql.toUpperCase(Locale.US).startsWith("SELECT ")) {
+//        if (isBlank(aliveTestSql))
+//            throw new BeeDataSourceConfigException("aliveTestSql can't be null or empty");
+        if (!aliveTestSql.toUpperCase(Locale.US).startsWith("SELECT ")) {
             //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end
-            throw new BeeDataSourceConfigException("validTestSql must be start with 'select '");
+            throw new BeeDataSourceConfigException("Alive test sql must be start with 'select '");
         }
 
         Object connectionFactory = createConnectionFactory();
