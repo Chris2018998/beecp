@@ -657,8 +657,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         return this.connectProperties.get(key);
     }
 
-    public void removeConnectProperty(String key) {
-        this.connectProperties.remove(key);
+    public Object removeConnectProperty(String key) {
+        return this.connectProperties.remove(key);
     }
 
     public void addConnectProperty(String key, Object value) {
