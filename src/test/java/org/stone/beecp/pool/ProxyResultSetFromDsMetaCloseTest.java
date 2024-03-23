@@ -26,7 +26,7 @@ public class ProxyResultSetFromDsMetaCloseTest extends TestCase {
         config.setUsername(JdbcConfig.JDBC_USER);
         config.setPassword(JdbcConfig.JDBC_PASSWORD);
         config.setInitialSize(0);
-        config.setValidTestSql("SELECT 1 from dual");
+        config.setAliveTestSql("SELECT 1 from dual");
         ds = new BeeDataSource(config);
     }
 

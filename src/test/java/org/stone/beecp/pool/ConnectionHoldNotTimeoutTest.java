@@ -22,7 +22,7 @@ public class ConnectionHoldNotTimeoutTest extends TestCase {
         config.setUsername(JdbcConfig.JDBC_USER);
         config.setPassword(JdbcConfig.JDBC_PASSWORD);
         config.setInitialSize(0);
-        config.setValidTestSql("SELECT 1 from dual");
+        config.setAliveTestSql("SELECT 1 from dual");
 
         config.setHoldTimeout(0);//not timeout in hold
         config.setTimerCheckInterval(1000L);// two seconds interval

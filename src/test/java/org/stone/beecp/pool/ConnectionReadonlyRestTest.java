@@ -26,7 +26,7 @@ public class ConnectionReadonlyRestTest extends TestCase {
         config.setInitialSize(1);
         config.setMaxActive(1);
         config.setBorrowSemaphoreSize(1);
-        config.setValidTestSql("SELECT 1 from dual");
+        config.setAliveTestSql("SELECT 1 from dual");
         config.setIdleTimeout(3000);
         ds = new BeeDataSource(config);
     }

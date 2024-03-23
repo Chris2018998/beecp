@@ -26,7 +26,7 @@ public class DataSourceConnectionFactoryTest extends TestCase {
         config.setConnectionFactoryClassName("org.stone.beecp.mock.MockDataSource");
 
         config.setInitialSize(5);
-        config.setValidTestSql("SELECT 1 from dual");
+        config.setAliveTestSql("SELECT 1 from dual");
         config.setIdleTimeout(3000);
         ds = new BeeDataSource(config);
     }
