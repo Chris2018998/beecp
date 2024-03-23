@@ -62,8 +62,8 @@ public class ConfigObjectSetGetTest extends TestCase {
         config.setHoldTimeout(3000L);
         config.setAliveTestTimeout(-1);
         config.setAliveTestTimeout(3);
-        config.setValidAssumeTime(-1);
-        config.setValidAssumeTime(3000);
+        config.setAliveAssumeTime(-1);
+        config.setAliveAssumeTime(3000);
         config.setTimerCheckInterval(0);
         config.setTimerCheckInterval(3000);
         config.setDelayTimeForNextClear(-1);

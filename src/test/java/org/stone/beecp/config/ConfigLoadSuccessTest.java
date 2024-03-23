@@ -127,7 +127,7 @@ public class ConfigLoadSuccessTest extends TestCase {
         if (testConfig.getIdleTimeout() != 18000) return "idleTimeout error";
         if (testConfig.getHoldTimeout() != 30000) return "holdTimeout error";
         if (testConfig.getAliveTestTimeout() != 3) return "connectionTestTimeout error";
-        if (testConfig.getValidAssumeTime() != 500) return "connectionTestInterval error";
+        if (testConfig.getAliveAssumeTime() != 500) return "connectionTestInterval error";
         if (testConfig.getTimerCheckInterval() != 30000) return "idleCheckTimeInterval error";
         if (!testConfig.isForceCloseUsingOnClear()) return "forceCloseUsingOnClear error";
         if (testConfig.getDelayTimeForNextClear() != 3000) return "delayTimeForNextClear error";
