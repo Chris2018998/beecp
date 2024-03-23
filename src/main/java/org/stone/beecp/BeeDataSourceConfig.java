@@ -653,8 +653,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.jdbcLinkInfoDecoder = jdbcLinkInfoDecoder;
     }
 
+    public Object getConnectProperty(String key) {
+        return this.connectProperties.get(key);
+    }
+
     public void removeConnectProperty(String key) {
-        if (!isBlank(key)) this.connectProperties.remove(key);
+        this.connectProperties.remove(key);
     }
 
     public void addConnectProperty(String key, Object value) {
@@ -1040,7 +1044,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
             if (predicationClass != null) {
                 Class[] parentClasses = {SQLExceptionPredication.class};
-                return (SQLExceptionPredication) createClassInstance(predicationClass, parentClasses, "SQLException Predication");
+                return (SQLExceptionPredication) createClassInstance(predicationClass, parentClasses, "SQLException predication");
             }
             return null;
         } catch (RuntimeException e) {
