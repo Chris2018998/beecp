@@ -107,4 +107,17 @@ public class PoolInitializationTest extends TestCase {
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
     }
+
+
+    public void testTimeoutOnCreateLock() throws Exception {
+        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        config.setInitialSize(1);
+        config.setPrintRuntimeLog(true);
+        config.setAsyncCreateInitConnection(true);
+        FastConnectionPool pool = new FastConnectionPool();
+        pool.init(config);
+
+
+    }
+
 }
