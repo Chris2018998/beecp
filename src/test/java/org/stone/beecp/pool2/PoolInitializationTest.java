@@ -12,7 +12,7 @@ package org.stone.beecp.pool2;
 import junit.framework.TestCase;
 import org.stone.base.TestException;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.ConfigFactory;
+import org.stone.beecp.config.ConfigFactory;
 import org.stone.beecp.JdbcConfig;
 import org.stone.beecp.pool.FastConnectionPool;
 import org.stone.beecp.pool.exception.PoolInitializeFailedException;
