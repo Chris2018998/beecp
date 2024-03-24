@@ -44,15 +44,15 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
     //a map store some properties for driver connects to db,@see{@code Driver.connect(url,properties)}
     private final Map<String, Object> connectProperties = new HashMap<String, Object>(2);
-    //user name applied at connecting to db
+    //user name to connect to database by a driver or a raw datasource
     private String username;
-    //password applied at connecting to db
+    //password to connect to database by a driver or a raw datasource
     private String password;
-    //link url of db server applied at connecting to db
+    //jdbc url to connect to database by a driver or a raw datasource
     private String jdbcUrl;
     //jdbc driver class name
     private String driverClassName;
-    //a name assign to pool,if null or empty,then set a generated name to pool on initialization
+    //pool name,if not set,a generation name assign to pool
     private String poolName;
     //enable pool semaphore works in fair mode
     private boolean fairMode;
@@ -578,7 +578,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setThreadFactoryClassName(String threadFactoryClassName) {
-        this.threadFactoryClassName = trimString(threadFactoryClassName);
+        if (!isBlank(threadFactoryClassName)) this.threadFactoryClassName = trimString(threadFactoryClassName);
     }
 
     public BeeConnectionPoolThreadFactory getThreadFactory() {
@@ -793,30 +793,17 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //****************************************************************************************************************//
     //                                    8: configuration check and connection factory create methods(4)             //
     //****************************************************************************************************************//
-    //check pool configuration
+
+    /**
+     * configuration items check
+     *
+     * @return a check passed config object
+     * @throws RuntimeException if check failed on some configuration items
+     * @throws SQLException     if specified driver not accept jdbc url or failed to get a matched driver from driverManager
+     */
     public BeeDataSourceConfig check() throws SQLException {
-//        if (maxActive <= 0)
-//            throw new BeeDataSourceConfigException("maxActive must be greater than zero");
-//        if (initialSize < 0)
-//            throw new BeeDataSourceConfigException("initialSize must not be less than zero");
-        if (initialSize > this.maxActive)
+        if (initialSize > maxActive)
             throw new BeeDataSourceConfigException("initialSize must not be greater than maxActive");
-//        if (borrowSemaphoreSize <= 0)
-//            throw new BeeDataSourceConfigException("borrowSemaphoreSize must be greater than zero");
-        //fix issue:#19 Chris-2020-08-16 begin
-        //if (this.borrowConcurrentSize > maxActive)
-        //throw new BeeDataSourceConfigException("Pool 'borrowConcurrentSize' must not be greater than pool max size");
-        //fix issue:#19 Chris-2020-08-16 end
-//        if (idleTimeout <= 0L)
-//            throw new BeeDataSourceConfigException("idleTimeout must be greater than zero");
-//        if (holdTimeout < 0L)
-//            throw new BeeDataSourceConfigException("holdTimeout must be greater than zero");
-//        if (maxWait <= 0L)
-//            throw new BeeDataSourceConfigException("maxWait must be greater than zero");
-        //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 begin
-        //if (this.validationQuerySQL != null && validationQuerySQL.trim().length() == 0) {
-//        if (isBlank(aliveTestSql))
-//            throw new BeeDataSourceConfigException("aliveTestSql can't be null or empty");
         if (!aliveTestSql.toUpperCase(Locale.US).startsWith("SELECT ")) {
             //fix issue:#1 The check of validationQuerySQL has logic problem. Chris-2019-05-01 end
             throw new BeeDataSourceConfigException("Alive test sql must be start with 'select '");
@@ -857,19 +844,19 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             throw new BeeDataSourceConfigException("Failed to copy field[" + fieldName + "]", e);
         }
 
-        //2:copy  'connectProperties'
+        //2:copy 'connectProperties'
         for (Map.Entry<String, Object> entry : this.connectProperties.entrySet()) {
             if (this.printConfigInfo)
                 CommonLog.info("{}.connectProperties.{}={}", this.poolName, entry.getKey(), entry.getValue());
             config.addConnectProperty(entry.getKey(), entry.getValue());
         }
 
-        //3:copy  'sqlExceptionCodeList'
+        //3:copy 'sqlExceptionCodeList'
         if (this.sqlExceptionCodeList != null && !sqlExceptionCodeList.isEmpty()) {
             config.sqlExceptionCodeList = new ArrayList<Integer>(sqlExceptionCodeList);
         }
 
-        //4:copy  'sqlExceptionStateList'
+        //4:copy 'sqlExceptionStateList'
         if (this.sqlExceptionStateList != null && !sqlExceptionStateList.isEmpty()) {
             config.sqlExceptionStateList = new ArrayList<String>(sqlExceptionStateList);
         }
@@ -879,24 +866,21 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private BeeJdbcLinkInfoDecoder createJdbcLinkInfoDecoder() {
         if (jdbcLinkInfoDecoder != null) return this.jdbcLinkInfoDecoder;
 
-        BeeJdbcLinkInfoDecoder decoder = null;
-        Class<?> jdbcLinkInfoDecoderClass = this.jdbcLinkInfoDecoderClass;
-        if (jdbcLinkInfoDecoderClass == null && !isBlank(this.jdbcLinkInfDecoderClassName)) {
+        //step2: create link info decoder
+        if (jdbcLinkInfoDecoderClass != null || !isBlank(jdbcLinkInfDecoderClassName)) {
+            Class<?> decoderClass = null;
             try {
-                jdbcLinkInfoDecoderClass = Class.forName(this.jdbcLinkInfDecoderClassName);
+                decoderClass = jdbcLinkInfoDecoderClass != null ? jdbcLinkInfoDecoderClass : Class.forName(jdbcLinkInfDecoderClassName);
+                return (BeeJdbcLinkInfoDecoder) createClassInstance(decoderClass, BeeJdbcLinkInfoDecoder.class, "jdbc link info decoder");
+            } catch (ClassNotFoundException e) {
+                throw new BeeDataSourceConfigException("Failed to create jdbc link info decoder with class[" + jdbcLinkInfDecoderClassName + "]", e);
+            } catch (BeeDataSourceConfigException e) {
+                throw e;
             } catch (Throwable e) {
-                throw new BeeDataSourceConfigException("Failed to create jdbc link info decoder by class:" + this.jdbcLinkInfDecoderClassName, e);
+                throw new BeeDataSourceConfigException("Failed to create sql exception predication with class[" + decoderClass + "]", e);
             }
         }
-
-        if (jdbcLinkInfoDecoderClass != null) {
-            try {
-                decoder = (BeeJdbcLinkInfoDecoder) createClassInstance(jdbcLinkInfoDecoderClass, BeeJdbcLinkInfoDecoder.class, "jdbc link info decoder");
-            } catch (Throwable e) {
-                throw new BeeDataSourceConfigException("Failed to instantiate jdbc link info decoder class:" + jdbcLinkInfoDecoderClass.getName(), e);
-            }
-        }
-        return decoder;
+        return null;
     }
 
     //create Connection factory
@@ -904,7 +888,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         //step1:if exists object factory,then return it
         if (this.connectionFactory != null) return this.connectionFactory;
 
-        //step2:create connection factory by driver
+        //step2:create connection factory with driver
         BeeJdbcLinkInfoDecoder jdbcLinkInfoDecoder = this.createJdbcLinkInfoDecoder();
         if (this.connectionFactoryClass == null && isBlank(this.connectionFactoryClassName)) {
             //step2.1: prepare jdbc url
@@ -919,9 +903,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             if (!isBlank(this.driverClassName)) {
                 driver = loadDriver(this.driverClassName);
                 if (!driver.acceptsURL(url))
-                    throw new BeeDataSourceConfigException("jdbcUrl(" + url + ")can not match configured driver:" + driverClassName);
+                    throw new BeeDataSourceConfigException("jdbcUrl(" + url + ")can not match configured driver[" + driverClassName + "]");
             } else {
-                driver = DriverManager.getDriver(url);//try to get a matched driver by url,if not found,a SQLException will be thrown from driverManager
+                driver = DriverManager.getDriver(url);//try to get a matched driver with url,if not found,a SQLException will be thrown from driverManager
             }
 
             //step2.3: create a new jdbc connecting properties object and set default value from local properties
@@ -952,12 +936,13 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                     configProperties.setProperty("password", jdbcLinkInfoDecoder.decodePassword(password));
             }
 
-            //step2.6: create a new connection factory by a driver and jdbc link info
+            //step2.6: create a new connection factory with a driver and jdbc link info
             return new ConnectionFactoryByDriver(url, driver, configProperties);
-        } else {//step3:create connection factory by connection factory class
+        } else {//step3:create connection factory with connection factory class
+            Class<?> conFactClass = null;
             try {
-                //1:load connection factory class by class name
-                Class<?> conFactClass = this.connectionFactoryClass != null ? this.connectionFactoryClass : Class.forName(this.connectionFactoryClassName);
+                //1:load connection factory class with class name
+                conFactClass = this.connectionFactoryClass != null ? this.connectionFactoryClass : Class.forName(this.connectionFactoryClassName);
 
                 //2:check connection factory class
                 Class[] parentClasses = {RawConnectionFactory.class, RawXaConnectionFactory.class, DataSource.class, XADataSource.class};
@@ -1021,12 +1006,14 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                 } else if (factory instanceof DataSource) {
                     return new ConnectionFactoryByDriverDs((DataSource) factory, userName, password);
                 } else {
-                    throw new BeeDataSourceConfigException("Error connection factory type:" + this.connectionFactoryClassName);
+                    throw new BeeDataSourceConfigException("Unknown connection factory type[" + conFactClass + "]");
                 }
-            } catch (RuntimeException e) {
+            } catch (ClassNotFoundException e) {
+                throw new BeeDataSourceConfigException("Not found connection factory class[" + conFactClass + "]", e);
+            } catch (BeeDataSourceConfigException e) {
                 throw e;
-            } catch (Exception e) {
-                throw new BeeDataSourceConfigException("Failed to create connection factory by class:" + this.connectionFactoryClassName, e);
+            } catch (Throwable e) {
+                throw new BeeDataSourceConfigException("Failed to create connection factory with class[" + conFactClass + "]", e);
             }
         }
     }
@@ -1037,21 +1024,21 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         if (this.sqlExceptionPredication != null) return this.sqlExceptionPredication;
 
         //step2: create SQLExceptionPredication
-        Class predicationClass = this.sqlExceptionPredicationClass;
-        try {
-            if (predicationClass == null && !isBlank(this.sqlExceptionPredicationClassName))
-                predicationClass = Class.forName(this.sqlExceptionPredicationClassName);
-
-            if (predicationClass != null) {
-                Class[] parentClasses = {SQLExceptionPredication.class};
-                return (SQLExceptionPredication) createClassInstance(predicationClass, parentClasses, "SQLException predication");
+        if (sqlExceptionPredicationClass != null || !isBlank(sqlExceptionPredicationClassName)) {
+            Class<?> predicationClass = null;
+            try {
+                predicationClass = sqlExceptionPredicationClass != null ? sqlExceptionPredicationClass : Class.forName(sqlExceptionPredicationClassName);
+                return (SQLExceptionPredication) createClassInstance(predicationClass, SQLExceptionPredication.class, "sql exception predication");
+            } catch (ClassNotFoundException e) {
+                throw new BeeDataSourceConfigException("Not found sql exception predication class[" + threadFactoryClassName + "]", e);
+            } catch (BeeDataSourceConfigException e) {
+                throw e;
+            } catch (Throwable e) {
+                throw new BeeDataSourceConfigException("Failed to create sql exception predication with class[" + predicationClass + "]", e);
             }
-            return null;
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new BeeDataSourceConfigException("Failed to create SQLException predication by class:" + predicationClass, e);
         }
+
+        return null;
     }
 
     //create Thread factory
@@ -1059,19 +1046,21 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         //step1:if exists thread factory,then return it
         if (this.threadFactory != null) return this.threadFactory;
 
-        //step2: configuration of thread factory
-        if (this.threadFactoryClass == null && isBlank(this.threadFactoryClassName))
-            throw new BeeDataSourceConfigException("Configuration item(threadFactoryClass and threadFactoryClassName) can't be null at same time");
+//        //step2: configuration of thread factory
+//        if (this.threadFactoryClass == null && isBlank(this.threadFactoryClassName))
+//            throw new BeeDataSourceConfigException("Must provide one of config items[threadFactory,threadFactoryClass,threadFactoryClassName]");
 
-        //step3: create thread factory by class or class name
+        //step3: create thread factory with class or class name
+        Class<?> threadFactClass = null;
         try {
-            Class<?> threadFactClass = this.threadFactoryClass != null ? this.threadFactoryClass : Class.forName(this.threadFactoryClassName);
-            Class[] parentClasses = {BeeConnectionPoolThreadFactory.class};
-            return (BeeConnectionPoolThreadFactory) createClassInstance(threadFactClass, parentClasses, "pool thread factory");
-        } catch (RuntimeException e) {
+            threadFactClass = threadFactoryClass != null ? threadFactoryClass : Class.forName(threadFactoryClassName);
+            return (BeeConnectionPoolThreadFactory) createClassInstance(threadFactClass, BeeConnectionPoolThreadFactory.class, "pool thread factory");
+        } catch (ClassNotFoundException e) {
+            throw new BeeDataSourceConfigException("Not found thread factory class[" + threadFactoryClassName + "]", e);
+        } catch (BeeDataSourceConfigException e) {
             throw e;
-        } catch (Exception e) {
-            throw new BeeDataSourceConfigException("Failed to create pool thread factory by class:" + this.threadFactoryClassName, e);
+        } catch (Throwable e) {
+            throw new BeeDataSourceConfigException("Failed to create pool thread factory with class[" + threadFactClass + "]", e);
         }
     }
 }
