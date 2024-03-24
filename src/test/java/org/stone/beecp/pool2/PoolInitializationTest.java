@@ -11,9 +11,10 @@ package org.stone.beecp.pool2;
 
 import junit.framework.TestCase;
 import org.stone.base.TestException;
+import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.config.ConfigFactory;
 import org.stone.beecp.JdbcConfig;
+import org.stone.beecp.config.ConfigFactory;
 import org.stone.beecp.pool.FastConnectionPool;
 import org.stone.beecp.pool.exception.PoolInitializeFailedException;
 
@@ -31,7 +32,20 @@ public class PoolInitializationTest extends TestCase {
         }
     }
 
-    public void testInitialSQLException() throws Exception {
+    public void testDuplicatedInitialization() throws Exception {
+        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        FastConnectionPool pool = new FastConnectionPool();
+        pool.init(config);
+
+        try {
+            pool.init(config);
+            throw new TestException();
+        } catch (PoolInitializeFailedException e) {
+            //do nothing
+        }
+    }
+
+    public void testUrlNotMatchDriver() throws Exception {
         FastConnectionPool pool = new FastConnectionPool();
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         config.setJdbcUrl("Test:" + JdbcConfig.JDBC_URL);
@@ -44,7 +58,7 @@ public class PoolInitializationTest extends TestCase {
         }
     }
 
-    public void testPoolInitializeFailedException() throws Exception {
+    public void testCheckFailedOnInitialization() throws Exception {
         FastConnectionPool pool = new FastConnectionPool();
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         config.setJdbcUrl(JdbcConfig.JDBC_URL);
@@ -60,41 +74,32 @@ public class PoolInitializationTest extends TestCase {
         }
     }
 
-    public void testOnAlreadyInitialized() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
-        FastConnectionPool pool = new FastConnectionPool();
-        pool.init(config);
-        try {
-            pool.init(config);
-            throw new TestException();
-        } catch (PoolInitializeFailedException e) {
-            //do nothing
-        }
-    }
-
-    public void testInFairMode() throws Exception {
+    public void testPoolInitializeInFairMode() throws Exception {
         BeeDataSourceConfig config = ConfigFactory.createDefault();
         config.setFairMode(true);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
+        if (!"fair".equals(TestUtil.getFieldValue(pool, "poolMode")))
+            throw new TestException();
     }
 
-    public void testInCompeteMode() throws Exception {
+    public void testPoolInitializeInCompetedMode() throws Exception {
         BeeDataSourceConfig config = ConfigFactory.createDefault();
         config.setFairMode(false);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
+        if (!"compete".equals(TestUtil.getFieldValue(pool, "poolMode")))
+            throw new TestException();
     }
 
-    public void testInSyncCreation() throws Exception {
+    public void testCreateInitialConnectionBySynModeForCover() throws Exception {
         BeeDataSourceConfig config = ConfigFactory.createDefault();
         config.setInitialSize(1);
-        config.setPrintRuntimeLog(true);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
     }
 
-    public void testInASyncCreation() throws Exception {
+    public void testCreateInitialConnectionByAsynModeForCover() throws Exception {
         BeeDataSourceConfig config = ConfigFactory.createDefault();
         config.setInitialSize(1);
         config.setPrintRuntimeLog(true);
