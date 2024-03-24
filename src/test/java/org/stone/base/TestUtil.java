@@ -41,6 +41,11 @@ public class TestUtil {
             throw new AssertionError(String.format(message, String.valueOf(expect), String.valueOf(current)));
     }
 
+    public static boolean containsMessage(Throwable e, String msg) {
+        String errorInfo = e.getMessage();
+        return errorInfo != null && errorInfo.contains(msg);
+    }
+
     public static Object getFieldValue(Object ob, String fieldName) throws Exception {
         Field field = ob.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
