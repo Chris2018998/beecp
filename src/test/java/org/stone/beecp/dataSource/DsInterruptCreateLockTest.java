@@ -13,14 +13,11 @@ import junit.framework.TestCase;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.JdbcConfig;
-import org.stone.beecp.RawConnectionFactory;
 import org.stone.beecp.pool.ConnectionPoolStatics;
 import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.LockSupport;
 
 public class DsInterruptCreateLockTest extends TestCase {
     private BeeDataSource ds;
@@ -39,7 +36,7 @@ public class DsInterruptCreateLockTest extends TestCase {
     }
 
     public void testInterruptCreationLock() throws SQLException {
-        new MockThreadToInterruptBlock(ds).start();
+        new MockThreadToInterruptCreateLock(ds).start();
 
         Connection con = null;
         try {
@@ -52,30 +49,5 @@ public class DsInterruptCreateLockTest extends TestCase {
         }
     }
 
-    class BlockingConnectionFactory implements RawConnectionFactory {
-        public Connection create() {
-            LockSupport.park();
-            return null;
-        }
-    }
 
-    class MockThreadToInterruptBlock extends Thread {
-        private BeeDataSource ds;
-
-        MockThreadToInterruptBlock(BeeDataSource ds) {
-            this.ds = ds;
-        }
-
-        public void run() {
-            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
-            try {
-                long holdTimeMillsOnLock = ds.getElapsedTimeSinceCreationLock();
-                if (holdTimeMillsOnLock > 0L) {
-                    ds.interruptThreadsOnCreationLock();
-                }
-            } catch (SQLException e) {
-                //do nothing
-            }
-        }
-    }
 }

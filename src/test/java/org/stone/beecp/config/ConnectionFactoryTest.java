@@ -11,13 +11,9 @@ package org.stone.beecp.config;
 
 import junit.framework.TestCase;
 import org.stone.base.TestException;
-import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.BeeDataSourceConfigException;
-import org.stone.beecp.RawConnectionFactory;
-import org.stone.beecp.RawXaConnectionFactory;
-import org.stone.beecp.config.customization.DataSourceConfigFactory;
-import org.stone.beecp.config.customization.NullConnectionFactory;
-import org.stone.beecp.config.customization.NullXaConnectionFactory;
+import org.stone.beecp.*;
+import org.stone.beecp.factory.NullConnectionFactory;
+import org.stone.beecp.factory.NullXaConnectionFactory;
 
 public class ConnectionFactoryTest extends TestCase {
 
@@ -27,7 +23,7 @@ public class ConnectionFactoryTest extends TestCase {
         config.setConnectionFactoryClass(factClass);
         if (!factClass.equals(config.getConnectionFactoryClass())) throw new TestException();
 
-        String factClassName = "org.stone.beecp.config.customization.NullConnectionFactory";
+        String factClassName = "org.stone.beecp.factory.NullConnectionFactory";
         config.setConnectionFactoryClassName(factClassName);
         if (!factClassName.equals(config.getConnectionFactoryClassName())) throw new TestException();
 
@@ -43,7 +39,7 @@ public class ConnectionFactoryTest extends TestCase {
 
     public void testOnInvalidFactoryClass() throws Exception {
         try {
-            BeeDataSourceConfig config = DataSourceConfigFactory.createDefault();
+            BeeDataSourceConfig config = ConfigFactory.createDefault();
             config.setConnectionFactoryClass(String.class);//invalid config
             config.check();
         } catch (BeeDataSourceConfigException e) {
@@ -55,7 +51,7 @@ public class ConnectionFactoryTest extends TestCase {
 
     public void testOnInvalidFactoryClassName() throws Exception {
         try {
-            BeeDataSourceConfig config = DataSourceConfigFactory.createDefault();
+            BeeDataSourceConfig config = ConfigFactory.createDefault();
             config.setConnectionFactoryClassName("java.lang.String");//invalid config
             config.check();
         } catch (BeeDataSourceConfigException e) {
@@ -67,7 +63,7 @@ public class ConnectionFactoryTest extends TestCase {
 
     public void testOnNotFoundFactoryClassName() throws Exception {
         try {
-            BeeDataSourceConfig config = DataSourceConfigFactory.createDefault();
+            BeeDataSourceConfig config = ConfigFactory.createDefault();
             config.setConnectionFactoryClassName("xx.xx.xx");//class not found
             config.check();
         } catch (BeeDataSourceConfigException e) {

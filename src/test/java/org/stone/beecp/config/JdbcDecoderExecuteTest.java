@@ -16,7 +16,7 @@ import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.RawXaConnectionFactory;
 import org.stone.beecp.config.customization.DummyJdbcLinkInfoDecoder;
-import org.stone.beecp.config.customization.NullConnectionFactory;
+import org.stone.beecp.factory.NullConnectionFactory;
 import org.stone.beecp.mock.MockXaDataSource;
 import org.stone.beecp.pool.FastConnectionPool;
 
