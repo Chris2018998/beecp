@@ -43,7 +43,7 @@ public class PoolThreadFactoryTest extends TestCase {
             config.check();
         } catch (Exception e) {
             String msg = e.getMessage();
-            boolean matched = msg != null && msg.contains("which must extend from one of class");
+            boolean matched = msg != null && msg.contains("which must extend from one of type");
             if (!matched) throw new TestException();
         }
     }
@@ -58,7 +58,7 @@ public class PoolThreadFactoryTest extends TestCase {
             config.check();
         } catch (Exception e) {
             String msg = e.getMessage();
-            boolean matched = msg != null && msg.contains("which must extend from one of class");
+            boolean matched = msg != null && msg.contains("which must extend from one of type");
             if (!matched) throw new TestException();
         }
     }
