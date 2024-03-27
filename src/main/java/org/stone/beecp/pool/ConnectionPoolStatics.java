@@ -47,6 +47,8 @@ public class ConnectionPoolStatics {
     public static final String CONFIG_SQL_EXCEPTION_CODE = "sqlExceptionCodeList";
     //sql exception fatal state
     public static final String CONFIG_SQL_EXCEPTION_STATE = "sqlExceptionStateList";
+    //sql exception fatal state
+    public static final String CONFIG_CONFIG_PRINT_EXCLUSION_LIST = "configPrintExclusionList";
 
     //dummy impl on CommonDataSource
     public static final CommonDataSource Dummy_CommonDataSource = new CommonDataSource() {
