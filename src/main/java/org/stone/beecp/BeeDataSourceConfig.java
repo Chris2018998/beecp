@@ -162,15 +162,23 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
     //indicator on whether registering jmx
     private boolean enableJmx;
-    //indicator on whether printing configuration items when pool starting up
-    private boolean printConfigInfo;
     //indicator on printing pool runtime log,this value can be changed by calling pool<method>setPrintRuntimeLog</method>
     private boolean printRuntimeLog;
+    //indicator on whether printing configuration items when pool starting up
+    private boolean printConfigInfo;
+    //exclusion print list on printConfigInfo indicator(default exclusion items:username,password,jdbcUrl)
+    private Set<String> configPrintExclusionList;
 
     //****************************************************************************************************************//
     //                                     1: constructors(5)                                                         //
     //****************************************************************************************************************//
     public BeeDataSourceConfig() {
+        this.configPrintExclusionList = new HashSet<>();
+        this.configPrintExclusionList.add("username");
+        this.configPrintExclusionList.add("password");
+        this.configPrintExclusionList.add("jdbcUrl");
+        this.configPrintExclusionList.add("user");
+        this.configPrintExclusionList.add("url");
     }
 
     //read configuration from properties file
@@ -417,6 +425,14 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.enableJmx = enableJmx;
     }
 
+    public boolean isPrintRuntimeLog() {
+        return this.printRuntimeLog;
+    }
+
+    public void setPrintRuntimeLog(boolean printRuntimeLog) {
+        this.printRuntimeLog = printRuntimeLog;
+    }
+
     public boolean isPrintConfigInfo() {
         return this.printConfigInfo;
     }
@@ -425,12 +441,20 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.printConfigInfo = printConfigInfo;
     }
 
-    public boolean isPrintRuntimeLog() {
-        return this.printRuntimeLog;
+    public void clearAllConfigPrintExclusion() {
+        this.configPrintExclusionList.clear();
     }
 
-    public void setPrintRuntimeLog(boolean printRuntimeLog) {
-        this.printRuntimeLog = printRuntimeLog;
+    public void addConfigPrintExclusion(String fieldName) {
+        this.configPrintExclusionList.add(fieldName);
+    }
+
+    public boolean removeConfigPrintExclusion(String fieldName) {
+        return this.configPrintExclusionList.remove(fieldName);
+    }
+
+    public boolean existConfigPrintExclusion(String fieldName) {
+        return this.configPrintExclusionList.contains(fieldName);
     }
 
     //****************************************************************************************************************//
@@ -757,6 +781,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             //2:inject item value from map to this dataSource config object
             setValueMap.remove(CONFIG_SQL_EXCEPTION_CODE);//remove item if exists in properties file before injection
             setValueMap.remove(CONFIG_SQL_EXCEPTION_STATE);//remove item if exists in properties file before injection
+            setValueMap.remove(CONFIG_CONFIG_PRINT_EXCLUSION_LIST);//remove item if exists in properties file before injection
             setPropertiesValue(this, setValueMap);
 
             //3:try to find 'connectProperties' config value and put to ds config object
@@ -786,9 +811,17 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                     this.addSqlExceptionState(state);
                 }
             }
+
+            //5:try to load exclusion list on config print
+            String exclusionListText = getPropertyValue(configProperties, CONFIG_CONFIG_PRINT_EXCLUSION_LIST);
+            if (!isBlank(exclusionListText)) {
+                this.clearAllConfigPrintExclusion();//remove existed exclusion
+                for (String exclusion : exclusionListText.trim().split(",")) {
+                    this.addConfigPrintExclusion(exclusion);
+                }
+            }
         }//synchronized end
     }
-
 
     //****************************************************************************************************************//
     //                                    8: configuration check and connection factory create methods(4)             //
@@ -828,37 +861,48 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
     //copy configuration info to other from local
     void copyTo(BeeDataSourceConfig config) {
-        //1:primitive type copy
         String fieldName = "";
         try {
             for (Field field : BeeDataSourceConfig.class.getDeclaredFields()) {
+                if (Modifier.isStatic(field.getModifiers())) continue;
+
                 fieldName = field.getName();
-                if (!Modifier.isFinal(field.getModifiers()) && !Modifier.isStatic(field.getModifiers()) && !"connectProperties".equals(fieldName)
-                        && !"sqlExceptionCodeList".equals(fieldName) && !"sqlExceptionStateList".equals(fieldName)) {
+                if ("configPrintExclusionList".equals(fieldName)) {//copy 'exclusionConfigPrintList'
+                    config.configPrintExclusionList = new HashSet<>(configPrintExclusionList);
+
+                } else if ("connectProperties".equals(fieldName)) {//copy 'connectProperties'
+                    for (Map.Entry<String, Object> entry : this.connectProperties.entrySet())
+                        config.addConnectProperty(entry.getKey(), entry.getValue());
+
+                    if (this.printConfigInfo && !this.configPrintExclusionList.contains(fieldName)) {
+                        for (Map.Entry<String, Object> entry : this.connectProperties.entrySet()) {
+                            if (configPrintExclusionList.contains(entry.getKey()))
+                                CommonLog.info("{}.connectProperties.{}={}", this.poolName, entry.getKey(), entry.getValue());
+                        }
+                    }
+                } else if ("sqlExceptionCodeList".equals(fieldName)) {//copy 'sqlExceptionCodeList'
+                    if (this.sqlExceptionCodeList != null && !sqlExceptionCodeList.isEmpty())
+                        config.sqlExceptionCodeList = new ArrayList<Integer>(sqlExceptionCodeList);
+
+                    if (this.printConfigInfo && !configPrintExclusionList.contains(fieldName))
+                        CommonLog.info("{}.sqlExceptionCodeList={}", this.poolName, this.sqlExceptionCodeList);
+
+                } else if ("sqlExceptionStateList".equals(fieldName)) {//copy 'sqlExceptionStateList'
+                    if (this.sqlExceptionStateList != null && !sqlExceptionStateList.isEmpty())
+                        config.sqlExceptionStateList = new ArrayList<String>(sqlExceptionStateList);
+
+                    if (this.printConfigInfo && !configPrintExclusionList.contains(fieldName))
+                        CommonLog.info("{}.sqlExceptionStateList={}", this.poolName, this.sqlExceptionStateList);
+
+                } else {//other config items
                     Object fieldValue = field.get(this);
-                    if (this.printConfigInfo) CommonLog.info("{}.{}={}", this.poolName, fieldName, fieldValue);
+                    if (this.printConfigInfo && !configPrintExclusionList.contains(fieldName))
+                        CommonLog.info("{}.{}={}", this.poolName, fieldName, fieldValue);
                     field.set(config, fieldValue);
                 }
             }
         } catch (Throwable e) {
             throw new BeeDataSourceConfigException("Failed to copy field[" + fieldName + "]", e);
-        }
-
-        //2:copy 'connectProperties'
-        for (Map.Entry<String, Object> entry : this.connectProperties.entrySet()) {
-            if (this.printConfigInfo)
-                CommonLog.info("{}.connectProperties.{}={}", this.poolName, entry.getKey(), entry.getValue());
-            config.addConnectProperty(entry.getKey(), entry.getValue());
-        }
-
-        //3:copy 'sqlExceptionCodeList'
-        if (this.sqlExceptionCodeList != null && !sqlExceptionCodeList.isEmpty()) {
-            config.sqlExceptionCodeList = new ArrayList<Integer>(sqlExceptionCodeList);
-        }
-
-        //4:copy 'sqlExceptionStateList'
-        if (this.sqlExceptionStateList != null && !sqlExceptionStateList.isEmpty()) {
-            config.sqlExceptionStateList = new ArrayList<String>(sqlExceptionStateList);
         }
     }
 
