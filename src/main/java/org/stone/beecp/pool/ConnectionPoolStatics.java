@@ -77,8 +77,9 @@ public class ConnectionPoolStatics {
     static final int POOL_NEW = 0;
     static final int POOL_STARTING = 1;
     static final int POOL_READY = 2;
-    static final int POOL_CLOSED = 3;
-    static final int POOL_CLEARING = 4;
+    static final int POOL_CLOSING = 3;
+    static final int POOL_CLOSED = 4;
+    static final int POOL_CLEARING = 5;
     //connection state
     static final int CON_IDLE = 0;
     static final int CON_USING = 1;
