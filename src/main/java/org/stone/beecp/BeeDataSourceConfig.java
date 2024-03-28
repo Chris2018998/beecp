@@ -877,7 +877,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
                     if (this.printConfigInfo && !this.configPrintExclusionList.contains(fieldName)) {
                         for (Map.Entry<String, Object> entry : this.connectProperties.entrySet()) {
-                            if (configPrintExclusionList.contains(entry.getKey()))
+                            if (!configPrintExclusionList.contains(entry.getKey()))
                                 CommonLog.info("{}.connectProperties.{}={}", this.poolName, entry.getKey(), entry.getValue());
                         }
                     }
