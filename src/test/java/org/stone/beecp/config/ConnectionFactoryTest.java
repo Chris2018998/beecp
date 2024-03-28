@@ -11,7 +11,10 @@ package org.stone.beecp.config;
 
 import junit.framework.TestCase;
 import org.stone.base.TestException;
-import org.stone.beecp.*;
+import org.stone.beecp.BeeDataSourceConfig;
+import org.stone.beecp.BeeDataSourceConfigException;
+import org.stone.beecp.RawConnectionFactory;
+import org.stone.beecp.RawXaConnectionFactory;
 import org.stone.beecp.factory.NullConnectionFactory;
 import org.stone.beecp.factory.NullXaConnectionFactory;
 

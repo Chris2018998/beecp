@@ -20,6 +20,9 @@ public class PoolThreadFactoryTest extends TestCase {
     public void testOnSetGet() throws Exception {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
 
+        config.setThreadFactoryClassName(null);
+        if (config.getThreadFactoryClassName() == null) throw new TestException();
+
         Class factClass = DummyThreadFactory.class;
         config.setThreadFactoryClass(factClass);
         if (!factClass.equals(config.getThreadFactoryClass())) throw new TestException();

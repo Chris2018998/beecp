@@ -27,6 +27,12 @@ public class ConfigLoadFailTest extends TestCase {
             //do noting
         }
         try {
+            config.loadFromProperties(new Properties());
+        } catch (IllegalArgumentException e) {
+            //do noting
+        }
+
+        try {
             config.loadFromPropertiesFile((File) null);
         } catch (IllegalArgumentException e) {
             //do noting

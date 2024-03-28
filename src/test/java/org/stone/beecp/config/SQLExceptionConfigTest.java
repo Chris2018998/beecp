@@ -13,28 +13,28 @@ import junit.framework.TestCase;
 import org.stone.base.TestException;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
-import org.stone.beecp.JdbcConfig;
 import org.stone.beecp.SQLExceptionPredication;
 import org.stone.beecp.config.customization.DummySqlExceptionPredication;
+
+import java.util.Properties;
 
 public class SQLExceptionConfigTest extends TestCase {
 
     public void testOnExceptionCode() throws Exception {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setJdbcUrl(JdbcConfig.JDBC_URL);
-        config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+        BeeDataSourceConfig config = ConfigFactory.createDefault();
         config.removeSqlExceptionCode(500150);
         config.addSqlExceptionCode(500150);
+        config.addSqlExceptionCode(500150);
+
         config.addSqlExceptionCode(2399);
         config.removeSqlExceptionCode(500150);
         config.check();
     }
 
     public void testOnExceptionState() throws Exception {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setJdbcUrl(JdbcConfig.JDBC_URL);
-        config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+        BeeDataSourceConfig config = ConfigFactory.createDefault();
         config.removeSqlExceptionState("0A000");// FEATURE UNSUPPORTED
+        config.addSqlExceptionState("0A000");// ADMIN SHUTDOWN
         config.addSqlExceptionState("0A000");// ADMIN SHUTDOWN
         config.addSqlExceptionState("57P01");
         config.removeSqlExceptionState("0A000");
@@ -42,9 +42,7 @@ public class SQLExceptionConfigTest extends TestCase {
     }
 
     public void testOnExceptionPredication() throws Exception {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setJdbcUrl(JdbcConfig.JDBC_URL);
-        config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+        BeeDataSourceConfig config = ConfigFactory.createDefault();
         config.setPrintConfigInfo(true);
 
         Class predicationClass = DummySqlExceptionPredication.class;
@@ -62,9 +60,7 @@ public class SQLExceptionConfigTest extends TestCase {
     }
 
     public void testOnErrorPredicationClass() throws Exception {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setJdbcUrl(JdbcConfig.JDBC_URL);
-        config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+        BeeDataSourceConfig config = ConfigFactory.createDefault();
         config.setSqlExceptionPredicationClass(String.class);
         try {
             config.check();
@@ -75,9 +71,7 @@ public class SQLExceptionConfigTest extends TestCase {
     }
 
     public void testOnErrorPredicationClassName() throws Exception {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setJdbcUrl(JdbcConfig.JDBC_URL);
-        config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+        BeeDataSourceConfig config = ConfigFactory.createDefault();
         config.setSqlExceptionPredicationClassName("String");
         try {
             config.check();
@@ -86,4 +80,16 @@ public class SQLExceptionConfigTest extends TestCase {
             if (!(msg != null && msg.contains("predication"))) throw new TestException();
         }
     }
+
+    public void testLoadFromProperties() throws Exception {
+        BeeDataSourceConfig config = ConfigFactory.createDefault();
+
+        Properties prop =new Properties();
+        prop.setProperty("sqlExceptionCodeList","123");
+        prop.setProperty("sqlExceptionStateList","A");
+        prop.setProperty("configPrintExclusionList","driverClassName");
+
+        config.loadFromProperties(prop);
+    }
+
 }

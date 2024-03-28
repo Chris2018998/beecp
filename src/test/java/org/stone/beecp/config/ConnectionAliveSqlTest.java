@@ -18,7 +18,12 @@ public class ConnectionAliveSqlTest extends TestCase {
 
     public void test() throws Exception {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
+
+        config.setAliveTestSql(null);
+        if (config.getAliveTestSql() == null) throw new TestException();
+
         config.setAliveTestSql("SELECT1");
+        if (!"SELECT1".equals(config.getAliveTestSql())) throw new TestException();
 
         try {
             config.check();//check (initialSize > maxActive)

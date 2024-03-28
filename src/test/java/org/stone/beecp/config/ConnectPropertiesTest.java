@@ -17,8 +17,10 @@ public class ConnectPropertiesTest extends TestCase {
 
     public void testOnAddProperty() throws Exception {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.addConnectProperty("attach1", "value1");
-        config.addConnectProperty("attach2", "value2");
+        config.addConnectProperty(null, null);
+        config.addConnectProperty(null, "value");
+        config.addConnectProperty("key", null);
+        config.addConnectProperty("key", "value");
     }
 
     //prop1=value&prop2=value2&prop3=value3
