@@ -882,19 +882,19 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                         }
                     }
                 } else if ("sqlExceptionCodeList".equals(fieldName)) {//copy 'sqlExceptionCodeList'
-                    if (this.sqlExceptionCodeList != null && !sqlExceptionCodeList.isEmpty())
+                    if (this.sqlExceptionCodeList != null && !sqlExceptionCodeList.isEmpty()) {
                         config.sqlExceptionCodeList = new ArrayList<Integer>(sqlExceptionCodeList);
 
-                    if (this.printConfigInfo && !configPrintExclusionList.contains(fieldName))
-                        CommonLog.info("{}.sqlExceptionCodeList={}", this.poolName, this.sqlExceptionCodeList);
-
+                        if (this.printConfigInfo && !configPrintExclusionList.contains(fieldName))
+                            CommonLog.info("{}.sqlExceptionCodeList={}", this.poolName, this.sqlExceptionCodeList);
+                    }
                 } else if ("sqlExceptionStateList".equals(fieldName)) {//copy 'sqlExceptionStateList'
-                    if (this.sqlExceptionStateList != null && !sqlExceptionStateList.isEmpty())
+                    if (this.sqlExceptionStateList != null && !sqlExceptionStateList.isEmpty()) {
                         config.sqlExceptionStateList = new ArrayList<String>(sqlExceptionStateList);
 
-                    if (this.printConfigInfo && !configPrintExclusionList.contains(fieldName))
-                        CommonLog.info("{}.sqlExceptionStateList={}", this.poolName, this.sqlExceptionStateList);
-
+                        if (this.printConfigInfo && !configPrintExclusionList.contains(fieldName))
+                            CommonLog.info("{}.sqlExceptionStateList={}", this.poolName, this.sqlExceptionStateList);
+                    }
                 } else {//other config items
                     Object fieldValue = field.get(this);
                     if (this.printConfigInfo && !configPrintExclusionList.contains(fieldName))
