@@ -167,13 +167,13 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //indicator on whether printing configuration items when pool starting up
     private boolean printConfigInfo;
     //exclusion print list on printConfigInfo indicator(default exclusion items:username,password,jdbcUrl)
-    private Set<String> configPrintExclusionList;
+    private List<String> configPrintExclusionList;
 
     //****************************************************************************************************************//
     //                                     1: constructors(5)                                                         //
     //****************************************************************************************************************//
     public BeeDataSourceConfig() {
-        this.configPrintExclusionList = new HashSet<>();
+        this.configPrintExclusionList = new ArrayList<>(5);
         this.configPrintExclusionList.add("username");
         this.configPrintExclusionList.add("password");
         this.configPrintExclusionList.add("jdbcUrl");
@@ -389,7 +389,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
     public void addSqlExceptionCode(int code) {
         if (sqlExceptionCodeList == null) sqlExceptionCodeList = new ArrayList<Integer>(1);
-        this.sqlExceptionCodeList.add(code);
+        if (!this.sqlExceptionCodeList.contains(code)) this.sqlExceptionCodeList.add(code);
     }
 
     public void removeSqlExceptionCode(int code) {
@@ -402,7 +402,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
     public void addSqlExceptionState(String state) {
         if (sqlExceptionStateList == null) sqlExceptionStateList = new ArrayList<String>(1);
-        this.sqlExceptionStateList.add(state);
+        if (!this.sqlExceptionStateList.contains(state)) this.sqlExceptionStateList.add(state);
     }
 
     public void removeSqlExceptionState(String state) {
@@ -446,7 +446,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void addConfigPrintExclusion(String fieldName) {
-        this.configPrintExclusionList.add(fieldName);
+        if (!configPrintExclusionList.contains(fieldName))
+            this.configPrintExclusionList.add(fieldName);
     }
 
     public boolean removeConfigPrintExclusion(String fieldName) {
@@ -868,7 +869,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
                 fieldName = field.getName();
                 if ("configPrintExclusionList".equals(fieldName)) {//copy 'exclusionConfigPrintList'
-                    config.configPrintExclusionList = new HashSet<>(configPrintExclusionList);
+                    config.configPrintExclusionList = new ArrayList<>(configPrintExclusionList);
 
                 } else if ("connectProperties".equals(fieldName)) {//copy 'connectProperties'
                     for (Map.Entry<String, Object> entry : this.connectProperties.entrySet())
