@@ -5,7 +5,6 @@ import org.stone.base.TestException;
 import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.config.ConfigFactory;
-import org.stone.beecp.dataSource.BlockingConnectionFactory;
 import org.stone.beecp.dataSource.MockThreadToInterruptCreateLock;
 import org.stone.beecp.factory.*;
 import org.stone.beecp.pool.ConnectionPoolStatics;
@@ -161,7 +160,7 @@ public class ConnectionCreateTest extends TestCase {
 
     public void testInterruptCreateLock() throws Exception {
         BeeDataSourceConfig config = ConfigFactory.createDefault();
-        config.setRawConnectionFactory(new BlockingConnectionFactory());
+        config.setRawConnectionFactory(new BlockingNullConnectionFactory());
 
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);

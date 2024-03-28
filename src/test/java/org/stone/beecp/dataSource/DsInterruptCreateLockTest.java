@@ -13,6 +13,7 @@ import junit.framework.TestCase;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.JdbcConfig;
+import org.stone.beecp.factory.BlockingNullConnectionFactory;
 import org.stone.beecp.pool.ConnectionPoolStatics;
 import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
 
@@ -27,7 +28,7 @@ public class DsInterruptCreateLockTest extends TestCase {
         config.setJdbcUrl(JdbcConfig.JDBC_URL);// give valid URL
         config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
         config.setUsername(JdbcConfig.JDBC_USER);
-        config.setRawConnectionFactory(new BlockingConnectionFactory());
+        config.setRawConnectionFactory(new BlockingNullConnectionFactory());
         ds = new BeeDataSource(config);
     }
 
