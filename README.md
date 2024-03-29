@@ -162,9 +162,9 @@ Example
 |maxWait                           |milliseconds:max wait time to get one connection from pool|8000                |
 |idleTimeout                       |milliseconds:max idle time of connections,when reach,then close them and remove from pool|18000|                             
 |holdTimeout                       |milliseconds:max no-use time of borrowed connections,when reach,then return them to pool by forced close           |18000                             |  
-|validTestSql                      |connection valid test sql on borrowed              |SELECT 1                            |  
-|validTestTimeout                  |seconds:max time to get valid test result          |3                                   |  
-|validAssumeTime                   |milliseconds:connections valid assume time after last activity,if borrowed,not need test during the duration                   |500                               |  
+|aliveTestSql                      |connection valid test sql on borrowed              |SELECT 1                            |  
+|aliveTestTimeout                  |seconds:max time to get valid test result          |3                                   |  
+|aliveAssumeTime                   |milliseconds:connections valid assume time after last activity,if borrowed,not need test during the duration                   |500                               |  
 |forceCloseUsingOnClear            |using connections forced close indicator on pool clear|false                            |
 |delayTimeForNextClear             |milliseconds:delay time for next loop to clear,when<code>forceCloseUsingOnClear</code> is false and exists using connections                  |3000                                |                   
 |timerCheckInterval                |milliseconds:interval time to run timer check task|18000                               |
