@@ -2,7 +2,7 @@
 <a><img src="https://img.shields.io/circleci/build/github/Chris2018998/beecp"></a>
 <a><img src="https://codecov.io/gh/Chris2018998/beecp/graph/badge.svg?token=JLS7NFR3NP"/></a>
 <a><img src="https://maven-badges.herokuapp.com/maven-central/com.github.chris2018998/beecp/badge.svg"></a>
-<a><img src="https://img.shields.io/badge/JDK-1.7+-green.svg"></a>
+<a><img src="https://img.shields.io/badge/Java-7+-green.svg"></a>
 <a><img src="https://img.shields.io/github/license/Chris2018998/BeeCP"></a>
 </p>
 
@@ -25,13 +25,13 @@
 
 ## 二：版本下载 
 
-### Java7或更高
+### Java7+
 
 ```xml
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>4.0.1</version>
+   <version>4.0.2</version>
 </dependency>
 ```
 
@@ -174,9 +174,9 @@ public class DataSourceConfig {
 |maxWait                           |连接借用等待最大时间(毫秒)                |8000                                |
 |idleTimeout                       |连接闲置最大时间(毫秒)                    |18000                               |  
 |holdTimeout                       |连接被持有不用最大允许时间(毫秒)           |18000                               |  
-|validTestSql                      |连接有效性测试SQL语句                     |SELECT 1                            |  
-|validTestTimeout                  |连接有效性测试超时时间(秒)                 |3                                   |  
-|validAssumeTime                   |连接测试的间隔时间(毫秒)                   |500                                 |  
+|aliveTestSql                      |连接有效性测试SQL语句                     |SELECT 1                            |  
+|aliveTestTimeout                  |连接有效性测试超时时间(秒)                 |3                                   |  
+|aliveAssumeTime                   |连接测试的间隔时间(毫秒)                   |500                                 |  
 |forceCloseUsingOnClear            |是否直接关闭使用中连接                     |false                               |
 |delayTimeForNextClear             |延迟清理的时候时间（毫秒）                 |3000                                |                   
 |timerCheckInterval                |闲置扫描线程间隔时间(毫秒)                 |18000                               |
