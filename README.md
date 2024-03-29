@@ -13,7 +13,7 @@
 
 ## :coffee: Introduction 
 
-BeeCP, a small JDBC connection pool: high performance, lightweight code and good stability.
+BeeCP is a small JDBC connection pool: high performance, lightweight code and good stability.
 
 *  Support main popular database drivers
 *  Support XAConnection/JTA 
