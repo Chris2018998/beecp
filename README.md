@@ -2,7 +2,7 @@
 <a><img src="https://img.shields.io/circleci/build/github/Chris2018998/beecp"></a>
 <a><img src="https://codecov.io/gh/Chris2018998/beecp/graph/badge.svg?token=JLS7NFR3NP"/></a>
 <a><img src="https://maven-badges.herokuapp.com/maven-central/com.github.chris2018998/beecp/badge.svg"></a>
-<a><img src="https://img.shields.io/badge/JDK-1.7+-green.svg"></a>
+<a><img src="https://img.shields.io/badge/Java-7+-green.svg"></a>
 <a><img src="https://img.shields.io/github/license/Chris2018998/BeeCP"></a>
 </p>
 
@@ -28,7 +28,7 @@ Java7 or higher
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>4.0.1</version>
+   <version>4.0.2</version>
 </dependency>
 ```
 
