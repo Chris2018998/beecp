@@ -1,5 +1,19 @@
 beecp changes
 
+Changes in 4.0.2
+
+* [beecp]support propeties config loading from class path
+* [beecp]remove some unnecessary check on number config items
+* [beecp]fix IndexOutOfBoundsException on remove error code
+* [beecp]add a new config item[configPrintExclusionList]
+* [beecp]rename a exception class[PoolInitializedException --> PoolInitializeFailedException]
+* [beecp]add a new method to BeeObjectSourceConfig[getFactoryProperty]
+* [beecp]rename three config items
+    validTestSql ---> aliveTestSql
+    validTestTimeout ---> aliveTestTimeout
+    validAssumeTime  ----> aliveAssumeTime
+
+
 Changes in 4.0.1 
 
 * [beecp]enhance interruption handling on conneciton creation 
