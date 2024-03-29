@@ -23,7 +23,7 @@ BeeCP, a small JDBC connection pool: high performance, lightweight code and good
 
 ## :arrow_down: Download 
 
-Java7 or higher
+Java7+
 ```xml
 <dependency>
    <groupId>com.github.chris2018998</groupId>
