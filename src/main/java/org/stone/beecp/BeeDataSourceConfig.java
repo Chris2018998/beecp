@@ -316,7 +316,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setConnectTimeout(int connectTimeout) {
-        if (connectTimeout > 0) this.connectTimeout = connectTimeout;
+        if (connectTimeout >= 0) this.connectTimeout = connectTimeout;
     }
 
     public long getIdleTimeout() {
