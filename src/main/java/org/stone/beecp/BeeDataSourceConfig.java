@@ -153,7 +153,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //encryption decoder class on jdbc link info
     private Class jdbcLinkInfoDecoderClass;
     //encryption decoder classname on jdbc link info
-    private String jdbcLinkInfDecoderClassName;
+    private String jdbcLinkInfoDecoderClassName;
     //decoder instance on jdbc link info
     private BeeJdbcLinkInfoDecoder jdbcLinkInfoDecoder;
 
@@ -662,12 +662,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.jdbcLinkInfoDecoderClass = jdbcLinkInfoDecoderClass;
     }
 
-    public String getJdbcLinkInfDecoderClassName() {
-        return this.jdbcLinkInfDecoderClassName;
+    public String getJdbcLinkInfoDecoderClassName() {
+        return this.jdbcLinkInfoDecoderClassName;
     }
 
-    public void setJdbcLinkInfDecoderClassName(String jdbcLinkInfDecoderClassName) {
-        this.jdbcLinkInfDecoderClassName = jdbcLinkInfDecoderClassName;
+    public void setJdbcLinkInfoDecoderClassName(String jdbcLinkInfoDecoderClassName) {
+        this.jdbcLinkInfoDecoderClassName = jdbcLinkInfoDecoderClassName;
     }
 
     public BeeJdbcLinkInfoDecoder getJdbcLinkInfoDecoder() {
@@ -869,7 +869,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
                 fieldName = field.getName();
                 if ("configPrintExclusionList".equals(fieldName)) {//copy 'exclusionConfigPrintList'
-                    config.configPrintExclusionList = new ArrayList<>(configPrintExclusionList);
+                    if(configPrintExclusionList!=null&&!configPrintExclusionList.isEmpty())
+                        config.configPrintExclusionList = new ArrayList<>(configPrintExclusionList);
 
                 } else if ("connectProperties".equals(fieldName)) {//copy 'connectProperties'
                     for (Map.Entry<String, Object> entry : this.connectProperties.entrySet())
@@ -912,13 +913,13 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         if (jdbcLinkInfoDecoder != null) return this.jdbcLinkInfoDecoder;
 
         //step2: create link info decoder
-        if (jdbcLinkInfoDecoderClass != null || !isBlank(jdbcLinkInfDecoderClassName)) {
+        if (jdbcLinkInfoDecoderClass != null || !isBlank(jdbcLinkInfoDecoderClassName)) {
             Class<?> decoderClass = null;
             try {
-                decoderClass = jdbcLinkInfoDecoderClass != null ? jdbcLinkInfoDecoderClass : Class.forName(jdbcLinkInfDecoderClassName);
+                decoderClass = jdbcLinkInfoDecoderClass != null ? jdbcLinkInfoDecoderClass : Class.forName(jdbcLinkInfoDecoderClassName);
                 return (BeeJdbcLinkInfoDecoder) createClassInstance(decoderClass, BeeJdbcLinkInfoDecoder.class, "jdbc link info decoder");
             } catch (ClassNotFoundException e) {
-                throw new BeeDataSourceConfigException("Failed to create jdbc link info decoder with class[" + jdbcLinkInfDecoderClassName + "]", e);
+                throw new BeeDataSourceConfigException("Failed to create jdbc link info decoder with class[" + jdbcLinkInfoDecoderClassName + "]", e);
             } catch (BeeDataSourceConfigException e) {
                 throw e;
             } catch (Throwable e) {
