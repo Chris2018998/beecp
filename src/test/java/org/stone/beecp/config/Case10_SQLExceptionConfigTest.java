@@ -91,4 +91,16 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
         Assert.assertTrue(config.getSqlExceptionCodeList().contains(123));
         Assert.assertTrue(config.getSqlExceptionStateList().contains("A"));
     }
+
+    public void testLoadInvalidErrorCodeFromProperties() {
+        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        try {
+            Properties configProperties = new Properties();
+            configProperties.put("sqlExceptionCodeList", "1,A,C");//test on invalid error code
+            config.loadFromProperties(configProperties);
+        } catch (Exception e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("SQLException error code"));
+        }
+    }
 }

@@ -63,4 +63,18 @@ public class Case11_PoolThreadFactoryTest extends TestCase {
             Assert.assertTrue(message != null && message.contains("which must extend from one of type"));
         }
     }
+
+    public void testOnNotFoundThreadFactClassName() throws Exception {
+        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        config.setJdbcUrl(JdbcConfig.JDBC_URL);
+        config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+        config.setThreadFactoryClassName("org.stone.beecp.BeeConnectionPoolThreadFactory.ConnectionPoolThreadFactory22");//invalid class
+
+        try {
+            config.check();
+        } catch (Exception e) {
+          Throwable cause=e.getCause();
+            Assert.assertTrue(cause instanceof ClassNotFoundException);
+        }
+    }
 }
