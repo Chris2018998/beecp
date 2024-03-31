@@ -15,28 +15,69 @@ import org.stone.beecp.pool.FastConnectionPool;
 import java.util.Properties;
 
 public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
+    private final String driver = "org.stone.beecp.mock.MockDriver";
+    private final String url = "jdbc:beecp://localhost/testdb";
+    private final String username = "user";
+    private final String password = "passwor";
 
-    public void testOnSetGet() throws Exception {
+    public void testOnSetGet() {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         Class decodeClass = DummyJdbcLinkInfoDecoder.class;
         config.setJdbcLinkInfoDecoderClass(decodeClass);
         Assert.assertEquals(config.getJdbcLinkInfoDecoderClass(), decodeClass);
 
         String decodeClassName = "org.stone.beecp.config.customization.DummyJdbcLinkInfoDecoder";
-        config.setJdbcLinkInfDecoderClassName(decodeClassName);
-        Assert.assertEquals(config.getJdbcLinkInfDecoderClassName(), decodeClassName);
+        config.setJdbcLinkInfoDecoderClassName(decodeClassName);
+        Assert.assertEquals(config.getJdbcLinkInfoDecoderClassName(), decodeClassName);
 
         DummyJdbcLinkInfoDecoder decoder = new DummyJdbcLinkInfoDecoder();
         config.setJdbcLinkInfoDecoder(decoder);
         Assert.assertEquals(config.getJdbcLinkInfoDecoder(), decoder);
     }
 
+    public void testOnCreation() throws Exception {
+        BeeDataSourceConfig config1 = new BeeDataSourceConfig(driver, url, username, password);
+        config1.setJdbcLinkInfoDecoder(new DummyJdbcLinkInfoDecoder());
+        config1.setConnectionFactoryClass(NullConnectionFactory.class);
+        BeeDataSourceConfig checkConfig = config1.check();
+
+        NullConnectionFactory factory = (NullConnectionFactory) checkConfig.getConnectionFactory();
+        String url = factory.getUrl();
+        String user = factory.getUser();
+        String password = factory.getPassword();
+        Assert.assertTrue(url.endsWith("-Decoded"));
+        Assert.assertTrue(user.endsWith("-Decoded"));
+        Assert.assertTrue(password.endsWith("-Decoded"));
+
+        BeeDataSourceConfig config2 = new BeeDataSourceConfig(driver, url, username, password);
+        config2.setConnectionFactoryClass(NullConnectionFactory.class);
+        config2.setJdbcLinkInfoDecoderClass(org.stone.beecp.config.customization.DummyJdbcLinkInfoDecoder.class);
+        checkConfig = config2.check();
+        factory = (NullConnectionFactory) checkConfig.getConnectionFactory();
+
+        url = factory.getUrl();
+        user = factory.getUser();
+        password = factory.getPassword();
+        Assert.assertTrue(url.endsWith("-Decoded"));
+        Assert.assertTrue(user.endsWith("-Decoded"));
+        Assert.assertTrue(password.endsWith("-Decoded"));
+
+
+        BeeDataSourceConfig config3 = new BeeDataSourceConfig(driver, url, username, password);
+        config3.setConnectionFactoryClass(NullConnectionFactory.class);
+        config3.setJdbcLinkInfoDecoderClassName("org.stone.beecp.config.customization.DummyJdbcLinkInfoDecoder");
+        checkConfig = config3.check();
+        factory = (NullConnectionFactory) checkConfig.getConnectionFactory();
+        url = factory.getUrl();
+        user = factory.getUser();
+        password = factory.getPassword();
+        Assert.assertTrue(url.endsWith("-Decoded"));
+        Assert.assertTrue(user.endsWith("-Decoded"));
+        Assert.assertTrue(password.endsWith("-Decoded"));
+    }
+
     public void testOnErrorClass() throws Exception {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setUsername("user");
-        config.setPassword("passwor");
-        config.setUrl("jdbc:beecp://localhost/testdb");
-        config.setDriverClassName("org.stone.beecp.mock.MockDriver");
+        BeeDataSourceConfig config = new BeeDataSourceConfig(driver, url, username, password);
         config.setJdbcLinkInfoDecoderClass(String.class);//error config
         try {
             config.check();
@@ -47,12 +88,9 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
     }
 
     public void testOnErrorClassName() throws Exception {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setUsername("user");
-        config.setPassword("passwor");
-        config.setUrl("jdbc:beecp://localhost/testdb");
-        config.setDriverClassName("org.stone.beecp.mock.MockDriver");
-        config.setJdbcLinkInfDecoderClassName("String");//error config
+        BeeDataSourceConfig config = new BeeDataSourceConfig(driver, url, username, password);
+
+        config.setJdbcLinkInfoDecoderClassName("String");//error config
         try {
             config.check();
         } catch (BeeDataSourceConfigException e) {
@@ -63,11 +101,7 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
 
     /****************************************************Decode execution Test ****************************************/
     public void testJdbcDecoderOnDriver() throws Exception {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setUsername("user");
-        config.setPassword("passwor");
-        config.setUrl("jdbc:beecp://localhost/testdb");
-        config.setDriverClassName("org.stone.beecp.mock.MockDriver");
+        BeeDataSourceConfig config = new BeeDataSourceConfig(driver, url, username, password);
         config.setJdbcLinkInfoDecoderClass(DummyJdbcLinkInfoDecoder.class);
         BeeDataSourceConfig checkedConfig = config.check();
         Object factory = TestUtil.getFieldValue(checkedConfig, "connectionFactory");
@@ -82,15 +116,12 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
     }
 
     public void testJdbcDecoderOnFactory() throws Exception {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setUsername("user");
-        config.setPassword("passwor");
-        config.setUrl("jdbc:beecp://localhost/testdb");
+        BeeDataSourceConfig config = new BeeDataSourceConfig(driver, url, username, password);
         config.setConnectionFactoryClass(NullConnectionFactory.class);
         config.setJdbcLinkInfoDecoderClass(DummyJdbcLinkInfoDecoder.class);
         BeeDataSourceConfig checkedConfig = config.check();
 
-        NullConnectionFactory factory = (NullConnectionFactory) TestUtil.getFieldValue(checkedConfig, "connectionFactory");
+        NullConnectionFactory factory = (NullConnectionFactory) checkedConfig.getConnectionFactory();
 
         String url = factory.getUrl();
         String user = factory.getUser();
@@ -101,12 +132,9 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
     }
 
     public void testJdbcDecoderOnXaDataSource() throws Exception {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setJdbcUrl("jdbc:mock:test");
-        config.setUsername("mock");
-        config.setPassword("root");
+        BeeDataSourceConfig config = new BeeDataSourceConfig(driver, url, username, password);
         config.setConnectionFactoryClassName("org.stone.beecp.mock.MockXaDataSource");
-        config.setJdbcLinkInfDecoderClassName("org.stone.beecp.config.customization.DummyJdbcLinkInfoDecoder");
+        config.setJdbcLinkInfoDecoderClassName("org.stone.beecp.config.customization.DummyJdbcLinkInfoDecoder");
         BeeDataSource ds = new BeeDataSource(config);
 
         FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
@@ -124,7 +152,7 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
     public void testJdbcDecoderOnXaDataSource2() throws Exception {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         config.setConnectionFactoryClassName("org.stone.beecp.mock.MockXaDataSource");
-        config.setJdbcLinkInfDecoderClassName("org.stone.beecp.config.customization.DummyJdbcLinkInfoDecoder");
+        config.setJdbcLinkInfoDecoderClassName("org.stone.beecp.config.customization.DummyJdbcLinkInfoDecoder");
         config.addConnectProperty("URL", "jdbc:mock:test");
         config.addConnectProperty("user", "mock");
         config.addConnectProperty("password", "root");

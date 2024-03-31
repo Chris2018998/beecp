@@ -16,6 +16,7 @@ import org.stone.beecp.BeeDataSourceConfig;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 
@@ -33,6 +34,7 @@ public class Case15_ConfigLoadFromFileTest extends TestCase {
     /********************************************Constructor**************************************************/
     public void testOnConstructor() throws Exception {
         check(new BeeDataSourceConfig(filename));
+        check(new BeeDataSourceConfig(getPropertiesFile()));
         check(new BeeDataSourceConfig(getFileProperties()));
     }
 
@@ -41,12 +43,16 @@ public class Case15_ConfigLoadFromFileTest extends TestCase {
         config1.loadFromPropertiesFile(filename);
         check(config1);
 
+        BeeDataSourceConfig config2 = new BeeDataSourceConfig();
+        config2.loadFromPropertiesFile(getPropertiesFile());
+        check(config2);
+
         BeeDataSourceConfig config3 = new BeeDataSourceConfig();
         config3.loadFromProperties(getFileProperties());
         check(config3);
     }
 
-    public void testOnInvalidFile() throws Exception {
+    public void testOnInvalidFile(){
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         try {
             config.loadFromProperties(null);
@@ -93,6 +99,13 @@ public class Case15_ConfigLoadFromFileTest extends TestCase {
         Properties prop = new Properties();
         prop.load(propertiesStream);
         return prop;
+    }
+
+    private File getPropertiesFile() throws Exception {
+        Class selfClass = Case15_ConfigLoadFromFileTest.class;
+        URL fileUrl = selfClass.getResource(filename);
+        if (fileUrl == null) fileUrl = selfClass.getClassLoader().getResource(filename);
+        return new File(fileUrl.toURI());
     }
 
     private void check(BeeDataSourceConfig config) throws Exception {

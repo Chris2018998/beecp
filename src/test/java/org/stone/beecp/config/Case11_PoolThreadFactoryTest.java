@@ -36,10 +36,25 @@ public class Case11_PoolThreadFactoryTest extends TestCase {
         Assert.assertEquals(config.getThreadFactory(), threadFactory);
     }
 
-    public void testOnInValidThreadFactClass() throws Exception {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setJdbcUrl(JdbcConfig.JDBC_URL);
-        config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+    public void testOnCreation() throws Exception {
+        BeeDataSourceConfig config1 = ConfigFactory.createDefault();
+        config1.setThreadFactory(new DummyThreadFactory());
+        BeeDataSourceConfig checkConfig = config1.check();
+        Assert.assertNotNull(checkConfig.getThreadFactory());
+
+        BeeDataSourceConfig config2 = ConfigFactory.createDefault();
+        config2.setThreadFactoryClass(org.stone.beecp.config.customization.DummyThreadFactory.class);
+        checkConfig = config2.check();
+        Assert.assertNotNull(checkConfig.getThreadFactory());
+
+        BeeDataSourceConfig config3 = ConfigFactory.createDefault();
+        config3.setThreadFactoryClassName("org.stone.beecp.config.customization.DummyThreadFactory");
+        checkConfig = config3.check();
+        Assert.assertNotNull(checkConfig.getThreadFactory());
+    }
+
+    public void testOnInValidThreadFactClass() {
+        BeeDataSourceConfig config = ConfigFactory.createDefault();
         config.setThreadFactoryClass(String.class);//invalid class
 
         try {
@@ -50,7 +65,7 @@ public class Case11_PoolThreadFactoryTest extends TestCase {
         }
     }
 
-    public void testOnInValidThreadFactClassName() throws Exception {
+    public void testOnInValidThreadFactClassName() {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         config.setJdbcUrl(JdbcConfig.JDBC_URL);
         config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
@@ -64,7 +79,7 @@ public class Case11_PoolThreadFactoryTest extends TestCase {
         }
     }
 
-    public void testOnNotFoundThreadFactClassName() throws Exception {
+    public void testOnNotFoundThreadFactClassName() {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         config.setJdbcUrl(JdbcConfig.JDBC_URL);
         config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
@@ -73,7 +88,7 @@ public class Case11_PoolThreadFactoryTest extends TestCase {
         try {
             config.check();
         } catch (Exception e) {
-          Throwable cause=e.getCause();
+            Throwable cause = e.getCause();
             Assert.assertTrue(cause instanceof ClassNotFoundException);
         }
     }
