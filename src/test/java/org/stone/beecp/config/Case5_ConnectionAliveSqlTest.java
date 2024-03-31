@@ -20,7 +20,7 @@ public class Case5_ConnectionAliveSqlTest extends TestCase {
     public void testOnSetAndGet() {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         config.setAliveTestSql(null);
-        Assert.assertNull(config.getAliveTestSql());
+        Assert.assertNotNull(config.getAliveTestSql());
 
         config.setAliveTestSql("SELECT1");
         Assert.assertEquals("SELECT1", config.getAliveTestSql());
