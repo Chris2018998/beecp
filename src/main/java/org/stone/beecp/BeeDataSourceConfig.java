@@ -41,6 +41,8 @@ import static org.stone.tools.CommonUtil.*;
 public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //atomic index at pool name generation,its value starts with 1
     private static final AtomicInteger PoolNameIndex = new AtomicInteger(1);
+    //default exclusion list on config print
+    private static final List<String> DefaultExclusionList = Arrays.asList("username", "password", "jdbcUrl", "user", "url");
 
     //a map store some properties for driver connects to db,@see{@code Driver.connect(url,properties)}
     private final Map<String, Object> connectProperties = new HashMap<String, Object>(2);
@@ -167,7 +169,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //indicator on whether printing configuration items when pool starting up
     private boolean printConfigInfo;
     //exclusion print list on printConfigInfo indicator(default exclusion items:username,password,jdbcUrl)
-    private List<String> configPrintExclusionList = new ArrayList<String>(Arrays.asList("username", "password", "jdbcUrl", "user", "url"));
+    private List<String> configPrintExclusionList = new ArrayList<String>(DefaultExclusionList);
 
     //****************************************************************************************************************//
     //                                     1: constructors(5)                                                         //
