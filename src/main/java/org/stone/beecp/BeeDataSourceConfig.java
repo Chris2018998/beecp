@@ -167,18 +167,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //indicator on whether printing configuration items when pool starting up
     private boolean printConfigInfo;
     //exclusion print list on printConfigInfo indicator(default exclusion items:username,password,jdbcUrl)
-    private List<String> configPrintExclusionList;
+    private List<String> configPrintExclusionList = Arrays.asList("username", "password", "jdbcUrl", "user", "url");
 
     //****************************************************************************************************************//
     //                                     1: constructors(5)                                                         //
     //****************************************************************************************************************//
     public BeeDataSourceConfig() {
-        this.configPrintExclusionList = new ArrayList<>(5);
-        this.configPrintExclusionList.add("username");
-        this.configPrintExclusionList.add("password");
-        this.configPrintExclusionList.add("jdbcUrl");
-        this.configPrintExclusionList.add("user");
-        this.configPrintExclusionList.add("url");
     }
 
     //read configuration from properties file
@@ -869,7 +863,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
                 fieldName = field.getName();
                 if ("configPrintExclusionList".equals(fieldName)) {//copy 'exclusionConfigPrintList'
-                    if(configPrintExclusionList!=null&&!configPrintExclusionList.isEmpty())
+                    if (!configPrintExclusionList.isEmpty())
                         config.configPrintExclusionList = new ArrayList<>(configPrintExclusionList);
 
                 } else if ("connectProperties".equals(fieldName)) {//copy 'connectProperties'
