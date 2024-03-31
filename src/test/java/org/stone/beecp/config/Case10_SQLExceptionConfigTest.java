@@ -22,7 +22,12 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
 
     public void testOnExceptionCode() throws Exception {
         BeeDataSourceConfig config = ConfigFactory.createDefault();
+        config.removeSqlExceptionCode(500151);
+
         config.addSqlExceptionCode(500151);
+        config.addSqlExceptionCode(500152);
+        config.addSqlExceptionCode(500152);
+
         Assert.assertTrue(config.getSqlExceptionCodeList().contains(500151));
         config.removeSqlExceptionCode(500151);
         Assert.assertFalse(config.getSqlExceptionCodeList().contains(500151));
@@ -34,7 +39,11 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
 
     public void testOnExceptionState() throws Exception {
         BeeDataSourceConfig config = ConfigFactory.createDefault();
+        config.removeSqlExceptionState("0A000");
+
         config.addSqlExceptionState("0A000");
+        config.addSqlExceptionState("0A001");
+        config.addSqlExceptionState("0A001");
         Assert.assertTrue(config.getSqlExceptionStateList().contains("0A000"));
         config.removeSqlExceptionState("0A000");
         Assert.assertFalse(config.getSqlExceptionStateList().contains("0A000"));

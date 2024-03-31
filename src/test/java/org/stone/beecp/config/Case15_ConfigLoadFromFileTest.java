@@ -52,7 +52,7 @@ public class Case15_ConfigLoadFromFileTest extends TestCase {
         check(config3);
     }
 
-    public void testOnInvalidFile(){
+    public void testOnInvalidFile() {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         try {
             config.loadFromProperties(null);
