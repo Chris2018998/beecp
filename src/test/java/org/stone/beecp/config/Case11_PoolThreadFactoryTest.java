@@ -21,7 +21,7 @@ public class Case11_PoolThreadFactoryTest extends TestCase {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
 
         config.setThreadFactoryClassName(null);
-        Assert.assertNull(config.getThreadFactoryClassName());
+        Assert.assertNotNull(config.getThreadFactoryClassName());
 
         Class factClass = DummyThreadFactory.class;
         config.setThreadFactoryClass(factClass);
