@@ -10,7 +10,7 @@
 package org.stone.beecp.config;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
+import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 
@@ -61,9 +61,8 @@ public class Case16_ConfigLoadFailTest extends TestCase {
             configProperties.put("sqlExceptionCodeList", "1,A,C");//test on invalid error code
             config.loadFromProperties(configProperties);
         } catch (BeeDataSourceConfigException e) {
-            String msg = e.getMessage();
-            if (!(msg != null && msg.contains("SQLException error code")))
-                throw new TestException();
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("SQLException error code"));
         }
     }
 }

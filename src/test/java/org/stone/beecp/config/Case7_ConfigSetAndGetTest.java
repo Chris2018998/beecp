@@ -10,164 +10,163 @@
 package org.stone.beecp.config;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
+import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 
 public class Case7_ConfigSetAndGetTest extends TestCase {
 
-    public void testOnSetAndGet() throws Exception {
+    public void testOnSetAndGet() {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
 
         //fairMode
-        if (config.isFairMode()) throw new TestException();
+        Assert.assertFalse(config.isFairMode());
         config.setFairMode(true);
-        if (!config.isFairMode()) throw new TestException();
+        Assert.assertTrue(config.isFairMode());
 
         //asyncCreateInitConnection
-        if (config.isAsyncCreateInitConnection()) throw new TestException();
+        Assert.assertFalse(config.isAsyncCreateInitConnection());
         config.setAsyncCreateInitConnection(true);
-        if (!config.isAsyncCreateInitConnection()) throw new TestException();
+        Assert.assertTrue(config.isAsyncCreateInitConnection());
 
         //borrowSemaphoreSize
         config.setBorrowSemaphoreSize(0);
-        if (config.getBorrowSemaphoreSize() == 0) throw new TestException();
+        Assert.assertNotEquals(config.getBorrowSemaphoreSize(), 0);
         config.setBorrowSemaphoreSize(5);
-        if (config.getBorrowSemaphoreSize() != 5) throw new TestException();
+        Assert.assertEquals(config.getBorrowSemaphoreSize(), 5);
 
         //maxWait
         config.setMaxWait(0L);
-        if (config.getMaxWait() == 0) throw new TestException();
+        Assert.assertNotEquals(config.getMaxWait(), 0);
         config.setMaxWait(5000L);
-        if (config.getMaxWait() != 5000L) throw new TestException();
+        Assert.assertEquals(config.getMaxWait(), 5000L);
 
         //connectTimeout
         config.setConnectTimeout(-1);
-        if (config.getConnectTimeout() == -1) throw new TestException();
+        Assert.assertNotEquals(config.getConnectTimeout(), -1);
         config.setConnectTimeout(0);
-        if (config.getConnectTimeout() != 0) throw new TestException();
+        Assert.assertEquals(config.getConnectTimeout(), 0);
         config.setConnectTimeout(3);
-        if (config.getConnectTimeout() != 3) throw new TestException();
+        Assert.assertEquals(config.getConnectTimeout(), 3);
 
         //idleTimeout
         config.setIdleTimeout(0);
-        if (config.getIdleTimeout() == 0) throw new TestException();
+        Assert.assertNotEquals(config.getIdleTimeout(), 0);
         config.setIdleTimeout(3000);
-        if (config.getIdleTimeout() != 3000) throw new TestException();
+        Assert.assertEquals(config.getIdleTimeout(), 3000);
 
         //holdTimeout
         config.setHoldTimeout(-1);
-        if (config.getHoldTimeout() == -1) throw new TestException();
+        Assert.assertNotEquals(config.getHoldTimeout(), -1);
         config.setHoldTimeout(0);
-        if (config.getHoldTimeout() != 0) throw new TestException();
+        Assert.assertEquals(config.getHoldTimeout(), 0);
         config.setHoldTimeout(3000L);
-        if (config.getHoldTimeout() != 3000L) throw new TestException();
+        Assert.assertEquals(config.getHoldTimeout(), 3000L);
+
 
         //aliveTestTimeout
         config.setAliveTestTimeout(-1);
-        if (config.getAliveTestTimeout() == -1) throw new TestException();
+        Assert.assertNotEquals(config.getAliveTestTimeout(), -1);
         config.setAliveTestTimeout(0);
-        if (config.getAliveTestTimeout() != 0) throw new TestException();
+        Assert.assertEquals(config.getAliveTestTimeout(), 0);
         config.setAliveTestTimeout(3);
-        if (config.getAliveTestTimeout() != 3) throw new TestException();
+        Assert.assertEquals(config.getAliveTestTimeout(), 3);
 
         //aliveAssumeTime
         config.setAliveAssumeTime(-1);
-        if (config.getAliveAssumeTime() == -1) throw new TestException();
+        Assert.assertNotEquals(config.getAliveAssumeTime(), -1);
         config.setAliveAssumeTime(0);
-        if (config.getAliveAssumeTime() != 0) throw new TestException();
+        Assert.assertEquals(config.getAliveAssumeTime(), 0);
         config.setAliveAssumeTime(3000L);
-        if (config.getAliveAssumeTime() != 3000L) throw new TestException();
+        Assert.assertEquals(config.getAliveAssumeTime(), 3000L);
 
         //timerCheckInterval
         config.setTimerCheckInterval(0);
-        if (config.getTimerCheckInterval() == 0) throw new TestException();
+        Assert.assertNotEquals(config.getTimerCheckInterval(), 0);
         config.setTimerCheckInterval(3000);
-        if (config.getTimerCheckInterval() != 3000L) throw new TestException();
+        Assert.assertEquals(config.getTimerCheckInterval(), 3000);
 
         //forceCloseUsingOnClear
         config.setForceCloseUsingOnClear(true);
-        if (!config.isForceCloseUsingOnClear()) throw new TestException();
+        Assert.assertTrue(config.isForceCloseUsingOnClear());
 
         //delayTimeForNextClear
         config.setDelayTimeForNextClear(-1);
-        if (config.getDelayTimeForNextClear() == -1) throw new TestException();
+        Assert.assertNotEquals(config.getDelayTimeForNextClear(), -1);
         config.setDelayTimeForNextClear(0);
-        if (config.getDelayTimeForNextClear() != 0) throw new TestException();
+        Assert.assertEquals(config.getDelayTimeForNextClear(), 0L);
         config.setDelayTimeForNextClear(3000L);
-        if (config.getDelayTimeForNextClear() != 3000L) throw new TestException();
+        Assert.assertEquals(config.getDelayTimeForNextClear(), 3000L);
 
         //defaultCatalog
         config.setDefaultCatalog(null);
-        if (config.getDefaultCatalog() != null) throw new TestException();
+        Assert.assertNull(config.getDefaultCatalog());
         config.setDefaultCatalog("catlog");
-        if (!"catlog".equals(config.getDefaultCatalog())) throw new TestException();
+        Assert.assertEquals(config.getDefaultCatalog(), "catlog");
 
         //defaultSchema
         config.setDefaultSchema(null);
-        if (config.getDefaultSchema() != null) throw new TestException();
+        Assert.assertNull(config.getDefaultSchema());
         config.setDefaultSchema("schema");
-        if (!"schema".equals(config.getDefaultSchema())) throw new TestException();
+        Assert.assertEquals(config.getDefaultSchema(), "schema");
 
         //defaultReadOnly
         config.setDefaultReadOnly(false);
-        if (config.isDefaultReadOnly()) throw new TestException();
+        Assert.assertFalse(config.isDefaultReadOnly());
         config.setDefaultReadOnly(true);
-        if (!config.isDefaultReadOnly()) throw new TestException();
+        Assert.assertTrue(config.isDefaultReadOnly());
 
         //defaultAutoCommit
         config.setDefaultAutoCommit(false);
-        if (config.isDefaultAutoCommit()) throw new TestException();
+        Assert.assertFalse(config.isDefaultAutoCommit());
         config.setDefaultAutoCommit(true);
-        if (!config.isDefaultAutoCommit()) throw new TestException();
-
+        Assert.assertTrue(config.isDefaultAutoCommit());
 
         //enableDefaultOnCatalog
         config.setEnableDefaultOnCatalog(false);
-        if (config.isEnableDefaultOnCatalog()) throw new TestException();
+        Assert.assertFalse(config.isEnableDefaultOnCatalog());
 
         //enableDefaultOnSchema
         config.setEnableDefaultOnSchema(false);
-        if (config.isEnableDefaultOnSchema()) throw new TestException();
+        Assert.assertFalse(config.isEnableDefaultOnSchema());
 
         //enableDefaultOnReadOnly
         config.setEnableDefaultOnReadOnly(false);
-        if (config.isEnableDefaultOnReadOnly()) throw new TestException();
+        Assert.assertFalse(config.isEnableDefaultOnReadOnly());
 
         //enableDefaultOnReadOnly
         config.setEnableDefaultOnAutoCommit(false);
-        if (config.isEnableDefaultOnAutoCommit()) throw new TestException();
+        Assert.assertFalse(config.isEnableDefaultOnAutoCommit());
 
         //enableDefaultOnTransactionIsolation
         config.setEnableDefaultOnTransactionIsolation(false);
-        if (config.isEnableDefaultOnTransactionIsolation()) throw new TestException();
+        Assert.assertFalse(config.isEnableDefaultOnTransactionIsolation());
 
         //forceDirtyOnSchemaAfterSet
-        if (config.isForceDirtyOnSchemaAfterSet()) throw new TestException();
+        Assert.assertFalse(config.isForceDirtyOnSchemaAfterSet());
         config.setForceDirtyOnSchemaAfterSet(true);
-        if (!config.isForceDirtyOnSchemaAfterSet()) throw new TestException();
+        Assert.assertTrue(config.isForceDirtyOnSchemaAfterSet());
 
         //forceDirtyOnCatalogAfterSet
-        if (config.isForceDirtyOnCatalogAfterSet()) throw new TestException();
+        Assert.assertFalse(config.isForceDirtyOnCatalogAfterSet());
         config.setForceDirtyOnCatalogAfterSet(true);
-        if (!config.isForceDirtyOnSchemaAfterSet()) throw new TestException();
+        Assert.assertTrue(config.isForceDirtyOnCatalogAfterSet());
 
         //enableJmx
         config.setEnableJmx(true);
-        if (!config.isEnableJmx()) throw new TestException();
+        Assert.assertTrue(config.isEnableJmx());
 
         //printConfigInfo
         config.setPrintConfigInfo(true);
-        if (!config.isPrintConfigInfo()) throw new TestException();
+        Assert.assertTrue(config.isPrintConfigInfo());
 
         //printRuntimeLog
         config.setPrintRuntimeLog(true);
-        if (!config.isPrintRuntimeLog()) throw new TestException();
+        Assert.assertTrue(config.isPrintRuntimeLog());
 
         //poolImplementClassName
         config.setPoolImplementClassName(null);
-        if (config.getPoolImplementClassName() == null) throw new TestException();
+        Assert.assertNotNull(config.getPoolImplementClassName());
         config.setPoolImplementClassName("org.stone.beecp.pool.FastConnectionPool");
-        if (!"org.stone.beecp.pool.FastConnectionPool".equals(config.getPoolImplementClassName()))
-            throw new TestException();
+        Assert.assertEquals(config.getPoolImplementClassName(), "org.stone.beecp.pool.FastConnectionPool");
     }
 }

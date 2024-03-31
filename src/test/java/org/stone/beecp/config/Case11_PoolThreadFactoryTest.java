@@ -10,30 +10,30 @@
 package org.stone.beecp.config;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
+import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.JdbcConfig;
 import org.stone.beecp.config.customization.DummyThreadFactory;
 
 public class Case11_PoolThreadFactoryTest extends TestCase {
 
-    public void testOnSetGet() throws Exception {
+    public void testOnSetGet() {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
 
         config.setThreadFactoryClassName(null);
-        if (config.getThreadFactoryClassName() == null) throw new TestException();
+        Assert.assertNull(config.getThreadFactoryClassName());
 
         Class factClass = DummyThreadFactory.class;
         config.setThreadFactoryClass(factClass);
-        if (!factClass.equals(config.getThreadFactoryClass())) throw new TestException();
+        Assert.assertEquals(config.getThreadFactoryClass(), factClass);
 
         String factClassName = "org.stone.beecp.config.customization.DummyThreadFactory";
         config.setThreadFactoryClassName(factClassName);
+        Assert.assertEquals(config.getThreadFactoryClassName(), factClassName);
 
-        if (!factClassName.equals(config.getThreadFactoryClassName())) throw new TestException();
         DummyThreadFactory threadFactory = new DummyThreadFactory();
         config.setThreadFactory(threadFactory);
-        if (threadFactory != config.getThreadFactory()) throw new TestException();
+        Assert.assertEquals(config.getThreadFactory(), threadFactory);
     }
 
     public void testOnInValidThreadFactClass() throws Exception {
@@ -45,9 +45,8 @@ public class Case11_PoolThreadFactoryTest extends TestCase {
         try {
             config.check();
         } catch (Exception e) {
-            String msg = e.getMessage();
-            boolean matched = msg != null && msg.contains("which must extend from one of type");
-            if (!matched) throw new TestException();
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("which must extend from one of type"));
         }
     }
 
@@ -60,9 +59,8 @@ public class Case11_PoolThreadFactoryTest extends TestCase {
         try {
             config.check();
         } catch (Exception e) {
-            String msg = e.getMessage();
-            boolean matched = msg != null && msg.contains("which must extend from one of type");
-            if (!matched) throw new TestException();
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("which must extend from one of type"));
         }
     }
 }

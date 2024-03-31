@@ -10,29 +10,25 @@
 package org.stone.beecp.config;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
+import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 
 public class Case14_ConfigPrintExclusionTest extends TestCase {
 
     public void test1() throws Exception {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
-        if (!config.existConfigPrintExclusion("username"))
-            throw new TestException();
+        Assert.assertTrue(config.existConfigPrintExclusion("username"));
 
         config.addConfigPrintExclusion("poolName");
         config.addConfigPrintExclusion("poolName");
-        if (!config.existConfigPrintExclusion("poolName"))
-            throw new TestException();
-
+        Assert.assertTrue(config.existConfigPrintExclusion("poolName"));
 
         config.removeConfigPrintExclusion("poolName");
-        if (config.existConfigPrintExclusion("properties1"))
-            throw new TestException();
+        Assert.assertFalse(config.existConfigPrintExclusion("poolName"));
 
+        config.addConfigPrintExclusion("poolName");
         config.clearAllConfigPrintExclusion();
-        if (config.existConfigPrintExclusion("username"))
-            throw new TestException();
+        Assert.assertFalse(config.existConfigPrintExclusion("poolName"));
     }
 
     public void testOnConnectProperties() throws Exception {

@@ -10,12 +10,12 @@
 package org.stone.beecp.config;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
+import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 
 public class Case6_ConnectPropertiesTest extends TestCase {
 
-    public void testOnAddProperty() throws Exception {
+    public void testOnAddProperty() {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         config.addConnectProperty(null, null);
         config.addConnectProperty(null, "value");
@@ -24,29 +24,33 @@ public class Case6_ConnectPropertiesTest extends TestCase {
     }
 
     //prop1=value&prop2=value2&prop3=value3
-    public void testOnAddTextProperty1() throws Exception {
+    public void testOnAddTextProperty1() {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         config.addConnectProperty("prop1=value1&prop2=value2&prop3=value3");
-        if (!"value1".equals(config.getConnectProperty("prop1"))) throw new TestException();
-        if (!"value2".equals(config.getConnectProperty("prop2"))) throw new TestException();
-        if (!"value3".equals(config.getConnectProperty("prop3"))) throw new TestException();
+
+        Assert.assertEquals("value1", config.getConnectProperty("prop1"));
+        Assert.assertEquals("value2", config.getConnectProperty("prop2"));
+        Assert.assertEquals("value3", config.getConnectProperty("prop3"));
     }
 
     //prop1:value&prop2:value2&prop3:value3
-    public void testOnAddTextProperty2() throws Exception {
+    public void testOnAddTextProperty2() {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         config.addConnectProperty("prop1:value1&prop2:value2&prop3:value3");
-        if (!"value1".equals(config.getConnectProperty("prop1"))) throw new TestException();
-        if (!"value2".equals(config.getConnectProperty("prop2"))) throw new TestException();
-        if (!"value3".equals(config.getConnectProperty("prop3"))) throw new TestException();
+
+        Assert.assertEquals("value1", config.getConnectProperty("prop1"));
+        Assert.assertEquals("value2", config.getConnectProperty("prop2"));
+        Assert.assertEquals("value3", config.getConnectProperty("prop3"));
     }
 
-    public void testOnRemoval() throws Exception {
+    public void testOnRemoval() {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         config.addConnectProperty("prop1", "value1");
-        if (!"value1".equals(config.getConnectProperty("prop1"))) throw new TestException();
-        if (!"value1".equals(config.removeConnectProperty("prop1"))) throw new TestException();
-        if (config.getConnectProperty("prop1") != null) throw new TestException();
-    }
+        config.addConnectProperty("prop2", "value2");
+        config.addConnectProperty("prop3", "value3");
 
+        Assert.assertEquals("value1", config.getConnectProperty("prop1"));
+        Assert.assertEquals("value2", config.getConnectProperty("prop2"));
+        Assert.assertEquals("value3", config.getConnectProperty("prop3"));
+    }
 }

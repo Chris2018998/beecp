@@ -1,7 +1,7 @@
 package org.stone.beecp.config;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
+import org.junit.Assert;
 import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
@@ -20,15 +20,15 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         Class decodeClass = DummyJdbcLinkInfoDecoder.class;
         config.setJdbcLinkInfoDecoderClass(decodeClass);
-        if (decodeClass != config.getJdbcLinkInfoDecoderClass()) throw new TestException();
+        Assert.assertEquals(config.getJdbcLinkInfoDecoderClass(), decodeClass);
 
         String decodeClassName = "org.stone.beecp.config.customization.DummyJdbcLinkInfoDecoder";
         config.setJdbcLinkInfDecoderClassName(decodeClassName);
-        if (!decodeClassName.equals(config.getJdbcLinkInfDecoderClassName())) throw new TestException();
+        Assert.assertEquals(config.getJdbcLinkInfDecoderClassName(), decodeClassName);
 
         DummyJdbcLinkInfoDecoder decoder = new DummyJdbcLinkInfoDecoder();
         config.setJdbcLinkInfoDecoder(decoder);
-        if (decoder != config.getJdbcLinkInfoDecoder()) throw new TestException();
+        Assert.assertEquals(config.getJdbcLinkInfoDecoder(), decoder);
     }
 
     public void testOnErrorClass() throws Exception {
@@ -41,10 +41,8 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
         try {
             config.check();
         } catch (BeeDataSourceConfigException e) {
-            String msg = e.getMessage();
-            if (!(msg != null && msg.contains("decoder"))) {
-                throw new TestException();
-            }
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("decoder"));
         }
     }
 
@@ -58,10 +56,8 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
         try {
             config.check();
         } catch (BeeDataSourceConfigException e) {
-            String msg = e.getMessage();
-            if (!(msg != null && msg.contains("decoder"))) {
-                throw new TestException();
-            }
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("decoder"));
         }
     }
 
@@ -79,9 +75,10 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
         Properties properties = (Properties) TestUtil.getFieldValue(factory, "properties");
         String user = properties.getProperty("user");
         String password = properties.getProperty("password");
-        if (!url.endsWith("-Decoded")) throw new TestException();
-        if (!user.endsWith("-Decoded")) throw new TestException();
-        if (!password.endsWith("-Decoded")) throw new TestException();
+
+        Assert.assertTrue(url.endsWith("-Decoded"));
+        Assert.assertTrue(user.endsWith("-Decoded"));
+        Assert.assertTrue(password.endsWith("-Decoded"));
     }
 
     public void testJdbcDecoderOnFactory() throws Exception {
@@ -98,9 +95,9 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
         String url = factory.getUrl();
         String user = factory.getUser();
         String password = factory.getPassword();
-        if (!url.endsWith("-Decoded")) throw new TestException();
-        if (!user.endsWith("-Decoded")) throw new TestException();
-        if (!password.endsWith("-Decoded")) throw new TestException();
+        Assert.assertTrue(url.endsWith("-Decoded"));
+        Assert.assertTrue(user.endsWith("-Decoded"));
+        Assert.assertTrue(password.endsWith("-Decoded"));
     }
 
     public void testJdbcDecoderOnXaDataSource() throws Exception {
@@ -119,9 +116,9 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
         String url = xaDs.getURL();
         String user = xaDs.getUser();
         String password = xaDs.getPassword();
-        if (!url.endsWith("-Decoded")) throw new TestException();
-        if (!user.endsWith("-Decoded")) throw new TestException();
-        if (!password.endsWith("-Decoded")) throw new TestException();
+        Assert.assertTrue(url.endsWith("-Decoded"));
+        Assert.assertTrue(user.endsWith("-Decoded"));
+        Assert.assertTrue(password.endsWith("-Decoded"));
     }
 
     public void testJdbcDecoderOnXaDataSource2() throws Exception {
@@ -140,8 +137,8 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
         String url = xaDs.getURL();
         String user = xaDs.getUser();
         String password = xaDs.getPassword();
-        if (!url.endsWith("-Decoded")) throw new TestException();
-        if (!user.endsWith("-Decoded")) throw new TestException();
-        if (!password.endsWith("-Decoded")) throw new TestException();
+        Assert.assertTrue(url.endsWith("-Decoded"));
+        Assert.assertTrue(user.endsWith("-Decoded"));
+        Assert.assertTrue(password.endsWith("-Decoded"));
     }
 }

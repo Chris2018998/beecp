@@ -10,32 +10,30 @@
 package org.stone.beecp.config;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
+import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 import org.stone.beecp.TransactionIsolation;
 
 public class Case8_TransactionIsolationTest extends TestCase {
 
-    public void testOnSetGet() throws Exception {
+    public void testOnSetGet() {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
 
         config.setDefaultTransactionIsolationCode(123);
-        if (123 != config.getDefaultTransactionIsolationCode()) throw new TestException();
+        Assert.assertEquals(config.getDefaultTransactionIsolationCode(), new Integer(123));
 
         config.setDefaultTransactionIsolationName(TransactionIsolation.LEVEL_READ_COMMITTED);
-        if (!TransactionIsolation.LEVEL_READ_COMMITTED.equals(config.getDefaultTransactionIsolationName()))
-            throw new TestException();
+        Assert.assertEquals(config.getDefaultTransactionIsolationName(), TransactionIsolation.LEVEL_READ_COMMITTED);
     }
 
-    public void testOnInvalidIsolationName() throws Exception {
+    public void testOnInvalidIsolationName() {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         try {
             config.setDefaultTransactionIsolationName("Test");
         } catch (BeeDataSourceConfigException e) {
-            String msg = e.getMessage();
-            if (!(msg != null && msg.startsWith("Invalid transaction isolation name")))
-                throw new TestException();
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("Invalid transaction isolation name"));
         }
     }
 }

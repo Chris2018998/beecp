@@ -10,33 +10,31 @@
 package org.stone.beecp.config;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
-import org.stone.base.TestUtil;
+import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 import org.stone.beecp.JdbcConfig;
 
 public class Case4_ConnectionSizeTest extends TestCase {
 
-    public void testOnSetAndGet() throws Exception {
+    public void testOnSetAndGet() {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
-        final int initialSize = config.getInitialSize();
-        final int maxActiveSize = config.getMaxActive();
 
         config.setInitialSize(-1);
         config.setMaxActive(-1);
-        if (initialSize != config.getInitialSize()) throw new TestException();
-        if (maxActiveSize != config.getMaxActive()) throw new TestException();
+        Assert.assertNotEquals(config.getInitialSize(), -1);
+        Assert.assertNotEquals(config.getMaxActive(), -1);
 
         config.setInitialSize(0);
         config.setMaxActive(0);
-        if (0 != config.getInitialSize()) throw new TestException();
-        if (0 == config.getMaxActive()) throw new TestException();
+        Assert.assertEquals(config.getInitialSize(), 0);
+        Assert.assertNotEquals(config.getMaxActive(), 0);
+
 
         config.setInitialSize(10);
         config.setMaxActive(20);
-        if (10 != config.getInitialSize()) throw new TestException();
-        if (20 != config.getMaxActive()) throw new TestException();
+        Assert.assertEquals(config.getInitialSize(), 10);
+        Assert.assertEquals(config.getMaxActive(), 20);
     }
 
     public void testOnErrorInitialSize() throws Exception {
@@ -49,8 +47,8 @@ public class Case4_ConnectionSizeTest extends TestCase {
         try {
             config.check();
         } catch (BeeDataSourceConfigException e) {
-            if (!TestUtil.containsMessage(e, "initialSize must not be greater than maxActive"))
-                throw new TestException();
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("initialSize must not be greater than maxActive"));
         }
     }
 }

@@ -10,8 +10,7 @@
 package org.stone.beecp.config;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
-import org.stone.base.TestUtil;
+import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 import org.stone.beecp.JdbcConfig;
@@ -26,7 +25,8 @@ public class Case3_JdbcDriverTest extends TestCase {
             config.setUrl("jdbc:beecp://localhost/testdb");
             config.check();
         } catch (SQLException e) {//thrown from DriverManager
-            if (!TestUtil.containsMessage(e, "No suitable driver")) throw new TestException();
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("No suitable driver"));
         }
     }
 
@@ -36,10 +36,9 @@ public class Case3_JdbcDriverTest extends TestCase {
             config.setJdbcUrl("Test:" + JdbcConfig.JDBC_URL);
             config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
             config.check();
-        } catch (SQLException e) {
-            throw e;
         } catch (BeeDataSourceConfigException e) {//thrown from Config.check()
-            if (!TestUtil.containsMessage(e, "can not match configured driver")) throw new TestException();
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("can not match configured driver"));
         }
     }
 }

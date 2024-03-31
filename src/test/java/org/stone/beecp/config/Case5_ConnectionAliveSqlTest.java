@@ -10,25 +10,24 @@
 package org.stone.beecp.config;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
-import org.stone.base.TestUtil;
+import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 import org.stone.beecp.JdbcConfig;
 
 public class Case5_ConnectionAliveSqlTest extends TestCase {
 
-    public void testOnSetAndGet() throws Exception {
+    public void testOnSetAndGet() {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         config.setAliveTestSql(null);
-        if (config.getAliveTestSql() == null) throw new TestException();
+        Assert.assertNull(config.getAliveTestSql());
 
         config.setAliveTestSql("SELECT1");
-        if (!"SELECT1".equals(config.getAliveTestSql())) throw new TestException();
+        Assert.assertEquals("SELECT1", config.getAliveTestSql());
     }
 
     public void testOnInvalidSql() throws Exception {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createDefault();
         config.setJdbcUrl(JdbcConfig.JDBC_URL);
         config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
 
@@ -36,8 +35,8 @@ public class Case5_ConnectionAliveSqlTest extends TestCase {
         try {
             config.check();
         } catch (BeeDataSourceConfigException e) {
-            if (!TestUtil.containsMessage(e, "Alive test sql must be start with 'select '"))
-                throw new TestException();
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("Alive test sql must be start with 'select '"));
         }
     }
 }

@@ -10,7 +10,7 @@
 package org.stone.beecp.config;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
+import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 import org.stone.beecp.RawConnectionFactory;
@@ -20,23 +20,24 @@ import org.stone.beecp.factory.NullXaConnectionFactory;
 
 public class Case12_ConnectionFactoryTest extends TestCase {
 
-    public void testOnSetGet() throws Exception {
+    public void testOnSetGet() {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
+
         Class factClass = NullXaConnectionFactory.class;
         config.setConnectionFactoryClass(factClass);
-        if (!factClass.equals(config.getConnectionFactoryClass())) throw new TestException();
+        Assert.assertEquals(config.getConnectionFactoryClass(), factClass);
 
         String factClassName = "org.stone.beecp.factory.NullConnectionFactory";
         config.setConnectionFactoryClassName(factClassName);
-        if (!factClassName.equals(config.getConnectionFactoryClassName())) throw new TestException();
+        Assert.assertEquals(config.getConnectionFactoryClassName(), factClassName);
 
         RawConnectionFactory factory1 = new NullConnectionFactory();
         config.setRawConnectionFactory(factory1);
-        if (factory1 != config.getConnectionFactory()) throw new TestException();
+        Assert.assertEquals(config.getConnectionFactory(), factory1);
 
         RawXaConnectionFactory factory2 = new NullXaConnectionFactory();
         config.setRawXaConnectionFactory(factory2);
-        if (factory2 != config.getConnectionFactory()) throw new TestException();
+        Assert.assertEquals(config.getConnectionFactory(), factory2);
     }
 
 
@@ -46,9 +47,8 @@ public class Case12_ConnectionFactoryTest extends TestCase {
             config.setConnectionFactoryClass(String.class);//invalid config
             config.check();
         } catch (BeeDataSourceConfigException e) {
-            String msg = e.getMessage();
-            boolean matched = msg != null && msg.contains("which must extend from one of type");
-            if (!matched) throw new TestException();
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("which must extend from one of type"));
         }
     }
 
@@ -58,9 +58,8 @@ public class Case12_ConnectionFactoryTest extends TestCase {
             config.setConnectionFactoryClassName("java.lang.String");//invalid config
             config.check();
         } catch (BeeDataSourceConfigException e) {
-            String msg = e.getMessage();
-            boolean matched = msg != null && msg.contains("which must extend from one of type");
-            if (!matched) throw new TestException();
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("which must extend from one of type"));
         }
     }
 
@@ -71,7 +70,7 @@ public class Case12_ConnectionFactoryTest extends TestCase {
             config.check();
         } catch (BeeDataSourceConfigException e) {
             Throwable cause = e.getCause();
-            if (!(cause instanceof ClassNotFoundException)) throw new TestException();
+            Assert.assertTrue(cause instanceof ClassNotFoundException);
         }
     }
 }

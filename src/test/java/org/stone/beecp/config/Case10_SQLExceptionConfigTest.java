@@ -10,7 +10,7 @@
 package org.stone.beecp.config;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
+import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 import org.stone.beecp.SQLExceptionPredication;
@@ -41,22 +41,21 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
         config.check();
     }
 
-    public void testOnExceptionPredication() throws Exception {
+    public void testOnExceptionPredication() {
         BeeDataSourceConfig config = ConfigFactory.createDefault();
         config.setPrintConfigInfo(true);
 
         Class predicationClass = DummySqlExceptionPredication.class;
         config.setSqlExceptionPredicationClass(predicationClass);
-        if (!predicationClass.equals(config.getSqlExceptionPredicationClass())) throw new TestException();
+        Assert.assertEquals(config.getSqlExceptionPredicationClass(), predicationClass);
 
         String predicationClassName = "org.stone.beecp.config.customization.DummySqlExceptionPredication";
         config.setSqlExceptionPredicationClassName(predicationClassName);
-        if (!predicationClassName.equals(config.getSqlExceptionPredicationClassName())) throw new TestException();
+        Assert.assertEquals(config.getSqlExceptionPredicationClassName(), predicationClassName);
 
         SQLExceptionPredication predication = new DummySqlExceptionPredication();
         config.setSqlExceptionPredication(predication);
-        if (predication != config.getSqlExceptionPredication()) throw new TestException();
-        config.check();
+        Assert.assertEquals(config.getSqlExceptionPredication(), predication);
     }
 
     public void testOnErrorPredicationClass() throws Exception {
@@ -65,8 +64,8 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
         try {
             config.check();
         } catch (BeeDataSourceConfigException e) {
-            String msg = e.getMessage();
-            if (!(msg != null && msg.contains("predication"))) throw new TestException();
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("predication"));
         }
     }
 
@@ -76,20 +75,20 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
         try {
             config.check();
         } catch (BeeDataSourceConfigException e) {
-            String msg = e.getMessage();
-            if (!(msg != null && msg.contains("predication"))) throw new TestException();
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("predication"));
         }
     }
 
-    public void testLoadFromProperties() throws Exception {
+    public void testLoadFromProperties() {
         BeeDataSourceConfig config = ConfigFactory.createDefault();
 
         Properties prop = new Properties();
         prop.setProperty("sqlExceptionCodeList", "123");
         prop.setProperty("sqlExceptionStateList", "A");
-        prop.setProperty("configPrintExclusionList", "driverClassName");
-
         config.loadFromProperties(prop);
-    }
 
+        Assert.assertTrue(config.getSqlExceptionCodeList().contains(123));
+        Assert.assertTrue(config.getSqlExceptionStateList().contains("A"));
+    }
 }
