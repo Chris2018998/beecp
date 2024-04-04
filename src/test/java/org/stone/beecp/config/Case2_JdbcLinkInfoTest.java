@@ -24,7 +24,7 @@ public class Case2_JdbcLinkInfoTest extends TestCase {
     private final String driver = "org.stone.beecp.mock.MockDriver";
 
     public void testNullSet() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
         config.setUsername(null);
         config.setPassword(null);
         config.setUrl(null);
@@ -41,7 +41,7 @@ public class Case2_JdbcLinkInfoTest extends TestCase {
     }
 
     public void testNotNullSet() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
         config.setUsername(user);
         config.setPassword(password);
         config.setUrl(url);
@@ -77,7 +77,7 @@ public class Case2_JdbcLinkInfoTest extends TestCase {
     }
 
     public void testLoadFromProperties() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
         Properties prop = new Properties();
         prop.setProperty("username", user);
         prop.setProperty("password", password);
@@ -93,7 +93,7 @@ public class Case2_JdbcLinkInfoTest extends TestCase {
         prop.clear();
         prop.setProperty("jdbc-url", url);
         prop.setProperty("driver-class-name", driver);
-        config = new BeeDataSourceConfig();
+        config = ConfigFactory.createEmpty();
         config.loadFromProperties(prop);
         Assert.assertEquals(config.getUrl(), url);
         Assert.assertEquals(config.getJdbcUrl(), url);
@@ -104,7 +104,7 @@ public class Case2_JdbcLinkInfoTest extends TestCase {
         prop.clear();
         prop.setProperty("jdbc_url", url);
         prop.setProperty("driver_class_name", driver);
-        config = new BeeDataSourceConfig();
+        config = ConfigFactory.createEmpty();
         config.loadFromProperties(prop);
         Assert.assertEquals(config.getUrl(), url);
         Assert.assertEquals(config.getJdbcUrl(), url);
@@ -115,7 +115,7 @@ public class Case2_JdbcLinkInfoTest extends TestCase {
         System.setProperty("beecp.url", url);
         System.setProperty("beecp.user", user);
         System.setProperty("beecp.password", password);
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
         config.setDriverClassName(driver);
 
         BeeDataSourceConfig checkConfig = config.check();
@@ -140,7 +140,7 @@ public class Case2_JdbcLinkInfoTest extends TestCase {
     }
 
     public void testLoadFromConnectProperties() throws Exception {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
         config.setUrl(url);
         config.setDriverClassName(driver);
         config.addConnectProperty("user", user);
@@ -157,7 +157,7 @@ public class Case2_JdbcLinkInfoTest extends TestCase {
     }
 
     public void testCheckOnNullJdbcUrl() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
         try {
             config.check();
         } catch (SQLException e) {

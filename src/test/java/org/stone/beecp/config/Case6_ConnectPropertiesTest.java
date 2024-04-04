@@ -16,7 +16,7 @@ import org.stone.beecp.BeeDataSourceConfig;
 public class Case6_ConnectPropertiesTest extends TestCase {
 
     public void testOnAddProperty() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
         config.addConnectProperty(null, null);
         config.addConnectProperty(null, "value");
         config.addConnectProperty("key", null);
@@ -24,7 +24,7 @@ public class Case6_ConnectPropertiesTest extends TestCase {
     }
 
     public void testOnRemoval() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
         config.addConnectProperty("prop1", "value1");
         Assert.assertEquals(config.getConnectProperty("prop1"), "value1");
         config.removeConnectProperty("prop1");
@@ -33,7 +33,7 @@ public class Case6_ConnectPropertiesTest extends TestCase {
 
     //prop1=value&prop2=value2&prop3=value3
     public void testOnAddTextProperty1() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
         config.addConnectProperty("prop1=value1&prop2=value2&prop3=value3");
 
         Assert.assertEquals("value1", config.getConnectProperty("prop1"));
@@ -43,7 +43,7 @@ public class Case6_ConnectPropertiesTest extends TestCase {
 
     //prop1:value&prop2:value2&prop3:value3
     public void testOnAddTextProperty2() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
         config.addConnectProperty("prop1:value1&prop2:value2&prop3:value3");
 
         Assert.assertEquals("value1", config.getConnectProperty("prop1"));
@@ -51,5 +51,17 @@ public class Case6_ConnectPropertiesTest extends TestCase {
         Assert.assertEquals("value3", config.getConnectProperty("prop3"));
     }
 
+    //prop1:value&prop2:value2&prop3:value3
+    public void testInConfigPrintExclusionList() throws Exception {
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
+        config.setPrintConfigInfo(true);
+        config.addConnectProperty("prop1:value1&prop2:value2&prop3:value3");
+
+        config.addConfigPrintExclusion("connectProperties");
+        config.check();
+
+        config.removeConfigPrintExclusion("connectProperties");
+        config.check();
+    }
 
 }

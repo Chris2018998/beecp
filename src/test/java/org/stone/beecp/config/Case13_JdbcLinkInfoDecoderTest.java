@@ -21,7 +21,7 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
     private final String password = "passwor";
 
     public void testOnSetGet() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
         Class decodeClass = DummyJdbcLinkInfoDecoder.class;
         config.setJdbcLinkInfoDecoderClass(decodeClass);
         Assert.assertEquals(config.getJdbcLinkInfoDecoderClass(), decodeClass);
@@ -150,7 +150,7 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
     }
 
     public void testJdbcDecoderOnXaDataSource2() throws Exception {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
         config.setConnectionFactoryClassName("org.stone.beecp.mock.MockXaDataSource");
         config.setJdbcLinkInfoDecoderClassName("org.stone.beecp.config.customization.DummyJdbcLinkInfoDecoder");
         config.addConnectProperty("URL", "jdbc:mock:test");

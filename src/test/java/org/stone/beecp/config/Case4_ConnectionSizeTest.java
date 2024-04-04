@@ -13,12 +13,11 @@ import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
-import org.stone.beecp.JdbcConfig;
 
 public class Case4_ConnectionSizeTest extends TestCase {
 
     public void testOnSetAndGet() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
 
         config.setInitialSize(-1);
         config.setMaxActive(-1);
@@ -38,9 +37,7 @@ public class Case4_ConnectionSizeTest extends TestCase {
     }
 
     public void testOnErrorInitialSize() throws Exception {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setJdbcUrl(JdbcConfig.JDBC_URL);
-        config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+        BeeDataSourceConfig config = ConfigFactory.createDefault();
         config.setMaxActive(5);
         config.setInitialSize(10);
 

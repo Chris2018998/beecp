@@ -13,12 +13,11 @@ import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
-import org.stone.beecp.JdbcConfig;
 
 public class Case5_ConnectionAliveSqlTest extends TestCase {
 
     public void testOnSetAndGet() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
         config.setAliveTestSql(null);
         Assert.assertNotNull(config.getAliveTestSql());
 
@@ -28,8 +27,6 @@ public class Case5_ConnectionAliveSqlTest extends TestCase {
 
     public void testOnInvalidSql() throws Exception {
         BeeDataSourceConfig config = ConfigFactory.createDefault();
-        config.setJdbcUrl(JdbcConfig.JDBC_URL);
-        config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
 
         config.setAliveTestSql("SELECT1");
         try {

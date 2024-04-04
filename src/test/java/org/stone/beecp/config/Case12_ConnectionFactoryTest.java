@@ -21,7 +21,7 @@ import org.stone.beecp.factory.NullXaConnectionFactory;
 public class Case12_ConnectionFactoryTest extends TestCase {
 
     public void testOnSetGet() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
 
         Class factClass = NullXaConnectionFactory.class;
         config.setConnectionFactoryClass(factClass);

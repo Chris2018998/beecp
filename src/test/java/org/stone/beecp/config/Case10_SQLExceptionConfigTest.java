@@ -20,13 +20,12 @@ import java.util.Properties;
 
 public class Case10_SQLExceptionConfigTest extends TestCase {
 
-    public void testOnExceptionCode() throws Exception {
+    public void testOnExceptionCodeSettingAndGetting() throws Exception {
         BeeDataSourceConfig config = ConfigFactory.createDefault();
         config.removeSqlExceptionCode(500151);
-
         config.addSqlExceptionCode(500151);
-        config.addSqlExceptionCode(500152);
-        config.addSqlExceptionCode(500152);
+        config.addSqlExceptionCode(500151);//duplicated add
+        config.addSqlExceptionCode(500153);
 
         Assert.assertTrue(config.getSqlExceptionCodeList().contains(500151));
         config.removeSqlExceptionCode(500151);
@@ -37,13 +36,13 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
         Assert.assertTrue(checkConfig.getSqlExceptionCodeList().contains(500151));
     }
 
-    public void testOnExceptionState() throws Exception {
+    public void testOnExceptionStateSettingAndGetting() throws Exception {
         BeeDataSourceConfig config = ConfigFactory.createDefault();
         config.removeSqlExceptionState("0A000");
 
         config.addSqlExceptionState("0A000");
         config.addSqlExceptionState("0A001");
-        config.addSqlExceptionState("0A001");
+        config.addSqlExceptionState("0A001");//duplicated add
         Assert.assertTrue(config.getSqlExceptionStateList().contains("0A000"));
         config.removeSqlExceptionState("0A000");
         Assert.assertFalse(config.getSqlExceptionStateList().contains("0A000"));
@@ -53,9 +52,8 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
         Assert.assertTrue(checkConfig.getSqlExceptionStateList().contains("0A000"));
     }
 
-    public void testOnSetAndGetPredication() {
+    public void testOnPredicationSettingAndGetting() throws Exception {
         BeeDataSourceConfig config = ConfigFactory.createDefault();
-
         Class predicationClass = DummySqlExceptionPredication.class;
         config.setSqlExceptionPredicationClass(predicationClass);
         Assert.assertEquals(config.getSqlExceptionPredicationClass(), predicationClass);
@@ -69,22 +67,20 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
         Assert.assertEquals(config.getSqlExceptionPredication(), predication);
     }
 
-    public void testOnPredicationCreationByClass() throws Exception {
+    public void testOnPredicationCreation() throws Exception {
         BeeDataSourceConfig config = ConfigFactory.createDefault();
         Class predicationClass = DummySqlExceptionPredication.class;
         config.setSqlExceptionPredicationClass(predicationClass);
         Assert.assertEquals(config.getSqlExceptionPredicationClass(), predicationClass);
         BeeDataSourceConfig checkConfig = config.check();
         Assert.assertNotNull(checkConfig.getSqlExceptionPredication());
-    }
 
-    public void testOnPredicationCreationByClassName() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        BeeDataSourceConfig config2 = ConfigFactory.createDefault();
         String predicationClassName = "org.stone.beecp.config.customization.DummySqlExceptionPredication";
-        config.setSqlExceptionPredicationClassName(predicationClassName);
-        Assert.assertEquals(config.getSqlExceptionPredicationClassName(), predicationClassName);
-        BeeDataSourceConfig checkConfig = config.check();
-        Assert.assertNotNull(checkConfig.getSqlExceptionPredication());
+        config2.setSqlExceptionPredicationClassName(predicationClassName);
+        Assert.assertEquals(config2.getSqlExceptionPredicationClassName(), predicationClassName);
+        BeeDataSourceConfig checkConfig2 = config2.check();
+        Assert.assertNotNull(checkConfig2.getSqlExceptionPredication());
     }
 
     public void testOnErrorPredicationClass() throws Exception {
@@ -96,13 +92,11 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
             String message = e.getMessage();
             Assert.assertTrue(message != null && message.contains("predication"));
         }
-    }
 
-    public void testOnErrorPredicationClassName() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
-        config.setSqlExceptionPredicationClassName("String");
+        BeeDataSourceConfig config2 = ConfigFactory.createDefault();
+        config2.setSqlExceptionPredicationClassName("String");
         try {
-            config.check();
+            config2.check();
         } catch (BeeDataSourceConfigException e) {
             String message = e.getMessage();
             Assert.assertTrue(message != null && message.contains("predication"));
@@ -111,7 +105,6 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
 
     public void testLoadFromProperties() {
         BeeDataSourceConfig config = ConfigFactory.createDefault();
-
         Properties prop = new Properties();
         prop.setProperty("sqlExceptionCodeList", "123");
         prop.setProperty("sqlExceptionStateList", "A");
@@ -122,7 +115,7 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
     }
 
     public void testLoadInvalidErrorCodeFromProperties() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
         try {
             Properties configProperties = new Properties();
             configProperties.put("sqlExceptionCodeList", "1,A,C");//test on invalid error code
@@ -130,6 +123,47 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
         } catch (Exception e) {
             String message = e.getMessage();
             Assert.assertTrue(message != null && message.contains("SQLException error code"));
+        }
+    }
+
+    //prop1:value&prop2:value2&prop3:value3
+    public void testConfigPrint() throws Exception {
+        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        config.setPrintConfigInfo(true);
+        //situation1: null list(sqlExceptionCodeList,sqlExceptionStateList)
+        config.check();
+
+        //situation2: setting check
+        config.addSqlExceptionCode(500151);
+        config.addSqlExceptionState("0A000");
+        config.check();
+
+        //situation3: empty list(qlExceptionCodeList,sqlExceptionStateList)
+        config.removeSqlExceptionCode(500151);
+        config.removeSqlExceptionState("0A000");
+        config.check();
+
+        //situation3: em in config print exclusion list
+        config.addSqlExceptionCode(500151);
+        config.addSqlExceptionState("0A000");
+        config.addConfigPrintExclusion("sqlExceptionCodeList");
+        config.addConfigPrintExclusion("sqlExceptionStateList");
+        config.check();
+    }
+
+    public void testOnFailureCopy() throws Exception {
+        BeeDataSourceConfig config = ConfigFactory.createDefault();
+
+        config.addSqlExceptionCode(500151);
+        config.addSqlExceptionState("0A000");
+        config.addConfigPrintExclusion("sqlExceptionCodeList");
+        config.addConfigPrintExclusion("sqlExceptionStateList");
+
+        try {
+            config.check();
+        } catch (Exception e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("Failed to copy field"));
         }
     }
 }

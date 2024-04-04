@@ -12,13 +12,12 @@ package org.stone.beecp.config;
 import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.JdbcConfig;
 import org.stone.beecp.config.customization.DummyThreadFactory;
 
 public class Case11_PoolThreadFactoryTest extends TestCase {
 
     public void testOnSetGet() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
 
         config.setThreadFactoryClassName(null);
         Assert.assertNotNull(config.getThreadFactoryClassName());
@@ -66,9 +65,7 @@ public class Case11_PoolThreadFactoryTest extends TestCase {
     }
 
     public void testOnInValidThreadFactClassName() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setJdbcUrl(JdbcConfig.JDBC_URL);
-        config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+        BeeDataSourceConfig config = ConfigFactory.createDefault();
         config.setThreadFactoryClassName("java.lang.String");//invalid class
 
         try {
@@ -80,9 +77,7 @@ public class Case11_PoolThreadFactoryTest extends TestCase {
     }
 
     public void testOnNotFoundThreadFactClassName() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setJdbcUrl(JdbcConfig.JDBC_URL);
-        config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+        BeeDataSourceConfig config = ConfigFactory.createDefault();
         config.setThreadFactoryClassName("org.stone.beecp.BeeConnectionPoolThreadFactory.ConnectionPoolThreadFactory22");//invalid class
 
         try {

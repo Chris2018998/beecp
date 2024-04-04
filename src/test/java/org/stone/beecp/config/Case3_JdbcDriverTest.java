@@ -21,7 +21,7 @@ public class Case3_JdbcDriverTest extends TestCase {
 
     public void testNoSuitableDriver() throws Exception {
         try {
-            BeeDataSourceConfig config = new BeeDataSourceConfig();
+            BeeDataSourceConfig config = ConfigFactory.createEmpty();
             config.setUrl("jdbc:beecp://localhost/testdb");
             config.check();
         } catch (SQLException e) {//thrown from DriverManager
@@ -32,7 +32,7 @@ public class Case3_JdbcDriverTest extends TestCase {
 
     public void testUrlNotMatchDriver() throws Exception {
         try {
-            BeeDataSourceConfig config = new BeeDataSourceConfig();
+            BeeDataSourceConfig config = ConfigFactory.createEmpty();
             config.setJdbcUrl("Test:" + JdbcConfig.JDBC_URL);
             config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
             config.check();

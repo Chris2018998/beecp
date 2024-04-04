@@ -18,7 +18,7 @@ import org.stone.beecp.TransactionIsolation;
 public class Case8_TransactionIsolationTest extends TestCase {
 
     public void testOnSetGet() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
 
         config.setDefaultTransactionIsolationCode(123);
         Assert.assertEquals(config.getDefaultTransactionIsolationCode(), new Integer(123));
@@ -28,7 +28,7 @@ public class Case8_TransactionIsolationTest extends TestCase {
     }
 
     public void testOnInvalidIsolationName() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
         try {
             config.setDefaultTransactionIsolationName("Test");
         } catch (BeeDataSourceConfigException e) {

@@ -16,7 +16,7 @@ import org.stone.beecp.BeeDataSourceConfig;
 public class Case7_ConfigSetAndGetTest extends TestCase {
 
     public void testOnSetAndGet() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
 
         //fairMode
         Assert.assertFalse(config.isFairMode());

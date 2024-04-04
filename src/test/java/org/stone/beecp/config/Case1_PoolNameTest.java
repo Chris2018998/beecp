@@ -18,7 +18,7 @@ import java.util.Properties;
 public class Case1_PoolNameTest extends TestCase {
 
     public void testOnSetGet() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        BeeDataSourceConfig config = ConfigFactory.createEmpty();
 
         config.setPoolName(null);
         Assert.assertNull(config.getPoolName());
