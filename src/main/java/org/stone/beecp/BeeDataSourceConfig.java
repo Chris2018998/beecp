@@ -865,8 +865,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
                 fieldName = field.getName();
                 if ("configPrintExclusionList".equals(fieldName)) {//copy 'exclusionConfigPrintList'
-                    if (configPrintExclusionList != null && !configPrintExclusionList.isEmpty())
-                        config.configPrintExclusionList = new ArrayList<>(configPrintExclusionList);
+                    config.configPrintExclusionList = new ArrayList<>(configPrintExclusionList);//support empty copy
 
                 } else if ("connectProperties".equals(fieldName)) {//copy 'connectProperties'
                     for (Map.Entry<String, Object> entry : this.connectProperties.entrySet())
