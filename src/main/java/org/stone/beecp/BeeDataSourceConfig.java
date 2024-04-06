@@ -14,12 +14,11 @@ import org.stone.beecp.pool.*;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -739,14 +738,14 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     public void loadFromPropertiesFile(File file) {
         if (file == null) throw new IllegalArgumentException("Configuration properties file can't be null");
         if (!file.exists())
-            throw new IllegalArgumentException("Configuration properties file not found:" + file.getAbsolutePath());
+            throw new IllegalArgumentException("Configuration properties file not found:" + file);
         if (!file.isFile()) throw new IllegalArgumentException("Target object is not a valid file");
         if (!file.getAbsolutePath().toLowerCase(Locale.US).endsWith(".properties"))
             throw new IllegalArgumentException("Target file is not a properties file");
 
         InputStream stream = null;
         try {
-            stream = Files.newInputStream(Paths.get(file.toURI()));
+            stream = new FileInputStream(file);
             Properties configProperties = new Properties();
             configProperties.load(stream);
 
