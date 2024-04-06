@@ -121,6 +121,7 @@ public class Case2_JdbcLinkInfoTest extends TestCase {
         }
 
         //situation2: load 'beecp.url' from system.properties
+        System.getProperties().clear();
         System.setProperty("beecp.url", url);
         System.setProperty("beecp.user", user);
         System.setProperty("beecp.password", password);
@@ -134,7 +135,7 @@ public class Case2_JdbcLinkInfoTest extends TestCase {
         Assert.assertEquals(configProperties.getProperty("password"), password);
 
         //situation3: load 'beecp.jdbcUrl' from system.properties
-        System.clearProperty("beecp.url");
+        System.getProperties().clear();
         System.setProperty("beecp.jdbcUrl", url);
         BeeDataSourceConfig config3 = ConfigFactory.createEmpty();
         config3.setDriverClassName(driver);

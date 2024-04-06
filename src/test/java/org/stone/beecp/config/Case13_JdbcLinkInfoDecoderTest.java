@@ -118,6 +118,7 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
     }
 
     public void testJdbcDecoderOnFactory() throws Exception {
+        System.getProperties().clear();
         BeeDataSourceConfig config1 = new BeeDataSourceConfig();
         config1.setConnectionFactoryClass(NullConnectionFactory.class);
         config1.setJdbcLinkInfoDecoderClass(DummyJdbcLinkInfoDecoder.class);
