@@ -42,7 +42,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //atomic index at pool name generation,its value starts with 1
     private static final AtomicInteger PoolNameIndex = new AtomicInteger(1);
     //default exclusion list on config print
-    private static final List<String> DefaultExclusionList = Arrays.asList("username", "password", "jdbcUrl", "user", "url");
+    private static final List<String> DefaultExclusionList = Arrays.asList("username", "password", "jdbcUrl", "user", "url", "driverClassName");
 
     //a map store some properties for driver connects to db,@see{@code Driver.connect(url,properties)}
     private final Map<String, Object> connectProperties = new HashMap<String, Object>(2);
@@ -852,6 +852,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         checkedConfig.connectionFactory = connectionFactory;
         checkedConfig.sqlExceptionPredication = predication;
         if (isBlank(checkedConfig.poolName)) checkedConfig.poolName = "FastPool-" + PoolNameIndex.getAndIncrement();
+        if (checkedConfig.printConfigInfo) printConfiguration(checkedConfig);
 
         return checkedConfig;
     }
@@ -870,32 +871,14 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                 } else if ("connectProperties".equals(fieldName)) {//copy 'connectProperties'
                     for (Map.Entry<String, Object> entry : this.connectProperties.entrySet())
                         config.addConnectProperty(entry.getKey(), entry.getValue());
-
-                    if (this.printConfigInfo && !this.configPrintExclusionList.contains(fieldName)) {
-                        for (Map.Entry<String, Object> entry : this.connectProperties.entrySet()) {
-                            if (!configPrintExclusionList.contains(entry.getKey()))
-                                CommonLog.info("{}.connectProperties.{}={}", this.poolName, entry.getKey(), entry.getValue());
-                        }
-                    }
                 } else if ("sqlExceptionCodeList".equals(fieldName)) {//copy 'sqlExceptionCodeList'
-                    if (this.sqlExceptionCodeList != null && !sqlExceptionCodeList.isEmpty()) {
+                    if (this.sqlExceptionCodeList != null && !sqlExceptionCodeList.isEmpty())
                         config.sqlExceptionCodeList = new ArrayList<Integer>(sqlExceptionCodeList);
-
-                        if (this.printConfigInfo && !configPrintExclusionList.contains(fieldName))
-                            CommonLog.info("{}.sqlExceptionCodeList={}", this.poolName, this.sqlExceptionCodeList);
-                    }
                 } else if ("sqlExceptionStateList".equals(fieldName)) {//copy 'sqlExceptionStateList'
-                    if (this.sqlExceptionStateList != null && !sqlExceptionStateList.isEmpty()) {
+                    if (this.sqlExceptionStateList != null && !sqlExceptionStateList.isEmpty())
                         config.sqlExceptionStateList = new ArrayList<String>(sqlExceptionStateList);
-
-                        if (this.printConfigInfo && !configPrintExclusionList.contains(fieldName))
-                            CommonLog.info("{}.sqlExceptionStateList={}", this.poolName, this.sqlExceptionStateList);
-                    }
                 } else {//other config items
-                    Object fieldValue = field.get(this);
-                    if (this.printConfigInfo && !configPrintExclusionList.contains(fieldName))
-                        CommonLog.info("{}.{}={}", this.poolName, fieldName, fieldValue);
-                    field.set(config, fieldValue);
+                    field.set(config, field.get(this));
                 }
             }
         } catch (Throwable e) {
@@ -1103,6 +1086,30 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         } catch (Throwable e) {
             throw new BeeDataSourceConfigException("Failed to create pool thread factory with class[" + threadFactClass + "]", e);
         }
+    }
+
+    //print check passed configuration
+    private void printConfiguration(BeeDataSourceConfig config) {
+        String poolName = config.poolName;
+        List<String> exclusionList = config.configPrintExclusionList;
+        CommonLog.info("................................................BeeCP Configuration[start]................................................");
+        try {
+            for (Field field : BeeDataSourceConfig.class.getDeclaredFields()) {
+                String fieldName = field.getName();
+                if (Modifier.isStatic(field.getModifiers()) || exclusionList.contains(fieldName)) continue;
+                if ("connectProperties".equals(fieldName)) {
+                    for (Map.Entry<String, Object> entry : config.connectProperties.entrySet()) {
+                        if (!exclusionList.contains(entry.getKey()))
+                            CommonLog.info("BeeCP({}).connectProperties.{}={}", poolName, entry.getKey(), entry.getValue());
+                    }
+                } else {//other config items
+                    CommonLog.info("BeeCP({}).{}={}", poolName, fieldName, field.get(config));
+                }
+            }
+        } catch (Throwable e) {
+            CommonLog.warn("Failed to print configuration", poolName, e);
+        }
+        CommonLog.info("................................................BeeCP Configuration[end]................................................");
     }
 }
 
