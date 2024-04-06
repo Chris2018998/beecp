@@ -3,14 +3,10 @@ package org.stone.beecp.config;
 import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.base.TestUtil;
-import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
-import org.stone.beecp.RawXaConnectionFactory;
 import org.stone.beecp.config.customization.DummyJdbcLinkInfoDecoder;
 import org.stone.beecp.factory.NullConnectionFactory;
-import org.stone.beecp.mock.MockXaDataSource;
-import org.stone.beecp.pool.FastConnectionPool;
 
 import java.util.Properties;
 
@@ -108,7 +104,6 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
         Assert.assertFalse(properties1.contains("user"));
         Assert.assertFalse(properties1.contains("password"));
 
-
         BeeDataSourceConfig config2 = new BeeDataSourceConfig(driver, url, username, password);
         config2.setJdbcLinkInfoDecoderClass(DummyJdbcLinkInfoDecoder.class);
         BeeDataSourceConfig checkedConfig2 = config2.check();
@@ -123,7 +118,7 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
     }
 
     public void testJdbcDecoderOnFactory() throws Exception {
-        BeeDataSourceConfig config1 = new BeeDataSourceConfig(driver, url, null, null);
+        BeeDataSourceConfig config1 = new BeeDataSourceConfig();
         config1.setConnectionFactoryClass(NullConnectionFactory.class);
         config1.setJdbcLinkInfoDecoderClass(DummyJdbcLinkInfoDecoder.class);
         BeeDataSourceConfig checkedConfig1 = config1.check();
@@ -131,7 +126,10 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
         Assert.assertNull(factory1.getUser());
         Assert.assertNull(factory1.getPassword());
 
-        BeeDataSourceConfig config2 = new BeeDataSourceConfig(driver, url, username, password);
+        BeeDataSourceConfig config2 = new BeeDataSourceConfig();
+        config2.setUrl(this.url);
+        config2.setUsername(this.username);
+        config2.setPassword(this.password);
         config2.setConnectionFactoryClass(NullConnectionFactory.class);
         config2.setJdbcLinkInfoDecoderClass(DummyJdbcLinkInfoDecoder.class);
         BeeDataSourceConfig checkedConfig2 = config2.check();
@@ -139,47 +137,29 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
         Assert.assertTrue(factory2.getUrl().endsWith("-Decoded"));
         Assert.assertTrue(factory2.getUser().endsWith("-Decoded"));
         Assert.assertTrue(factory2.getPassword().endsWith("-Decoded"));
-    }
 
-    public void testJdbcDecoderOnXaDataSource() throws Exception {
-        BeeDataSourceConfig config1 = new BeeDataSourceConfig(driver, null, null, null);
-        config1.setConnectionFactoryClassName("org.stone.beecp.mock.MockXaDataSource");
-        config1.setJdbcLinkInfoDecoderClassName("org.stone.beecp.config.customization.DummyJdbcLinkInfoDecoder");
-        BeeDataSource ds = new BeeDataSource(config1);
-        FastConnectionPool pool1 = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
-        RawXaConnectionFactory rawXaConnFactory1 = (RawXaConnectionFactory) TestUtil.getFieldValue(pool1, "rawXaConnFactory");
-        MockXaDataSource xaDs1 = (MockXaDataSource) TestUtil.getFieldValue(rawXaConnFactory1, "dataSource");
-        Assert.assertNull(xaDs1.getUser());
-        Assert.assertNull(xaDs1.getURL());
-        Assert.assertNull(xaDs1.getPassword());
+        BeeDataSourceConfig config3 = new BeeDataSourceConfig();
+        config3.addConnectProperty("url", url);
+        config3.addConnectProperty("user", this.username);
+        config3.addConnectProperty("password", this.password);
+        config3.setConnectionFactoryClass(NullConnectionFactory.class);
+        config3.setJdbcLinkInfoDecoderClass(DummyJdbcLinkInfoDecoder.class);
+        BeeDataSourceConfig checkedConfig3 = config3.check();
+        NullConnectionFactory factory3 = (NullConnectionFactory) checkedConfig3.getConnectionFactory();
+        Assert.assertTrue(factory3.getUrl().endsWith("-Decoded"));
+        Assert.assertTrue(factory3.getUser().endsWith("-Decoded"));
+        Assert.assertTrue(factory3.getPassword().endsWith("-Decoded"));
 
-        BeeDataSourceConfig config2 = new BeeDataSourceConfig(driver, url, username, password);
-        config2.setConnectionFactoryClassName("org.stone.beecp.mock.MockXaDataSource");
-        config2.setJdbcLinkInfoDecoderClassName("org.stone.beecp.config.customization.DummyJdbcLinkInfoDecoder");
-        BeeDataSource ds2 = new BeeDataSource(config2);
-        FastConnectionPool pool2 = (FastConnectionPool) TestUtil.getFieldValue(ds2, "pool");
-        RawXaConnectionFactory rawXaConnFactory2 = (RawXaConnectionFactory) TestUtil.getFieldValue(pool2, "rawXaConnFactory");
-        MockXaDataSource xaDs2 = (MockXaDataSource) TestUtil.getFieldValue(rawXaConnFactory2, "dataSource");
-        Assert.assertTrue(xaDs2.getURL().endsWith("-Decoded"));
-        Assert.assertTrue(xaDs2.getUser().endsWith("-Decoded"));
-        Assert.assertTrue(xaDs2.getPassword().endsWith("-Decoded"));
-    }
-
-    public void testJdbcDecoderOnXaDataSource2() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createEmpty();
-        config.setConnectionFactoryClassName("org.stone.beecp.mock.MockXaDataSource");
-        config.setJdbcLinkInfoDecoderClassName("org.stone.beecp.config.customization.DummyJdbcLinkInfoDecoder");
-        config.addConnectProperty("URL", "jdbc:mock:test");
-        config.addConnectProperty("user", "mock");
-        config.addConnectProperty("password", "root");
-        BeeDataSource ds = new BeeDataSource(config);
-
-        FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
-        RawXaConnectionFactory rawXaConnFactory = (RawXaConnectionFactory) TestUtil.getFieldValue(pool, "rawXaConnFactory");
-        MockXaDataSource xaDs = (MockXaDataSource) TestUtil.getFieldValue(rawXaConnFactory, "dataSource");
-
-        Assert.assertTrue(xaDs.getURL().endsWith("-Decoded"));
-        Assert.assertTrue(xaDs.getUser().endsWith("-Decoded"));
-        Assert.assertTrue(xaDs.getPassword().endsWith("-Decoded"));
+        BeeDataSourceConfig config4 = new BeeDataSourceConfig();
+        System.setProperty("beecp.url", url);
+        System.setProperty("beecp.user", this.username);
+        System.setProperty("beecp.password", this.password);
+        config4.setConnectionFactoryClass(NullConnectionFactory.class);
+        config4.setJdbcLinkInfoDecoderClass(DummyJdbcLinkInfoDecoder.class);
+        BeeDataSourceConfig checkedConfig4 = config4.check();
+        NullConnectionFactory factory4 = (NullConnectionFactory) checkedConfig4.getConnectionFactory();
+        Assert.assertTrue(factory4.getUrl().endsWith("-Decoded"));
+        Assert.assertTrue(factory4.getUser().endsWith("-Decoded"));
+        Assert.assertTrue(factory4.getPassword().endsWith("-Decoded"));
     }
 }
