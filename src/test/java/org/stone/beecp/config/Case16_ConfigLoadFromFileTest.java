@@ -25,8 +25,6 @@ import java.util.Properties;
  * @version 1.0
  */
 public class Case16_ConfigLoadFromFileTest extends TestCase {
-    private final String ConfigUrl = "jdbc:beecp://localhost/testdb";
-    private final String ConfigDriver = "org.stone.beecp.mock.MockDriver";
     private final String filename = "beecp/config2.properties";
 
     /********************************************Constructor**************************************************/
@@ -107,6 +105,9 @@ public class Case16_ConfigLoadFromFileTest extends TestCase {
     }
 
     private void check(BeeDataSourceConfig config) throws Exception {
+        final String ConfigUrl = "jdbc:beecp://localhost/testdb";
+        final String ConfigDriver = "org.stone.beecp.mock.MockDriver";
+
         Assert.assertEquals(config.getUsername(), "root");
         Assert.assertEquals(config.getPassword(), "root");
         Assert.assertEquals(config.getJdbcUrl(), ConfigUrl);

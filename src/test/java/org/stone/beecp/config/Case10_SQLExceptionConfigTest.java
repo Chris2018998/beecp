@@ -68,11 +68,11 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
     }
 
     public void testOnPredicationCreation() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        BeeDataSourceConfig config1 = ConfigFactory.createDefault();
         Class predicationClass = DummySqlExceptionPredication.class;
-        config.setSqlExceptionPredicationClass(predicationClass);
-        Assert.assertEquals(config.getSqlExceptionPredicationClass(), predicationClass);
-        BeeDataSourceConfig checkConfig = config.check();
+        config1.setSqlExceptionPredicationClass(predicationClass);
+        Assert.assertEquals(config1.getSqlExceptionPredicationClass(), predicationClass);
+        BeeDataSourceConfig checkConfig = config1.check();
         Assert.assertNotNull(checkConfig.getSqlExceptionPredication());
 
         BeeDataSourceConfig config2 = ConfigFactory.createDefault();
@@ -81,6 +81,12 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
         Assert.assertEquals(config2.getSqlExceptionPredicationClassName(), predicationClassName);
         BeeDataSourceConfig checkConfig2 = config2.check();
         Assert.assertNotNull(checkConfig2.getSqlExceptionPredication());
+
+        SQLExceptionPredication predication = new DummySqlExceptionPredication();
+        BeeDataSourceConfig config3 = ConfigFactory.createDefault();
+        config3.setSqlExceptionPredication(predication);
+        BeeDataSourceConfig checkConfig3 = config3.check();
+        Assert.assertEquals(checkConfig3.getSqlExceptionPredication(),predication);
     }
 
     public void testOnErrorPredicationClass() throws Exception {
@@ -124,31 +130,6 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
             String message = e.getMessage();
             Assert.assertTrue(message != null && message.contains("SQLException error code"));
         }
-    }
-
-    //prop1:value&prop2:value2&prop3:value3
-    public void testConfigPrint() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
-        config.setPrintConfigInfo(true);
-        //situation1: null list(sqlExceptionCodeList,sqlExceptionStateList)
-        config.check();
-
-        //situation2: setting check
-        config.addSqlExceptionCode(500151);
-        config.addSqlExceptionState("0A000");
-        config.check();
-
-        //situation3: empty list(qlExceptionCodeList,sqlExceptionStateList)
-        config.removeSqlExceptionCode(500151);
-        config.removeSqlExceptionState("0A000");
-        config.check();
-
-        //situation3: em in config print exclusion list
-        config.addSqlExceptionCode(500151);
-        config.addSqlExceptionState("0A000");
-        config.addConfigPrintExclusion("sqlExceptionCodeList");
-        config.addConfigPrintExclusion("sqlExceptionStateList");
-        config.check();
     }
 
     public void testOnFailureCopy() throws Exception {

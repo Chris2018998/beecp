@@ -16,7 +16,6 @@ import org.stone.beecp.BeeDataSourceConfig;
 import java.util.Properties;
 
 public class Case1_PoolNameTest extends TestCase {
-
     public void testOnSetGet() {
         BeeDataSourceConfig config = ConfigFactory.createEmpty();
 
