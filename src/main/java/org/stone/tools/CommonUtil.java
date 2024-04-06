@@ -9,13 +9,6 @@
  */
 package org.stone.tools;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.concurrent.locks.AbstractOwnableSynchronizer;
-import java.util.concurrent.locks.AbstractQueuedSynchronizer;
-import java.util.concurrent.locks.ReentrantLock;
-
 /**
  * common util
  *
@@ -51,31 +44,5 @@ public class CommonUtil {
         probe ^= probe >>> 17;
         probe ^= probe << 5;
         return probe;
-    }
-
-    public static void interruptExclusiveOwnerThread(ReentrantLock lock) throws Exception {
-        Field syncField = lock.getClass().getDeclaredField("sync");
-        if (!syncField.isAccessible()) syncField.setAccessible(true);
-        Object sync = syncField.get(lock);
-
-        Method ownerThreadsMethod = AbstractOwnableSynchronizer.class.getDeclaredMethod("getExclusiveOwnerThread");//protected
-        ownerThreadsMethod.setAccessible(true);
-        Thread ownerThread = (Thread) ownerThreadsMethod.invoke(sync, new Object[0]);
-       if(ownerThread!=null) ownerThread.interrupt();
-    }
-
-    public static void interruptQueuedWaitersOnLock(ReentrantLock lock) throws Exception {
-        Field syncField = lock.getClass().getDeclaredField("sync");
-        if (!syncField.isAccessible()) syncField.setAccessible(true);
-        Object sync = syncField.get(lock);//get sync object under ReentrantLock
-
-        Method getMethod = AbstractQueuedSynchronizer.class.getDeclaredMethod("getExclusiveQueuedThreads");
-        getMethod.setAccessible(true);
-        Collection<Thread> waitingThreads = (Collection<Thread>) getMethod.invoke(sync, new Object[0]);
-        if (waitingThreads != null) {
-            for (Thread thread : waitingThreads) {
-                thread.interrupt();
-            }
-        }
     }
 }
