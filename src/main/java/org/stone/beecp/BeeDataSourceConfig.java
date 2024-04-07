@@ -785,7 +785,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                 setValueMap.put(propertyName, configProperties.getProperty(propertyName));
             }
 
-            //2:inject item value from map to this dataSource config object
+            //2: exclude some special keys in setValueMap
+            setValueMap.remove(CONFIG_CONNECT_PROP);//remove item if exists in properties file before injection
             setValueMap.remove(CONFIG_SQL_EXCEPTION_CODE);//remove item if exists in properties file before injection
             setValueMap.remove(CONFIG_SQL_EXCEPTION_STATE);//remove item if exists in properties file before injection
             setValueMap.remove(CONFIG_CONFIG_PRINT_EXCLUSION_LIST);//remove item if exists in properties file before injection
