@@ -41,7 +41,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //pool name generation index which is an atomic integer start with 1
     private static final AtomicInteger PoolNameIndex = new AtomicInteger(1);
     //default exclusion list of config print
-    private static final List<String> DefaultExclusionList = Arrays.asList("username", "password", "jdbcUrl", "user", "url", "driverClassName");
+    private static final List<String> DefaultExclusionList = Arrays.asList("username", "password", "jdbcUrl", "user", "url");
 
     //properties work in a factory{@code RawConnectionFactory,RawXaConnectionFactory} to establish connections
     private final Map<String, Object> connectProperties = new HashMap<String, Object>(2);
