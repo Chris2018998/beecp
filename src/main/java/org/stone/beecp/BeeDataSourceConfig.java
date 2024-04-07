@@ -78,7 +78,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private int connectTimeout;
     //milliseconds: max idle time on unused connections which removed from pool,default is 18000 milliseconds(3 minutes)
     private long idleTimeout = MINUTES.toMillis(3);
-    //milliseconds: max inactive time on borrowed connections,which recycled to pool by force to avoid connection leak,default is zero
+    //milliseconds: max inactive time on borrowed connections,which recycled to pool by force to avoid connections leak,default is zero
     private long holdTimeout;
 
     //a test sql executed on connections to check whether alive and removed from pool if dead.
@@ -89,9 +89,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private long aliveAssumeTime = 500L;
     //milliseconds: interval time to scan idle connections or leak connections,default is 18000 milliseconds(3 minutes)
     private long timerCheckInterval = MINUTES.toMillis(3);
-    //indicator on force close using connections or close using util them return to pool under Pool clear action,default is false
+    //indicator on close using connections directly while pool clear,default is false
     private boolean forceCloseUsingOnClear;
-    //milliseconds: a delay time value to close returned connections in a loop,if exists using,then continue to next delay,default is 3000 milliseconds
+    //milliseconds: a delay time value to close using connections return to pool,if still exists using,then continue to next delay,default is 3000 milliseconds
     private long delayTimeForNextClear = 3000L;
     //error code list check on vendorCode of thrown sql exceptions,if matched,connections evicted from pool,@see field vendorCode of SQLException.class
     private List<Integer> sqlExceptionCodeList;
