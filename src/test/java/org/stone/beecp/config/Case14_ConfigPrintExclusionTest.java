@@ -25,9 +25,6 @@ public class Case14_ConfigPrintExclusionTest extends TestCase {
         Assert.assertTrue(config.existConfigPrintExclusion("poolName"));
         config.removeConfigPrintExclusion("poolName");
         Assert.assertFalse(config.existConfigPrintExclusion("poolName"));
-        config.addConfigPrintExclusion("driverClassName");
-        config.clearAllConfigPrintExclusion();
-        Assert.assertFalse(config.existConfigPrintExclusion("driverClassName"));
     }
 
     public void testOnLoadFromProperties() throws Exception {

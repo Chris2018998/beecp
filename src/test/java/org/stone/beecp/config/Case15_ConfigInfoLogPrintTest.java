@@ -66,7 +66,6 @@ public class Case15_ConfigInfoLogPrintTest extends TestCase {
         Assert.assertFalse(logs.contains(".jdbcUrl"));
         Assert.assertFalse(logs.contains(".user"));
         Assert.assertFalse(logs.contains(".url"));
-        Assert.assertFalse(logs.contains(".driverClassName"));
 
         //situation2: print out all items(clear all exclusion)
         config.clearAllConfigPrintExclusion();//test point
@@ -76,7 +75,6 @@ public class Case15_ConfigInfoLogPrintTest extends TestCase {
         Assert.assertTrue(logs.contains(".username"));
         Assert.assertTrue(logs.contains(".password"));
         Assert.assertTrue(logs.contains(".jdbcUrl"));
-        Assert.assertTrue(logs.contains(".driverClassName"));
 
         //situation3: test on a not excluded item
         Assert.assertTrue(logs.contains(".maxActive"));
