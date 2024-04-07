@@ -731,6 +731,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             Properties prop = new Properties();
             try {
                 prop.load(propertiesStream);
+                loadFromProperties(prop);
             } catch (IOException e) {
                 throw new IllegalArgumentException("Configuration properties file load failed", e);
             } finally {
@@ -742,8 +743,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                     }
                 }
             }
-
-            loadFromProperties(prop);
         }
     }
 
