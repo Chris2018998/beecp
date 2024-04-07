@@ -10,6 +10,8 @@ import org.stone.beecp.factory.NullConnectionFactory;
 
 import java.util.Properties;
 
+import static org.stone.beecp.config.ConfigFactory.clearBeeCPInfoFromSystemProperties;
+
 public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
     private final String driver = "org.stone.beecp.mock.MockDriver";
     private final String url = "jdbc:beecp://localhost/testdb";
@@ -152,6 +154,7 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
         Assert.assertTrue(factory3.getPassword().endsWith("-Decoded"));
 
         BeeDataSourceConfig config4 = new BeeDataSourceConfig();
+        clearBeeCPInfoFromSystemProperties();
         System.setProperty("beecp.url", url);
         System.setProperty("beecp.user", this.username);
         System.setProperty("beecp.password", this.password);

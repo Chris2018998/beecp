@@ -16,6 +16,8 @@ import org.stone.beecp.BeeDataSourceConfig;
 
 import java.util.Properties;
 
+import static org.stone.beecp.config.ConfigFactory.clearBeeCPInfoFromSystemProperties;
+
 public class Case2_JdbcLinkInfoTest extends TestCase {
     private final String user = "root";
     private final String password = "test";
@@ -109,7 +111,7 @@ public class Case2_JdbcLinkInfoTest extends TestCase {
     }
 
     public void testOnJdbcUrl() throws Exception {
-        BeeDataSourceConfig config1 = new BeeDataSourceConfig(driver, null, user, password);
+        BeeDataSourceConfig config1 = ConfigFactory.createDefault();
 
         //situation1: jdbc url check(can't be null)
         config1.setJdbcUrl(null);
@@ -119,9 +121,9 @@ public class Case2_JdbcLinkInfoTest extends TestCase {
             String message = e.getMessage();
             Assert.assertTrue(message != null && message.contains("jdbcUrl can't be null"));
         }
-
+//
         //situation2: load 'beecp.url' from system.properties
-        System.getProperties().clear();
+        clearBeeCPInfoFromSystemProperties();
         System.setProperty("beecp.url", url);
         System.setProperty("beecp.user", user);
         System.setProperty("beecp.password", password);
@@ -135,7 +137,7 @@ public class Case2_JdbcLinkInfoTest extends TestCase {
         Assert.assertEquals(configProperties.getProperty("password"), password);
 
         //situation3: load 'beecp.jdbcUrl' from system.properties
-        System.getProperties().clear();
+        clearBeeCPInfoFromSystemProperties();
         System.setProperty("beecp.jdbcUrl", url);
         BeeDataSourceConfig config3 = ConfigFactory.createEmpty();
         config3.setDriverClassName(driver);

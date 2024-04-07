@@ -12,6 +12,10 @@ package org.stone.beecp.config;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.JdbcConfig;
 
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+
 public class ConfigFactory {
 
     public static BeeDataSourceConfig createEmpty() {
@@ -23,5 +27,14 @@ public class ConfigFactory {
         config.setJdbcUrl(JdbcConfig.JDBC_URL);
         config.setDriverClassName(JdbcConfig.JDBC_DRIVER);
         return config;
+    }
+
+    static void clearBeeCPInfoFromSystemProperties() {
+        Properties properties = System.getProperties();
+        Iterator iterator = properties.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, String> entry = (Map.Entry<String, String>) iterator.next();
+            if (entry.getKey().startsWith("beecp.")) iterator.remove();
+        }
     }
 }
