@@ -13,6 +13,8 @@ import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 
+import java.util.Properties;
+
 public class Case6_ConnectPropertiesTest extends TestCase {
 
     public void testOnAddProperty() {
@@ -51,17 +53,32 @@ public class Case6_ConnectPropertiesTest extends TestCase {
         Assert.assertEquals("value3", config.getConnectProperty("prop3"));
     }
 
-    //prop1:value&prop2:value2&prop3:value3
-    public void testInConfigPrintExclusionList() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createEmpty();
-        config.setPrintConfigInfo(true);
-        config.addConnectProperty("prop1:value1&prop2:value2&prop3:value3");
+    public void testLoadFromProperties() {
+        BeeDataSourceConfig config1 = ConfigFactory.createEmpty();
+        Properties prop1 = new Properties();
+        prop1.setProperty("connectProperties", "prop1=value1&prop2=value2&prop3=value3");
+        config1.loadFromProperties(prop1);
+        Assert.assertEquals("value1", config1.getConnectProperty("prop1"));
+        Assert.assertEquals("value2", config1.getConnectProperty("prop2"));
+        Assert.assertEquals("value3", config1.getConnectProperty("prop3"));
 
-        config.addConfigPrintExclusion("connectProperties");
-        config.check();
+        BeeDataSourceConfig config2 = ConfigFactory.createEmpty();
+        Properties prop2 = new Properties();
+        prop2.setProperty("connectProperties", "prop1:value1&prop2:value2&prop3:value3");
+        config2.loadFromProperties(prop2);
+        Assert.assertEquals("value1", config2.getConnectProperty("prop1"));
+        Assert.assertEquals("value2", config2.getConnectProperty("prop2"));
+        Assert.assertEquals("value3", config2.getConnectProperty("prop3"));
 
-        config.removeConfigPrintExclusion("connectProperties");
-        config.check();
+        BeeDataSourceConfig config3 = ConfigFactory.createEmpty();
+        Properties prop3 = new Properties();
+        prop3.setProperty("connectProperties.size", "3");
+        prop3.setProperty("connectProperties.1", "prop1=value1");
+        prop3.setProperty("connectProperties.2", "prop2:value2");
+        prop3.setProperty("connectProperties.3", "prop3=value3");
+        config3.loadFromProperties(prop3);
+        Assert.assertEquals("value1", config3.getConnectProperty("prop1"));
+        Assert.assertEquals("value2", config3.getConnectProperty("prop2"));
+        Assert.assertEquals("value3", config3.getConnectProperty("prop3"));
     }
-
 }
