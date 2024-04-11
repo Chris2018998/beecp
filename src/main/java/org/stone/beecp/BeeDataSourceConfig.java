@@ -40,7 +40,7 @@ import static org.stone.tools.CommonUtil.*;
 public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //pool name generation index which is an atomic integer start with 1
     private static final AtomicInteger PoolNameIndex = new AtomicInteger(1);
-    //default exclusion list of config print
+    //default exclusion list of config print(info level,still print them under debug mode)
     private static final List<String> DefaultExclusionList = Arrays.asList("username", "password", "jdbcUrl", "user", "url");
 
     //properties work in a factory{@code RawConnectionFactory,RawXaConnectionFactory} to establish connections
@@ -1103,24 +1103,34 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private void printConfiguration(BeeDataSourceConfig config) {
         String poolName = config.poolName;
         List<String> exclusionList = config.configPrintExclusionList;
-        CommonLog.info("................................................BeeCP Configuration[start]................................................");
+        CommonLog.info("................................................BeeCP({})configuration[start]................................................", poolName);
         try {
             for (Field field : BeeDataSourceConfig.class.getDeclaredFields()) {
                 String fieldName = field.getName();
-                if (Modifier.isStatic(field.getModifiers()) || exclusionList.contains(fieldName)) continue;
-                if ("connectProperties".equals(fieldName)) {
-                    for (Map.Entry<String, Object> entry : config.connectProperties.entrySet()) {
-                        if (!exclusionList.contains(entry.getKey()))
-                            CommonLog.info("BeeCP({}).connectProperties.{}={}", poolName, entry.getKey(), entry.getValue());
+                if (Modifier.isStatic(field.getModifiers())) continue;
+
+                if (exclusionList.contains(fieldName)) {//debug print
+                    if ("connectProperties".equals(fieldName)) {
+                        for (Map.Entry<String, Object> entry : config.connectProperties.entrySet())
+                            CommonLog.debug("BeeCP({}).connectProperties.{}={}", poolName, entry.getKey(), entry.getValue());
+                    } else {//other config items
+                        CommonLog.debug("BeeCP({}).{}={}", poolName, fieldName, field.get(config));
                     }
-                } else {//other config items
-                    CommonLog.info("BeeCP({}).{}={}", poolName, fieldName, field.get(config));
+                } else {//info print
+                    if ("connectProperties".equals(fieldName)) {
+                        for (Map.Entry<String, Object> entry : config.connectProperties.entrySet()) {
+                            if (!exclusionList.contains(entry.getKey()))
+                                CommonLog.info("BeeCP({}).connectProperties.{}={}", poolName, entry.getKey(), entry.getValue());
+                        }
+                    } else {//other config items
+                        CommonLog.info("BeeCP({}).{}={}", poolName, fieldName, field.get(config));
+                    }
                 }
             }
         } catch (Throwable e) {
             CommonLog.warn("Failed to print configuration", poolName, e);
         }
-        CommonLog.info("................................................BeeCP Configuration[end]................................................");
+        CommonLog.info("................................................BeeCP({})configuration[end]................................................", poolName);
     }
 }
 
