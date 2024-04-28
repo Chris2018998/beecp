@@ -43,9 +43,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //default exclusion list of config print(info level,still print them under debug mode)
     private static final List<String> DefaultExclusionList = Arrays.asList("username", "password", "jdbcUrl", "user", "url");
 
-    //properties work in a factory{@code RawConnectionFactory,RawXaConnectionFactory} to establish connections
+    //properties applied in a factory{@code RawConnectionFactory,RawXaConnectionFactory} to establish connections
     private final Map<String, Object> connectProperties = new HashMap<String, Object>(2);
-    //user name of a database,default is null
+    //username of a database,default is null
     private String username;
     //user password security link to database,default is null
     private String password;
@@ -53,9 +53,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private String jdbcUrl;
     //database link driver class name,default is null(if not set,pool try to search a matched driver from driver manager with valid configured url)
     private String driverClassName;
-    //pool name for log trace,if null or empty,a generation name will be assigned to it after configuration check passed
+    //pool name for log trace,if null or empty,a generation name will be assigned to pool after configuration check passed
     private String poolName;
-    //work mode of pool semaphore,default:unfair mode(I call it competed mode)
+    //work mode of pool semaphore,default is false(unfair mode,I call it competition mode)
     private boolean fairMode;
     //creation size of initial connections,default is zero
     private int initialSize;
@@ -76,16 +76,16 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     // is assigned to field loginTimeout of DriverManager on pool initialization,but the loginTimeout field is sharable,
     // in same JVM,other drivers maybe read its value,so need be more careful on this item(connectTimeout),default is zero
     private int connectTimeout;
-    //milliseconds: max idle time on unused connections which removed from pool,default is 18000 milliseconds(3 minutes)
+    //milliseconds: max idle time check on not borrowed connections,if timeout,then remove them from pool,default is 18000 milliseconds(3 minutes)
     private long idleTimeout = MINUTES.toMillis(3);
-    //milliseconds: max inactive time on borrowed connections,which recycled to pool by force to avoid connections leak,default is zero
+    //milliseconds: max inactive time check on borrowed connections,if timeout,pool recycled them by force to avoid connections leak,default is zero
     private long holdTimeout;
 
-    //a test sql executed on connections to check whether alive and removed from pool if dead.
+    //an alive test sql executed on borrowed connections,if dead,removed from pool
     private String aliveTestSql = "SELECT 1";
-    //seconds:max wait time to get validation result on a test connection,default is 3 seconds.
+    //seconds:max wait time to get validation result on test connections,default is 3 seconds.
     private int aliveTestTimeout = 3;
-    //milliseconds: a gap time value since from last active time,assume connection is alive and need't do test on it,default is 500 milliseconds
+    //milliseconds: a gap time value from last activity time to borrowed time point,needn't do test on connections,default is 500 milliseconds
     private long aliveAssumeTime = 500L;
     //milliseconds: interval time to scan idle connections or leak connections,default is 18000 milliseconds(3 minutes)
     private long timerCheckInterval = MINUTES.toMillis(3);
@@ -179,7 +179,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private boolean printRuntimeLog;
     //enable indicator to print configuration items on pool initialization,default is false
     private boolean printConfigInfo;
-    //exclusion list on config items print
+    //config items exclusion list on info-level print
     private List<String> configPrintExclusionList = new ArrayList<String>(DefaultExclusionList);
 
     //****************************************************************************************************************//
@@ -947,7 +947,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             Properties configProperties = new Properties();
             configProperties.putAll(this.connectProperties);//copy local properties
 
-            //step2.4: set user name and password
+            //step2.4: set username and password
             String userName = configProperties.getProperty("user");//read from connectProperties firstly
             String password = configProperties.getProperty("password");//read from connectProperties firstly
             if (isBlank(userName)) {
@@ -964,7 +964,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             }
 
             //step2.5: decode user name and password
-            if (jdbcLinkInfoDecoder != null) {//execute the decoder and reset user name and password
+            if (jdbcLinkInfoDecoder != null) {//execute the decoder and reset username and password
                 if (!isBlank(userName))
                     configProperties.setProperty("user", jdbcLinkInfoDecoder.decodeUsername(userName));
                 if (!isBlank(password))
