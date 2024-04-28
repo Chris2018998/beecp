@@ -30,7 +30,7 @@ public interface BeeConnectionPool {
     void init(BeeDataSourceConfig config) throws SQLException;
 
     /**
-     * Borrows a connection from pool,if no idle,borrower threads wait in pool until get one or timeout,the max wait
+     * Borrows a connection from pool,if no idle,borrower thread wait in pool until get one or timeout,the max wait
      * time(milliseconds) is a configurable item,refer to {@link BeeDataSourceConfig#getMaxWait} method.
      *
      * @return a borrowed connection
@@ -41,7 +41,7 @@ public interface BeeConnectionPool {
     Connection getConnection() throws SQLException;
 
     /**
-     * Borrows a XA connection from pool,if no idle,borrower threads wait in pool until get one or timeout,the max wait
+     * Borrows a XA connection from pool,if no idle,borrower thread wait in pool until get one or timeout,the max wait
      * time(milliseconds) is a configurable item,refer to {@link BeeDataSourceConfig#getMaxWait} method.
      *
      * @return a borrowed connection
@@ -72,7 +72,7 @@ public interface BeeConnectionPool {
     void setPrintRuntimeLog(boolean indicator);
 
     /**
-     * Get pool monitor object which contains runtime info of pool,for example:pool state,idle count,using count
+     * Get pool monitor object contains pool runtime info,for example:pool state,idle count,using count
      *
      * @return monitor vo
      */
@@ -86,7 +86,7 @@ public interface BeeConnectionPool {
     long getElapsedTimeSinceCreationLock();
 
     /**
-     * Interrupts all threads on pool creation lock,include wait threads and lock owner.
+     * Interrupts all threads on connection creation lock,include wait threads and lock owner.
      */
     void interruptThreadsOnCreationLock();
 

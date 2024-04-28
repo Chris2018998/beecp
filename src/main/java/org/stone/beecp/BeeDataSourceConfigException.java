@@ -10,7 +10,7 @@
 package org.stone.beecp;
 
 /**
- * A runtime exception thrown when configuration check failed
+ * If check failed on dataSource configuration items,throws this exception.
  *
  * @author Chris Liao
  * @version 1.0

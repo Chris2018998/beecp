@@ -31,10 +31,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.stone.beecp.pool.ConnectionPoolStatics.*;
 
 /**
- * A entrance object to operation on connection pool
- * <p>
- * Email: Chris2018998@tom.com
- * Project: https://github.com/Chris2018998/stone
+ * Bee DataSource impl.
  *
  * @author Chris Liao
  * @version 1.0

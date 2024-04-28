@@ -74,7 +74,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //2: factory mode,@see field connectionFactoryClass(supports four types)
     //* import tips: factory mode is priority for pool,if connection creation works under driver mode,this item value
     // is assigned to field loginTimeout of DriverManager on pool initialization,but the loginTimeout field is sharable,
-    // in same JVM,other drivers maybe read its value,so need be more careful on this item(connectTimeout),default is zero
+    // in same JVM,other drivers maybe read its value,so need more careful on this item(connectTimeout),default is zero
     private int connectTimeout;
     //milliseconds: max idle time check on not borrowed connections,if timeout,then remove them from pool,default is 18000 milliseconds(3 minutes)
     private long idleTimeout = MINUTES.toMillis(3);
@@ -150,15 +150,15 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     /**
      * connection eviction check on thrown sql exceptions by customization
      * eviction check priority logic
-     * 1: if exists a predication,only check on predication
+     * 1: if exists a predication,only check with predication
      * 2: if not exists,priority order: error code check,sql state check
      */
     //sql exception predication class
-    private Class sqlExceptionPredicationClass;
+    private Class sqlExceptionPredicateClass;
     //sql exception predication class name
-    private String sqlExceptionPredicationClassName;
+    private String sqlExceptionPredicateClassName;
     //sql exception predication instance
-    private SQLExceptionPredication sqlExceptionPredication;
+    private SQLExceptionPredicate sqlExceptionPredicate;
 
     /**
      * A short lifecycle object and used to decode jdbc link info(url,username,password)in pool initialization check
@@ -637,28 +637,28 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.connectionFactoryClassName = trimString(connectionFactoryClassName);
     }
 
-    public Class getSqlExceptionPredicationClass() {
-        return sqlExceptionPredicationClass;
+    public Class getSqlExceptionPredicateClass() {
+        return sqlExceptionPredicateClass;
     }
 
-    public void setSqlExceptionPredicationClass(Class sqlExceptionPredicationClass) {
-        this.sqlExceptionPredicationClass = sqlExceptionPredicationClass;
+    public void setSqlExceptionPredicateClass(Class sqlExceptionPredicateClass) {
+        this.sqlExceptionPredicateClass = sqlExceptionPredicateClass;
     }
 
-    public String getSqlExceptionPredicationClassName() {
-        return sqlExceptionPredicationClassName;
+    public String getSqlExceptionPredicateClassName() {
+        return sqlExceptionPredicateClassName;
     }
 
-    public void setSqlExceptionPredicationClassName(String sqlExceptionPredicationClassName) {
-        this.sqlExceptionPredicationClassName = sqlExceptionPredicationClassName;
+    public void setSqlExceptionPredicateClassName(String sqlExceptionPredicateClassName) {
+        this.sqlExceptionPredicateClassName = sqlExceptionPredicateClassName;
     }
 
-    public SQLExceptionPredication getSqlExceptionPredication() {
-        return sqlExceptionPredication;
+    public SQLExceptionPredicate getSqlExceptionPredicate() {
+        return sqlExceptionPredicate;
     }
 
-    public void setSqlExceptionPredication(SQLExceptionPredication sqlExceptionPredication) {
-        this.sqlExceptionPredication = sqlExceptionPredication;
+    public void setSqlExceptionPredicate(SQLExceptionPredicate sqlExceptionPredicate) {
+        this.sqlExceptionPredicate = sqlExceptionPredicate;
     }
 
     public Class getJdbcLinkInfoDecoderClass() {
@@ -852,7 +852,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
         Object connectionFactory = createConnectionFactory();
         BeeConnectionPoolThreadFactory threadFactory = this.createThreadFactory();
-        SQLExceptionPredication predication = this.createSQLExceptionPredication();
+        SQLExceptionPredicate predicate = this.createSQLExceptionPredicate();
 
         BeeDataSourceConfig checkedConfig = new BeeDataSourceConfig();
         copyTo(checkedConfig);
@@ -861,7 +861,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         checkedConfig.threadFactory = threadFactory;
         this.connectionFactory = connectionFactory;
         checkedConfig.connectionFactory = connectionFactory;
-        checkedConfig.sqlExceptionPredication = predication;
+        checkedConfig.sqlExceptionPredicate = predicate;
         if (isBlank(checkedConfig.poolName)) checkedConfig.poolName = "FastPool-" + PoolNameIndex.getAndIncrement();
         if (checkedConfig.printConfigInfo) printConfiguration(checkedConfig);
 
@@ -1054,22 +1054,22 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     //create Thread factory
-    private SQLExceptionPredication createSQLExceptionPredication() throws BeeDataSourceConfigException {
+    private SQLExceptionPredicate createSQLExceptionPredicate() throws BeeDataSourceConfigException {
         //step1:if exists predication,then return it
-        if (this.sqlExceptionPredication != null) return this.sqlExceptionPredication;
+        if (this.sqlExceptionPredicate != null) return this.sqlExceptionPredicate;
 
         //step2: create SQLExceptionPredication
-        if (sqlExceptionPredicationClass != null || !isBlank(sqlExceptionPredicationClassName)) {
+        if (sqlExceptionPredicateClass != null || !isBlank(sqlExceptionPredicateClassName)) {
             Class<?> predicationClass = null;
             try {
-                predicationClass = sqlExceptionPredicationClass != null ? sqlExceptionPredicationClass : Class.forName(sqlExceptionPredicationClassName);
-                return (SQLExceptionPredication) createClassInstance(predicationClass, SQLExceptionPredication.class, "sql exception predication");
+                predicationClass = sqlExceptionPredicateClass != null ? sqlExceptionPredicateClass : Class.forName(sqlExceptionPredicateClassName);
+                return (SQLExceptionPredicate) createClassInstance(predicationClass, SQLExceptionPredicate.class, "sql exception predicate");
             } catch (ClassNotFoundException e) {
-                throw new BeeDataSourceConfigException("Not found sql exception predication class[" + threadFactoryClassName + "]", e);
+                throw new BeeDataSourceConfigException("Not found sql exception predicate class[" + threadFactoryClassName + "]", e);
             } catch (BeeDataSourceConfigException e) {
                 throw e;
             } catch (Throwable e) {
-                throw new BeeDataSourceConfigException("Failed to create sql exception predication with class[" + predicationClass + "]", e);
+                throw new BeeDataSourceConfigException("Failed to create sql exception predicate with class[" + predicationClass + "]", e);
             }
         }
 

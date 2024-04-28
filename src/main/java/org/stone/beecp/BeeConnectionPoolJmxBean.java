@@ -10,7 +10,7 @@
 package org.stone.beecp;
 
 /**
- * JMX Bean interface on {@link BeeConnectionPool}
+ * Pool JMX Bean interface
  *
  * @author Chris Liao
  * @version 1.0

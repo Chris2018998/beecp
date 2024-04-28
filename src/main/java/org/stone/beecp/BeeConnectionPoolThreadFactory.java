@@ -10,9 +10,7 @@
 package org.stone.beecp;
 
 /**
- * A Thread factory interface,its sub class is used to create some work threads in connection pool,
- * there are three fields exists in {@link BeeDataSourceConfig}to support injecting a factory,if not set,
- * a default Implementation applied in pool,@see{@link org.stone.beecp.pool.ConnectionPoolThreadFactory}
+ * Pool thread factory interface.
  *
  * @author Chris Liao
  * @version 1.0

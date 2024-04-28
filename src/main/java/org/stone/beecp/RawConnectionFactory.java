@@ -13,12 +13,18 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * Connection factory interface
+ * Connection factory interface whose impl instance build connections to pool.
  *
- * @author Chris
+ * @author Chris Liao
  * @version 1.0
  */
 public interface RawConnectionFactory {
-    //create connection instance
+
+    /**
+     * Creates a jdbc connection
+     *
+     * @return a connection
+     * @throws SQLException when build failed(maybe invalid url,error username and password and so on)
+     */
     Connection create() throws SQLException;
 }
