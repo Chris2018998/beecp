@@ -86,7 +86,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         } catch (SQLException e) {
             throw e;
         } catch (Throwable e) {
-            throw new PoolCreateFailedException("Failed to create connection pool by class:" + ds.getPoolImplementClassName(), e);
+            throw new PoolCreateFailedException("Failed to create a pool with class:" + ds.getPoolImplementClassName(), e);
         }
     }
 
@@ -118,9 +118,9 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         } else {
             try {
                 if (!this.readLock.tryLock(maxWaitNanos, TimeUnit.NANOSECONDS))
-                    throw new ConnectionGetTimeoutException("Connection get timeout at lock of pool creation");
+                    throw new ConnectionGetTimeoutException("Timeout on waiting for pool ready");
             } catch (InterruptedException e) {
-                throw new ConnectionGetInterruptedException("Connection get request interrupted at lock of pool creation");
+                throw new ConnectionGetInterruptedException("An interruption occurred in waiting for pool ready");
             }
             readLock.unlock();
         }
@@ -173,7 +173,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         if (clazz != null && clazz.isInstance(this))
             return clazz.cast(this);
         else
-            throw new SQLException("Wrapped object was not an instance of " + clazz);
+            throw new SQLException("The wrapper object was not an instance of " + clazz);
     }
 
     //***************************************************************************************************************//
@@ -200,30 +200,30 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     }
 
     public BeeConnectionPoolMonitorVo getPoolMonitorVo() throws SQLException {
-        if (this.pool == null) throw new PoolNotCreatedException("Connection pool not initialized");
+        if (this.pool == null) throw new PoolNotCreatedException("Pool not be created");
         return this.pool.getPoolMonitorVo();
     }
 
     //return lock hold time on creation
     public long getElapsedTimeSinceCreationLock() throws SQLException {
-        if (this.pool == null) throw new PoolNotCreatedException("Connection pool not initialized");
+        if (this.pool == null) throw new PoolNotCreatedException("Pool not be created");
         return this.pool.getElapsedTimeSinceCreationLock();
     }
 
     //try this method when pool blocked on creation
     public void interruptThreadsOnCreationLock() throws SQLException {
-        if (this.pool == null) throw new PoolNotCreatedException("Connection pool not initialized");
+        if (this.pool == null) throw new PoolNotCreatedException("Pool not be created");
         this.pool.interruptThreadsOnCreationLock();
     }
 
     public void clear(boolean forceCloseUsing) throws SQLException {
-        if (this.pool == null) throw new PoolNotCreatedException("Connection pool not initialized");
+        if (this.pool == null) throw new PoolNotCreatedException("Pool not be created");
         this.pool.clear(forceCloseUsing);
     }
 
     public void clear(boolean forceCloseUsing, BeeDataSourceConfig config) throws SQLException {
-        if (this.pool == null) throw new PoolNotCreatedException("Connection pool not initialized");
-        if (config == null) throw new BeeDataSourceConfigException("Connection pool config can't be null");
+        if (this.pool == null) throw new PoolNotCreatedException("Pool not be created");
+        if (config == null) throw new BeeDataSourceConfigException("Pool configuration object can't be null");
         this.pool.clear(forceCloseUsing, config);
         config.copyTo(this);
         this.maxWaitNanos = MILLISECONDS.toNanos(config.getMaxWait());

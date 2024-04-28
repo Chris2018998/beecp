@@ -58,7 +58,7 @@ public interface BeeConnectionPool {
     void close();
 
     /**
-     * Get pool status whether closed
+     * Gets pool status whether in closed
      *
      * @return a boolean value of pool close status
      */
@@ -72,37 +72,38 @@ public interface BeeConnectionPool {
     void setPrintRuntimeLog(boolean indicator);
 
     /**
-     * Get pool monitor object contains pool runtime info,for example:pool state,idle count,using count
+     * Gets pool monitor object contains pool runtime info,for example:pool state,idle count,using count
      *
      * @return monitor vo
      */
     BeeConnectionPoolMonitorVo getPoolMonitorVo();
 
     /**
-     * Get lock hold time on connection creation in a thread.
+     * Gets lock hold time on connection creation in a thread.
      *
      * @return lock hold time on creation
      */
     long getElapsedTimeSinceCreationLock();
 
     /**
-     * Interrupts all threads on connection creation lock,include wait threads and lock owner.
+     * Interrupts all threads on connection creation lock,include wait threads and lock owner thread.
      */
     void interruptThreadsOnCreationLock();
 
     /**
-     * Close all connections and remove them from pool.
+     * Closes all connections and removes them from pool.
      *
      * @param forceCloseUsing is true,connections in using are closed directly;is false,they are closed when return to pool
      */
     void clear(boolean forceCloseUsing);
 
     /**
-     * Close all connections and remove them from pool,then try to do reinitialization on pool with a new configuration object.
+     * Closes all connections and removes them from pool,then try to do reinitialization on pool with a new configuration object.
      *
      * @param forceCloseUsing is true,connections in using are closed directly;is false,they are closed when return to pool
-     * @param config          is a new configuration object,if not null,pool reinitialize
-     * @throws SQLException if pool reinitialize failed
+     * @param config          is a configuration object for pool reinitialize
+     * @throws BeeDataSourceConfigException when config is null
+     * @throws SQLException                 when pool reinitialize failed
      */
     void clear(boolean forceCloseUsing, BeeDataSourceConfig config) throws SQLException;
 

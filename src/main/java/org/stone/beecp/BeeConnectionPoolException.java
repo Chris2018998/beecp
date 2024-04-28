@@ -12,7 +12,7 @@ package org.stone.beecp;
 import java.sql.SQLException;
 
 /**
- * A base exception when failure occurs in pool,for example: pool initialization,pool clearing
+ * A base exception thrown from pool operation methods.
  *
  * @author Chris Liao
  * @version 1.0

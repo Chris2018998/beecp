@@ -21,10 +21,10 @@ import java.sql.SQLException;
 public interface RawConnectionFactory {
 
     /**
-     * Creates a jdbc connection
+     * Creates a jdbc connection.
      *
      * @return a connection
-     * @throws SQLException when build failed(maybe invalid url,error username and password and so on)
+     * @throws SQLException when creates failed(maybe invalid url,error username and password and so on)
      */
     Connection create() throws SQLException;
 }

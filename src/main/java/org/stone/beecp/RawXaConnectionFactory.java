@@ -21,10 +21,10 @@ import java.sql.SQLException;
 public interface RawXaConnectionFactory {
 
     /**
-     * Creates a jdbc xa connection
+     * Creates a jdbc xa connection.
      *
      * @return a xa connection
-     * @throws SQLException when build failed(maybe invalid url,error username and password and so on)
+     * @throws SQLException when creates failed(maybe invalid url,error username and password and so on)
      */
     XAConnection create() throws SQLException;
 }
