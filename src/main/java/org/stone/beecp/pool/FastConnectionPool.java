@@ -549,7 +549,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                 //7:others
                 poolConfig.getSqlExceptionCodeList(),
                 poolConfig.getSqlExceptionStateList(),
-                poolConfig.getSqlExceptionPredication());
+                poolConfig.getSqlExceptionPredicate());
     }
 
     //***************************************************************************************************************//

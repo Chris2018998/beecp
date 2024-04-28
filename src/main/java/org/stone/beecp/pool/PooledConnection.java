@@ -9,7 +9,7 @@
  */
 package org.stone.beecp.pool;
 
-import org.stone.beecp.SQLExceptionPredication;
+import org.stone.beecp.SQLExceptionPredicate;
 import org.stone.beecp.pool.exception.ConnectionRecycleException;
 
 import javax.transaction.xa.XAResource;
@@ -49,7 +49,7 @@ final class PooledConnection implements Cloneable {
     private final boolean enableDefaultOnTransactionIsolation;
     private final List<Integer> sqlExceptionCodeList;
     private final List<String> sqlExceptionStateList;
-    private final SQLExceptionPredication predication;
+    private final SQLExceptionPredicate predicate;
 
     long creationTime;//milliseconds
     Connection rawConn;//maybe from XAConnection
@@ -92,7 +92,7 @@ final class PooledConnection implements Cloneable {
             //7:others
             List<Integer> sqlExceptionCodeList,
             List<String> sqlExceptionStateList,
-            SQLExceptionPredication predication) {
+            SQLExceptionPredicate predicate) {
 
         //1:defaultAutoCommit
         this.enableDefaultOnAutoCommit = enableDefaultOnAutoCommit;
@@ -120,7 +120,7 @@ final class PooledConnection implements Cloneable {
         //7:others
         this.sqlExceptionCodeList = sqlExceptionCodeList;
         this.sqlExceptionStateList = sqlExceptionStateList;
-        this.predication = predication;
+        this.predicate = predicate;
 
         this.pool = pool;
         this.curAutoCommit = defaultAutoCommit;
@@ -254,8 +254,8 @@ final class PooledConnection implements Cloneable {
         ProxyConnectionBase proxyInUsing = this.proxyInUsing;
         if (proxyInUsing == null) return;
 
-        if (predication != null) {
-            String msg = predication.check(e);
+        if (predicate != null) {
+            String msg = predicate.check(e);
             if (!isBlank(msg)) {
                 if (pool.isPrintRuntimeLog())
                     CommonLog.warn("BeeCP({})Connection has been broken because of eviction checking:({})", pool.getPoolName(), msg);
