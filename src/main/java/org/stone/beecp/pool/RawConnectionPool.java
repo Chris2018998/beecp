@@ -38,7 +38,7 @@ import static org.stone.tools.CommonUtil.isBlank;
 public final class RawConnectionPool implements BeeConnectionPool, BeeConnectionPoolJmxBean {
     private static final AtomicInteger poolNameIndex = new AtomicInteger(1);
     private static final FastConnectionPoolMonitorVo monitorVo = new FastConnectionPoolMonitorVo();
-
+    private final AtomicInteger poolState = new AtomicInteger(POOL_NEW);
     private String poolName = "";
     private String poolMode = "";
     private long defaultMaxWait;
@@ -47,7 +47,6 @@ public final class RawConnectionPool implements BeeConnectionPool, BeeConnection
     private boolean isRawXaConnFactory;
     private RawConnectionFactory rawConnFactory;
     private RawXaConnectionFactory rawXaConnFactory;
-    private AtomicInteger poolState = new AtomicInteger(POOL_NEW);
 
     /**
      * initialize pool with configuration

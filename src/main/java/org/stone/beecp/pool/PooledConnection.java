@@ -168,7 +168,7 @@ final class PooledConnection implements Cloneable {
     /**
      * remove connection from pool,method called by {@link ProxyConnectionBase#abort}
      */
-    final void removeSelf() {
+    void removeSelf() {
         pool.abandonOnReturn(this, DESC_RM_ABORT);
     }
 
@@ -177,7 +177,7 @@ final class PooledConnection implements Cloneable {
      *
      * @throws SQLException when error occurs during recycle
      */
-    final void recycleSelf() throws SQLException {
+    void recycleSelf() throws SQLException {
         try {
             this.proxyInUsing = null;
             this.resetRawConn();
@@ -195,7 +195,7 @@ final class PooledConnection implements Cloneable {
     /**
      * call back while remove pooledConnection from pool
      */
-    final void onBeforeRemove() {
+    void onBeforeRemove() {
         try {
             this.state = CON_CLOSED;
             this.resetRawConn();
@@ -210,7 +210,7 @@ final class PooledConnection implements Cloneable {
     //***************************************************************************************************************//
     //                                     3:statement cache maintenance                                             //                                                                                  //
     //***************************************************************************************************************//
-    final void registerStatement(ProxyStatementBase s) {
+    void registerStatement(ProxyStatementBase s) {
         if (this.openStmSize == this.openStatements.length) {//full
             ProxyStatementBase[] array = new ProxyStatementBase[this.openStmSize << 1];
             System.arraycopy(this.openStatements, 0, array, 0, this.openStmSize);
@@ -219,7 +219,7 @@ final class PooledConnection implements Cloneable {
         this.openStatements[this.openStmSize++] = s;
     }
 
-    final void unregisterStatement(ProxyStatementBase s) {
+    void unregisterStatement(ProxyStatementBase s) {
         for (int i = this.openStmSize - 1; i >= 0; i--) {
             if (s == this.openStatements[i]) {
                 int m = this.openStmSize - i - 1;
@@ -230,7 +230,7 @@ final class PooledConnection implements Cloneable {
         }
     }
 
-    final void clearStatement() {
+    void clearStatement() {
         for (int i = 0; i < this.openStmSize; i++) {
             ProxyStatementBase s = this.openStatements[i];
             if (s != null) {
@@ -245,7 +245,7 @@ final class PooledConnection implements Cloneable {
     //***************************************************************************************************************//
     //                                     4:other methods                                                           //                                                                                  //
     //***************************************************************************************************************//
-    final void updateAccessTime() {//for update,insert.select,delete and so on DML
+    void updateAccessTime() {//for update,insert.select,delete and so on DML
         this.commitDirtyInd = !this.curAutoCommit;
         this.lastAccessTime = System.currentTimeMillis();
     }
@@ -258,14 +258,14 @@ final class PooledConnection implements Cloneable {
             String msg = predicate.check(e);
             if (!isBlank(msg)) {
                 if (pool.isPrintRuntimeLog())
-                    CommonLog.warn("BeeCP({})Connection has been broken because of eviction checking:({})", pool.getPoolName(), msg);
+                    CommonLog.warn("BeeCP({})Connection has been broken because of predicate result({})", pool.getPoolName(), msg);
                 proxyInUsing.abort(null);//remove connection from pool and add re-try count for other borrowers
             }
         } else {
             int code = e.getErrorCode();
             if (code != 0 && sqlExceptionCodeList != null && sqlExceptionCodeList.contains(code)) {
                 if (pool.isPrintRuntimeLog())
-                    CommonLog.warn("BeeCP({})Connection has been broken because of ErrorCode({})", pool.getPoolName(), code);
+                    CommonLog.warn("BeeCP({})Connection has been broken because of error code({})", pool.getPoolName(), code);
                 proxyInUsing.abort(null);//remove connection from pool and add re-try count for other borrowers
                 return;
             }
@@ -273,7 +273,7 @@ final class PooledConnection implements Cloneable {
             String state = e.getSQLState();
             if (state != null && sqlExceptionStateList != null && sqlExceptionStateList.contains(state)) {
                 if (pool.isPrintRuntimeLog())
-                    CommonLog.warn("BeeCP({})Connection has been broken because of SQLSTATE({})", pool.getPoolName(), state);
+                    CommonLog.warn("BeeCP({})Connection has been broken because of SQL state({})", pool.getPoolName(), state);
                 proxyInUsing.abort(null);//remove connection from pool and add re-try count for other borrowers
             }
         }
@@ -282,11 +282,11 @@ final class PooledConnection implements Cloneable {
     //***************************************************************************************************************//
     //                                     5:dirty record or reset                                                   //                                                                                  //
     //***************************************************************************************************************//
-    final boolean supportNetworkTimeoutSet() {
+    boolean supportNetworkTimeoutSet() {
         return this.supportNetworkTimeoutInd;
     }
 
-    final void setResetInd(int i, boolean changed) {
+    void setResetInd(int i, boolean changed) {
         if (this.resetFlags[i] != changed) {
             this.resetFlags[i] = changed;
             this.resetCnt += changed ? 1 : -1;

@@ -556,12 +556,12 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     //                               2: Pooled connection borrow and release methods(8)                              //                                                                                  //
     //***************************************************************************************************************//
     //Method-2.1:borrows a connection from pool(return a resulted wrapper on connection)
-    public final Connection getConnection() throws SQLException {
+    public Connection getConnection() throws SQLException {
         return createProxyConnection(this.getPooledConnection());
     }
 
     //Method-2.2:borrows a XaConnection from pool(return a XA resulted wrapper on connection)
-    public final XAConnection getXAConnection() throws SQLException {
+    public XAConnection getXAConnection() throws SQLException {
         PooledConnection p = this.getPooledConnection();
         ProxyConnectionBase proxyConn = createProxyConnection(p);
         return new XaProxyConnection(proxyConn, this.isRawXaConnFactory ? new XaProxyResource(p.rawXaRes, proxyConn) : new XaResourceLocalImpl(proxyConn, p.defaultAutoCommit));
@@ -676,7 +676,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
      *
      * @param p released connection
      */
-    public final void recycle(PooledConnection p) {
+    public void recycle(PooledConnection p) {
         if (isCompeteMode) p.state = CON_IDLE;
         Iterator<Borrower> iterator = this.waitQueue.iterator();
 
@@ -714,7 +714,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
      *
      * @param p bad connection
      */
-    final void abandonOnReturn(PooledConnection p, String reason) {
+    void abandonOnReturn(PooledConnection p, String reason) {
         this.removePooledConn(p, reason);
         this.tryWakeupServantThread();
     }
@@ -734,11 +734,11 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
     }
 
-    public final int getStateCodeOnRelease() {
+    public int getStateCodeOnRelease() {
         return CON_IDLE;
     }
 
-    public final boolean tryCatch(PooledConnection p) {
+    public boolean tryCatch(PooledConnection p) {
         return p.state == CON_IDLE && ConStUpd.compareAndSet(p, CON_IDLE, CON_USING);
     }
 
@@ -1043,7 +1043,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     }
 
     //Method-5.12: pooledConnection valid test method by connection method 'isAlive'
-    public final boolean isAlive(final PooledConnection p) {
+    public boolean isAlive(final PooledConnection p) {
         try {
             if (p.rawConn.isValid(this.aliveTestTimeout)) {
                 p.lastAccessTime = System.currentTimeMillis();
@@ -1175,7 +1175,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             return CON_USING;
         }
 
-        public final boolean tryCatch(PooledConnection p) {
+        public boolean tryCatch(PooledConnection p) {
             return p.state == CON_USING;
         }
     }
@@ -1207,7 +1207,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
 
         //method must work in transaction and rollback final to avoid testing dirty data into db
-        public final boolean isAlive(PooledConnection p) {//
+        public boolean isAlive(PooledConnection p) {//
             Statement st = null;
             boolean changed = false;
             Connection rawConn = p.rawConn;

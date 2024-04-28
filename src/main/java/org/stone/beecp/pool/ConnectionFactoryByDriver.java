@@ -39,18 +39,18 @@ public final class ConnectionFactoryByDriver implements RawConnectionFactory, Co
     }
 
     //return a connection if link successful to db,otherwise,throws a failure exception
-    public final Connection create() throws SQLException {
+    public Connection create() throws SQLException {
         return this.driver.connect(this.url, this.properties);
     }
 
     //***************************************************************************************************************//
     //                                      Override methods from CommonDataSource                                   //
     //***************************************************************************************************************//
-    public final PrintWriter getLogWriter() {
+    public PrintWriter getLogWriter() {
         return DriverManager.getLogWriter();
     }
 
-    public final void setLogWriter(PrintWriter out) {
+    public void setLogWriter(PrintWriter out) {
         DriverManager.setLogWriter(out);
     }
 
@@ -58,7 +58,7 @@ public final class ConnectionFactoryByDriver implements RawConnectionFactory, Co
         return DriverManager.getLoginTimeout();
     }
 
-    public final void setLoginTimeout(int seconds) {
+    public void setLoginTimeout(int seconds) {
         DriverManager.setLoginTimeout(seconds);
     }
 

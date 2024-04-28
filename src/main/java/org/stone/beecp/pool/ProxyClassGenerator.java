@@ -407,7 +407,7 @@ final class ProxyClassGenerator {
     }
 
     private static boolean exitsSQLException(CtClass[] exceptionTypes) throws Exception {
-        if (exceptionTypes == null || exceptionTypes.length == 0) return false;
+        if (exceptionTypes == null) return false;
         for (CtClass exceptionClass : exceptionTypes) {
             if ("java.sql.SQLException".equals(exceptionClass.getName()))
                 return true;

@@ -52,11 +52,11 @@ public class ConnectionPoolStatics {
 
     //dummy impl on CommonDataSource
     public static final CommonDataSource Dummy_CommonDataSource = new CommonDataSource() {
-        public final PrintWriter getLogWriter() throws SQLException {
+        public PrintWriter getLogWriter() throws SQLException {
             throw new SQLFeatureNotSupportedException("Not supported");
         }
 
-        public final void setLogWriter(PrintWriter out) throws SQLException {
+        public void setLogWriter(PrintWriter out) throws SQLException {
             throw new SQLFeatureNotSupportedException("Not supported");
         }
 
@@ -64,7 +64,7 @@ public class ConnectionPoolStatics {
             throw new SQLFeatureNotSupportedException("Not supported");
         }
 
-        public final void setLoginTimeout(int seconds) throws SQLException {
+        public void setLoginTimeout(int seconds) throws SQLException {
             throw new SQLFeatureNotSupportedException("Not supported");
         }
 

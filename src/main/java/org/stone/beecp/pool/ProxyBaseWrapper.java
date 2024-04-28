@@ -33,6 +33,6 @@ abstract class ProxyBaseWrapper {
         if (clazz != null && clazz.isInstance(this))
             return clazz.cast(this);
         else
-            throw new SQLException("Wrapped object was not an instance of " + clazz);
+            throw new SQLException("The wrapper object was not an instance of " + clazz);
     }
 }

@@ -12,7 +12,7 @@ package org.stone.beecp.pool;
 import org.stone.beecp.BeeConnectionPoolMonitorVo;
 
 /**
- * Connection pool Monitor Vo
+ * Connection pool Monitor impl
  *
  * @author Chris Liao
  * @version 1.0
