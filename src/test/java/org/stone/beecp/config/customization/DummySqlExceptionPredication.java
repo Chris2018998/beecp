@@ -9,14 +9,14 @@
  */
 package org.stone.beecp.config.customization;
 
-import org.stone.beecp.SQLExceptionPredicate;
+import org.stone.beecp.BeeConnectionPredicate;
 
 import java.sql.SQLException;
 
-public class DummySqlExceptionPredication implements SQLExceptionPredicate {
+public class DummySqlExceptionPredication implements BeeConnectionPredicate {
 
     //return desc of eviction,if null or empty,not be evicted
-    public String check(SQLException e) {
+    public String evictTest(SQLException e) {
         return null;
     }
 }

@@ -11,9 +11,10 @@ package org.stone.beecp.config;
 
 import junit.framework.TestCase;
 import org.junit.Assert;
+import org.stone.beecp.BeeConnectionPredicate;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
-import org.stone.beecp.SQLExceptionPredicate;
+import org.stone.beecp.BeeConnectionPredicate;
 import org.stone.beecp.config.customization.DummySqlExceptionPredication;
 
 import java.util.List;
@@ -60,44 +61,44 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
     public void testOnPredicationSettingAndGetting() throws Exception {
         BeeDataSourceConfig config = ConfigFactory.createEmpty();
 
-        SQLExceptionPredicate predication = new DummySqlExceptionPredication();
-        config.setSqlExceptionPredicate(predication);
-        Assert.assertEquals(config.getSqlExceptionPredicate(), predication);
+        BeeConnectionPredicate predication = new DummySqlExceptionPredication();
+        config.setEvictPredicate(predication);
+        Assert.assertEquals(config.getEvictPredicate(), predication);
 
         Class predicationClass = DummySqlExceptionPredication.class;
-        config.setSqlExceptionPredicateClass(predicationClass);
-        Assert.assertEquals(config.getSqlExceptionPredicateClass(), predicationClass);
+        config.setEvictPredicateClass(predicationClass);
+        Assert.assertEquals(config.getEvictPredicateClass(), predicationClass);
 
         String predicationClassName = "org.stone.beecp.config.customization.DummySqlExceptionPredication";
-        config.setSqlExceptionPredicateClassName(predicationClassName);
-        Assert.assertEquals(config.getSqlExceptionPredicateClassName(), predicationClassName);
+        config.setEvictPredicateClassName(predicationClassName);
+        Assert.assertEquals(config.getEvictPredicateClassName(), predicationClassName);
     }
 
     public void testOnPredicationCreation() throws Exception {
-        SQLExceptionPredicate predication = new DummySqlExceptionPredication();
+        BeeConnectionPredicate predication = new DummySqlExceptionPredication();
         BeeDataSourceConfig config1 = ConfigFactory.createDefault();
-        config1.setSqlExceptionPredicate(predication);
+        config1.setEvictPredicate(predication);
         BeeDataSourceConfig checkConfig1 = config1.check();
-        Assert.assertEquals(checkConfig1.getSqlExceptionPredicate(), predication);
+        Assert.assertEquals(checkConfig1.getEvictPredicate(), predication);
 
         BeeDataSourceConfig config2 = ConfigFactory.createDefault();
         Class predicationClass = DummySqlExceptionPredication.class;
-        config2.setSqlExceptionPredicateClass(predicationClass);
-        Assert.assertEquals(config2.getSqlExceptionPredicateClass(), predicationClass);
+        config2.setEvictPredicateClass(predicationClass);
+        Assert.assertEquals(config2.getEvictPredicateClass(), predicationClass);
         BeeDataSourceConfig checkConfig2 = config2.check();
-        Assert.assertNotNull(checkConfig2.getSqlExceptionPredicate());
+        Assert.assertNotNull(checkConfig2.getEvictPredicate());
 
         BeeDataSourceConfig config3 = ConfigFactory.createDefault();
         String predicationClassName = "org.stone.beecp.config.customization.DummySqlExceptionPredication";
-        config3.setSqlExceptionPredicateClassName(predicationClassName);
-        Assert.assertEquals(config3.getSqlExceptionPredicateClassName(), predicationClassName);
+        config3.setEvictPredicateClassName(predicationClassName);
+        Assert.assertEquals(config3.getEvictPredicateClassName(), predicationClassName);
         BeeDataSourceConfig checkConfig3 = config3.check();
-        Assert.assertNotNull(checkConfig3.getSqlExceptionPredicate());
+        Assert.assertNotNull(checkConfig3.getEvictPredicate());
 
 
         //failure test on creation
         BeeDataSourceConfig config4 = ConfigFactory.createDefault();
-        config4.setSqlExceptionPredicateClass(String.class);//invalid exception predication class
+        config4.setEvictPredicateClass(String.class);//invalid exception predication class
         try {
             config4.check();
         } catch (BeeDataSourceConfigException e) {
@@ -106,7 +107,7 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
         }
 
         BeeDataSourceConfig config5 = ConfigFactory.createDefault();
-        config5.setSqlExceptionPredicateClassName("String");
+        config5.setEvictPredicateClassName("String");
         try {
             config5.check();
         } catch (BeeDataSourceConfigException e) {

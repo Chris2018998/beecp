@@ -131,7 +131,7 @@ public class Case16_ConfigLoadFromFileTest extends TestCase {
         Assert.assertEquals(config.getTimerCheckInterval(), 30000);
         Assert.assertTrue(config.isForceCloseUsingOnClear());
         Assert.assertEquals(config.getDelayTimeForNextClear(), 3000);
-        Assert.assertEquals(config.getSqlExceptionPredicateClassName(), "com.myProject.TestPredication");
+        Assert.assertEquals(config.getEvictPredicateClassName(), "com.myProject.TestPredication");
 
         List<Integer> sqlExceptionCodeList = (List<Integer>) TestUtil.getFieldValue(config, "sqlExceptionCodeList");
         List<String> sqlExceptionStateList = (List<String>) TestUtil.getFieldValue(config, "sqlExceptionStateList");
