@@ -9,7 +9,7 @@
  */
 package org.stone.beecp.pool;
 
-import org.stone.beecp.SQLExceptionPredicate;
+import org.stone.beecp.BeeConnectionPredicate;
 import org.stone.beecp.pool.exception.ConnectionRecycleException;
 
 import javax.transaction.xa.XAResource;
@@ -49,7 +49,7 @@ final class PooledConnection implements Cloneable {
     private final boolean enableDefaultOnTransactionIsolation;
     private final List<Integer> sqlExceptionCodeList;
     private final List<String> sqlExceptionStateList;
-    private final SQLExceptionPredicate predicate;
+    private final BeeConnectionPredicate predicate;
 
     long creationTime;//milliseconds
     Connection rawConn;//maybe from XAConnection
@@ -92,7 +92,7 @@ final class PooledConnection implements Cloneable {
             //7:others
             List<Integer> sqlExceptionCodeList,
             List<String> sqlExceptionStateList,
-            SQLExceptionPredicate predicate) {
+            BeeConnectionPredicate predicate) {
 
         //1:defaultAutoCommit
         this.enableDefaultOnAutoCommit = enableDefaultOnAutoCommit;
@@ -255,7 +255,7 @@ final class PooledConnection implements Cloneable {
         if (proxyInUsing == null) return;
 
         if (predicate != null) {
-            String msg = predicate.check(e);
+            String msg = predicate.evictTest(e);
             if (!isBlank(msg)) {
                 if (pool.isPrintRuntimeLog())
                     CommonLog.warn("BeeCP({})Connection has been broken because of predicate result({})", pool.getPoolName(), msg);
