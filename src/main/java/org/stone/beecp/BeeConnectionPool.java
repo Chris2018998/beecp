@@ -30,8 +30,8 @@ public interface BeeConnectionPool {
     void init(BeeDataSourceConfig config) throws SQLException;
 
     /**
-     * Borrows a connection from pool,if no idle,borrower thread wait in pool until get one or timeout,the max wait
-     * time(milliseconds) is a configurable item,refer to {@link BeeDataSourceConfig#getMaxWait} method.
+     * Borrows a connection from pool,if failed,borrower thread blocked in pool until gets a released one from other
+     * borrower or waits timeout.
      *
      * @return a borrowed connection
      * @throws SQLException when failed to create a new connection
@@ -41,8 +41,8 @@ public interface BeeConnectionPool {
     Connection getConnection() throws SQLException;
 
     /**
-     * Borrows a XA connection from pool,if no idle,borrower thread wait in pool until get one or timeout,the max wait
-     * time(milliseconds) is a configurable item,refer to {@link BeeDataSourceConfig#getMaxWait} method.
+     * Borrows a connection from pool,if failed,borrower thread blocked in pool until gets a released one from other
+     * borrower or waits timeout.
      *
      * @return a borrowed connection
      * @throws SQLException when failed to create a new connection
@@ -58,7 +58,7 @@ public interface BeeConnectionPool {
     void close();
 
     /**
-     * Gets pool status whether in closed
+     * Gets pool status whether in closed.
      *
      * @return a boolean value of pool close status
      */
@@ -67,7 +67,7 @@ public interface BeeConnectionPool {
     /**
      * A switch method on runtime logs print.
      *
-     * @param indicator is true,pool prints runtime logs,when false,not print
+     * @param indicator is true,pool prints runtime logs；false,not print
      */
     void setPrintRuntimeLog(boolean indicator);
 
@@ -79,14 +79,14 @@ public interface BeeConnectionPool {
     BeeConnectionPoolMonitorVo getPoolMonitorVo();
 
     /**
-     * Gets lock hold time on connection creation in a thread.
+     * Gets owner hold time(milliseconds) on pool lock.
      *
      * @return lock hold time on creation
      */
     long getElapsedTimeSinceCreationLock();
 
     /**
-     * Interrupts all threads on connection creation lock,include wait threads and lock owner thread.
+     * Interrupts all threads on pool lock,include wait threads and lock owner thread.
      */
     void interruptThreadsOnCreationLock();
 

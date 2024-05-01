@@ -65,7 +65,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private int maxActive = Math.min(Math.max(10, NCPU), 50);
     //max permits size of pool semaphore
     private int borrowSemaphoreSize = Math.min(this.maxActive / 2, NCPU);
-    //milliseconds:max wait time in pool to get connections for borrowers,default is 8000 milliseconds(8 seconds)
+    //milliseconds:max wait time in pool to get connections,default is 8000 milliseconds(8 seconds)
     private long maxWait = SECONDS.toMillis(8);
 
     //seconds: max wait time effects inside a driver or a datasource to establish raw connections.
