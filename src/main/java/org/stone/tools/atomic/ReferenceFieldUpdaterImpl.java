@@ -42,23 +42,23 @@ public final class ReferenceFieldUpdaterImpl<T, V> extends AtomicReferenceFieldU
         }
     }
 
-    public final boolean compareAndSet(T bean, V expect, V update) {
+    public boolean compareAndSet(T bean, V expect, V update) {
         return unsafe.compareAndSwapObject(bean, this.offset, expect, update);
     }
 
-    public final boolean weakCompareAndSet(T bean, V expect, V update) {
+    public boolean weakCompareAndSet(T bean, V expect, V update) {
         return unsafe.compareAndSwapObject(bean, this.offset, expect, update);
     }
 
-    public final void set(T bean, V newValue) {
+    public void set(T bean, V newValue) {
         unsafe.putObjectVolatile(bean, this.offset, newValue);
     }
 
-    public final void lazySet(T bean, V newValue) {
+    public void lazySet(T bean, V newValue) {
         unsafe.putOrderedObject(bean, this.offset, newValue);
     }
 
-    public final V get(T bean) {
+    public V get(T bean) {
         return fieldType.cast(unsafe.getObjectVolatile(bean, this.offset));
     }
 }

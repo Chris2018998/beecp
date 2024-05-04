@@ -40,23 +40,23 @@ public final class IntegerFieldUpdaterImpl<T> extends AtomicIntegerFieldUpdater<
         }
     }
 
-    public final boolean compareAndSet(T bean, int expect, int update) {
+    public boolean compareAndSet(T bean, int expect, int update) {
         return UA.compareAndSwapInt(bean, this.offset, expect, update);
     }
 
-    public final boolean weakCompareAndSet(T bean, int expect, int update) {
+    public boolean weakCompareAndSet(T bean, int expect, int update) {
         return UA.compareAndSwapInt(bean, this.offset, expect, update);
     }
 
-    public final void set(T bean, int newValue) {
+    public void set(T bean, int newValue) {
         UA.putIntVolatile(bean, this.offset, newValue);
     }
 
-    public final void lazySet(T bean, int newValue) {
+    public void lazySet(T bean, int newValue) {
         UA.putOrderedInt(bean, this.offset, newValue);
     }
 
-    public final int get(T bean) {
+    public int get(T bean) {
         return UA.getIntVolatile(bean, this.offset);
     }
 

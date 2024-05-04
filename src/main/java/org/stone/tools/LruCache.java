@@ -19,7 +19,7 @@ import java.util.Map;
  * @version 1.0
  */
 public class LruCache<K, V> extends LinkedHashMap<K, V> {
-    private int maxSize;
+    private final int maxSize;
 
     public LruCache(int maxSize) {
         super(maxSize, 0.75F, true);
