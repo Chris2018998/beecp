@@ -24,9 +24,9 @@ import java.util.logging.Logger;
  * @version 1.0
  */
 public final class ConnectionFactoryByDriver implements RawConnectionFactory, CommonDataSource {
-    //Jdbc url to db
+    //Jdbc url
     private final String url;
-    //creator of raw connections
+    //jdbc driver build connections to database
     private final Driver driver;
     //extra properties to link db
     private final Properties properties;
