@@ -101,7 +101,7 @@ public class ConnectionCreateTest extends TestCase {
 
             con = pool.getConnection();
         } catch (SQLException e) {
-            if (e instanceof ConnectionCreateException && TestUtil.containsMessage(e, "Timeout at acquiring lock")) {
+            if (e instanceof ConnectionCreateException && TestUtil.containsMessage(e, "Wait timeout on pool lock acquisition")) {
                 thread2.interrupt();
                 thread1.interrupt();
             } else {
@@ -200,7 +200,7 @@ public class ConnectionCreateTest extends TestCase {
 
 
     static class PoolMockThreadOnCreateLock extends Thread {
-        private FastConnectionPool pool;
+        private final FastConnectionPool pool;
 
         PoolMockThreadOnCreateLock(FastConnectionPool pool) {
             this.pool = pool;

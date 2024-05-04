@@ -69,7 +69,7 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public long getLong(int columnIndex) {
-        return (long) returnNumberOne();
+        return returnNumberOne();
     }
 
     public float getFloat(int columnIndex) {
@@ -77,7 +77,7 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public double getDouble(int columnIndex) {
-        return (double) returnNumberOne();
+        return returnNumberOne();
     }
 
     public BigDecimal getBigDecimal(int columnIndex, int scale) {
@@ -133,7 +133,7 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public long getLong(String columnLabel) {
-        return (long) returnNumberOne();
+        return returnNumberOne();
     }
 
     public float getFloat(String columnLabel) {
@@ -141,7 +141,7 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public double getDouble(String columnLabel) {
-        return (double) returnNumberOne();
+        return returnNumberOne();
     }
 
     public BigDecimal getBigDecimal(String columnLabel, int scale) {

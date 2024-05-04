@@ -12,8 +12,8 @@ import java.sql.Connection;
 import java.util.concurrent.CyclicBarrier;
 
 public class VisitThread extends Thread {
-    private BeeDataSource ds;
-    private CyclicBarrier barrier;
+    private final BeeDataSource ds;
+    private final CyclicBarrier barrier;
 
     VisitThread(BeeDataSource ds, CyclicBarrier barrier) {
         this.ds = ds;

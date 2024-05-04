@@ -57,7 +57,7 @@ public class DsReadLockTimeoutTest extends TestCase {
     }
 
     static class MockThreadToHoldWriteLock extends Thread {
-        private BeeDataSource ds;
+        private final BeeDataSource ds;
 
         MockThreadToHoldWriteLock(BeeDataSource ds) {
             this.ds = ds;

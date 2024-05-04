@@ -7,9 +7,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class CountNullConnectionFactory implements RawConnectionFactory {
-    private int maxCount;
+    private final int maxCount;
+    private final MockDriver driver = new MockDriver();
     private int createdCount;
-    private MockDriver driver = new MockDriver();
 
     public CountNullConnectionFactory(int maxCount) {
         this.maxCount = maxCount;
