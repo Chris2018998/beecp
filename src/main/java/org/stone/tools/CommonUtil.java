@@ -9,6 +9,8 @@
  */
 package org.stone.tools;
 
+import java.util.Objects;
+
 /**
  * common util
  *
@@ -26,7 +28,7 @@ public class CommonUtil {
     }
 
     public static boolean objectEquals(Object a, Object b) {
-        return a == b || a != null && a.equals(b);
+        return Objects.equals(a, b);
     }
 
     public static boolean isBlank(String str) {
@@ -36,6 +38,15 @@ public class CommonUtil {
                 return false;
         }
         return true;
+    }
+
+    public static boolean isNotBlank(String str) {
+        if (str == null) return false;
+        for (int i = 0, l = str.length(); i < l; ++i) {
+            if (!Character.isWhitespace((int) str.charAt(i)))
+                return true;
+        }
+        return false;
     }
 
     //xor
