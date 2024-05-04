@@ -38,7 +38,7 @@ public class TestUtil {
 
     public static void assertError(String message, Object expect, Object current) {
         if (!objectEquals(expect, current))
-            throw new AssertionError(String.format(message, String.valueOf(expect), String.valueOf(current)));
+            throw new AssertionError(String.format(message, expect, current));
     }
 
     public static boolean containsMessage(Throwable e, String msg) {

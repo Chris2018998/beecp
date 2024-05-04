@@ -14,8 +14,8 @@ import ch.qos.logback.core.ConsoleAppender;
 
 //collect stone log messages
 public class StoneLogAppender extends ConsoleAppender<LoggingEvent> {
+    private final StringBuilder messageBuf = new StringBuilder();
     private boolean collectInd;
-    private StringBuilder messageBuf = new StringBuilder();
 
     public void beginCollectStoneLog() {
         this.collectInd = true;

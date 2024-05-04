@@ -62,14 +62,13 @@ public class StoneTestRunner {
     }
 
     private static void printTestInfo(String moduleName) {
-        StringBuffer buf = new StringBuffer(100);
-        buf.append("********************************************************************************\n");
-        buf.append("*                                                                               *\n");
-        buf.append("*                             Test case(" + moduleName + ")                                  *\n");
-        buf.append("*                                                                               *\n");
-        buf.append("*                                                     Author:Chris2018998       *\n");
-        buf.append("*                                                     All rights reserved       *\n");
-        buf.append("********************************************************************************\n");
+        String buf = "********************************************************************************\n" +
+                "*                                                                               *\n" +
+                "*                             Test case(" + moduleName + ")                                  *\n" +
+                "*                                                                               *\n" +
+                "*                                                     Author:Chris2018998       *\n" +
+                "*                                                     All rights reserved       *\n" +
+                "********************************************************************************\n";
         System.out.print(buf);
     }
 
