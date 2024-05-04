@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.stone.beecp.pool.ConnectionPoolStatics.*;
-import static org.stone.tools.CommonUtil.isBlank;
+import static org.stone.tools.CommonUtil.isNotBlank;
 
 /**
  * Pooled Connection
@@ -106,12 +106,12 @@ final class PooledConnection implements Cloneable {
         //4:defaultCatalog
         this.enableDefaultOnCatalog = enableDefaultOnCatalog;
         this.defaultCatalog = defaultCatalog;
-        this.defaultCatalogIsNotBlank = !isBlank(defaultCatalog);
+        this.defaultCatalogIsNotBlank = isNotBlank(defaultCatalog);
         this.forceDirtyOnCatalogAfterSet = forceDirtyOnCatalogAfterSet;
         //5:defaultSchema
         this.enableDefaultOnSchema = enableDefaultOnSchema;
         this.defaultSchema = defaultSchema;
-        this.defaultSchemaIsNotBlank = !isBlank(defaultSchema);
+        this.defaultSchemaIsNotBlank = isNotBlank(defaultSchema);
         this.forceDirtyOnSchemaAfterSet = forceDirtyOnSchemaAfterSet;
         //6:defaultNetworkTimeout
         this.supportNetworkTimeoutInd = supportNetworkTimeoutInd;
@@ -256,7 +256,7 @@ final class PooledConnection implements Cloneable {
 
         if (predicate != null) {
             String msg = predicate.evictTest(e);
-            if (!isBlank(msg)) {
+            if (isNotBlank(msg)) {
                 if (pool.isPrintRuntimeLog())
                     CommonLog.warn("BeeCP({})Connection has been broken because of predicate result({})", pool.getPoolName(), msg);
                 proxyInUsing.abort(null);//remove connection from pool and add re-try count for other borrowers

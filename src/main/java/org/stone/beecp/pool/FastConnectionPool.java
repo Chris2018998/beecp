@@ -36,8 +36,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.locks.LockSupport;
 
 import static org.stone.beecp.pool.ConnectionPoolStatics.*;
-import static org.stone.tools.CommonUtil.isBlank;
-import static org.stone.tools.CommonUtil.spinForTimeoutThreshold;
+import static org.stone.tools.CommonUtil.*;
 
 /**
  * JDBC Connection Pool Implementation
@@ -437,7 +436,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                         Log.warn("BeeCP({})failed to get catalog on first connection", this.poolName, e);
                 }
             }
-            if (!isBlank(defaultCatalog)) {
+            if (isNotBlank(defaultCatalog)) {
                 try {
                     rawCon.setCatalog(defaultCatalog);//default setting test
                 } catch (Throwable e) {
@@ -459,7 +458,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                         Log.warn("BeeCP({})failed to get schema on first connection", this.poolName, e);
                 }
             }
-            if (!isBlank(defaultSchema)) {
+            if (isNotBlank(defaultSchema)) {
                 try {
                     rawCon.setSchema(defaultSchema);//default setting test
                 } catch (Throwable e) {

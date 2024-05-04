@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.stone.beecp.pool.ConnectionPoolStatics.*;
-import static org.stone.tools.CommonUtil.isBlank;
+import static org.stone.tools.CommonUtil.isNotBlank;
 
 /**
  * JDBC Connection Pool Implementation,which
@@ -57,7 +57,7 @@ public final class RawConnectionPool implements BeeConnectionPool, BeeConnection
         poolConfig = config;
         defaultMaxWait = MILLISECONDS.toNanos(poolConfig.getMaxWait());
         borrowSemaphore = new Semaphore(poolConfig.getBorrowSemaphoreSize(), poolConfig.isFairMode());
-        poolName = !isBlank(config.getPoolName()) ? config.getPoolName() : "RawPool-" + poolNameIndex.getAndIncrement();
+        poolName = isNotBlank(config.getPoolName()) ? config.getPoolName() : "RawPool-" + poolNameIndex.getAndIncrement();
 
         if (poolConfig.isFairMode()) {
             poolMode = "fair";

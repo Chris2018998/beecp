@@ -19,7 +19,7 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Logger;
 
-import static org.stone.tools.CommonUtil.isBlank;
+import static org.stone.tools.CommonUtil.isNotBlank;
 
 /**
  * XaConnection Factory implementation by XADataSource
@@ -42,7 +42,7 @@ public class XaConnectionFactoryByDriverDs implements RawXaConnectionFactory, Co
         this.dataSource = dataSource;
         this.username = username;
         this.password = password;
-        useUsername = !isBlank(username);
+        useUsername = isNotBlank(username);
     }
 
     //create one connection

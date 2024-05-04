@@ -87,7 +87,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private int aliveTestTimeout = 3;
     //milliseconds: a gap time value from last activity time to borrowed time point,needn't do test on connections,default is 500 milliseconds
     private long aliveAssumeTime = 500L;
-    //milliseconds: interval time to scan idle connections or leak connections,default is 18000 milliseconds(3 minutes)
+    //milliseconds: interval time to scan idle connections or long time hold connections,default is 18000 milliseconds(3 minutes)
     private long timerCheckInterval = MINUTES.toMillis(3);
     //indicator on close using connections directly while pool clear,default is false
     private boolean forceCloseUsingOnClear;
@@ -98,15 +98,15 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //error state list check on SQLState of thrown sql exceptions,if matched,connections evicted from pool,@see field SQLState of SQLException.class
     private List<String> sqlExceptionStateList;
 
-    //an initial value assigned to property catalog of new connections,@see Connection.setCatalog(String)
+    //an initial value assigned to property catalog of new connections,refer to method{@code Connection.setCatalog(String)}
     private String defaultCatalog;
-    //an initial value assigned to property schema of new connections,@see Connection.setSchema(String)
+    //an initial value assigned to property schema of new connections,refer to method{@code Connection.setSchema(String)}
     private String defaultSchema;
-    //an initial value assigned to property readOnly of new connections,@see Connection.setReadOnly(boolean)
+    //an initial value assigned to property readOnly of new connections,refer to method{@code Connection.setReadOnly(boolean)}
     private Boolean defaultReadOnly;
-    //an initial value assigned to property autoCommit of new connections,@see Connection.setAutoCommit(boolean)
+    //an initial value assigned to property autoCommit of new connections,refer to method{@code Connection.setAutoCommit(boolean)}
     private Boolean defaultAutoCommit;
-    //an initial value assigned to property transactionIsolation of new connections,@see Connection.setTransactionIsolation(int)
+    //an initial value assigned to property transactionIsolation of new connections,refer to method{@code Connection.setTransactionIsolation(int)}
     private Integer defaultTransactionIsolationCode;
     //transaction isolation name,which can get a mapping code as initial value of property transactionIsolation
     private String defaultTransactionIsolationName;
@@ -347,7 +347,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setAliveTestSql(String aliveTestSql) {
-        if (!isBlank(aliveTestSql)) this.aliveTestSql = trimString(aliveTestSql);
+        if (isNotBlank(aliveTestSql)) this.aliveTestSql = trimString(aliveTestSql);
     }
 
     public int getAliveTestTimeout() {
@@ -421,7 +421,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setPoolImplementClassName(String poolImplementClassName) {
-        if (!isBlank(poolImplementClassName)) this.poolImplementClassName = trimString(poolImplementClassName);
+        if (isNotBlank(poolImplementClassName)) this.poolImplementClassName = trimString(poolImplementClassName);
     }
 
     public boolean isEnableJmx() {
@@ -610,7 +610,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void setThreadFactoryClassName(String threadFactoryClassName) {
-        if (!isBlank(threadFactoryClassName)) this.threadFactoryClassName = trimString(threadFactoryClassName);
+        if (isNotBlank(threadFactoryClassName)) this.threadFactoryClassName = trimString(threadFactoryClassName);
     }
 
     public BeeConnectionPoolThreadFactory getThreadFactory() {
@@ -694,11 +694,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void addConnectProperty(String key, Object value) {
-        if (!isBlank(key) && value != null) this.connectProperties.put(key, value);
+        if (isNotBlank(key) && value != null) this.connectProperties.put(key, value);
     }
 
     public void addConnectProperty(String connectPropertyText) {
-        if (!isBlank(connectPropertyText)) {
+        if (isNotBlank(connectPropertyText)) {
             for (String attribute : connectPropertyText.split("&")) {
                 String[] pair = attribute.split("=");
                 if (pair.length == 2) {
@@ -718,7 +718,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //****************************************************************************************************************//
     public void loadFromPropertiesFile(String filename) {
         if (isBlank(filename))
-            throw new IllegalArgumentException("Configuration properties file name can't be null or empty");
+            throw new IllegalArgumentException("Data source configuration file name can't be null or empty");
+        if (!filename.toLowerCase().endsWith(".properties"))
+            throw new IllegalArgumentException("Data source configuration file name file must end with '.properties'");
 
         File file = new File(filename);
         if (file.exists()) {
@@ -727,6 +729,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             Class selfClass = BeeDataSourceConfig.class;
             InputStream propertiesStream = selfClass.getResourceAsStream(filename);
             if (propertiesStream == null) propertiesStream = selfClass.getClassLoader().getResourceAsStream(filename);
+            if (propertiesStream == null) throw new IllegalArgumentException("Not found file:" + filename);
 
             Properties prop = new Properties();
             try {
@@ -795,7 +798,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             //3:try to find 'connectProperties' config value and put to ds config object
             this.addConnectProperty(getPropertyValue(configProperties, CONFIG_CONNECT_PROP));
             String connectPropertiesSize = getPropertyValue(configProperties, CONFIG_CONNECT_PROP_SIZE);
-            if (!isBlank(connectPropertiesSize)) {
+            if (isNotBlank(connectPropertiesSize)) {
                 int size = Integer.parseInt(connectPropertiesSize.trim());
                 for (int i = 1; i <= size; i++)//properties index begin with 1
                     this.addConnectProperty(getPropertyValue(configProperties, CONFIG_CONNECT_PROP_KEY_PREFIX + i));
@@ -804,7 +807,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             //4:try to load sql exception fatal code and fatal state
             String sqlExceptionCode = getPropertyValue(configProperties, CONFIG_SQL_EXCEPTION_CODE);
             String sqlExceptionState = getPropertyValue(configProperties, CONFIG_SQL_EXCEPTION_STATE);
-            if (!isBlank(sqlExceptionCode)) {
+            if (isNotBlank(sqlExceptionCode)) {
                 for (String code : sqlExceptionCode.trim().split(",")) {
                     try {
                         this.addSqlExceptionCode(Integer.parseInt(code));
@@ -814,7 +817,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                 }
             }
 
-            if (!isBlank(sqlExceptionState)) {
+            if (isNotBlank(sqlExceptionState)) {
                 for (String state : sqlExceptionState.trim().split(",")) {
                     this.addSqlExceptionState(state);
                 }
@@ -822,7 +825,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
             //5:try to load exclusion list on config print
             String exclusionListText = getPropertyValue(configProperties, CONFIG_CONFIG_PRINT_EXCLUSION_LIST);
-            if (!isBlank(exclusionListText)) {
+            if (isNotBlank(exclusionListText)) {
                 this.clearAllConfigPrintExclusion();//remove existed exclusion
                 for (String exclusion : exclusionListText.trim().split(",")) {
                     this.addConfigPrintExclusion(exclusion);
@@ -852,7 +855,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
         Object connectionFactory = createConnectionFactory();
         BeeConnectionPoolThreadFactory threadFactory = this.createThreadFactory();
-        BeeConnectionPredicate predicate = this.createSQLExceptionPredicate();
+        BeeConnectionPredicate predicate = this.createConnectionEvictPredicate();
 
         BeeDataSourceConfig checkedConfig = new BeeDataSourceConfig();
         copyTo(checkedConfig);
@@ -877,7 +880,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
                 fieldName = field.getName();
                 if ("configPrintExclusionList".equals(fieldName)) {//copy 'exclusionConfigPrintList'
-                    config.configPrintExclusionList = new ArrayList<>(configPrintExclusionList);//support empty copy
+                    config.configPrintExclusionList = new ArrayList<>(configPrintExclusionList);//support copy on an empty list
 
                 } else if ("connectProperties".equals(fieldName)) {//copy 'connectProperties'
                     for (Map.Entry<String, Object> entry : this.connectProperties.entrySet())
@@ -902,7 +905,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         if (jdbcLinkInfoDecoder != null) return this.jdbcLinkInfoDecoder;
 
         //step2: create link info decoder
-        if (jdbcLinkInfoDecoderClass != null || !isBlank(jdbcLinkInfoDecoderClassName)) {
+        if (jdbcLinkInfoDecoderClass != null || isNotBlank(jdbcLinkInfoDecoderClassName)) {
             Class<?> decoderClass = null;
             try {
                 decoderClass = jdbcLinkInfoDecoderClass != null ? jdbcLinkInfoDecoderClass : Class.forName(jdbcLinkInfoDecoderClassName);
@@ -924,18 +927,17 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         if (this.connectionFactory != null) return this.connectionFactory;
 
         //step2:create connection factory with driver
+        Properties jdbcLinkInfoProperties = getJdbcLinkInfoProperties();
         BeeJdbcLinkInfoDecoder jdbcLinkInfoDecoder = this.createJdbcLinkInfoDecoder();
         if (this.connectionFactoryClass == null && isBlank(this.connectionFactoryClassName)) {
             //step2.1: prepare jdbc url
-            String url = this.jdbcUrl;//url must not be null
-            if (isBlank(url)) url = System.getProperty("beecp.url", null);
-            if (isBlank(url)) url = System.getProperty("beecp.jdbcUrl", null);
+            String url = jdbcLinkInfoProperties.getProperty("url");
             if (isBlank(url)) throw new BeeDataSourceConfigException("jdbcUrl can't be null");
             if (jdbcLinkInfoDecoder != null) url = jdbcLinkInfoDecoder.decodeUrl(url);//decode url
 
-            //step2.2: try to create a driver or find out a matched driver
+            //step2.2: find a matched driver
             Driver driver;
-            if (!isBlank(this.driverClassName)) {
+            if (isNotBlank(this.driverClassName)) {
                 driver = loadDriver(this.driverClassName);
                 if (!driver.acceptsURL(url))
                     throw new BeeDataSourceConfigException("jdbcUrl(" + url + ")can not match configured driver[" + driverClassName + "]");
@@ -943,105 +945,84 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                 driver = DriverManager.getDriver(url);//try to get a matched driver with url,if not found,a SQLException will be thrown from driverManager
             }
 
-            //step2.3: create a new jdbc connecting properties object and set default value from local properties
-            Properties configProperties = new Properties();
-            configProperties.putAll(this.connectProperties);//copy local properties
+            //step2.3: get username and password
+            String username = jdbcLinkInfoProperties.getProperty("user");
+            String password = jdbcLinkInfoProperties.getProperty("password");
 
-            //step2.4: set username and password
-            String userName = configProperties.getProperty("user");//read from connectProperties firstly
-            String password = configProperties.getProperty("password");//read from connectProperties firstly
-            if (isBlank(userName)) {
-                userName = this.username;//read value from local member field
-                if (isBlank(userName))
-                    userName = System.getProperty("beecp.user", null);//support reading from system.properties
-                if (!isBlank(userName)) configProperties.setProperty("user", userName);
-            }
-            if (isBlank(password)) {
-                password = this.password;//read value from local member field
-                if (isBlank(password))
-                    password = System.getProperty("beecp.password", null);//support reading from system.properties
-                if (!isBlank(password)) configProperties.setProperty("password", password);
+            //step2.4: decode username and password
+            if (jdbcLinkInfoDecoder != null) {
+                if (isNotBlank(username))
+                    username = jdbcLinkInfoDecoder.decodeUsername(username);
+                if (isNotBlank(password))
+                    password = jdbcLinkInfoDecoder.decodePassword(password);
             }
 
-            //step2.5: decode user name and password
-            if (jdbcLinkInfoDecoder != null) {//execute the decoder and reset username and password
-                if (!isBlank(userName))
-                    configProperties.setProperty("user", jdbcLinkInfoDecoder.decodeUsername(userName));
-                if (!isBlank(password))
-                    configProperties.setProperty("password", jdbcLinkInfoDecoder.decodePassword(password));
+            //step2.5: make a copy from connect properties
+            Properties localConnectProperties = new Properties();
+            localConnectProperties.putAll(this.connectProperties);
+
+            //2.6: set username and password to local connectProperties
+            if (isNotBlank(username)) {
+                localConnectProperties.setProperty("user", username);
+                if (isNotBlank(password)) localConnectProperties.setProperty("password", password);
             }
 
-            //step2.6: create a new connection factory with a driver and jdbc link info
-            return new ConnectionFactoryByDriver(url, driver, configProperties);
+            //step2.7: create a new connection factory with a driver and jdbc link info properties
+            return new ConnectionFactoryByDriver(url, driver, localConnectProperties);
         } else {//step3:create connection factory with connection factory class
             Class<?> conFactClass = null;
             try {
-                //1:load connection factory class with class name
+                //3.1: load connection factory class with class name
                 conFactClass = this.connectionFactoryClass != null ? this.connectionFactoryClass : Class.forName(this.connectionFactoryClassName);
 
-                //2:check connection factory class
+                //3.2: check connection factory class
                 Class[] parentClasses = {RawConnectionFactory.class, RawXaConnectionFactory.class, DataSource.class, XADataSource.class};
 
-                //3:create connection factory instance
+                //3.3: create connection factory instance
                 Object factory = createClassInstance(conFactClass, parentClasses, "connection factory");
 
-                //4:copy properties to value map(inject to dataSource or factory)
-                Map<String, Object> propertyValueMap = new HashMap<String, Object>(this.connectProperties);//copy
+                //3.4: create a copy on local connectProperties
+                Map<String, Object> localConnectProperties = new HashMap<String, Object>(this.connectProperties);//copy
 
-                //5: try to find out jdbc url
-                String url = (String) propertyValueMap.get("url");//read from connectProperties firstly
-                if (isBlank(url)) url = (String) propertyValueMap.get("URL");
-                if (isBlank(url)) url = (String) propertyValueMap.get("jdbcUrl");
-                if (isBlank(url)) url = this.jdbcUrl;
-                if (isBlank(url)) url = System.getProperty("beecp.url", null);
-                if (isBlank(url)) url = System.getProperty("beecp.URL", null);
-                if (isBlank(url)) url = System.getProperty("beecp.jdbcUrl", null);
+                //3.5: set jdbc link info
+                String url = jdbcLinkInfoProperties.getProperty("url");
+                String username = jdbcLinkInfoProperties.getProperty("user");
+                String password = jdbcLinkInfoProperties.getProperty("password");
 
-                //6: try to resolve jdbc user
-                String userName = (String) propertyValueMap.get("user");//read from connectProperties firstly
-                if (isBlank(userName)) {
-                    userName = this.username;
-                    if (isBlank(userName)) userName = System.getProperty("beecp.user", null);
-                    propertyValueMap.put("user", userName);
-                }
-
-                //7: try to resolve jdbc password
-                String password = (String) propertyValueMap.get("password");//read from connectProperties firstly
-                if (isBlank(password)) {
-                    password = this.password;
-                    if (isBlank(password)) password = System.getProperty("beecp.password", null);
-                    propertyValueMap.put("password", password);
-                }
-
-                //8: decode jdbc link info
+                //3.6: decode jdbc link info
                 if (jdbcLinkInfoDecoder != null) {//then execute the decoder
-                    if (!isBlank(url))
-                        url = jdbcLinkInfoDecoder.decodeUrl(url);//reset it to map at the following step
-                    if (!isBlank(userName))
-                        propertyValueMap.put("user", jdbcLinkInfoDecoder.decodeUsername(userName));
-                    if (!isBlank(password))
-                        propertyValueMap.put("password", jdbcLinkInfoDecoder.decodePassword(password));
+                    if (isNotBlank(url))
+                        url = jdbcLinkInfoDecoder.decodeUrl(url);
+                    if (isNotBlank(username))
+                        username = jdbcLinkInfoDecoder.decodeUsername(username);
+                    if (isNotBlank(password))
+                        password = jdbcLinkInfoDecoder.decodePassword(password);
                 }
 
-                //9: reset jdbc url to the target map
-                if (!isBlank(url)) {//reset url to properties map with three key names
-                    propertyValueMap.put("url", url);
-                    propertyValueMap.put("URL", url);
-                    propertyValueMap.put("jdbcUrl", url);
+                //3.7: reset jdbc url to the target map
+                if (isNotBlank(url)) {//reset url to properties map with three key names
+                    localConnectProperties.put("url", url);
+                    localConnectProperties.put("URL", url);
+                    localConnectProperties.put("jdbcUrl", url);
                 }
 
-                //10: inject properties to connection factory or dataSource
-                setPropertiesValue(factory, propertyValueMap);
+                //3.8: set username and password to local connectProperties
+                if (isNotBlank(username)) {
+                    localConnectProperties.put("user", username);
+                    if (isNotBlank(password))
+                        localConnectProperties.put("password", password);
+                }
 
-                //11: return RawConnectionFactory or RawXaConnectionFactory
+                //3.9: inject properties to connection factory or dataSource
+                setPropertiesValue(factory, localConnectProperties);
+
+                //3.10: return RawConnectionFactory or RawXaConnectionFactory
                 if (factory instanceof RawConnectionFactory || factory instanceof RawXaConnectionFactory) {
                     return factory;
                 } else if (factory instanceof XADataSource) {
-                    return new XaConnectionFactoryByDriverDs((XADataSource) factory, userName, password);
-                } else if (factory instanceof DataSource) {
-                    return new ConnectionFactoryByDriverDs((DataSource) factory, userName, password);
-                } else {
-                    throw new BeeDataSourceConfigException("Unknown connection factory type[" + conFactClass + "]");
+                    return new XaConnectionFactoryByDriverDs((XADataSource) factory, username, password);
+                } else {//here,factory must be a datasource(only support 4 types,because that factory class type check before creation)
+                    return new ConnectionFactoryByDriverDs((DataSource) factory, username, password);
                 }
             } catch (ClassNotFoundException e) {
                 throw new BeeDataSourceConfigException("Not found connection factory class[" + conFactClass + "]", e);
@@ -1053,13 +1034,44 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         }
     }
 
+    //look up jdbc link info
+    private Properties getJdbcLinkInfoProperties() {
+        String url = this.jdbcUrl;//note:jdbc url is a base info
+        String username = this.username;
+        String password = this.password;
+
+        if (isBlank(url)) {
+            url = (String) this.connectProperties.get("url");
+            if (isBlank(url)) url = (String) connectProperties.get("URL");
+            if (isBlank(url)) url = (String) connectProperties.get("jdbcUrl");
+            if (isNotBlank(url)) {//url found from connectProperties
+                username = (String) connectProperties.get("user");
+                password = (String) connectProperties.get("password");
+            } else {
+                url = System.getProperty("beecp.url");
+                if (isBlank(url)) url = System.getProperty("beecp.URL");
+                if (isBlank(url)) url = System.getProperty("beecp.jdbcUrl");
+                if (isNotBlank(url)) {//url found from system properties
+                    username = System.getProperty("beecp.user");
+                    password = System.getProperty("beecp.password");
+                }
+            }
+        }
+
+        Properties jdbcLinkInfoProperties = new Properties();
+        if (isNotBlank(url)) jdbcLinkInfoProperties.put("url", url);
+        if (isNotBlank(username)) jdbcLinkInfoProperties.put("user", username);
+        if (isNotBlank(password)) jdbcLinkInfoProperties.put("password", password);
+        return jdbcLinkInfoProperties;
+    }
+
     //create Thread factory
-    private BeeConnectionPredicate createSQLExceptionPredicate() throws BeeDataSourceConfigException {
+    private BeeConnectionPredicate createConnectionEvictPredicate() throws BeeDataSourceConfigException {
         //step1:if exists predication,then return it
         if (this.evictPredicate != null) return this.evictPredicate;
 
         //step2: create SQLExceptionPredication
-        if (evictPredicateClass != null || !isBlank(evictPredicateClassName)) {
+        if (evictPredicateClass != null || isNotBlank(evictPredicateClassName)) {
             Class<?> predicationClass = null;
             try {
                 predicationClass = evictPredicateClass != null ? evictPredicateClass : Class.forName(evictPredicateClassName);
@@ -1128,7 +1140,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                 }
             }
         } catch (Throwable e) {
-            CommonLog.warn("Failed to print configuration", poolName, e);
+            CommonLog.warn("BeeCP({})failed to print configuration", poolName, e);
         }
         CommonLog.info("................................................BeeCP({})configuration[end]................................................", poolName);
     }

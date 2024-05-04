@@ -19,7 +19,7 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Logger;
 
-import static org.stone.tools.CommonUtil.isBlank;
+import static org.stone.tools.CommonUtil.isNotBlank;
 
 /**
  * Connection factory Implementation with a JDBC DataSource
@@ -42,7 +42,7 @@ public final class ConnectionFactoryByDriverDs implements RawConnectionFactory, 
         this.driverDataSource = driverDataSource;
         this.username = username;
         this.password = password;
-        this.useUsername = !isBlank(username);
+        this.useUsername = isNotBlank(username);
     }
 
     //return a connection when creates successful,otherwise,throws a failure exception

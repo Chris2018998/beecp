@@ -26,6 +26,7 @@ import java.util.Map;
 
 import static org.stone.beecp.pool.ConnectionPoolStatics.*;
 import static org.stone.tools.CommonUtil.isBlank;
+import static org.stone.tools.CommonUtil.isNotBlank;
 
 /**
  * BeeDataSource factory
@@ -55,7 +56,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
             Object refObject = refAddr.getContent();
             if (refObject == null) return null;
             String value = refObject.toString().trim();
-            if (!isBlank(value)) {
+            if (isNotBlank(value)) {
                 CommonLog.info("beecp.{}={}", propertyName, value);
                 return value;
             }
@@ -85,7 +86,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         //1:try to lookup transactionManager if configured
         TransactionManager tm = null;
         String tmJndiName = getConfigValue(ref, CONFIG_TM_JNDI);
-        if (!isBlank(tmJndiName) && nameCtx != null) {
+        if (isNotBlank(tmJndiName) && nameCtx != null) {
             tm = (TransactionManager) nameCtx.lookup(tmJndiName);
         }
 
@@ -107,7 +108,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         //7:try to find 'connectProperties' config value and put to ds config object
         config.addConnectProperty(getConfigValue(ref, CONFIG_CONNECT_PROP));
         String connectPropertiesCount = getConfigValue(ref, CONFIG_CONNECT_PROP_SIZE);
-        if (!isBlank(connectPropertiesCount)) {
+        if (isNotBlank(connectPropertiesCount)) {
             int count = Integer.parseInt(connectPropertiesCount.trim());
             for (int i = 1; i <= count; i++)
                 config.addConnectProperty(getConfigValue(ref, CONFIG_CONNECT_PROP_KEY_PREFIX + i));
@@ -116,7 +117,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         //8:try to load sql exception fatal code and fatal state
         String sqlExceptionCode = getConfigValue(ref, CONFIG_SQL_EXCEPTION_CODE);
         String sqlExceptionState = getConfigValue(ref, CONFIG_SQL_EXCEPTION_STATE);
-        if (!isBlank(sqlExceptionCode)) {
+        if (isNotBlank(sqlExceptionCode)) {
             for (String code : sqlExceptionCode.trim().split(",")) {
                 try {
                     config.addSqlExceptionCode(Integer.parseInt(code));
@@ -125,7 +126,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
                 }
             }
         }
-        if (!isBlank(sqlExceptionState)) {
+        if (isNotBlank(sqlExceptionState)) {
             for (String state : sqlExceptionState.trim().split(",")) {
                 config.addSqlExceptionState(state);
             }
