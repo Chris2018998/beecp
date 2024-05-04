@@ -120,7 +120,7 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
     }
 
     public void testJdbcDecoderOnFactory() throws Exception {
-        System.getProperties().clear();
+        clearBeeCPInfoFromSystemProperties();
         BeeDataSourceConfig config1 = new BeeDataSourceConfig();
         config1.setConnectionFactoryClass(NullConnectionFactory.class);
         config1.setJdbcLinkInfoDecoderClass(DummyJdbcLinkInfoDecoder.class);
@@ -130,21 +130,18 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
         Assert.assertNull(factory1.getPassword());
 
         BeeDataSourceConfig config2 = new BeeDataSourceConfig();
-        config2.setUrl(this.url);
-        config2.setUsername(this.username);
-        config2.setPassword(this.password);
+        config2.setUsername(username);
         config2.setConnectionFactoryClass(NullConnectionFactory.class);
         config2.setJdbcLinkInfoDecoderClass(DummyJdbcLinkInfoDecoder.class);
         BeeDataSourceConfig checkedConfig2 = config2.check();
         NullConnectionFactory factory2 = (NullConnectionFactory) checkedConfig2.getConnectionFactory();
-        Assert.assertTrue(factory2.getUrl().endsWith("-Decoded"));
         Assert.assertTrue(factory2.getUser().endsWith("-Decoded"));
-        Assert.assertTrue(factory2.getPassword().endsWith("-Decoded"));
+        Assert.assertNull(factory2.getPassword());
 
         BeeDataSourceConfig config3 = new BeeDataSourceConfig();
-        config3.addConnectProperty("url", url);
-        config3.addConnectProperty("user", this.username);
-        config3.addConnectProperty("password", this.password);
+        config3.setUrl(this.url);
+        config3.setUsername(this.username);
+        config3.setPassword(this.password);
         config3.setConnectionFactoryClass(NullConnectionFactory.class);
         config3.setJdbcLinkInfoDecoderClass(DummyJdbcLinkInfoDecoder.class);
         BeeDataSourceConfig checkedConfig3 = config3.check();
@@ -154,10 +151,9 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
         Assert.assertTrue(factory3.getPassword().endsWith("-Decoded"));
 
         BeeDataSourceConfig config4 = new BeeDataSourceConfig();
-        clearBeeCPInfoFromSystemProperties();
-        System.setProperty("beecp.url", url);
-        System.setProperty("beecp.user", this.username);
-        System.setProperty("beecp.password", this.password);
+        config4.addConnectProperty("url", url);
+        config4.addConnectProperty("user", this.username);
+        config4.addConnectProperty("password", this.password);
         config4.setConnectionFactoryClass(NullConnectionFactory.class);
         config4.setJdbcLinkInfoDecoderClass(DummyJdbcLinkInfoDecoder.class);
         BeeDataSourceConfig checkedConfig4 = config4.check();
@@ -165,5 +161,18 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
         Assert.assertTrue(factory4.getUrl().endsWith("-Decoded"));
         Assert.assertTrue(factory4.getUser().endsWith("-Decoded"));
         Assert.assertTrue(factory4.getPassword().endsWith("-Decoded"));
+
+        BeeDataSourceConfig config5 = new BeeDataSourceConfig();
+        clearBeeCPInfoFromSystemProperties();
+        System.setProperty("beecp.url", url);
+        System.setProperty("beecp.user", this.username);
+        System.setProperty("beecp.password", this.password);
+        config5.setConnectionFactoryClass(NullConnectionFactory.class);
+        config5.setJdbcLinkInfoDecoderClass(DummyJdbcLinkInfoDecoder.class);
+        BeeDataSourceConfig checkedConfig5 = config5.check();
+        NullConnectionFactory factory5 = (NullConnectionFactory) checkedConfig5.getConnectionFactory();
+        Assert.assertTrue(factory5.getUrl().endsWith("-Decoded"));
+        Assert.assertTrue(factory5.getUser().endsWith("-Decoded"));
+        Assert.assertTrue(factory5.getPassword().endsWith("-Decoded"));
     }
 }

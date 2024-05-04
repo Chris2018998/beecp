@@ -14,7 +14,6 @@ import org.junit.Assert;
 import org.stone.beecp.BeeConnectionPredicate;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
-import org.stone.beecp.BeeConnectionPredicate;
 import org.stone.beecp.config.customization.DummySqlExceptionPredication;
 
 import java.util.List;
@@ -26,6 +25,7 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
         BeeDataSourceConfig config = ConfigFactory.createEmpty();
 
         Assert.assertNull(config.getSqlExceptionCodeList());
+        config.removeSqlExceptionCode(500151);
         config.addSqlExceptionCode(500151);
         List<Integer> sqlExceptionCodeList = config.getSqlExceptionCodeList();
         Assert.assertNotNull(sqlExceptionCodeList);
@@ -44,6 +44,7 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
         BeeDataSourceConfig config = ConfigFactory.createEmpty();
 
         Assert.assertNull(config.getSqlExceptionStateList());
+        config.removeSqlExceptionState("0A000");
         config.addSqlExceptionState("0A000");
         List<String> sqlExceptionStateList = config.getSqlExceptionStateList();
         Assert.assertNotNull(sqlExceptionStateList);

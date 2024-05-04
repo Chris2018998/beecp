@@ -17,6 +17,10 @@ import org.stone.beecp.RawConnectionFactory;
 import org.stone.beecp.RawXaConnectionFactory;
 import org.stone.beecp.factory.NullConnectionFactory;
 import org.stone.beecp.factory.NullXaConnectionFactory;
+import org.stone.beecp.mock.MockDataSource;
+import org.stone.beecp.mock.MockXaDataSource;
+
+import java.sql.SQLException;
 
 public class Case12_ConnectionFactoryTest extends TestCase {
 
@@ -40,6 +44,28 @@ public class Case12_ConnectionFactoryTest extends TestCase {
         Assert.assertEquals(config.getConnectionFactory(), factory2);
     }
 
+    public void testOnCreateFactory() {
+        try {
+            BeeDataSourceConfig config1 = ConfigFactory.createEmpty();
+            config1.setConnectionFactoryClass(NullConnectionFactory.class);
+            config1.check();
+
+            BeeDataSourceConfig config2 = ConfigFactory.createEmpty();
+            config2.setConnectionFactoryClass(NullXaConnectionFactory.class);
+            config2.check();
+
+            BeeDataSourceConfig config3 = ConfigFactory.createEmpty();
+            config3.setConnectionFactoryClass(MockXaDataSource.class);
+            config3.check();
+
+            BeeDataSourceConfig config4 = ConfigFactory.createEmpty();
+            config4.setConnectionFactoryClass(MockDataSource.class);
+            config4.check();
+        } catch (SQLException e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("connection creation error"));
+        }
+    }
 
     public void testOnInvalidFactoryClass() throws Exception {
         try {

@@ -28,13 +28,12 @@ public class Case16_ConfigLoadFromFileTest extends TestCase {
     private final String filename = "beecp/config2.properties";
 
     /********************************************Constructor**************************************************/
-    public void testOnConstructor() throws Exception {
+
+    public void testOnCorrectFile() throws Exception {
         check(new BeeDataSourceConfig(filename));
         check(new BeeDataSourceConfig(getPropertiesFile()));
         check(new BeeDataSourceConfig(getFileProperties()));
-    }
 
-    public void testOnLoadFromFile() throws Exception {
         BeeDataSourceConfig config1 = ConfigFactory.createEmpty();
         config1.loadFromPropertiesFile(filename);
         check(config1);
@@ -48,43 +47,106 @@ public class Case16_ConfigLoadFromFileTest extends TestCase {
         check(config3);
     }
 
-    public void testOnInvalidFile() {
-        BeeDataSourceConfig config = ConfigFactory.createEmpty();
-        try {
-            config.loadFromProperties(null);
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof IllegalArgumentException);
-        }
-        try {
-            config.loadFromProperties(new Properties());
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof IllegalArgumentException);
-        }
 
-
+    public void testOnLoadByFileName() throws Exception {
+        BeeDataSourceConfig config1 = ConfigFactory.createEmpty();
         try {
-            config.loadFromPropertiesFile((File) null);
+            config1.loadFromPropertiesFile("");
         } catch (Exception e) {
-            Assert.assertTrue(e instanceof IllegalArgumentException);
-        }
-        try {
-            config.loadFromPropertiesFile((String) null);
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof IllegalArgumentException);
-        }
-
-
-        try {
-            config.loadFromPropertiesFile(new File("dd/dd/dd/dd/config1"));
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof IllegalArgumentException);
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("file name can't be null or empty"));
         }
 
         try {
-            config.loadFromPropertiesFile(new File("dd/dd/dd/dd/config1.properties"));
+            config1.loadFromPropertiesFile("D:\\beecp\\ds.properties1");
         } catch (Exception e) {
-            Assert.assertTrue(e instanceof IllegalArgumentException);
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("must end with '.properties'"));
         }
+
+        try {
+            config1.loadFromPropertiesFile("D:\\beecp\\ds.properties");
+        } catch (Exception e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("Not found file"));
+        }
+
+
+//        try {
+//            BeeDataSourceConfig config1 = ConfigFactory.createEmpty();
+//            config1.loadFromPropertiesFile("ds.properties");
+//        } catch (Exception e) {
+//            String message = e.getMessage();
+//            Assert.assertTrue(message != null && message.contains("Not found file"));
+//        }
+
+    }
+
+    public void testOnLoadProperties() throws Exception {
+        BeeDataSourceConfig config1 = ConfigFactory.createEmpty();
+        try {
+            config1.loadFromProperties(null);
+        } catch (Exception e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("Configuration properties can't be null or empty"));
+        }
+
+        try {
+            config1.loadFromProperties(new Properties());
+        } catch (Exception e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("Configuration properties can't be null or empty"));
+        }
+    }
+
+    public void testOnLoadByFile() {
+        BeeDataSourceConfig config1 = ConfigFactory.createEmpty();
+
+        try {//null file test
+            File configFile = null;
+            config1.loadFromPropertiesFile(configFile);
+        } catch (Exception e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("can't be null"));
+        }
+
+        try {//existence test
+            File configFile = new File("c:\\beecp\\ds.properties");
+            config1.loadFromPropertiesFile(configFile);
+        } catch (Exception e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("file not found"));
+        }
+
+        try {//existence test
+            File configFile = new File("c:\\beecp\\ds");
+            config1.loadFromPropertiesFile(configFile);
+        } catch (Exception e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("file not found"));
+        }
+
+        try {//valid file
+            File configFile = new File("C:\\");
+            config1.loadFromPropertiesFile(configFile);
+        } catch (Exception e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("is not a valid file"));
+        }
+
+        try {//valid file
+            Class selfClass = Case16_ConfigLoadFromFileTest.class;
+            URL resource = selfClass.getClassLoader().getResource(filename);
+            String path = resource.getPath();
+            String filePath = path.substring(0, path.indexOf("config2.properties")) + "invalid.properties1";
+            File configFile = new File(filePath);
+            config1.loadFromPropertiesFile(configFile);
+        } catch (Exception e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("not a properties file"));
+        }
+
+
     }
 
     private Properties getFileProperties() throws Exception {
