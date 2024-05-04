@@ -120,7 +120,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
                 if (!this.readLock.tryLock(maxWaitNanos, TimeUnit.NANOSECONDS))
                     throw new ConnectionGetTimeoutException("Timeout on waiting for pool ready");
             } catch (InterruptedException e) {
-                throw new ConnectionGetInterruptedException("An interruption occurred in waiting for pool ready");
+                throw new ConnectionGetInterruptedException("An interruption occurred while waiting for pool ready");
             }
             readLock.unlock();
         }

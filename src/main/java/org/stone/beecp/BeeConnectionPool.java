@@ -25,13 +25,13 @@ public interface BeeConnectionPool {
      * Pool initializes on startup.
      *
      * @param config is a configuration object for pool initialization
-     * @throws SQLException if initializes failed
+     * @throws SQLException while initializing failed
      */
     void init(BeeDataSourceConfig config) throws SQLException;
 
     /**
-     * Borrows a connection from pool,if failed,borrower thread blocked in pool until gets a released one from other
-     * borrower or waits timeout.
+     * Attempts to borrow a connection from pool.If all are out,borrower thread blocked in pool until it gets one released
+     * from other borrower or waits timeout.
      *
      * @return a borrowed connection
      * @throws SQLException when failed to create a new connection
@@ -41,8 +41,8 @@ public interface BeeConnectionPool {
     Connection getConnection() throws SQLException;
 
     /**
-     * Borrows a connection from pool,if failed,borrower thread blocked in pool until gets a released one from other
-     * borrower or waits timeout.
+     * Attempts to borrow a xa connection from pool.If all are out,borrower thread blocked in pool until it gets one released
+     * from other borrower or waits timeout.
      *
      * @return a borrowed connection
      * @throws SQLException when failed to create a new connection
@@ -81,7 +81,7 @@ public interface BeeConnectionPool {
     /**
      * Gets owner hold time(milliseconds) on pool lock.
      *
-     * @return lock hold time on creation
+     * @return lock hold time
      */
     long getElapsedTimeSinceCreationLock();
 
