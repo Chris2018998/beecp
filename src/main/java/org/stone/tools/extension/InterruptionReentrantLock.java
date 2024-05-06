@@ -9,6 +9,9 @@
  */
 package org.stone.tools.extension;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -27,13 +30,16 @@ public final class InterruptionReentrantLock extends ReentrantLock {
         super(fair);
     }
 
-    public void interruptOwnerThread() {
+    public Thread interruptOwnerThread() {
         Thread owner = super.getOwner();
         if (owner != null) owner.interrupt();
+        return owner;
     }
 
-    public void interruptQueuedWaitThreads() {
-        for (Thread thread : super.getQueuedThreads())
+    public List<Thread> interruptQueuedWaitThreads() {
+        Collection<Thread> waitThreads = super.getQueuedThreads();
+        for (Thread thread : waitThreads)
             thread.interrupt();
+        return new ArrayList<>(waitThreads);
     }
 }

@@ -9,6 +9,9 @@
  */
 package org.stone.tools.extension;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -27,8 +30,10 @@ public final class InterruptionSemaphore extends Semaphore {
         super(permits, fair);
     }
 
-    public void interruptQueuedWaitThreads() {
-        for (Thread thread : getQueuedThreads())
+    public List<Thread> interruptQueuedWaitThreads() {
+        Collection<Thread> waitThreads = super.getQueuedThreads();
+        for (Thread thread : waitThreads)
             thread.interrupt();
+        return new ArrayList<>(waitThreads);
     }
 }
