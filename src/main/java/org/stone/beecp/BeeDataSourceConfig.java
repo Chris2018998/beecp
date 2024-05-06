@@ -44,7 +44,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private static final List<String> DefaultExclusionList = Arrays.asList("username", "password", "jdbcUrl", "user", "url");
 
     //properties applied in a factory{@code RawConnectionFactory,RawXaConnectionFactory} to establish connections
-    private final Map<String, Object> connectProperties = new HashMap<String, Object>(2);
+    private final Map<String, Object> connectProperties = new HashMap<>();
     //username of a database,default is null
     private String username;
     //user password security link to database,default is null
@@ -65,7 +65,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private int maxActive = Math.min(Math.max(10, NCPU), 50);
     //max permits size of pool semaphore
     private int borrowSemaphoreSize = Math.min(this.maxActive / 2, NCPU);
-    //milliseconds:max wait time in pool to get connections,default is 8000 milliseconds(8 seconds)
+    //milliseconds: max wait time in pool to get connections,default is 8000 milliseconds(8 seconds)
     private long maxWait = SECONDS.toMillis(8);
 
     //seconds: max wait time effects inside a driver or a datasource to establish raw connections.
@@ -83,15 +83,15 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
     //an alive test sql executed on borrowed connections,if dead,removed from pool
     private String aliveTestSql = "SELECT 1";
-    //seconds:max wait time to get validation result on test connections,default is 3 seconds.
+    //seconds: max wait time to get validation result on test connections,default is 3 seconds.
     private int aliveTestTimeout = 3;
     //milliseconds: a gap time value from last activity time to borrowed time point,needn't do test on connections,default is 500 milliseconds
     private long aliveAssumeTime = 500L;
-    //milliseconds: interval time to scan idle connections or long time hold connections,default is 18000 milliseconds(3 minutes)
+    //milliseconds: an interval time to scan idle connections or long time hold connections,default is 18000 milliseconds(3 minutes)
     private long timerCheckInterval = MINUTES.toMillis(3);
-    //indicator on close using connections directly while pool clear,default is false
+    //indicator on direct closing borrowed connections while pool clears,default is false
     private boolean forceCloseUsingOnClear;
-    //milliseconds: a delay time value to close using connections return to pool,if still exists using,then continue to next delay,default is 3000 milliseconds
+    //milliseconds: A wait time for borrowed connections return to pool in a loop,at end of wait,try to close returned connections,default is 3000 milliseconds
     private long delayTimeForNextClear = 3000L;
     //error code list check on vendorCode of thrown sql exceptions,if matched,connections evicted from pool,@see field vendorCode of SQLException.class
     private List<Integer> sqlExceptionCodeList;
@@ -127,25 +127,27 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //dirty force indicator on catalog property(supports recover under transaction in PG database)
     private boolean forceDirtyOnCatalogAfterSet;
 
-    //thread factory class(creation order-2 )
-    private Class threadFactoryClass;
+
     //thread factory instance(creation order-1)
     private BeeConnectionPoolThreadFactory threadFactory;
+    //thread factory class(creation order-2)
+    private Class<BeeConnectionPoolThreadFactory> threadFactoryClass;
     //thread factory class name(creation order-3),if not set,default factory will be applied in pool
     private String threadFactoryClassName = ConnectionPoolThreadFactory.class.getName();
 
     /**
      * connection factory class,which must be implement one of the below four interfaces
-     * 1:<class>RawConnectionFactory</class>
-     * 2:<class>RawXaConnectionFactory</class>
-     * 3:<class>DataSource</class>
-     * 4:<class>XADataSource</class>
+     * 1: <class>RawConnectionFactory</class>
+     * 2: <class>RawXaConnectionFactory</class>
+     * 3: <class>DataSource</class>
+     * 4: <class>XADataSource</class>
      */
+    //connection factory instance
+    private Object connectionFactory;
+    //connection factory class
     private Class connectionFactoryClass;
     //connection factory class name
     private String connectionFactoryClassName;
-    //connection factory instance
-    private Object connectionFactory;
 
     /**
      * connection eviction check on thrown sql exceptions by customization
@@ -153,25 +155,22 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
      * 1: if exists a predication,only check with predication
      * 2: if not exists,priority order: error code check,sql state check
      */
-    //sql exception predication class
-    private Class evictPredicateClass;
-    //sql exception predication class name
-    private String evictPredicateClassName;
-    //sql exception predication instance
+    //eviction predicate
     private BeeConnectionPredicate evictPredicate;
+    //eviction predicate class
+    private Class<BeeConnectionPredicate> evictPredicateClass;
+    //eviction predicate class name
+    private String evictPredicateClassName;
 
     /**
      * A short lifecycle object and used to decode jdbc link info(url,username,password)in pool initialization check
      */
+    //decoder
+    private BeeJdbcLinkInfoDecoder jdbcLinkInfoDecoder;
     //decoder class
-    private Class jdbcLinkInfoDecoderClass;
+    private Class<BeeJdbcLinkInfoDecoder> jdbcLinkInfoDecoderClass;
     //decoder class name
     private String jdbcLinkInfoDecoderClassName;
-    //decoder instance
-    private BeeJdbcLinkInfoDecoder jdbcLinkInfoDecoder;
-
-    //pool implementation class name,if not be set,a default implementation applied in bee datasource
-    private String poolImplementClassName = FastConnectionPool.class.getName();
 
     //enable indicator to register configuration and pool to Jmx,default is false
     private boolean enableJmx;
@@ -180,7 +179,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //enable indicator to print configuration items on pool initialization,default is false
     private boolean printConfigInfo;
     //config items exclusion list on info-level print
-    private List<String> configPrintExclusionList = new ArrayList<String>(DefaultExclusionList);
+    private List<String> configPrintExclusionList = new ArrayList<>(DefaultExclusionList);
+
+
+    //pool implementation class name,if not be set,a default implementation applied in bee datasource
+    private String poolImplementClassName = FastConnectionPool.class.getName();
 
     //****************************************************************************************************************//
     //                                     1: constructors(5)                                                         //
@@ -395,7 +398,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void addSqlExceptionCode(int code) {
-        if (sqlExceptionCodeList == null) sqlExceptionCodeList = new ArrayList<Integer>(1);
+        if (sqlExceptionCodeList == null) sqlExceptionCodeList = new ArrayList<>(1);
         if (!this.sqlExceptionCodeList.contains(code)) this.sqlExceptionCodeList.add(code);
     }
 
@@ -408,7 +411,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     }
 
     public void addSqlExceptionState(String state) {
-        if (sqlExceptionStateList == null) sqlExceptionStateList = new ArrayList<String>(1);
+        if (sqlExceptionStateList == null) sqlExceptionStateList = new ArrayList<>(1);
         if (!this.sqlExceptionStateList.contains(state)) this.sqlExceptionStateList.add(state);
     }
 
@@ -597,11 +600,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.connectionFactory = factory;
     }
 
-    public Class getThreadFactoryClass() {
+    public Class<BeeConnectionPoolThreadFactory> getThreadFactoryClass() {
         return threadFactoryClass;
     }
 
-    public void setThreadFactoryClass(Class threadFactoryClass) {
+    public void setThreadFactoryClass(Class<BeeConnectionPoolThreadFactory> threadFactoryClass) {
         this.threadFactoryClass = threadFactoryClass;
     }
 
@@ -637,11 +640,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.connectionFactoryClassName = trimString(connectionFactoryClassName);
     }
 
-    public Class getEvictPredicateClass() {
+    public Class<BeeConnectionPredicate> getEvictPredicateClass() {
         return evictPredicateClass;
     }
 
-    public void setEvictPredicateClass(Class evictPredicateClass) {
+    public void setEvictPredicateClass(Class<BeeConnectionPredicate> evictPredicateClass) {
         this.evictPredicateClass = evictPredicateClass;
     }
 
@@ -661,11 +664,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.evictPredicate = evictPredicate;
     }
 
-    public Class getJdbcLinkInfoDecoderClass() {
+    public Class<BeeJdbcLinkInfoDecoder> getJdbcLinkInfoDecoderClass() {
         return this.jdbcLinkInfoDecoderClass;
     }
 
-    public void setJdbcLinkInfoDecoderClass(Class jdbcLinkInfoDecoderClass) {
+    public void setJdbcLinkInfoDecoderClass(Class<BeeJdbcLinkInfoDecoder> jdbcLinkInfoDecoderClass) {
         this.jdbcLinkInfoDecoderClass = jdbcLinkInfoDecoderClass;
     }
 
@@ -718,25 +721,26 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //****************************************************************************************************************//
     public void loadFromPropertiesFile(String filename) {
         if (isBlank(filename))
-            throw new IllegalArgumentException("Data source configuration file name can't be null or empty");
+            throw new IllegalArgumentException("Configuration file name can't be null or empty");
         if (!filename.toLowerCase().endsWith(".properties"))
-            throw new IllegalArgumentException("Data source configuration file name file must end with '.properties'");
+            throw new IllegalArgumentException("Configuration file name file must end with '.properties'");
 
         File file = new File(filename);
         if (file.exists()) {
             this.loadFromPropertiesFile(file);
         } else {//try to load file from classpath
-            Class selfClass = BeeDataSourceConfig.class;
+            Class<BeeDataSourceConfig> selfClass = BeeDataSourceConfig.class;
             InputStream propertiesStream = selfClass.getResourceAsStream(filename);
             if (propertiesStream == null) propertiesStream = selfClass.getClassLoader().getResourceAsStream(filename);
-            if (propertiesStream == null) throw new IllegalArgumentException("Not found file:" + filename);
+            if (propertiesStream == null)
+                throw new IllegalArgumentException("Not found configuration file:" + filename);
 
             Properties prop = new Properties();
             try {
                 prop.load(propertiesStream);
                 loadFromProperties(prop);
             } catch (IOException e) {
-                throw new IllegalArgumentException("Configuration properties file load failed", e);
+                throw new IllegalArgumentException("Failed to load configuration properties file:" + filename, e);
             } finally {
                 if (propertiesStream != null) {
                     try {
@@ -751,8 +755,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
     public void loadFromPropertiesFile(File file) {
         if (file == null) throw new IllegalArgumentException("Configuration properties file can't be null");
-        if (!file.exists())
-            throw new IllegalArgumentException("Configuration properties file not found:" + file);
+        if (!file.exists()) throw new IllegalArgumentException("Configuration properties file not found:" + file);
         if (!file.isFile()) throw new IllegalArgumentException("Target object is not a valid file");
         if (!file.getAbsolutePath().toLowerCase(Locale.US).endsWith(".properties"))
             throw new IllegalArgumentException("Target file is not a properties file");
@@ -767,12 +770,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         } catch (BeeDataSourceConfigException e) {
             throw e;
         } catch (Throwable e) {
-            throw new BeeDataSourceConfigException("Failed to load configuration properties file", e);
+            throw new BeeDataSourceConfigException("Failed to load configuration properties file:" + file, e);
         } finally {
             if (stream != null) try {
                 stream.close();
             } catch (Throwable e) {
-                CommonLog.warn("Failed to close inputStream of configuration properties file", e);
+                CommonLog.warn("Failed to close inputStream of configuration properties file:" + file, e);
             }
         }
     }
@@ -783,7 +786,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
         //1:load configuration item values from outside properties
         synchronized (configProperties) {//synchronization mode
-            Map<String, Object> setValueMap = new HashMap<String, Object>(configProperties.size());
+            Map<String, Object> setValueMap = new HashMap<>(configProperties.size());
             for (String propertyName : configProperties.stringPropertyNames()) {
                 setValueMap.put(propertyName, configProperties.getProperty(propertyName));
             }
@@ -887,10 +890,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                         config.addConnectProperty(entry.getKey(), entry.getValue());
                 } else if ("sqlExceptionCodeList".equals(fieldName)) {//copy 'sqlExceptionCodeList'
                     if (this.sqlExceptionCodeList != null && !sqlExceptionCodeList.isEmpty())
-                        config.sqlExceptionCodeList = new ArrayList<Integer>(sqlExceptionCodeList);
+                        config.sqlExceptionCodeList = new ArrayList<>(sqlExceptionCodeList);
                 } else if ("sqlExceptionStateList".equals(fieldName)) {//copy 'sqlExceptionStateList'
                     if (this.sqlExceptionStateList != null && !sqlExceptionStateList.isEmpty())
-                        config.sqlExceptionStateList = new ArrayList<String>(sqlExceptionStateList);
+                        config.sqlExceptionStateList = new ArrayList<>(sqlExceptionStateList);
                 } else {//other config items
                     field.set(config, field.get(this));
                 }
@@ -982,7 +985,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                 Object factory = createClassInstance(conFactClass, parentClasses, "connection factory");
 
                 //3.4: create a copy on local connectProperties
-                Map<String, Object> localConnectProperties = new HashMap<String, Object>(this.connectProperties);//copy
+                Map<String, Object> localConnectProperties = new HashMap<>(this.connectProperties);//copy
 
                 //3.5: set jdbc link info
                 String url = jdbcLinkInfoProperties.getProperty("url");
