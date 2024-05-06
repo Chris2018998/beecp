@@ -204,16 +204,16 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         return this.pool.getPoolMonitorVo();
     }
 
-    //return lock hold time on creation
-    public long getElapsedTimeSinceCreationLock() throws SQLException {
+    //Gets owner hold time(milliseconds) on pool lock.
+    public long getPoolLockHoldTime() throws SQLException {
         if (this.pool == null) throw new PoolNotCreatedException("Pool not be created");
-        return this.pool.getElapsedTimeSinceCreationLock();
+        return this.pool.getPoolLockHoldTime();
     }
 
-    //try this method when pool blocked on creation
-    public void interruptThreadsOnCreationLock() throws SQLException {
+    //Interrupts all threads on pool lock,include wait threads and lock owner thread.
+    public Thread[] interruptOnPoolLock() throws SQLException {
         if (this.pool == null) throw new PoolNotCreatedException("Pool not be created");
-        this.pool.interruptThreadsOnCreationLock();
+        return this.pool.interruptOnPoolLock();
     }
 
     public void clear(boolean forceCloseUsing) throws SQLException {

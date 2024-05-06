@@ -52,7 +52,7 @@ public interface BeeConnectionPool {
     XAConnection getXAConnection() throws SQLException;
 
     /**
-     * This invocation cause pool to stop work,all connections are closed and removed,pool state marked as closed value
+     * This invocation cause pool to stop work,close all connections and removes them,pool state marked as closed value
      * when completion and all operations on pool are disabled.
      */
     void close();
@@ -83,12 +83,14 @@ public interface BeeConnectionPool {
      *
      * @return lock hold time
      */
-    long getElapsedTimeSinceCreationLock();
+    long getPoolLockHoldTime();
 
     /**
      * Interrupts all threads on pool lock,include wait threads and lock owner thread.
+     *
+     * @return interrupted threads
      */
-    void interruptThreadsOnCreationLock();
+    Thread[] interruptOnPoolLock();
 
     /**
      * Closes all connections and removes them from pool.
