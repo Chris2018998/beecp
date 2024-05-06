@@ -29,6 +29,8 @@ import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
@@ -179,7 +181,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
         //step7: creates wait queue,scan thread and others
         if (POOL_STARTING == poolWorkState) {
-            this.waitQueue = new ConcurrentLinkedQueue<Borrower>();//wait queue(transfer released connections and exceptions of creation)
+            this.waitQueue = new ConcurrentLinkedQueue<>();//wait queue(transfer released connections and exceptions of creation)
             this.servantTryCount = new AtomicInteger(0);//count of retry chance applied in a transfer thread
             this.servantState = new AtomicInteger(THREAD_WORKING);//work state of the servant thread
             this.idleScanState = new AtomicInteger(THREAD_WORKING);//work state of idle-scan thread
@@ -334,17 +336,22 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     }
 
     //Method-1.6:  Gets owner hold time(milliseconds) on pool lock.
-    public long getElapsedTimeSinceCreationLock() {
+    public long getPoolLockHoldTime() {
         return this.pooledArrayLockedTimePoint > 0L ? System.currentTimeMillis() - this.pooledArrayLockedTimePoint : 0L;
     }
 
     //Method-1.7: interrupts all threads on pool lock,include wait threads and lock owner thread.
-    public void interruptThreadsOnCreationLock() {
+    public Thread[] interruptOnPoolLock() {
         try {
-            this.pooledArrayLock.interruptQueuedWaitThreads();
-            this.pooledArrayLock.interruptOwnerThread();
+            List<Thread> interrupedList = new LinkedList<>(this.pooledArrayLock.interruptQueuedWaitThreads());
+            Thread ownerThread = this.pooledArrayLock.interruptOwnerThread();
+            if (ownerThread != null) interrupedList.add(ownerThread);
+
+            Thread[] interruptThreads = new Thread[interrupedList.size()];
+            return interrupedList.toArray(interruptThreads);
         } catch (Throwable e) {
             Log.warn("BeeCP({})failed to interrupt threads on lock", this.poolName, e);
+            return null;
         }
     }
 
@@ -583,7 +590,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             }
         } else {
             b = new Borrower();
-            this.threadLocal.set(new WeakReference<Borrower>(b));
+            this.threadLocal.set(new WeakReference<>(b));
         }
 
         long deadline = System.nanoTime();

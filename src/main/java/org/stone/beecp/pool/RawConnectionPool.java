@@ -161,12 +161,13 @@ public final class RawConnectionPool implements BeeConnectionPool, BeeConnection
         }
     }
 
-    public long getElapsedTimeSinceCreationLock() {
+    public long getPoolLockHoldTime() {
         return 0;
     }
 
-    public void interruptThreadsOnCreationLock() {
+    public Thread[] interruptOnPoolLock() {
         //do noting
+        return null;
     }
 
     /**
