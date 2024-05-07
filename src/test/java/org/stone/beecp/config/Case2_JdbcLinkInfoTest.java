@@ -121,7 +121,7 @@ public class Case2_JdbcLinkInfoTest extends TestCase {
             String message = e.getMessage();
             Assert.assertTrue(message != null && message.contains("jdbcUrl can't be null"));
         }
-//
+
         //situation2: load 'beecp.url' from system.properties
         clearBeeCPInfoFromSystemProperties();
         System.setProperty("beecp.url", url);

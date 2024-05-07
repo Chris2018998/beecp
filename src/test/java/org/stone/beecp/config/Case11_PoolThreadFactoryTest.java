@@ -22,7 +22,7 @@ public class Case11_PoolThreadFactoryTest extends TestCase {
         config.setThreadFactoryClassName(null);
         Assert.assertNotNull(config.getThreadFactoryClassName());
 
-        Class factClass = DummyThreadFactory.class;
+        Class<? extends DummyThreadFactory> factClass = DummyThreadFactory.class;
         config.setThreadFactoryClass(factClass);
         Assert.assertEquals(config.getThreadFactoryClass(), factClass);
 
@@ -50,18 +50,6 @@ public class Case11_PoolThreadFactoryTest extends TestCase {
         config3.setThreadFactoryClassName("org.stone.beecp.config.customization.DummyThreadFactory");
         checkConfig = config3.check();
         Assert.assertNotNull(checkConfig.getThreadFactory());
-    }
-
-    public void testOnInValidThreadFactClass() {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
-        config.setThreadFactoryClass(String.class);//invalid class
-
-        try {
-            config.check();
-        } catch (Exception e) {
-            String message = e.getMessage();
-            Assert.assertTrue(message != null && message.contains("which must extend from one of type"));
-        }
     }
 
     public void testOnInValidThreadFactClassName() {

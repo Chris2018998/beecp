@@ -59,14 +59,14 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
         Assert.assertEquals(sqlExceptionStateList.size(), 1);
     }
 
-    public void testOnPredicationSettingAndGetting() throws Exception {
+    public void testOnPredicationSettingAndGetting() {
         BeeDataSourceConfig config = ConfigFactory.createEmpty();
 
         BeeConnectionPredicate predication = new DummySqlExceptionPredication();
         config.setEvictPredicate(predication);
         Assert.assertEquals(config.getEvictPredicate(), predication);
 
-        Class predicationClass = DummySqlExceptionPredication.class;
+        Class<? extends BeeConnectionPredicate> predicationClass = DummySqlExceptionPredication.class;
         config.setEvictPredicateClass(predicationClass);
         Assert.assertEquals(config.getEvictPredicateClass(), predicationClass);
 
@@ -83,7 +83,7 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
         Assert.assertEquals(checkConfig1.getEvictPredicate(), predication);
 
         BeeDataSourceConfig config2 = ConfigFactory.createDefault();
-        Class predicationClass = DummySqlExceptionPredication.class;
+        Class<? extends BeeConnectionPredicate> predicationClass = DummySqlExceptionPredication.class;
         config2.setEvictPredicateClass(predicationClass);
         Assert.assertEquals(config2.getEvictPredicateClass(), predicationClass);
         BeeDataSourceConfig checkConfig2 = config2.check();
@@ -95,17 +95,6 @@ public class Case10_SQLExceptionConfigTest extends TestCase {
         Assert.assertEquals(config3.getEvictPredicateClassName(), predicationClassName);
         BeeDataSourceConfig checkConfig3 = config3.check();
         Assert.assertNotNull(checkConfig3.getEvictPredicate());
-
-
-        //failure test on creation
-        BeeDataSourceConfig config4 = ConfigFactory.createDefault();
-        config4.setEvictPredicateClass(String.class);//invalid exception predication class
-        try {
-            config4.check();
-        } catch (BeeDataSourceConfigException e) {
-            String message = e.getMessage();
-            Assert.assertTrue(message != null && message.contains("predicate"));
-        }
 
         BeeDataSourceConfig config5 = ConfigFactory.createDefault();
         config5.setEvictPredicateClassName("String");

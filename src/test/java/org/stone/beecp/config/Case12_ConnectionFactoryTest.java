@@ -27,7 +27,7 @@ public class Case12_ConnectionFactoryTest extends TestCase {
     public void testOnSetGet() {
         BeeDataSourceConfig config = ConfigFactory.createEmpty();
 
-        Class factClass = NullXaConnectionFactory.class;
+        Class<? extends RawXaConnectionFactory> factClass = NullXaConnectionFactory.class;
         config.setConnectionFactoryClass(factClass);
         Assert.assertEquals(config.getConnectionFactoryClass(), factClass);
 
@@ -67,7 +67,7 @@ public class Case12_ConnectionFactoryTest extends TestCase {
         }
     }
 
-    public void testOnInvalidFactoryClass() throws Exception {
+    public void testOnInvalidFactoryClass() throws SQLException {
         try {
             BeeDataSourceConfig config = ConfigFactory.createDefault();
             config.setConnectionFactoryClass(String.class);//invalid config

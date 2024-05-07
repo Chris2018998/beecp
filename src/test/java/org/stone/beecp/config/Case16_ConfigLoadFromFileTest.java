@@ -11,7 +11,6 @@ package org.stone.beecp.config;
 
 import junit.framework.TestCase;
 import org.junit.Assert;
-import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
 
 import java.io.File;
@@ -68,18 +67,8 @@ public class Case16_ConfigLoadFromFileTest extends TestCase {
             config1.loadFromPropertiesFile("D:\\beecp\\ds.properties");
         } catch (Exception e) {
             String message = e.getMessage();
-            Assert.assertTrue(message != null && message.contains("Not found file"));
+            Assert.assertTrue(message != null && message.contains("Not found configuration file"));
         }
-
-
-//        try {
-//            BeeDataSourceConfig config1 = ConfigFactory.createEmpty();
-//            config1.loadFromPropertiesFile("ds.properties");
-//        } catch (Exception e) {
-//            String message = e.getMessage();
-//            Assert.assertTrue(message != null && message.contains("Not found file"));
-//        }
-
     }
 
     public void testOnLoadProperties() throws Exception {
@@ -103,8 +92,7 @@ public class Case16_ConfigLoadFromFileTest extends TestCase {
         BeeDataSourceConfig config1 = ConfigFactory.createEmpty();
 
         try {//null file test
-            File configFile = null;
-            config1.loadFromPropertiesFile(configFile);
+            config1.loadFromPropertiesFile((File)null);
         } catch (Exception e) {
             String message = e.getMessage();
             Assert.assertTrue(message != null && message.contains("can't be null"));
@@ -145,8 +133,6 @@ public class Case16_ConfigLoadFromFileTest extends TestCase {
             String message = e.getMessage();
             Assert.assertTrue(message != null && message.contains("not a properties file"));
         }
-
-
     }
 
     private Properties getFileProperties() throws Exception {
@@ -195,8 +181,8 @@ public class Case16_ConfigLoadFromFileTest extends TestCase {
         Assert.assertEquals(config.getDelayTimeForNextClear(), 3000);
         Assert.assertEquals(config.getEvictPredicateClassName(), "com.myProject.TestPredication");
 
-        List<Integer> sqlExceptionCodeList = (List<Integer>) TestUtil.getFieldValue(config, "sqlExceptionCodeList");
-        List<String> sqlExceptionStateList = (List<String>) TestUtil.getFieldValue(config, "sqlExceptionStateList");
+        List<Integer> sqlExceptionCodeList = config.getSqlExceptionCodeList();
+        List<String> sqlExceptionStateList = config.getSqlExceptionStateList();
         for (Integer code : sqlExceptionCodeList)
             Assert.assertTrue(code == 500150 || code == 2399);
         for (String state : sqlExceptionStateList)
