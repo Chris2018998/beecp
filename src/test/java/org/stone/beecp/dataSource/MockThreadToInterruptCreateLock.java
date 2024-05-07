@@ -23,14 +23,14 @@ public class MockThreadToInterruptCreateLock extends Thread {
         LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
         try {
             if (ds != null) {
-                long holdTimeMillsOnLock = ds.getElapsedTimeSinceCreationLock();
+                long holdTimeMillsOnLock = ds.getPoolLockHoldTime();
                 if (holdTimeMillsOnLock > 0L) {
-                    ds.interruptThreadsOnCreationLock();
+                    ds.interruptOnPoolLock();
                 }
             } else {
-                long holdTimeMillsOnLock = pool.getElapsedTimeSinceCreationLock();
+                long holdTimeMillsOnLock = pool.getPoolLockHoldTime();
                 if (holdTimeMillsOnLock > 0L) {
-                    pool.interruptThreadsOnCreationLock();
+                    pool.interruptOnPoolLock();
                 }
             }
         } catch (SQLException e) {

@@ -39,13 +39,13 @@ public class DsPoolNotCreatedExceptionTest extends TestCase {
         }
 
         try {
-            ds.getElapsedTimeSinceCreationLock();
+            ds.getPoolLockHoldTime();
         } catch (SQLException e) {
             if (!(e instanceof PoolNotCreatedException)) throw new TestException();
         }
 
         try {
-            ds.interruptThreadsOnCreationLock();
+            ds.interruptOnPoolLock();
         } catch (SQLException e) {
             if (!(e instanceof PoolNotCreatedException)) throw new TestException();
         }

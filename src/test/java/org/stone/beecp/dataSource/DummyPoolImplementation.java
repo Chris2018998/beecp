@@ -48,11 +48,12 @@ class DummyPoolImplementation implements BeeConnectionPool {
         return null;
     }
 
-    public long getElapsedTimeSinceCreationLock() {
+    public long getPoolLockHoldTime() {
         return 0L;
     }
 
-    public void interruptThreadsOnCreationLock() {
+    public Thread[] interruptOnPoolLock() {
+        return null;
     }
 
     public void clear(boolean forceCloseUsing) {
