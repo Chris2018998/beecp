@@ -14,11 +14,11 @@ import org.stone.beecp.pool.*;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.file.Files;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -131,7 +131,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //thread factory instance(creation order-1)
     private BeeConnectionPoolThreadFactory threadFactory;
     //thread factory class(creation order-2)
-    private Class<BeeConnectionPoolThreadFactory> threadFactoryClass;
+    private Class<? extends BeeConnectionPoolThreadFactory> threadFactoryClass;
     //thread factory class name(creation order-3),if not set,default factory will be applied in pool
     private String threadFactoryClassName = ConnectionPoolThreadFactory.class.getName();
 
@@ -150,7 +150,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private String connectionFactoryClassName;
 
     /**
-     * connection eviction check on thrown sql exceptions by customization
+     * connections eviction check on thrown sql exceptions by customization
      * eviction check priority logic
      * 1: if exists a predication,only check with predication
      * 2: if not exists,priority order: error code check,sql state check
@@ -158,7 +158,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //eviction predicate
     private BeeConnectionPredicate evictPredicate;
     //eviction predicate class
-    private Class<BeeConnectionPredicate> evictPredicateClass;
+    private Class<? extends BeeConnectionPredicate> evictPredicateClass;
     //eviction predicate class name
     private String evictPredicateClassName;
 
@@ -168,7 +168,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //decoder
     private BeeJdbcLinkInfoDecoder jdbcLinkInfoDecoder;
     //decoder class
-    private Class<BeeJdbcLinkInfoDecoder> jdbcLinkInfoDecoderClass;
+    private Class<? extends BeeJdbcLinkInfoDecoder> jdbcLinkInfoDecoderClass;
     //decoder class name
     private String jdbcLinkInfoDecoderClassName;
 
@@ -600,12 +600,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.connectionFactory = factory;
     }
 
-    public Class<BeeConnectionPoolThreadFactory> getThreadFactoryClass() {
+    public Class<? extends BeeConnectionPoolThreadFactory> getThreadFactoryClass() {
         return threadFactoryClass;
     }
 
-    public void setThreadFactoryClass(Class<BeeConnectionPoolThreadFactory> threadFactoryClass) {
-        this.threadFactoryClass = threadFactoryClass;
+    public void setThreadFactoryClass(Class<? extends BeeConnectionPoolThreadFactory> factoryClass) {
+        this.threadFactoryClass = factoryClass;
     }
 
     public String getThreadFactoryClassName() {
@@ -640,11 +640,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.connectionFactoryClassName = trimString(connectionFactoryClassName);
     }
 
-    public Class<BeeConnectionPredicate> getEvictPredicateClass() {
+    public Class<? extends BeeConnectionPredicate> getEvictPredicateClass() {
         return evictPredicateClass;
     }
 
-    public void setEvictPredicateClass(Class<BeeConnectionPredicate> evictPredicateClass) {
+    public void setEvictPredicateClass(Class<? extends BeeConnectionPredicate> evictPredicateClass) {
         this.evictPredicateClass = evictPredicateClass;
     }
 
@@ -664,11 +664,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         this.evictPredicate = evictPredicate;
     }
 
-    public Class<BeeJdbcLinkInfoDecoder> getJdbcLinkInfoDecoderClass() {
+    public Class<? extends BeeJdbcLinkInfoDecoder> getJdbcLinkInfoDecoderClass() {
         return this.jdbcLinkInfoDecoderClass;
     }
 
-    public void setJdbcLinkInfoDecoderClass(Class<BeeJdbcLinkInfoDecoder> jdbcLinkInfoDecoderClass) {
+    public void setJdbcLinkInfoDecoderClass(Class<? extends BeeJdbcLinkInfoDecoder> jdbcLinkInfoDecoderClass) {
         this.jdbcLinkInfoDecoderClass = jdbcLinkInfoDecoderClass;
     }
 
@@ -742,12 +742,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             } catch (IOException e) {
                 throw new IllegalArgumentException("Failed to load configuration properties file:" + filename, e);
             } finally {
-                if (propertiesStream != null) {
-                    try {
-                        propertiesStream.close();
-                    } catch (Throwable e) {
-                        //do nothing
-                    }
+                try {
+                    propertiesStream.close();
+                } catch (Throwable e) {
+                    //do nothing
                 }
             }
         }
@@ -762,7 +760,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
         InputStream stream = null;
         try {
-            stream = new FileInputStream(file);
+            stream = Files.newInputStream(file.toPath());
             Properties configProperties = new Properties();
             configProperties.load(stream);
 
@@ -775,7 +773,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             if (stream != null) try {
                 stream.close();
             } catch (Throwable e) {
-                CommonLog.warn("Failed to close inputStream of configuration properties file:" + file, e);
+                CommonLog.warn("Failed to close inputStream of configuration properties file:{}", file, e);
             }
         }
     }

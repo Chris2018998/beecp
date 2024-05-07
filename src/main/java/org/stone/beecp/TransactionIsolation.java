@@ -38,7 +38,7 @@ public final class TransactionIsolation {
             TRANSACTION_REPEATABLE_READ + "," +
             TRANSACTION_SERIALIZABLE;
 
-    private static final Map<String, Integer> IsolationLevelMap = new HashMap<String, Integer>(5);
+    private static final Map<String, Integer> IsolationLevelMap = new HashMap<>(5);
 
     static {
         IsolationLevelMap.put(LEVEL_NONE, TRANSACTION_NONE);
