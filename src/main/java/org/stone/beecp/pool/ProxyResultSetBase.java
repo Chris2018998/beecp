@@ -66,4 +66,8 @@ abstract class ProxyResultSetBase extends ProxyBaseWrapper implements ResultSet 
             if (this.owner != null) this.owner.removeOpenResultSet(this);
         }
     }
+
+    public String toString() {
+        return raw.toString();
+    }
 }

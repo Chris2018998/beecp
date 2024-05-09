@@ -139,4 +139,8 @@ abstract class ProxyStatementBase extends ProxyBaseWrapper implements Statement 
     public boolean isCloseOnCompletion() {
         return false;
     }
+
+    public String toString() {
+        return raw.toString();
+    }
 }

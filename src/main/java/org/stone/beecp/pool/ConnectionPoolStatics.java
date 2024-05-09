@@ -113,6 +113,8 @@ public class ConnectionPoolStatics {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                     if ("isClosed".equals(method.getName())) {
                         return Boolean.TRUE;
+                    } else if ("toString".equals(method.getName())) {
+                        return "Connection has been closed";
                     } else {
                         throw new SQLException("No operations allowed after connection closed");
                     }
@@ -126,6 +128,8 @@ public class ConnectionPoolStatics {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                     if ("isClosed".equals(method.getName())) {
                         return Boolean.TRUE;
+                    } else if ("toString".equals(method.getName())) {
+                        return "CallableStatement has been closed";
                     } else {
                         throw new SQLException("No operations allowed after statement closed");
                     }
@@ -139,6 +143,8 @@ public class ConnectionPoolStatics {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                     if ("isClosed".equals(method.getName())) {
                         return Boolean.TRUE;
+                    } else if ("toString".equals(method.getName())) {
+                        return "ResultSet has been closed";
                     } else {
                         throw new SQLException("No operations allowed after resultSet closed");
                     }

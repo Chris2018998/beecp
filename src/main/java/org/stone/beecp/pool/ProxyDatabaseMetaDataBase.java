@@ -37,4 +37,8 @@ abstract class ProxyDatabaseMetaDataBase extends ProxyBaseWrapper implements Dat
         this.checkClosed();
         return this.owner;
     }
+
+    public String toString() {
+        return raw.toString();
+    }
 }
