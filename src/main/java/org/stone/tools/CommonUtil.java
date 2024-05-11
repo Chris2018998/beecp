@@ -9,7 +9,10 @@
  */
 package org.stone.tools;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Objects;
+import java.util.Properties;
 
 /**
  * common util
@@ -55,5 +58,24 @@ public class CommonUtil {
         probe ^= probe >>> 17;
         probe ^= probe << 5;
         return probe;
+    }
+
+    public static Properties loadPropertiesFromClassPathFile(String filename) {
+        InputStream fileStream = CommonUtil.class.getClassLoader().getResourceAsStream(filename);
+        if (fileStream == null) throw new IllegalArgumentException("Not found classpath file:" + filename);
+
+        try {
+            Properties properties = new Properties();
+            properties.load(fileStream);
+            return properties;
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Failed to load classpath file:" + filename);
+        } finally {
+            try {
+                fileStream.close();
+            } catch (IOException e) {
+                System.err.println("Failed to close stream on classpath file:" + filename);
+            }
+        }
     }
 }
