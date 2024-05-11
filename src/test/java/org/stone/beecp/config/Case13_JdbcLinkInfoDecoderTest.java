@@ -47,18 +47,19 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
         Assert.assertTrue(user.endsWith("-Decoded"));
         Assert.assertTrue(password.endsWith("-Decoded"));
 
-//        BeeDataSourceConfig config2 = new BeeDataSourceConfig(driver, url, username, password);
-//        config2.setConnectionFactoryClass(NullConnectionFactory.class);
-//        config2.setJdbcLinkInfoDecoderClass(org.stone.beecp.config.customization.DummyJdbcLinkInfoDecoder.class);
-//        checkConfig = config2.check();
-//        factory = (NullConnectionFactory) checkConfig.getConnectionFactory();
-//
-//        url = factory.getUrl();
-//        user = factory.getUser();
-//        password = factory.getPassword();
-//        Assert.assertTrue(url.endsWith("-Decoded"));
-//        Assert.assertTrue(user.endsWith("-Decoded"));
-//        Assert.assertTrue(password.endsWith("-Decoded"));
+        BeeDataSourceConfig config2 = new BeeDataSourceConfig(driver, url, username, password);
+        config2.setConnectionFactoryClass(NullConnectionFactory.class);
+        config2.setJdbcLinkInfoDecoderClass(org.stone.beecp.BeeJdbcLinkInfoDecoder.class);
+        checkConfig = config2.check();
+        factory = (NullConnectionFactory) checkConfig.getConnectionFactory();
+
+        String decodedUrl = factory.getUrl();
+        String decodedUser = factory.getUser();
+        String decodedPassword = factory.getPassword();
+        Assert.assertSame(url, decodedUrl);
+        Assert.assertSame(username, decodedUser);
+        Assert.assertSame(password, decodedPassword);
+
 
         BeeDataSourceConfig config3 = new BeeDataSourceConfig(driver, url, username, password);
         config3.setConnectionFactoryClass(NullConnectionFactory.class);
@@ -73,16 +74,16 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
         Assert.assertTrue(password.endsWith("-Decoded"));
     }
 
-//    public void testOnErrorClass() throws Exception {
-//        BeeDataSourceConfig config = new BeeDataSourceConfig(driver, url, username, password);
-//        config.setJdbcLinkInfoDecoderClass(String.class);//error config
-//        try {
-//            config.check();
-//        } catch (BeeDataSourceConfigException e) {
-//            String message = e.getMessage();
-//            Assert.assertTrue(message != null && message.contains("decoder"));
-//        }
-//    }
+    public void testOnErrorClass() throws Exception {
+        BeeDataSourceConfig config = new BeeDataSourceConfig(driver, url, username, password);
+        config.setJdbcLinkInfoDecoderClassName("java.lang.String");//error config
+        try {
+            config.check();
+        } catch (BeeDataSourceConfigException e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("decoder"));
+        }
+    }
 
     public void testOnErrorClassName() throws Exception {
         BeeDataSourceConfig config = new BeeDataSourceConfig(driver, url, username, password);
