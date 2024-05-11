@@ -14,7 +14,6 @@ import org.stone.beecp.pool.*;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -722,32 +721,24 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     public void loadFromPropertiesFile(String filename) {
         if (isBlank(filename))
             throw new IllegalArgumentException("Configuration file name can't be null or empty");
-        if (!filename.toLowerCase().endsWith(".properties"))
+        String fileLowerCaseName = filename.toLowerCase(Locale.US);
+        if (!fileLowerCaseName.endsWith(".properties"))
             throw new IllegalArgumentException("Configuration file name file must end with '.properties'");
 
-        File file = new File(filename);
-        if (file.exists()) {
-            this.loadFromPropertiesFile(file);
-        } else {//try to load file from classpath
-            Class<BeeDataSourceConfig> selfClass = BeeDataSourceConfig.class;
-            InputStream propertiesStream = selfClass.getResourceAsStream(filename);
-            if (propertiesStream == null) propertiesStream = selfClass.getClassLoader().getResourceAsStream(filename);
-            if (propertiesStream == null)
-                throw new IllegalArgumentException("Not found configuration file:" + filename);
-
-            Properties prop = new Properties();
-            try {
-                prop.load(propertiesStream);
-                loadFromProperties(prop);
-            } catch (IOException e) {
-                throw new IllegalArgumentException("Failed to load configuration properties file:" + filename, e);
-            } finally {
-                try {
-                    propertiesStream.close();
-                } catch (Throwable e) {
-                    //do nothing
-                }
-            }
+        if (fileLowerCaseName.startsWith("cp:")) {//1:'cp:' prefix
+            String cpFileName = fileLowerCaseName.substring("cp:".length());
+            Properties fileProperties = loadPropertiesFromClassPathFile(cpFileName);
+            loadFromProperties(fileProperties);
+        } else if (fileLowerCaseName.startsWith("classpath:")) {//2:'classpath:' prefix
+            String cpFileName = fileLowerCaseName.substring("classpath:".length());
+            Properties fileProperties = loadPropertiesFromClassPathFile(cpFileName);
+            loadFromProperties(fileProperties);
+        } else {//load a real path
+            File file = new File(filename);
+            if (!file.exists()) throw new IllegalArgumentException("Not found configuration file:" + filename);
+            if (!file.isFile())
+                throw new IllegalArgumentException("Target object is a valid configuration file:" + filename);
+            loadFromPropertiesFile(file);
         }
     }
 
