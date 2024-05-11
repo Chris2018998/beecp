@@ -14,10 +14,11 @@ import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 
 import java.io.File;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Properties;
+
+import static org.stone.tools.CommonUtil.loadPropertiesFromClassPathFile;
 
 /**
  * @author Chris Liao
@@ -29,20 +30,21 @@ public class Case16_ConfigLoadFromFileTest extends TestCase {
     /********************************************Constructor**************************************************/
 
     public void testOnCorrectFile() throws Exception {
-        check(new BeeDataSourceConfig(filename));
-        check(new BeeDataSourceConfig(getPropertiesFile()));
-        check(new BeeDataSourceConfig(getFileProperties()));
+        String classFilename = "cp:" + filename;
+        check(new BeeDataSourceConfig(classFilename));//classpath
+        check(new BeeDataSourceConfig(getClassPathFileAbsolutePath(filename)));//from file
+        check(new BeeDataSourceConfig(loadPropertiesFromClassPathFile(filename)));//from properties
 
         BeeDataSourceConfig config1 = ConfigFactory.createEmpty();
-        config1.loadFromPropertiesFile(filename);
+        config1.loadFromPropertiesFile(classFilename);
         check(config1);
 
         BeeDataSourceConfig config2 = ConfigFactory.createEmpty();
-        config2.loadFromPropertiesFile(getPropertiesFile());
+        config2.loadFromPropertiesFile(getClassPathFileAbsolutePath(filename));
         check(config2);
 
         BeeDataSourceConfig config3 = ConfigFactory.createEmpty();
-        config3.loadFromProperties(getFileProperties());
+        config3.loadFromProperties(loadPropertiesFromClassPathFile(filename));
         check(config3);
     }
 
@@ -56,18 +58,53 @@ public class Case16_ConfigLoadFromFileTest extends TestCase {
             Assert.assertTrue(message != null && message.contains("file name can't be null or empty"));
         }
 
+
         try {
             config1.loadFromPropertiesFile("D:\\beecp\\ds.properties1");
         } catch (Exception e) {
             String message = e.getMessage();
-            Assert.assertTrue(message != null && message.contains("must end with '.properties'"));
+            Assert.assertTrue(message != null && message.contains("Configuration file name file must end with '.properties'"));
         }
 
         try {
-            config1.loadFromPropertiesFile("D:\\beecp\\ds.properties");
+            config1.loadFromPropertiesFile("D:\\beecp\\ds.properties");//file not found
         } catch (Exception e) {
             String message = e.getMessage();
             Assert.assertTrue(message != null && message.contains("Not found configuration file"));
+        }
+
+        try {//failure test
+            String fullFilename = getClassPathFileAbsolutePath(filename).toString();
+            String osFileName1 = filename.replace("/", File.separator);
+            String osFileName2 = "beecp/invalid.properties".replace("/", File.separator);
+            int lasIndex = fullFilename.lastIndexOf(filename.replace("/", File.separator));
+            String invalidFilePath = fullFilename.substring(0, lasIndex) + osFileName2;
+            config1.loadFromPropertiesFile(invalidFilePath);//folder test
+        } catch (Exception e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("Target object is a valid configuration file"));
+        }
+
+        try {//success test
+            File path = getClassPathFileAbsolutePath(filename);
+            config1.loadFromPropertiesFile(path.toString());
+        } catch (Exception e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("Configuration properties can't be null or empty"));
+        }
+
+        try {//load from classpath
+            config1.loadFromPropertiesFile("cp:" + filename);
+        } catch (Exception e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("Configuration properties can't be null or empty"));
+        }
+
+        try {//load from classpath
+            config1.loadFromPropertiesFile("classpath:" + filename);
+        } catch (Exception e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("Configuration properties can't be null or empty"));
         }
     }
 
@@ -86,13 +123,14 @@ public class Case16_ConfigLoadFromFileTest extends TestCase {
             String message = e.getMessage();
             Assert.assertTrue(message != null && message.contains("Configuration properties can't be null or empty"));
         }
+
     }
 
     public void testOnLoadByFile() {
         BeeDataSourceConfig config1 = ConfigFactory.createEmpty();
 
         try {//null file test
-            config1.loadFromPropertiesFile((File)null);
+            config1.loadFromPropertiesFile((File) null);
         } catch (Exception e) {
             String message = e.getMessage();
             Assert.assertTrue(message != null && message.contains("can't be null"));
@@ -135,20 +173,9 @@ public class Case16_ConfigLoadFromFileTest extends TestCase {
         }
     }
 
-    private Properties getFileProperties() throws Exception {
+    private File getClassPathFileAbsolutePath(String filename) throws Exception {
         Class selfClass = Case16_ConfigLoadFromFileTest.class;
-        InputStream propertiesStream = selfClass.getResourceAsStream(filename);
-        if (propertiesStream == null) propertiesStream = selfClass.getClassLoader().getResourceAsStream(filename);
-
-        Properties prop = new Properties();
-        prop.load(propertiesStream);
-        return prop;
-    }
-
-    private File getPropertiesFile() throws Exception {
-        Class selfClass = Case16_ConfigLoadFromFileTest.class;
-        URL fileUrl = selfClass.getResource(filename);
-        if (fileUrl == null) fileUrl = selfClass.getClassLoader().getResource(filename);
+        URL fileUrl = selfClass.getClassLoader().getResource(filename);
         return new File(fileUrl.toURI());
     }
 
