@@ -774,56 +774,55 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             throw new IllegalArgumentException("Configuration properties can't be null or empty");
 
         //1:load configuration item values from outside properties
-        synchronized (configProperties) {//synchronization mode
-            Map<String, Object> setValueMap = new HashMap<>(configProperties.size());
+        Map<String, String> setValueMap;
+        synchronized (configProperties) {/* synchronization mode */
+            setValueMap = new HashMap<>(configProperties.size());
             for (String propertyName : configProperties.stringPropertyNames()) {
                 setValueMap.put(propertyName, configProperties.getProperty(propertyName));
             }
+        }
 
-            //2: exclude some special keys in setValueMap
-            setValueMap.remove(CONFIG_CONNECT_PROP);//remove item if exists in properties file before injection
-            setValueMap.remove(CONFIG_SQL_EXCEPTION_CODE);//remove item if exists in properties file before injection
-            setValueMap.remove(CONFIG_SQL_EXCEPTION_STATE);//remove item if exists in properties file before injection
-            setValueMap.remove(CONFIG_CONFIG_PRINT_EXCLUSION_LIST);//remove item if exists in properties file before injection
-            setPropertiesValue(this, setValueMap);
+        //2: exclude some special keys in setValueMap
+        String connectPropertiesText = setValueMap.remove(CONFIG_CONNECT_PROP);//remove item if exists in properties file before injection
+        String connectPropertiesSize = setValueMap.remove(CONFIG_CONNECT_PROP_SIZE);//remove item if exists in properties file before injection
+        String sqlExceptionCode = setValueMap.remove(CONFIG_SQL_EXCEPTION_CODE);//remove item if exists in properties file before injection
+        String sqlExceptionState = setValueMap.remove(CONFIG_SQL_EXCEPTION_STATE);//remove item if exists in properties file before injection
+        String exclusionListText = setValueMap.remove(CONFIG_CONFIG_PRINT_EXCLUSION_LIST);
+        setPropertiesValue(this, setValueMap);
 
-            //3:try to find 'connectProperties' config value and put to ds config object
-            this.addConnectProperty(getPropertyValue(configProperties, CONFIG_CONNECT_PROP));
-            String connectPropertiesSize = getPropertyValue(configProperties, CONFIG_CONNECT_PROP_SIZE);
-            if (isNotBlank(connectPropertiesSize)) {
-                int size = Integer.parseInt(connectPropertiesSize.trim());
-                for (int i = 1; i <= size; i++)//properties index begin with 1
-                    this.addConnectProperty(getPropertyValue(configProperties, CONFIG_CONNECT_PROP_KEY_PREFIX + i));
-            }
+        //3:try to find 'connectProperties' config value and put to ds config object
+        this.addConnectProperty(connectPropertiesText);
+        if (isNotBlank(connectPropertiesSize)) {
+            int size = Integer.parseInt(connectPropertiesSize.trim());
+            for (int i = 1; i <= size; i++)//properties index begin with 1
+                this.addConnectProperty(getPropertyValue(setValueMap, CONFIG_CONNECT_PROP_KEY_PREFIX + i));
+        }
 
-            //4:try to load sql exception fatal code and fatal state
-            String sqlExceptionCode = getPropertyValue(configProperties, CONFIG_SQL_EXCEPTION_CODE);
-            String sqlExceptionState = getPropertyValue(configProperties, CONFIG_SQL_EXCEPTION_STATE);
-            if (isNotBlank(sqlExceptionCode)) {
-                for (String code : sqlExceptionCode.trim().split(",")) {
-                    try {
-                        this.addSqlExceptionCode(Integer.parseInt(code));
-                    } catch (NumberFormatException e) {
-                        throw new BeeDataSourceConfigException(code + " is not a valid SQLException error code");
-                    }
+        //4: add error codes if not null and not empty
+        if (isNotBlank(sqlExceptionCode)) {
+            for (String code : sqlExceptionCode.trim().split(",")) {
+                try {
+                    this.addSqlExceptionCode(Integer.parseInt(code));
+                } catch (NumberFormatException e) {
+                    throw new BeeDataSourceConfigException(code + " is not a valid SQLException error code");
                 }
             }
+        }
 
-            if (isNotBlank(sqlExceptionState)) {
-                for (String state : sqlExceptionState.trim().split(",")) {
-                    this.addSqlExceptionState(state);
-                }
+        //5: add sql states if not null and not empty
+        if (isNotBlank(sqlExceptionState)) {
+            for (String state : sqlExceptionState.trim().split(",")) {
+                this.addSqlExceptionState(state);
             }
+        }
 
-            //5:try to load exclusion list on config print
-            String exclusionListText = getPropertyValue(configProperties, CONFIG_CONFIG_PRINT_EXCLUSION_LIST);
-            if (isNotBlank(exclusionListText)) {
-                this.clearAllConfigPrintExclusion();//remove existed exclusion
-                for (String exclusion : exclusionListText.trim().split(",")) {
-                    this.addConfigPrintExclusion(exclusion);
-                }
+        //6:try to load exclusion list on config print
+        if (isNotBlank(exclusionListText)) {
+            this.clearAllConfigPrintExclusion();//remove existed exclusion
+            for (String exclusion : exclusionListText.trim().split(",")) {
+                this.addConfigPrintExclusion(exclusion);
             }
-        }//synchronized end
+        }
     }
 
     //****************************************************************************************************************//
@@ -871,20 +870,25 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                 if (Modifier.isStatic(field.getModifiers())) continue;
 
                 fieldName = field.getName();
-                if ("configPrintExclusionList".equals(fieldName)) {//copy 'exclusionConfigPrintList'
-                    config.configPrintExclusionList = new ArrayList<>(configPrintExclusionList);//support copy on an empty list
-
-                } else if ("connectProperties".equals(fieldName)) {//copy 'connectProperties'
-                    for (Map.Entry<String, Object> entry : this.connectProperties.entrySet())
-                        config.addConnectProperty(entry.getKey(), entry.getValue());
-                } else if ("sqlExceptionCodeList".equals(fieldName)) {//copy 'sqlExceptionCodeList'
-                    if (this.sqlExceptionCodeList != null && !sqlExceptionCodeList.isEmpty())
-                        config.sqlExceptionCodeList = new ArrayList<>(sqlExceptionCodeList);
-                } else if ("sqlExceptionStateList".equals(fieldName)) {//copy 'sqlExceptionStateList'
-                    if (this.sqlExceptionStateList != null && !sqlExceptionStateList.isEmpty())
-                        config.sqlExceptionStateList = new ArrayList<>(sqlExceptionStateList);
-                } else {//other config items
-                    field.set(config, field.get(this));
+                switch (fieldName) {
+                    case "configPrintExclusionList": //copy 'exclusionConfigPrintList'
+                        config.configPrintExclusionList = new ArrayList<>(configPrintExclusionList);//support empty list copy
+                        break;
+                    case "connectProperties": //copy 'connectProperties'
+                        for (Map.Entry<String, Object> entry : this.connectProperties.entrySet())
+                            config.addConnectProperty(entry.getKey(), entry.getValue());
+                        break;
+                    case "sqlExceptionCodeList": //copy 'sqlExceptionCodeList'
+                        if (this.sqlExceptionCodeList != null && !sqlExceptionCodeList.isEmpty())
+                            config.sqlExceptionCodeList = new ArrayList<>(sqlExceptionCodeList);
+                        break;
+                    case "sqlExceptionStateList": //copy 'sqlExceptionStateList'
+                        if (this.sqlExceptionStateList != null && !sqlExceptionStateList.isEmpty())
+                            config.sqlExceptionStateList = new ArrayList<>(sqlExceptionStateList);
+                        break;
+                    default: //other config items
+                        field.set(config, field.get(this));
+                        break;
                 }
             }
         } catch (Throwable e) {
