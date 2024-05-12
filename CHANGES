@@ -1,5 +1,18 @@
 beecp changes
 
+Changes in 4.0.4
+
+1: add a new util method: CommonUtil.isNotBlank
+2:[beecp]rename two methods related with pool lock 
+    getElapsedTimeSinceCreationLock() ---> getPoolLockHoldTime()
+    interruptThreadsOnCreationLock()   ---> interruptOnPoolLock()
+3:[beecp] support returning a array of interrupted threads from pool lock
+4:[beecp]rename connection eviction predicate class.
+     SQLExceptionPredication ---> BeeConnectionPredicate
+5:[beecp]some optimization on source code 
+6:[beecp]add toString() method to jdbc proxy objects
+
+
 Changes in 4.0.3
 
 * upgrade slf4j-api to 2.0.6
