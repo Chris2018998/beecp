@@ -300,7 +300,7 @@ public class ConnectionPoolStatics {
      * @param propertyName config item name
      * @return configuration item value
      */
-    public static String getPropertyValue(Properties properties, final String propertyName) {
+    public static String getPropertyValue(Map<String, String> properties, final String propertyName) {
         String value = readPropertyValue(properties, propertyName);
         if (value != null) return value;
 
@@ -325,7 +325,7 @@ public class ConnectionPoolStatics {
      * @param propertyName config item name
      * @return configuration item value
      */
-    private static Object getFieldValue(Map<String, Object> valueMap, final String propertyName) {
+    private static Object getFieldValue(Map<String, ? extends Object> valueMap, final String propertyName) {
         Object value = valueMap.get(propertyName);
         if (value != null) return value;
 
@@ -352,8 +352,8 @@ public class ConnectionPoolStatics {
         return sb.toString();
     }
 
-    private static String readPropertyValue(Properties configProperties, String propertyName) {
-        String value = configProperties.getProperty(propertyName, null);
+    private static String readPropertyValue(Map<String, String> configProperties, String propertyName) {
+        String value = configProperties.get(propertyName);
         if (value != null) {
             CommonLog.info("beecp.{}={}", propertyName, value);
             return value.trim();
@@ -365,12 +365,12 @@ public class ConnectionPoolStatics {
     //***************************************************************************************************************//
     //                               7: bean property set methods(3)                                                 //
     //***************************************************************************************************************//
-    public static void setPropertiesValue(Object bean, Map<String, Object> valueMap) throws BeeDataSourceConfigException {
+    public static void setPropertiesValue(Object bean, Map<String, ? extends Object> valueMap) throws BeeDataSourceConfigException {
         if (bean == null) throw new BeeDataSourceConfigException("Bean can't be null");
         setPropertiesValue(bean, getClassSetMethodMap(bean.getClass()), valueMap);
     }
 
-    public static void setPropertiesValue(Object bean, Map<String, Method> setMethodMap, Map<String, Object> valueMap) throws BeeDataSourceConfigException {
+    public static void setPropertiesValue(Object bean, Map<String, Method> setMethodMap, Map<String, ? extends Object> valueMap) throws BeeDataSourceConfigException {
         if (bean == null) throw new BeeDataSourceConfigException("Bean can't be null");
         if (setMethodMap == null || setMethodMap.isEmpty() || valueMap == null || valueMap.isEmpty()) return;
         for (Map.Entry<String, Method> entry : setMethodMap.entrySet()) {
