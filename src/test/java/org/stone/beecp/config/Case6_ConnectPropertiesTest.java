@@ -29,7 +29,7 @@ public class Case6_ConnectPropertiesTest extends TestCase {
         BeeDataSourceConfig config = ConfigFactory.createEmpty();
         config.addConnectProperty("prop1", "value1");
         Assert.assertEquals(config.getConnectProperty("prop1"), "value1");
-        config.removeConnectProperty("prop1");
+        Assert.assertEquals(config.removeConnectProperty("prop1"),"value1");
         Assert.assertNull(config.getConnectProperty("prop1"));
     }
 

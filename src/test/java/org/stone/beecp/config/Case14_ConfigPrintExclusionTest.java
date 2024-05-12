@@ -23,7 +23,7 @@ public class Case14_ConfigPrintExclusionTest extends TestCase {
         config.addConfigPrintExclusion("password");
         config.addConfigPrintExclusion("poolName");
         Assert.assertTrue(config.existConfigPrintExclusion("poolName"));
-        config.removeConfigPrintExclusion("poolName");
+        Assert.assertTrue(config.removeConfigPrintExclusion("poolName"));
         Assert.assertFalse(config.existConfigPrintExclusion("poolName"));
     }
 
