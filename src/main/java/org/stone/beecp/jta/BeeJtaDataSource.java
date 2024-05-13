@@ -39,7 +39,7 @@ import static javax.transaction.Status.STATUS_ACTIVE;
  */
 public class BeeJtaDataSource extends TimerTask implements DataSource {
     private final Timer transactionTimer = new Timer(true);
-    private final ConcurrentHashMap<Transaction, Connection> transactionMap = new ConcurrentHashMap<Transaction, Connection>(10);
+    private final ConcurrentHashMap<Transaction, Connection> transactionMap = new ConcurrentHashMap<>(10);
     private BeeDataSource ds;
     private TransactionManager tm;
 
