@@ -24,7 +24,6 @@ import static org.stone.tools.CommonUtil.isBlank;
  * @author Chris Liao
  * @version 1.0
  */
-@SuppressWarnings("unchecked")
 final class ProxyClassGenerator {
     private static final String DefaultFolder = "stone/target/classes";
 
@@ -39,7 +38,7 @@ final class ProxyClassGenerator {
         ProxyClassGenerator.writeProxyFile(classesFolder);
     }
 
-    private static void resolveInterfaceMethods(CtClass interfaceClass, LinkedList linkedList, HashSet exitSignatureSet) throws Exception {
+    private static void resolveInterfaceMethods(CtClass interfaceClass, LinkedList<CtMethod> linkedList, HashSet<String> exitSignatureSet) throws Exception {
         for (CtMethod ctMethod : interfaceClass.getDeclaredMethods()) {
             int modifiers = ctMethod.getModifiers();
             String signature = ctMethod.getName() + ctMethod.getSignature();
@@ -205,8 +204,8 @@ final class ProxyClassGenerator {
 
 
     //find out methods,which not need add proxy
-    private static HashSet findMethodsNotNeedProxy(CtClass baseClass) {
-        HashSet notNeedAddProxyMethods = new HashSet(16);
+    private static HashSet<String> findMethodsNotNeedProxy(CtClass baseClass) {
+        HashSet<String> notNeedAddProxyMethods = new HashSet<>(16);
         for (CtMethod ctSuperClassMethod : baseClass.getMethods()) {
             int modifiers = ctSuperClassMethod.getModifiers();
             if ((!Modifier.isAbstract(modifiers) && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)))
@@ -222,20 +221,20 @@ final class ProxyClassGenerator {
      * *
      *
      * @param classPool                   javassist class pool
-     * @param ctConnectionClassProxyClass connection implemented sub class will be generated
+     * @param ctConnectionClassProxyClass connection implemented subclass will be generated
      * @param ctConnectionClass           connection interface in javassist class pool
-     * @param ctConBaseClass              super class extend by 'ctctConnectionClassProxyClass'
+     * @param ctConBaseClass              super class extend by 'ctConnectionClassProxyClass'
      * @throws Exception some error occurred
      */
     private static void createProxyConnectionClass(ClassPool classPool, CtClass ctConnectionClassProxyClass, CtClass ctConnectionClass, CtClass ctConBaseClass) throws Exception {
-        LinkedList<CtMethod> linkedList = new LinkedList<CtMethod>();
-        HashSet notNeedAddProxyMethods = findMethodsNotNeedProxy(ctConBaseClass);
+        LinkedList<CtMethod> linkedList = new LinkedList<>();
+        HashSet<String> notNeedAddProxyMethods = findMethodsNotNeedProxy(ctConBaseClass);
         ProxyClassGenerator.resolveInterfaceMethods(ctConnectionClass, linkedList, notNeedAddProxyMethods);
 
         CtClass ctStatementClass = classPool.get(Statement.class.getName());
         CtClass ctPreparedStatementClass = classPool.get(PreparedStatement.class.getName());
         CtClass ctCallableStatementClass = classPool.get(CallableStatement.class.getName());
-        CtClass ctDatabaseMetaDataIntf = classPool.get(DatabaseMetaData.class.getName());
+        CtClass ctDatabaseMetaDataClass = classPool.get(DatabaseMetaData.class.getName());
 
         StringBuilder methodBuffer = new StringBuilder(50);
         for (CtMethod ctMethod : linkedList) {
@@ -256,7 +255,7 @@ final class ProxyClassGenerator {
             } else if (ctMethod.getReturnType() == ctCallableStatementClass) {
                 newCtMethod.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
                 methodBuffer.append("return new ProxyCsStatement(raw." + methodName + "($$),this,p);");
-            } else if (ctMethod.getReturnType() == ctDatabaseMetaDataIntf) {
+            } else if (ctMethod.getReturnType() == ctDatabaseMetaDataClass) {
                 methodBuffer.append("return new ProxyDatabaseMetaData(raw." + methodName + "($$),p);");
             } else if (methodName.equals("close")) {
                 continue;
@@ -275,8 +274,8 @@ final class ProxyClassGenerator {
     }
 
     private static void createProxyStatementClass(ClassPool classPool, CtClass statementProxyClass, CtClass ctStatementClass, CtClass ctStatementSuperClass) throws Exception {
-        LinkedList<CtMethod> linkedList = new LinkedList<CtMethod>();
-        HashSet notNeedAddProxyMethods = findMethodsNotNeedProxy(ctStatementSuperClass);
+        LinkedList<CtMethod> linkedList = new LinkedList<>();
+        HashSet<String> notNeedAddProxyMethods = findMethodsNotNeedProxy(ctStatementSuperClass);
         ProxyClassGenerator.resolveInterfaceMethods(ctStatementClass, linkedList, notNeedAddProxyMethods);
 
         CtClass ctResultSetClass = classPool.get(ResultSet.class.getName());
@@ -330,11 +329,11 @@ final class ProxyClassGenerator {
         }
     }
 
-    //ctProxyDatabaseMetaDataClass,ctDatabaseMetaDataIntf,ctDatabaseMetaDataSuperClass
-    private static void createProxyDatabaseMetaDataClass(ClassPool classPool, CtClass ctProxyDatabaseMetaDataClass, CtClass ctDatabaseMetaDataIntf, CtClass ctDatabaseMetaDataSuperClass) throws Exception {
-        LinkedList<CtMethod> linkedList = new LinkedList<CtMethod>();
-        HashSet notNeedAddProxyMethods = findMethodsNotNeedProxy(ctDatabaseMetaDataSuperClass);
-        ProxyClassGenerator.resolveInterfaceMethods(ctDatabaseMetaDataIntf, linkedList, notNeedAddProxyMethods);
+    //ctProxyDatabaseMetaDataClass,ctDatabaseMetaDataClass,ctDatabaseMetaDataSuperClass
+    private static void createProxyDatabaseMetaDataClass(ClassPool classPool, CtClass ctProxyDatabaseMetaDataClass, CtClass ctDatabaseMetaDataClass, CtClass ctDatabaseMetaDataSuperClass) throws Exception {
+        LinkedList<CtMethod> linkedList = new LinkedList<>();
+        HashSet<String> notNeedAddProxyMethods = findMethodsNotNeedProxy(ctDatabaseMetaDataSuperClass);
+        ProxyClassGenerator.resolveInterfaceMethods(ctDatabaseMetaDataClass, linkedList, notNeedAddProxyMethods);
         CtClass ctResultSetClass = classPool.get(ResultSet.class.getName());
 
         StringBuilder methodBuffer = new StringBuilder(40);
@@ -367,15 +366,15 @@ final class ProxyClassGenerator {
     }
 
     private static void createProxyResultSetClass(CtClass ctResultSetClassProxyClass, CtClass ctResultSetClass, CtClass ctResultSetClassSuperClass) throws Exception {
-        LinkedList<CtMethod> linkedList = new LinkedList<CtMethod>();
-        HashSet notNeedAddProxyMethods = findMethodsNotNeedProxy(ctResultSetClassSuperClass);
+        LinkedList<CtMethod> linkedList = new LinkedList<>();
+        HashSet<String> notNeedAddProxyMethods = findMethodsNotNeedProxy(ctResultSetClassSuperClass);
         ProxyClassGenerator.resolveInterfaceMethods(ctResultSetClass, linkedList, notNeedAddProxyMethods);
         StringBuilder methodBuffer = new StringBuilder(25);
 
         for (CtMethod ctMethod : linkedList) {
             String methodName = ctMethod.getName();
-            CtMethod newCtMethodm = CtNewMethod.copy(ctMethod, ctResultSetClassProxyClass, null);
-            newCtMethodm.setModifiers(Modifier.PUBLIC);
+            CtMethod newCtMethod = CtNewMethod.copy(ctMethod, ctResultSetClassProxyClass, null);
+            newCtMethod.setModifiers(Modifier.PUBLIC);
 
             methodBuffer.delete(0, methodBuffer.length());
             methodBuffer.append("{");
@@ -401,12 +400,12 @@ final class ProxyClassGenerator {
             if (existsSQLException)
                 methodBuffer.append("  }catch(SQLException e){ p.checkSQLException(e);throw e;}");
             methodBuffer.append("}");
-            newCtMethodm.setBody(methodBuffer.toString());
-            ctResultSetClassProxyClass.addMethod(newCtMethodm);
+            newCtMethod.setBody(methodBuffer.toString());
+            ctResultSetClassProxyClass.addMethod(newCtMethod);
         }
     }
 
-    private static boolean exitsSQLException(CtClass[] exceptionTypes) throws Exception {
+    private static boolean exitsSQLException(CtClass[] exceptionTypes) {
         if (exceptionTypes == null) return false;
         for (CtClass exceptionClass : exceptionTypes) {
             if ("java.sql.SQLException".equals(exceptionClass.getName()))

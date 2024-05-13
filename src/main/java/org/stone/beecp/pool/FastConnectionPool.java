@@ -1185,7 +1185,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     //class-6.6: threadLocal caches the last used connections of borrowers(only cache one per borrower)
     private static final class BorrowerThreadLocal extends ThreadLocal<WeakReference<Borrower>> {
         protected WeakReference<Borrower> initialValue() {
-            return new WeakReference<Borrower>(new Borrower());
+            return new WeakReference<>(new Borrower());
         }
     }
 

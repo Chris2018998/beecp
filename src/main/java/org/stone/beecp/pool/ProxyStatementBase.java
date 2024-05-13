@@ -31,7 +31,7 @@ abstract class ProxyStatementBase extends ProxyBaseWrapper implements Statement 
     private ArrayList<ProxyResultSetBase> results;
     private int resultOpenCode = Statement.CLOSE_CURRENT_RESULT;
 
-    public ProxyStatementBase(Statement raw, ProxyConnectionBase o, PooledConnection p) {
+    ProxyStatementBase(Statement raw, ProxyConnectionBase o, PooledConnection p) {
         super(p);
         this.raw = raw;
         this.owner = o;
@@ -57,7 +57,7 @@ abstract class ProxyStatementBase extends ProxyBaseWrapper implements Statement 
             }
             case Statement.KEEP_CURRENT_RESULT: {
                 if (this.curRe != null && !this.curRe.isClosed) {
-                    if (this.results == null) this.results = new ArrayList<ProxyResultSetBase>(1);
+                    if (this.results == null) this.results = new ArrayList<>(1);
                     this.results.add(this.curRe);
                 }
                 break;

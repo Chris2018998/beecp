@@ -25,12 +25,12 @@ abstract class ProxyResultSetBase extends ProxyBaseWrapper implements ResultSet 
     protected ResultSet raw;
     private ProxyStatementBase owner;//called by subclass to check close state
 
-    public ProxyResultSetBase(ResultSet raw, PooledConnection p) {
+    ProxyResultSetBase(ResultSet raw, PooledConnection p) {
         super(p);
         this.raw = raw;
     }
 
-    public ProxyResultSetBase(ResultSet raw, ProxyStatementBase o, PooledConnection p) {
+    ProxyResultSetBase(ResultSet raw, ProxyStatementBase o, PooledConnection p) {
         super(p);
         o.setOpenResultSet(this);
         this.raw = raw;

@@ -23,7 +23,7 @@ abstract class ProxyDatabaseMetaDataBase extends ProxyBaseWrapper implements Dat
     protected final DatabaseMetaData raw;
     private final ProxyConnectionBase owner;//called by subclass to check close state
 
-    public ProxyDatabaseMetaDataBase(DatabaseMetaData raw, PooledConnection p) {
+    ProxyDatabaseMetaDataBase(DatabaseMetaData raw, PooledConnection p) {
         super(p);
         this.raw = raw;
         owner = p.proxyInUsing;

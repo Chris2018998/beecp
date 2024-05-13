@@ -281,7 +281,7 @@ public class ConnectionPoolStatics {
      */
     public static Map<String, Method> getClassSetMethodMap(Class beanClass) {
         Method[] methods = beanClass.getMethods();
-        HashMap<String, Method> methodMap = new LinkedHashMap<String, Method>(methods.length);
+        HashMap<String, Method> methodMap = new LinkedHashMap<>(methods.length);
         for (Method method : methods) {
             String methodName = method.getName();
             if (method.getParameterTypes().length == 1 && methodName.startsWith("set") && methodName.length() > 3)
@@ -325,7 +325,7 @@ public class ConnectionPoolStatics {
      * @param propertyName config item name
      * @return configuration item value
      */
-    private static Object getFieldValue(Map<String, ? extends Object> valueMap, final String propertyName) {
+    private static Object getFieldValue(Map<String, ?> valueMap, final String propertyName) {
         Object value = valueMap.get(propertyName);
         if (value != null) return value;
 
@@ -365,12 +365,12 @@ public class ConnectionPoolStatics {
     //***************************************************************************************************************//
     //                               7: bean property set methods(3)                                                 //
     //***************************************************************************************************************//
-    public static void setPropertiesValue(Object bean, Map<String, ? extends Object> valueMap) throws BeeDataSourceConfigException {
+    public static void setPropertiesValue(Object bean, Map<String, ?> valueMap) throws BeeDataSourceConfigException {
         if (bean == null) throw new BeeDataSourceConfigException("Bean can't be null");
         setPropertiesValue(bean, getClassSetMethodMap(bean.getClass()), valueMap);
     }
 
-    public static void setPropertiesValue(Object bean, Map<String, Method> setMethodMap, Map<String, ? extends Object> valueMap) throws BeeDataSourceConfigException {
+    public static void setPropertiesValue(Object bean, Map<String, Method> setMethodMap, Map<String, ?> valueMap) throws BeeDataSourceConfigException {
         if (bean == null) throw new BeeDataSourceConfigException("Bean can't be null");
         if (setMethodMap == null || setMethodMap.isEmpty() || valueMap == null || valueMap.isEmpty()) return;
         for (Map.Entry<String, Method> entry : setMethodMap.entrySet()) {
@@ -414,7 +414,7 @@ public class ConnectionPoolStatics {
 
         String text = setValue.toString();
         text = text.trim();
-        if (text.length() == 0) return null;
+        if (text.isEmpty()) return null;
         if (type == char.class || type == Character.class) {
             return text.toCharArray()[0];
         } else if (type == boolean.class || type == Boolean.class) {
@@ -469,10 +469,10 @@ public class ConnectionPoolStatics {
     public static Object createClassInstance(Class objectClass, Class[] parentClasses, String objectClassType) throws Exception {
         //1:check class abstract modifier
         if (Modifier.isAbstract(objectClass.getModifiers()))
-            throw new BeeDataSourceConfigException("Cant't create a instance on abstract class[" + objectClass.getName() + "],creation category[" + objectClassType + "]");
+            throw new BeeDataSourceConfigException("Can‘t create a instance on abstract class[" + objectClass.getName() + "],creation category[" + objectClassType + "]");
         //2:check class public modifier
         if (!Modifier.isPublic(objectClass.getModifiers()))
-            throw new BeeDataSourceConfigException("Cant't create a instance on non-public class[" + objectClass.getName() + "],creation category[" + objectClassType + "]");
+            throw new BeeDataSourceConfigException("Can’t create a instance on non-public class[" + objectClass.getName() + "],creation category[" + objectClassType + "]");
         //3:check extension
         boolean isSubClass = false;//pass when match one
         if (parentClasses != null && parentClasses.length > 0) {
@@ -483,7 +483,7 @@ public class ConnectionPoolStatics {
                 }
             }
             if (!isSubClass)
-                throw new BeeDataSourceConfigException("Cant't create a instance on class[" + objectClass.getName() + "]which must extend from one of type[" + getClassName(parentClasses) + "]at least,creation category[" + objectClassType + "]");
+                throw new BeeDataSourceConfigException("Can‘t create a instance on class[" + objectClass.getName() + "]which must extend from one of type[" + getClassName(parentClasses) + "]at least,creation category[" + objectClassType + "]");
         }
         //4:check class constructor
         return objectClass.getConstructor().newInstance();

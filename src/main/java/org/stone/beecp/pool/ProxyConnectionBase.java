@@ -25,7 +25,7 @@ import static org.stone.tools.CommonUtil.objectEquals;
 public abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Connection {
     protected Connection raw;
 
-    public ProxyConnectionBase(PooledConnection p) {
+    ProxyConnectionBase(PooledConnection p) {
         super(p);
         raw = p.rawConn;
         p.proxyInUsing = this;
