@@ -10,7 +10,7 @@
 package org.stone.beecp.dataSource;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
+import org.junit.Assert;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.JdbcConfig;
 import org.stone.beecp.pool.ConnectionPoolStatics;
@@ -24,8 +24,8 @@ public class DataSourceCloseTest extends TestCase {
         ds.setJdbcUrl(JdbcConfig.JDBC_URL);
         ds.setDriverClassName(JdbcConfig.JDBC_DRIVER);
         ds.setUsername(JdbcConfig.JDBC_USER);
+        Assert.assertTrue(ds.isClosed());
 
-        if (!ds.isClosed()) throw new TestException();//pool null
         Connection con = null;
         try {
             con = ds.getConnection();
@@ -33,9 +33,8 @@ public class DataSourceCloseTest extends TestCase {
             ConnectionPoolStatics.oclose(con);
         }
 
-        if (ds.isClosed()) throw new TestException();//pool is alive
-
+        Assert.assertFalse(ds.isClosed());
         ds.close();
-        if (!ds.isClosed()) throw new TestException();//pool closed
+        Assert.assertTrue(ds.isClosed());
     }
 }

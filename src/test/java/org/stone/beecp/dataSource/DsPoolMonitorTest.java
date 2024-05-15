@@ -10,6 +10,7 @@
 package org.stone.beecp.dataSource;
 
 import junit.framework.TestCase;
+import org.junit.Assert;
 import org.stone.base.TestException;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.JdbcConfig;
@@ -36,7 +37,8 @@ public class DsPoolMonitorTest extends TestCase {
         Connection con = null;
         try {
             con = ds.getConnection();
-            if (ds.getPoolMonitorVo() == null) throw new TestException();
+            Assert.assertNotNull(ds.getPoolMonitorVo());
+            //if (ds.getPoolMonitorVo() == null) throw new TestException();
         } catch (SQLException e) {
             //do nothing
         } finally {

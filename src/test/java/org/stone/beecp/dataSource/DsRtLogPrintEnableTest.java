@@ -10,6 +10,7 @@
 package org.stone.beecp.dataSource;
 
 import junit.framework.TestCase;
+import org.junit.Assert;
 import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
@@ -34,10 +35,12 @@ public class DsRtLogPrintEnableTest extends TestCase {
     public void testLogEnableInd() throws Exception {
         Object pool = TestUtil.getFieldValue(ds, "pool");
         Boolean ind = (Boolean) TestUtil.getFieldValue(pool, "printRuntimeLog");
-        if (Boolean.TRUE.equals(ind)) throw new Exception();
+        Assert.assertFalse(ind);
+        //if (Boolean.TRUE.equals(ind)) throw new Exception();
 
         ds.setPrintRuntimeLog(true);
         ind = (Boolean) TestUtil.getFieldValue(pool, "printRuntimeLog");
-        if (!Boolean.TRUE.equals(ind)) throw new Exception();
+        Assert.assertTrue(ind);
+        //if (!Boolean.TRUE.equals(ind)) throw new Exception();
     }
 }

@@ -10,7 +10,7 @@
 package org.stone.beecp.dataSource;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
+import org.junit.Assert;
 import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
@@ -37,7 +37,8 @@ public class DsGetXAConnectionTest extends TestCase {
         XAConnection con = null;
         try {
             con = ds.getXAConnection();
-            if (con == null) throw new TestException("");
+            Assert.assertNotNull(con);
+            //if (con == null) throw new TestException("");
         } finally {
             if (con != null)
                 TestUtil.oclose(con);
@@ -48,7 +49,8 @@ public class DsGetXAConnectionTest extends TestCase {
         XAConnection con = null;
         try {
             con = ds.getXAConnection("test", "test");
-            if (con == null) throw new TestException("");
+            Assert.assertNotNull(con);
+            //if (con == null) throw new TestException("");
         } finally {
             if (con != null)
                 TestUtil.oclose(con);

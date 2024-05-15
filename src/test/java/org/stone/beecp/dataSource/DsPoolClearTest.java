@@ -10,7 +10,7 @@
 package org.stone.beecp.dataSource;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
+import org.junit.Assert;
 import org.stone.beecp.*;
 
 public class DsPoolClearTest extends TestCase {
@@ -31,17 +31,21 @@ public class DsPoolClearTest extends TestCase {
 
     public void testClear() throws Exception {
         BeeConnectionPoolMonitorVo vo = ds.getPoolMonitorVo();
-        if (vo.getIdleSize() != 5) throw new TestException();
+        Assert.assertEquals(5, vo.getIdleSize());
+
         ds.clear(true);
         vo = ds.getPoolMonitorVo();
-        if (vo.getIdleSize() != 0) throw new TestException();
+
+        Assert.assertEquals(0, vo.getIdleSize());
+        //if (vo.getIdleSize() != 0) throw new TestException();
     }
 
-    public void testRestart() throws Exception {
+    public void testRestart() {
         try {
             ds.clear(true, null);
         } catch (Exception e) {
-            if (!(e instanceof BeeDataSourceConfigException)) throw new TestException();
+            Assert.assertTrue(e instanceof BeeDataSourceConfigException);
+            //if (!(e instanceof BeeDataSourceConfigException)) throw new TestException();
         }
 
         try {
@@ -54,10 +58,12 @@ public class DsPoolClearTest extends TestCase {
             config.setMaxWait(30000);
             ds.clear(true, config);
             BeeConnectionPoolMonitorVo vo = ds.getPoolMonitorVo();
-            if (vo.getIdleSize() != 20) throw new TestException();
+
+            Assert.assertEquals(20, vo.getIdleSize());
+            //if (vo.getIdleSize() != 20) throw new TestException();
         } catch (Exception e) {
-            e.printStackTrace();
-            if (!(e instanceof BeeDataSourceConfigException)) throw new TestException();
+            Assert.assertTrue(e instanceof BeeDataSourceConfigException);
+            //if (!(e instanceof BeeDataSourceConfigException)) throw new TestException();
         }
     }
 }

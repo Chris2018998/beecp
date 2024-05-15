@@ -10,7 +10,7 @@
 package org.stone.beecp.dataSource;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
+import org.junit.Assert;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.JdbcConfig;
 import org.stone.beecp.pool.exception.PoolNotCreatedException;
@@ -35,31 +35,36 @@ public class DsPoolNotCreatedExceptionTest extends TestCase {
         try {
             ds.getPoolMonitorVo();
         } catch (SQLException e) {
-            if (!(e instanceof PoolNotCreatedException)) throw new TestException();
+            Assert.assertTrue(e instanceof PoolNotCreatedException);
+            // if (!(e instanceof PoolNotCreatedException)) throw new TestException();
         }
 
         try {
             ds.getPoolLockHoldTime();
         } catch (SQLException e) {
-            if (!(e instanceof PoolNotCreatedException)) throw new TestException();
+            Assert.assertTrue(e instanceof PoolNotCreatedException);
+            //if (!(e instanceof PoolNotCreatedException)) throw new TestException();
         }
 
         try {
             ds.interruptOnPoolLock();
         } catch (SQLException e) {
-            if (!(e instanceof PoolNotCreatedException)) throw new TestException();
+            Assert.assertTrue(e instanceof PoolNotCreatedException);
+            //if (!(e instanceof PoolNotCreatedException)) throw new TestException();
         }
 
         try {
             ds.clear(false);
         } catch (SQLException e) {
-            if (!(e instanceof PoolNotCreatedException)) throw new TestException();
+            Assert.assertTrue(e instanceof PoolNotCreatedException);
+            //if (!(e instanceof PoolNotCreatedException)) throw new TestException();
         }
 
         try {
             ds.clear(false, null);
         } catch (SQLException e) {
-            if (!(e instanceof PoolNotCreatedException)) throw new TestException();
+            Assert.assertTrue(e instanceof PoolNotCreatedException);
+            //if (!(e instanceof PoolNotCreatedException)) throw new TestException();
         }
     }
 }

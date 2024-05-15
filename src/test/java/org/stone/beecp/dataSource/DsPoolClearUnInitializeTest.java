@@ -10,7 +10,7 @@
 package org.stone.beecp.dataSource;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
+import org.junit.Assert;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.pool.exception.PoolNotCreatedException;
@@ -24,13 +24,15 @@ public class DsPoolClearUnInitializeTest extends TestCase {
         try {
             ds.clear(false);
         } catch (SQLException e) {
-            if (!(e instanceof PoolNotCreatedException)) throw new TestException();
+            Assert.assertTrue(e instanceof PoolNotCreatedException);
+            //if (!(e instanceof PoolNotCreatedException)) throw new TestException();
         }
 
         try {
             ds.clear(false, new BeeDataSourceConfig());
         } catch (SQLException e) {
-            if (!(e instanceof PoolNotCreatedException)) throw new TestException();
+            Assert.assertTrue(e instanceof PoolNotCreatedException);
+            // if (!(e instanceof PoolNotCreatedException)) throw new TestException();
         }
     }
 }

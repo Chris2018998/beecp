@@ -10,6 +10,7 @@
 package org.stone.beecp.dataSource;
 
 import junit.framework.TestCase;
+import org.junit.Assert;
 import org.stone.base.TestException;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
@@ -35,8 +36,8 @@ public class DataSourceWrapperTest extends TestCase {
     }
 
     public void testDataSourceWrapper() throws Exception {
-        if (!ds.isWrapperFor(DataSource.class)) throw new TestException();
-        if (ds.unwrap(DataSource.class) != ds) throw new TestException();
+        Assert.assertTrue(ds.isWrapperFor(DataSource.class));
+        Assert.assertSame(ds.unwrap(DataSource.class), ds);
 
         try {
             ds.unwrap(String.class);

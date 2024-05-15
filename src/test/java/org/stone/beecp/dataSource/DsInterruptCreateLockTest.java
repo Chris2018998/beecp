@@ -10,6 +10,7 @@
 package org.stone.beecp.dataSource;
 
 import junit.framework.TestCase;
+import org.junit.Assert;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.JdbcConfig;
@@ -43,12 +44,9 @@ public class DsInterruptCreateLockTest extends TestCase {
         try {
             con = ds.getConnection();
         } catch (SQLException e) {
-            if (!(e instanceof ConnectionGetInterruptedException))
-                throw e;
+            Assert.assertTrue(e instanceof ConnectionGetInterruptedException);
         } finally {
             if (con != null) ConnectionPoolStatics.oclose(con);
         }
     }
-
-
 }

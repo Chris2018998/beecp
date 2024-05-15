@@ -10,7 +10,7 @@
 package org.stone.beecp.dataSource;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
+import org.junit.Assert;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.JdbcConfig;
 import org.stone.beecp.pool.ConnectionPoolStatics;
@@ -46,9 +46,10 @@ public class DsReadLockTimeoutTest extends TestCase {
         try {
             con = ds.getConnection();//blocking in pool instance creation
         } catch (SQLException e) {
-            if (!(e instanceof ConnectionGetTimeoutException)) {
-                throw new TestException();
-            }
+            Assert.assertTrue(e instanceof ConnectionGetTimeoutException);
+//            if (!(e instanceof ConnectionGetTimeoutException)) {
+//                throw new TestException();
+//            }
         } finally {
             if (con != null) ConnectionPoolStatics.oclose(con);
         }

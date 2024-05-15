@@ -10,7 +10,7 @@
 package org.stone.beecp.dataSource;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
+import org.junit.Assert;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.JdbcConfig;
@@ -37,17 +37,19 @@ public class CommonDsMethodTest extends TestCase {
     public void testLogWriter() throws Exception {
         PrintWriter printer1 = ds.getLogWriter();
         PrintWriter printer2 = DriverManager.getLogWriter();
-        if (printer1 != printer2) throw new TestException();
+
+        Assert.assertEquals(printer1, printer2);
     }
 
     public void testLoginTimeout() throws Exception {
-        if (ds.getConnectTimeout() != 10) throw new TestException();
-        if (ds.getLoginTimeout() != 10) throw new TestException();
-        if (DriverManager.getLoginTimeout() != 10) throw new TestException();
+        Assert.assertEquals(10, ds.getConnectTimeout());
+        Assert.assertEquals(10, ds.getLoginTimeout());
+        Assert.assertEquals(10, DriverManager.getLoginTimeout());
 
         ds.setLoginTimeout(5);
-        if (ds.getLoginTimeout() != 5) throw new TestException();
-        if (DriverManager.getLoginTimeout() != 5) throw new TestException();
+
+        Assert.assertEquals(5, ds.getLoginTimeout());
+        Assert.assertEquals(5, DriverManager.getLoginTimeout());
     }
 
 }

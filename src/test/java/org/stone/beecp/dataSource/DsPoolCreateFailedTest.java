@@ -10,6 +10,7 @@
 package org.stone.beecp.dataSource;
 
 import junit.framework.TestCase;
+import org.junit.Assert;
 import org.stone.base.TestException;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
@@ -58,8 +59,10 @@ public class DsPoolCreateFailedTest extends TestCase {
             throw new TestException("Test failed on case[DsPoolCreateFailedTest.testCreateFailByConstruct]");
         } catch (SQLException e) {
             Throwable poolCause = e.getCause();
-            if (!(poolCause instanceof ClassNotFoundException))
-                throw new TestException("Test Failure exception type is not ClassNotFoundException ");
+            Assert.assertTrue(poolCause instanceof ClassNotFoundException);
+//            if (!(poolCause instanceof ClassNotFoundException))
+//                throw new TestException("Test Failure exception type is not ClassNotFoundException ");
+//
         } finally {
             if (con != null) ConnectionPoolStatics.oclose(con);
         }

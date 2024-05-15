@@ -10,7 +10,7 @@
 package org.stone.beecp.dataSource;
 
 import junit.framework.TestCase;
-import org.stone.base.TestException;
+import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfigException;
 import org.stone.beecp.BeeDataSourceFactory;
 
@@ -25,12 +25,13 @@ public class DataSourceFactoryTest extends TestCase {
         BeeDataSourceFactory factory = new BeeDataSourceFactory();
 
         Object ob = factory.getObjectInstance(new Object(), null, null, null);
-        if (ob != null) throw new TestException();
+        Assert.assertNull(ob);
+        //if (ob != null) throw new TestException();
 
         Reference ref = new Reference("javax2.sql.DataSource");
         ob = factory.getObjectInstance(ref, null, null, null);
-        if (ob != null) throw new TestException();
-
+        Assert.assertNull(ob);
+        //if (ob != null) throw new TestException();
 
         ref = new Reference("javax.sql.DataSource");
         ref.add(new StringRefAddr("jdbcUrl", "jdbc:beecp://localhost/testdb"));
@@ -48,10 +49,7 @@ public class DataSourceFactoryTest extends TestCase {
 
         }
 
-
         //StringRefAddr tmName = new StringRefAddr("transactionManagerName", "transactionManagerName");
-
-
     }
 }
 
