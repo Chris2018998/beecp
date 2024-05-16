@@ -29,7 +29,7 @@ public class Case6_ConnectPropertiesTest extends TestCase {
         BeeDataSourceConfig config = ConfigFactory.createEmpty();
         config.addConnectProperty("prop1", "value1");
         Assert.assertEquals(config.getConnectProperty("prop1"), "value1");
-        Assert.assertEquals(config.removeConnectProperty("prop1"),"value1");
+        Assert.assertEquals(config.removeConnectProperty("prop1"), "value1");
         Assert.assertNull(config.getConnectProperty("prop1"));
     }
 
@@ -46,11 +46,12 @@ public class Case6_ConnectPropertiesTest extends TestCase {
     //prop1:value&prop2:value2&prop3:value3
     public void testOnAddTextProperty2() {
         BeeDataSourceConfig config = ConfigFactory.createEmpty();
-        config.addConnectProperty("prop1:value1&prop2:value2&prop3:value3");
+        config.addConnectProperty("prop1:value1&prop2:value2&prop3:value3&prop4:value4:value5");
 
         Assert.assertEquals("value1", config.getConnectProperty("prop1"));
         Assert.assertEquals("value2", config.getConnectProperty("prop2"));
         Assert.assertEquals("value3", config.getConnectProperty("prop3"));
+        Assert.assertNull("value4", config.getConnectProperty("prop4"));
     }
 
     public void testLoadFromProperties() {

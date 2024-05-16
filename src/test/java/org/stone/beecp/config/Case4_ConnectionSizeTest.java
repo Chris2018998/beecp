@@ -29,11 +29,17 @@ public class Case4_ConnectionSizeTest extends TestCase {
         Assert.assertEquals(config.getInitialSize(), 0);
         Assert.assertNotEquals(config.getMaxActive(), 0);
 
+        config.setInitialSize(1);
+        config.setMaxActive(1);
+        Assert.assertEquals(config.getInitialSize(), 1);
+        Assert.assertEquals(config.getMaxActive(), 1);
+        Assert.assertEquals(config.getBorrowSemaphoreSize(), 1);
 
         config.setInitialSize(10);
         config.setMaxActive(20);
         Assert.assertEquals(config.getInitialSize(), 10);
         Assert.assertEquals(config.getMaxActive(), 20);
+        Assert.assertEquals(config.getBorrowSemaphoreSize(), 10);
     }
 
     public void testOnErrorInitialSize() throws Exception {

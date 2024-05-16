@@ -118,6 +118,19 @@ public class Case13_JdbcLinkInfoDecoderTest extends TestCase {
         Assert.assertTrue(url2.endsWith("-Decoded"));
         Assert.assertTrue(user2.endsWith("-Decoded"));
         Assert.assertTrue(password2.endsWith("-Decoded"));
+
+        BeeDataSourceConfig config3 = new BeeDataSourceConfig(driver, url, username, null);
+        config3.setJdbcLinkInfoDecoderClass(DummyJdbcLinkInfoDecoder.class);
+        BeeDataSourceConfig checkedConfig3 = config3.check();
+        Object factory3 = TestUtil.getFieldValue(checkedConfig3, "connectionFactory");
+        String url3 = (String) TestUtil.getFieldValue(factory3, "url");
+        Properties properties3 = (Properties) TestUtil.getFieldValue(factory3, "properties");
+        String user3 = properties3.getProperty("user");
+        String password3 = properties3.getProperty("password");
+
+        Assert.assertTrue(url3.endsWith("-Decoded"));
+        Assert.assertTrue(user3.endsWith("-Decoded"));
+        Assert.assertNull(password3);
     }
 
     public void testJdbcDecoderOnFactory() throws Exception {
