@@ -4,8 +4,7 @@ import junit.framework.TestCase;
 import org.stone.base.TestException;
 import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.config.ConfigFactory;
-import org.stone.beecp.dataSource.MockThreadToInterruptCreateLock;
+import org.stone.beecp.config.DsConfigFactory;
 import org.stone.beecp.factory.*;
 import org.stone.beecp.pool.ConnectionPoolStatics;
 import org.stone.beecp.pool.FastConnectionPool;
@@ -21,7 +20,7 @@ import java.util.concurrent.locks.LockSupport;
 public class ConnectionCreateTest extends TestCase {
 
     public void testCreationFailureInFactory_Null() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        BeeDataSourceConfig config = DsConfigFactory.createDefault();
         config.setInitialSize(1);
         config.setRawConnectionFactory(new NullConnectionFactory());
         try {
@@ -34,7 +33,7 @@ public class ConnectionCreateTest extends TestCase {
     }
 
     public void testCreationFailureInXaFactory_Null() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        BeeDataSourceConfig config = DsConfigFactory.createDefault();
         config.setRawXaConnectionFactory(new NullXaConnectionFactory());
 
         FastConnectionPool pool = new FastConnectionPool();
@@ -52,7 +51,7 @@ public class ConnectionCreateTest extends TestCase {
     }
 
     public void testCreationFailureInFactory_Exception() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        BeeDataSourceConfig config = DsConfigFactory.createDefault();
         config.setInitialSize(1);
         config.setRawConnectionFactory(new ExceptionConnectionFactory());
 
@@ -66,7 +65,7 @@ public class ConnectionCreateTest extends TestCase {
     }
 
     public void testCreationFailureInXaFactory_Exception() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        BeeDataSourceConfig config = DsConfigFactory.createDefault();
         config.setInitialSize(1);
         config.setRawXaConnectionFactory(new ExceptionXaConnectionFactory());
 
@@ -80,7 +79,7 @@ public class ConnectionCreateTest extends TestCase {
     }
 
     public void testTimeoutOnCreateLock() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        BeeDataSourceConfig config = DsConfigFactory.createDefault();
         config.setMaxActive(3);
         config.setBorrowSemaphoreSize(3);
         config.setMaxWait(3000);
@@ -114,7 +113,7 @@ public class ConnectionCreateTest extends TestCase {
 
 
     public void testInitialFailedConnectionASync() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        BeeDataSourceConfig config = DsConfigFactory.createDefault();
         config.setInitialSize(1);
         config.setAsyncCreateInitConnection(true);
         config.setRawConnectionFactory(new NullConnectionFactory());
@@ -127,7 +126,7 @@ public class ConnectionCreateTest extends TestCase {
     }
 
     public void testInitialFailedConnection2() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        BeeDataSourceConfig config = DsConfigFactory.createDefault();
         config.setInitialSize(4);
         config.setRawConnectionFactory(new CountNullConnectionFactory(3));
 
@@ -140,7 +139,7 @@ public class ConnectionCreateTest extends TestCase {
     }
 
     public void testNullConnection() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        BeeDataSourceConfig config = DsConfigFactory.createDefault();
         config.setRawConnectionFactory(new NullConnectionFactory());
 
         FastConnectionPool pool = new FastConnectionPool();
@@ -159,13 +158,13 @@ public class ConnectionCreateTest extends TestCase {
 
 
     public void testInterruptCreateLock() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        BeeDataSourceConfig config = DsConfigFactory.createDefault();
         config.setRawConnectionFactory(new BlockingNullConnectionFactory());
 
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
-        new MockThreadToInterruptCreateLock(pool).start();
+        new PoolLockInterruptThread(pool).start();
 
         Connection con = null;
         try {
@@ -179,13 +178,13 @@ public class ConnectionCreateTest extends TestCase {
     }
 
     public void testInterruptCreateLockX() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        BeeDataSourceConfig config = DsConfigFactory.createDefault();
         config.setRawXaConnectionFactory(new BlockingNullXaConnectionFactory());
 
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
-        new MockThreadToInterruptCreateLock(pool).start();
+        new PoolLockInterruptThread(pool).start();
 
         XAConnection con = null;
         try {

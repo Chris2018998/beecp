@@ -14,7 +14,7 @@ import org.stone.base.TestException;
 import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.JdbcConfig;
-import org.stone.beecp.config.ConfigFactory;
+import org.stone.beecp.config.DsConfigFactory;
 import org.stone.beecp.pool.FastConnectionPool;
 import org.stone.beecp.pool.exception.PoolInitializeFailedException;
 
@@ -33,7 +33,7 @@ public class PoolInitializationTest extends TestCase {
     }
 
     public void testDuplicatedInitialization() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        BeeDataSourceConfig config = DsConfigFactory.createDefault();
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
@@ -75,7 +75,7 @@ public class PoolInitializationTest extends TestCase {
     }
 
     public void testPoolInitializeInFairMode() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        BeeDataSourceConfig config = DsConfigFactory.createDefault();
         config.setFairMode(true);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
@@ -84,7 +84,7 @@ public class PoolInitializationTest extends TestCase {
     }
 
     public void testPoolInitializeInCompetedMode() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        BeeDataSourceConfig config = DsConfigFactory.createDefault();
         config.setFairMode(false);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
@@ -93,14 +93,14 @@ public class PoolInitializationTest extends TestCase {
     }
 
     public void testCreateInitialConnectionBySynModeForCover() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        BeeDataSourceConfig config = DsConfigFactory.createDefault();
         config.setInitialSize(1);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
     }
 
     public void testCreateInitialConnectionByAsynModeForCover() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        BeeDataSourceConfig config = DsConfigFactory.createDefault();
         config.setInitialSize(1);
         config.setPrintRuntimeLog(true);
         config.setAsyncCreateInitConnection(true);
@@ -110,7 +110,7 @@ public class PoolInitializationTest extends TestCase {
 
 
     public void testTimeoutOnCreateLock() throws Exception {
-        BeeDataSourceConfig config = ConfigFactory.createDefault();
+        BeeDataSourceConfig config = DsConfigFactory.createDefault();
         config.setInitialSize(1);
         config.setPrintRuntimeLog(true);
         config.setAsyncCreateInitConnection(true);
