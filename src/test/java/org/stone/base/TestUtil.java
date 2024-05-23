@@ -9,6 +9,8 @@
  */
 package org.stone.base;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.core.Appender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +33,21 @@ public class TestUtil {
     public static final long Wait_Time = 100L;
     public static final TimeUnit Wait_TimeUnit = TimeUnit.MILLISECONDS;
     private static final Logger log = LoggerFactory.getLogger(TestUtil.class);
+    private static StoneLogAppender logAppender = null;
+
+    public static StoneLogAppender getStoneLogAppender() {
+        if (logAppender != null) return logAppender;
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        for (ch.qos.logback.classic.Logger loggerImpl : loggerContext.getLoggerList()) {
+            Appender appender = loggerImpl.getAppender("console");
+            if (appender instanceof StoneLogAppender) {
+                logAppender = (StoneLogAppender) appender;
+                break;
+            }
+        }
+        return logAppender;
+    }
+
 
     public static void assertError(String message) {
         throw new AssertionError(message);
