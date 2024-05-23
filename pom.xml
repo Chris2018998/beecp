@@ -13,7 +13,7 @@
         <gpg.skip>false</gpg.skip>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <project.source.encoding>UTF-8</project.source.encoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <licenses>
@@ -90,7 +90,7 @@
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
-                    <encoding>${project.source.encoding}</encoding>
+                    <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>
 
@@ -119,11 +119,16 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.0</version>
+                <version>3.2.5</version>
                 <configuration>
                     <skipTests>false</skipTests>
+                    <testFailureIgnore>true</testFailureIgnore>
+                    <skipAfterFailureCount>1</skipAfterFailureCount>
                     <includes>
-                        <include>org/stone/beecp/TestRunner.java</include>
+                        <include>org/stone/beecp/config/*Test.java</include>
+                        <include>org/stone/beecp/dataSource/*Test.java</include>
+                        <include>org/stone/beecp/pool2/*Test.java</include>
+                        <include>org/stone/beecp/pool/*Test.java</include>
                     </includes>
                 </configuration>
             </plugin>
