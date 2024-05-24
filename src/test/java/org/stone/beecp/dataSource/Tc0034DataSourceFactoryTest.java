@@ -44,9 +44,9 @@ public class Tc0034DataSourceFactoryTest extends TestCase {
         ref.add(new StringRefAddr(CONFIG_SQL_EXCEPTION_STATE, "A,B,C"));
 
         try {
-            ob = factory.getObjectInstance(ref, null, null, null);
+            factory.getObjectInstance(ref, null, null, null);
         } catch (BeeDataSourceConfigException e) {
-
+            //do noting
         }
 
         //StringRefAddr tmName = new StringRefAddr("transactionManagerName", "transactionManagerName");

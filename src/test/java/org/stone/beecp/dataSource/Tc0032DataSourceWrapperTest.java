@@ -11,9 +11,6 @@ package org.stone.beecp.dataSource;
 
 import junit.framework.TestCase;
 import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.stone.beecp.BeeDataSource;
 
 import javax.sql.DataSource;
@@ -21,10 +18,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class Tc0032DataSourceWrapperTest extends TestCase {
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
-    @Test(expected = SQLException.class)
     public void testOnWrapper() {
         BeeDataSource ds = new BeeDataSource();
         Assert.assertFalse(ds.isWrapperFor(null));
@@ -33,7 +27,6 @@ public class Tc0032DataSourceWrapperTest extends TestCase {
         Assert.assertFalse(ds.isWrapperFor(Connection.class));
 
         try {
-            thrown.expect(SQLException.class);
             ds.unwrap(null);
         } catch (Exception e) {
             Assert.assertTrue(e instanceof SQLException);

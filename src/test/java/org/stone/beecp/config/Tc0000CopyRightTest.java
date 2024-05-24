@@ -5,7 +5,7 @@ import junit.framework.TestCase;
 public class Tc0000CopyRightTest extends TestCase {
 
     public void testOnPrintRightInfo() {
-        String buf = "********************************************************************************\n" +
+        String buf = "*********************************************************************************\n" +
                 "*                                                                               *\n" +
                 "*                             Test case(beecp)                                  *\n" +
                 "*                                                                               *\n" +

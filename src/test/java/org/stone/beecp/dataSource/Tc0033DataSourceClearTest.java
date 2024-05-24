@@ -2,23 +2,14 @@ package org.stone.beecp.dataSource;
 
 import junit.framework.TestCase;
 import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.stone.beecp.BeeConnectionPoolMonitorVo;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 import org.stone.beecp.config.DsConfigFactory;
 
-import java.sql.SQLException;
-
 public class Tc0033DataSourceClearTest extends TestCase {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
-    @Test(expected = SQLException.class)
     public void testOnClear1() throws Exception {
         BeeDataSource ds = null;
         try {
@@ -31,7 +22,6 @@ public class Tc0033DataSourceClearTest extends TestCase {
         }
     }
 
-    @Test(expected = SQLException.class)
     public void testOnClear2() throws Exception {
         BeeDataSource ds = null;
         try {

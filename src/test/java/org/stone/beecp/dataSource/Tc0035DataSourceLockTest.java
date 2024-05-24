@@ -11,19 +11,18 @@ package org.stone.beecp.dataSource;
 
 import junit.framework.TestCase;
 import org.junit.Assert;
-import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.JdbcConfig;
 import org.stone.beecp.pool.ConnectionPoolStatics;
 import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
 import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
 
-import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.LockSupport;
 
 public class Tc0035DataSourceLockTest extends TestCase {
 
@@ -38,16 +37,19 @@ public class Tc0035DataSourceLockTest extends TestCase {
             ds.setMaxWait(TimeUnit.SECONDS.toMillis(3));//timeout on wait
             ds.setPoolImplementClassName(BlockPoolImplementation.class.getName());
 
+            CountDownLatch latch = new CountDownLatch(1);
             //first borrower thread for this case test(blocked in write lock)
-            firstThread = new FirstGetThread(ds);
+            firstThread = new FirstGetThread(ds, latch);
             firstThread.start();
 
-            //park second ensure that first thread in blocking
-            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
+
             Connection con = null;
             try {
                 //main thread will be blocked on ds read lock
+                latch.await();
                 con = ds.getConnection();
+            } catch (InterruptedException e) {
+                //
             } catch (SQLException e) {
                 Assert.assertTrue(e instanceof ConnectionGetTimeoutException);
             } finally {
@@ -59,9 +61,8 @@ public class Tc0035DataSourceLockTest extends TestCase {
         }
     }
 
-    public void testInterruptionOnDsRLock() throws Exception {
+    public void testInterruptionOnDsRLock() {
         BeeDataSource ds = null;
-        FirstGetThread firstThread;
         try {
             ds = new BeeDataSource();
             ds.setJdbcUrl(JdbcConfig.JDBC_URL);
@@ -69,19 +70,18 @@ public class Tc0035DataSourceLockTest extends TestCase {
             ds.setUsername(JdbcConfig.JDBC_USER);
             ds.setPoolImplementClassName(BlockPoolImplementation.class.getName());
 
-            //will be blocked in pool instance creation(write lock)
-            firstThread = new FirstGetThread(ds);
+            CountDownLatch latch = new CountDownLatch(2);
+            List<Thread> threads = new ArrayList<>(2);
+
+            FirstGetThread firstThread = new FirstGetThread(ds, latch);
             firstThread.start();
 
-            //park second ensure that first thread in blocking
-            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1)); //ensure first getter blocked
+            threads.add(firstThread);
+            threads.add(Thread.currentThread());
+            new DsLockInterruptedThread(threads, latch).start();
 
-            Object dsLock = TestUtil.getFieldValue(ds, "lock");
-            Method method = dsLock.getClass().getDeclaredMethod("getQueuedReaderThreads");
-            method.setAccessible(true);
-            new DsLockInterruptedThread(dsLock, method).start();
 
-            //second borrower to get connection(this thread will be blocked on ds read-lock)
+            latch.countDown();
             Connection con = null;
             try {
                 con = ds.getConnection();
@@ -97,13 +97,16 @@ public class Tc0035DataSourceLockTest extends TestCase {
 
     private static class FirstGetThread extends Thread {
         private final BeeDataSource ds;
+        private final CountDownLatch latch;
 
-        FirstGetThread(BeeDataSource ds) {
+        FirstGetThread(BeeDataSource ds, CountDownLatch latch) {
             this.ds = ds;
+            this.latch = latch;
         }
 
         public void run() {
             try {
+                latch.countDown();
                 ds.getConnection();
             } catch (Exception e) {
                 //do noting
@@ -113,28 +116,21 @@ public class Tc0035DataSourceLockTest extends TestCase {
 
     //A mock thread to interrupt wait threads on ds-read lock
     private static class DsLockInterruptedThread extends Thread {
-        private final Object dsRWLock;
-        private final Method getQueuedReaderThreadsMethod;
+        private final List<Thread> threads;
+        private final CountDownLatch latch;
 
-        DsLockInterruptedThread(Object dsRWLock, Method getQueuedReaderThreadsMethod) {
-            this.dsRWLock = dsRWLock;
-            this.getQueuedReaderThreadsMethod = getQueuedReaderThreadsMethod;
+        DsLockInterruptedThread(List<Thread> threads, CountDownLatch latch) {
+            this.latch = latch;
+            this.threads = threads;
         }
 
         public void run() {
-            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));//ensure the second thread in waiting on r-lock
-
             try {
-                Object queueThreads = getQueuedReaderThreadsMethod.invoke(dsRWLock);
-                if (queueThreads instanceof Collection) {
-                    Collection<Thread> waitThreads = (Collection<Thread>) queueThreads;
-                    for (Thread waitThread : waitThreads) {
-                        waitThread.interrupt();
-                    }
-                }
+                latch.await();
+                for (Thread thread : threads)
+                    thread.interrupt();
             } catch (Exception e) {
-                System.err.println(e);
-                // e.printStackTrace();
+                //do nothing
             }
         }
     }
