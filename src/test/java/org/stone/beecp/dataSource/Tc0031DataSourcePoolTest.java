@@ -6,6 +6,7 @@ import org.stone.base.StoneLogAppender;
 import org.stone.base.TestUtil;
 import org.stone.beecp.*;
 import org.stone.beecp.config.DsConfigFactory;
+import org.stone.beecp.factory.NullConnectionFactory;
 import org.stone.beecp.pool.ConnectionPoolStatics;
 import org.stone.beecp.pool.exception.PoolCreateFailedException;
 import org.stone.beecp.pool.exception.PoolNotCreatedException;
@@ -69,6 +70,10 @@ public class Tc0031DataSourcePoolTest extends TestCase {
             Assert.assertTrue(e instanceof PoolNotCreatedException);
         }
 
+
+        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        config.setConnectionFactoryClass(NullConnectionFactory.class);
+        BeeDataSource ds2 = new BeeDataSource(config);
     }
 
     public void testOnInitializedPool() throws Exception {

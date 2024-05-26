@@ -81,7 +81,7 @@ public class Tc0035DataSourceLockTest extends TestCase {
         ds.setJdbcUrl(JdbcConfig.JDBC_URL);
         ds.setDriverClassName(JdbcConfig.JDBC_DRIVER);
         ds.setUsername(JdbcConfig.JDBC_USER);
-        ds.setMaxWait(TimeUnit.SECONDS.toMillis(1));//timeout on wait
+        ds.setMaxWait(TimeUnit.SECONDS.toMillis(2));//timeout on wait
         ds.setPoolImplementClassName(BlockPoolImplementation2.class.getName());
 
         //first borrower thread for this case test(blocked in write lock)
