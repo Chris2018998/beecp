@@ -48,6 +48,9 @@ public final class TransactionIsolation {
         IsolationLevelMap.put(LEVEL_SERIALIZABLE, TRANSACTION_SERIALIZABLE);
     }
 
+    private TransactionIsolation() {
+    }
+
     static Integer getTransactionIsolationCode(String name) {
         return IsolationLevelMap.get(name.toUpperCase(Locale.US));
     }
