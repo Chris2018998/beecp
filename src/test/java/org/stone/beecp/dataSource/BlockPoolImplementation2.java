@@ -1,12 +1,3 @@
-/*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
- *
- * Copyright(C) Chris2018998,All rights reserved.
- *
- * Project owner contact:Chris2018998@tom.com.
- *
- * Project Licensed under Apache License v2.0
- */
 package org.stone.beecp.dataSource;
 
 import org.stone.beecp.BeeConnectionPool;
@@ -15,12 +6,13 @@ import org.stone.beecp.BeeDataSourceConfig;
 
 import javax.sql.XAConnection;
 import java.sql.Connection;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
-public class BlockPoolImplementation implements BeeConnectionPool {
+public class BlockPoolImplementation2 implements BeeConnectionPool {
 
-    public BlockPoolImplementation() {
-        LockSupport.park();
+    public BlockPoolImplementation2() {
+        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(2));
     }
 
     public void init(BeeDataSourceConfig config) {
@@ -61,4 +53,6 @@ public class BlockPoolImplementation implements BeeConnectionPool {
 
     public void clear(boolean forceCloseUsing, BeeDataSourceConfig config) {
     }
+
+
 }

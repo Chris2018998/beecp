@@ -19,116 +19,119 @@ import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import static org.stone.base.TestUtil.joinUtilWaiting;
 
 public class Tc0035DataSourceLockTest extends TestCase {
 
     public void testWaitTimeoutOnDsRLock() {
-        BeeDataSource ds = null;
-        FirstGetThread firstThread = null;
-        try {
-            ds = new BeeDataSource();
-            ds.setJdbcUrl(JdbcConfig.JDBC_URL);
-            ds.setDriverClassName(JdbcConfig.JDBC_DRIVER);
-            ds.setUsername(JdbcConfig.JDBC_USER);
-            ds.setMaxWait(TimeUnit.SECONDS.toMillis(3));//timeout on wait
-            ds.setPoolImplementClassName(BlockPoolImplementation.class.getName());
+        BeeDataSource ds;
+        FirstGetThread firstThread;
 
-            CountDownLatch latch = new CountDownLatch(1);
-            //first borrower thread for this case test(blocked in write lock)
-            firstThread = new FirstGetThread(ds, latch);
-            firstThread.start();
+        ds = new BeeDataSource();
+        ds.setJdbcUrl(JdbcConfig.JDBC_URL);
+        ds.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+        ds.setUsername(JdbcConfig.JDBC_USER);
+        ds.setMaxWait(TimeUnit.SECONDS.toMillis(1));//timeout on wait
+        ds.setPoolImplementClassName(BlockPoolImplementation.class.getName());
 
+        firstThread = new FirstGetThread(ds);//first thread create pool under write-lock
+        firstThread.start();
 
-            Connection con = null;
+        if (joinUtilWaiting(firstThread)) {
             try {
-                //main thread will be blocked on ds read lock
-                latch.await();
-                con = ds.getConnection();
-            } catch (InterruptedException e) {
-                //
-            } catch (SQLException e) {
+                ds.getConnection();//second thread will be locked on read-lock
+                Assert.fail("Ds Lock timeout test failed");
+            } catch (Exception e) {
                 Assert.assertTrue(e instanceof ConnectionGetTimeoutException);
-            } finally {
-                if (con != null) ConnectionPoolStatics.oclose(con);
             }
-        } finally {
-            if (firstThread != null) firstThread.interrupt();
-            if (ds != null) ds.close();
         }
     }
 
     public void testInterruptionOnDsRLock() {
-        BeeDataSource ds = null;
-        try {
-            ds = new BeeDataSource();
-            ds.setJdbcUrl(JdbcConfig.JDBC_URL);
-            ds.setDriverClassName(JdbcConfig.JDBC_DRIVER);
-            ds.setUsername(JdbcConfig.JDBC_USER);
-            ds.setPoolImplementClassName(BlockPoolImplementation.class.getName());
+        BeeDataSource ds;
+        ds = new BeeDataSource();
+        ds.setJdbcUrl(JdbcConfig.JDBC_URL);
+        ds.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+        ds.setUsername(JdbcConfig.JDBC_USER);
+        ds.setPoolImplementClassName(BlockPoolImplementation.class.getName());
 
-            CountDownLatch latch = new CountDownLatch(2);
-            List<Thread> threads = new ArrayList<>(2);
+        FirstGetThread firstThread = new FirstGetThread(ds);
+        firstThread.start();
 
-            FirstGetThread firstThread = new FirstGetThread(ds, latch);
-            firstThread.start();
+        if (joinUtilWaiting(firstThread)) {
+            new DsLockInterruptedThread(Thread.currentThread()).start();
 
-            threads.add(firstThread);
-            threads.add(Thread.currentThread());
-            new DsLockInterruptedThread(threads, latch).start();
+            try {
+                ds.getConnection();
+                Assert.fail("Ds Lock interruption test failed");
+            } catch (SQLException e) {
+                Assert.assertTrue(e instanceof ConnectionGetInterruptedException);
+            }
+        }
+    }
 
 
-            latch.countDown();
+    public void testSuccessOnRLock() {
+        BeeDataSource ds;
+        FirstGetThread firstThread;
+
+        ds = new BeeDataSource();
+        ds.setJdbcUrl(JdbcConfig.JDBC_URL);
+        ds.setDriverClassName(JdbcConfig.JDBC_DRIVER);
+        ds.setUsername(JdbcConfig.JDBC_USER);
+        ds.setMaxWait(TimeUnit.SECONDS.toMillis(1));//timeout on wait
+        ds.setPoolImplementClassName(BlockPoolImplementation2.class.getName());
+
+        //first borrower thread for this case test(blocked in write lock)
+        firstThread = new FirstGetThread(ds);
+        firstThread.start();
+
+        if (joinUtilWaiting(firstThread)) {
             Connection con = null;
             try {
                 con = ds.getConnection();
-            } catch (SQLException e) {
-                Assert.assertTrue(e instanceof ConnectionGetInterruptedException);
+            } catch (Exception e) {
+                //do nothing
             } finally {
                 if (con != null) ConnectionPoolStatics.oclose(con);
+                ds.close();
             }
-        } finally {
-            if (ds != null) ds.close();
         }
     }
 
     private static class FirstGetThread extends Thread {
         private final BeeDataSource ds;
-        private final CountDownLatch latch;
 
-        FirstGetThread(BeeDataSource ds, CountDownLatch latch) {
+        FirstGetThread(BeeDataSource ds) {
             this.ds = ds;
-            this.latch = latch;
+            this.setDaemon(true);
         }
 
         public void run() {
             try {
-                latch.countDown();
                 ds.getConnection();
             } catch (Exception e) {
                 //do noting
+            } finally {
+                ds.close();
             }
         }
     }
 
     //A mock thread to interrupt wait threads on ds-read lock
     private static class DsLockInterruptedThread extends Thread {
-        private final List<Thread> threads;
-        private final CountDownLatch latch;
+        private final Thread readThread;
 
-        DsLockInterruptedThread(List<Thread> threads, CountDownLatch latch) {
-            this.latch = latch;
-            this.threads = threads;
+        DsLockInterruptedThread(Thread readThread) {
+            this.readThread = readThread;
         }
 
         public void run() {
             try {
-                latch.await();
-                for (Thread thread : threads)
-                    thread.interrupt();
+                if (joinUtilWaiting(readThread))
+                    readThread.interrupt();
             } catch (Exception e) {
                 //do nothing
             }
