@@ -877,8 +877,10 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
         //2:interrupt waiters on semaphore
         this.semaphore.interruptQueuedWaitThreads();
-        PoolInClearingException exception = new PoolInClearingException("Access rejected,pool in clearing");
-        while (!this.waitQueue.isEmpty()) this.transferException(exception);
+        if(!this.waitQueue.isEmpty()) {
+            PoolInClearingException exception = new PoolInClearingException("Access rejected,pool in clearing");
+            while (!this.waitQueue.isEmpty()) this.transferException(exception);
+        }
 
         //3:clear all connections
         while (true) {
