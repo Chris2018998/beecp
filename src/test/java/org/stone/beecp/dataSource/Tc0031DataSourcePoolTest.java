@@ -73,7 +73,7 @@ public class Tc0031DataSourcePoolTest extends TestCase {
 
         BeeDataSourceConfig config = DsConfigFactory.createDefault();
         config.setConnectionFactoryClass(NullConnectionFactory.class);
-        BeeDataSource ds2 = new BeeDataSource(config);
+        new BeeDataSource(config);
     }
 
     public void testOnInitializedPool() throws Exception {
