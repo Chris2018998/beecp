@@ -67,7 +67,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //milliseconds: max wait time in pool to get connections,default is 8000 milliseconds(8 seconds)
     private long maxWait = SECONDS.toMillis(8);
 
-    //seconds: max wait time effects inside a driver or a datasource to establish raw connections.
+    //seconds: a driver level item,which is a max wait time establish connections to db.
     //Two connection creation modes supported in bee datasource configuration
     //1: driver mode,driverClassName field has been set or a matched driver can be searched with url
     //2: factory mode,@see field connectionFactoryClass(supports four types)
