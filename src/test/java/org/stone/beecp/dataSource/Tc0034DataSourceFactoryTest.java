@@ -14,6 +14,7 @@ import org.junit.Assert;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfigException;
 import org.stone.beecp.BeeDataSourceFactory;
+import org.stone.beecp.jta.BeeJtaDataSource;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -33,19 +34,20 @@ public class Tc0034DataSourceFactoryTest extends TestCase {
         Object ob = factory.getObjectInstance(new Object(), null, null, null);
         Assert.assertNull(ob);
         Reference ref1 = new Reference("javax2.sql.DataSource");
+        //jndi test1(jndi name ==null && nameCtx ==null)
         ob = factory.getObjectInstance(ref1, null, null, null);
         Assert.assertNull(ob);
 
-        //jndi test1(transactionManager)
+        //jndi test2(jndi name !=null && nameCtx ==null)
         Reference ref2 = new Reference("javax.sql.DataSource");
-        ref2.add(new StringRefAddr(CONFIG_TM_JNDI, "transactionManagerName"));
         ref2.add(new StringRefAddr("jdbcUrl", "jdbc:beecp://localhost/testdb"));
         ref2.add(new StringRefAddr("driverClassName", "org.stone.beecp.mock.MockDriver"));
-        BeeDataSource ds2 = (BeeDataSource) factory.getObjectInstance(ref2, null, new TestInitialContext(null), null);
+        ref2.add(new StringRefAddr(CONFIG_TM_JNDI, "transactionManagerName"));
+        BeeDataSource ds2 = (BeeDataSource) factory.getObjectInstance(ref2, null, null, null);
         Assert.assertNotNull(ds2);
         ds2.close();
 
-        //jndi test2(transactionManager)
+        //jndi test3(jndi name ==null && tm!=null)
         Reference ref3 = new Reference("javax.sql.DataSource");
         ref3.add(new StringRefAddr("jdbcUrl", "jdbc:beecp://localhost/testdb"));
         ref3.add(new StringRefAddr("driverClassName", "org.stone.beecp.mock.MockDriver"));
@@ -53,47 +55,56 @@ public class Tc0034DataSourceFactoryTest extends TestCase {
         Assert.assertNotNull(ds3);
         ds3.close();
 
+        //jndi test4(jndi name !=null && tm!=null)
         Reference ref4 = new Reference("javax.sql.DataSource");
         ref4.add(new StringRefAddr("jdbcUrl", "jdbc:beecp://localhost/testdb"));
         ref4.add(new StringRefAddr("driverClassName", "org.stone.beecp.mock.MockDriver"));
-        ref4.add(new StringRefAddr("poolName", null));
-        ref4.add(new StringRefAddr("defaultCatalog", ""));
-        ref4.add(new StringRefAddr("initial-size", "10"));
-        ref4.add(new StringRefAddr("max_active", "20"));
-        ref4.add(new StringRefAddr(CONFIG_CONNECT_PROP, "A=a&B=b"));
-        ref4.add(new StringRefAddr(CONFIG_CONNECT_PROP_SIZE, "2"));
-        ref4.add(new StringRefAddr("connectProperties.1", "2"));
-        ref4.add(new StringRefAddr("connectProperties.2", "2"));
-        ref4.add(new StringRefAddr(CONFIG_SQL_EXCEPTION_CODE, "1,2"));
-        ref4.add(new StringRefAddr(CONFIG_SQL_EXCEPTION_STATE, "A,B,C"));
-        BeeDataSource ds4 = (BeeDataSource) factory.getObjectInstance(ref4, null, null, null);
+        ref4.add(new StringRefAddr(CONFIG_TM_JNDI, "transactionManagerName"));
+        BeeJtaDataSource ds4 = (BeeJtaDataSource) factory.getObjectInstance(ref4, null, new TestInitialContext(new TransactionManagerImpl()), null);
         Assert.assertNotNull(ds4);
-        Assert.assertEquals(10, ds4.getInitialSize());
-        Assert.assertEquals(20, ds4.getMaxActive());
-        Assert.assertEquals("a", ds4.getConnectProperty("A"));
-        Assert.assertEquals("b", ds4.getConnectProperty("B"));
         ds4.close();
 
         Reference ref5 = new Reference("javax.sql.DataSource");
         ref5.add(new StringRefAddr("jdbcUrl", "jdbc:beecp://localhost/testdb"));
         ref5.add(new StringRefAddr("driverClassName", "org.stone.beecp.mock.MockDriver"));
-        ref5.add(new StringRefAddr(CONFIG_SQL_EXCEPTION_CODE, ""));
-        ref5.add(new StringRefAddr(CONFIG_SQL_EXCEPTION_STATE, ""));
+        ref5.add(new StringRefAddr("poolName", null));
+        ref5.add(new StringRefAddr("defaultCatalog", ""));
+        ref5.add(new StringRefAddr("initial-size", "10"));
+        ref5.add(new StringRefAddr("max_active", "20"));
+        ref5.add(new StringRefAddr(CONFIG_CONNECT_PROP, "A=a&B=b"));
+        ref5.add(new StringRefAddr(CONFIG_CONNECT_PROP_SIZE, "2"));
+        ref5.add(new StringRefAddr("connectProperties.1", "2"));
+        ref5.add(new StringRefAddr("connectProperties.2", "2"));
+        ref5.add(new StringRefAddr(CONFIG_SQL_EXCEPTION_CODE, "1,2"));
+        ref5.add(new StringRefAddr(CONFIG_SQL_EXCEPTION_STATE, "A,B,C"));
         BeeDataSource ds5 = (BeeDataSource) factory.getObjectInstance(ref5, null, null, null);
+        Assert.assertNotNull(ds5);
+        Assert.assertEquals(10, ds5.getInitialSize());
+        Assert.assertEquals(20, ds5.getMaxActive());
+        Assert.assertEquals("a", ds5.getConnectProperty("A"));
+        Assert.assertEquals("b", ds5.getConnectProperty("B"));
         ds5.close();
 
         Reference ref6 = new Reference("javax.sql.DataSource");
         ref6.add(new StringRefAddr("jdbcUrl", "jdbc:beecp://localhost/testdb"));
         ref6.add(new StringRefAddr("driverClassName", "org.stone.beecp.mock.MockDriver"));
-        ref6.add(new StringRefAddr(CONFIG_SQL_EXCEPTION_CODE, "1,2,A"));
-        BeeDataSource ds6 = null;
+        ref6.add(new StringRefAddr(CONFIG_SQL_EXCEPTION_CODE, ""));
+        ref6.add(new StringRefAddr(CONFIG_SQL_EXCEPTION_STATE, ""));
+        BeeDataSource ds6 = (BeeDataSource) factory.getObjectInstance(ref6, null, null, null);
+        ds6.close();
+
+        Reference ref7 = new Reference("javax.sql.DataSource");
+        ref7.add(new StringRefAddr("jdbcUrl", "jdbc:beecp://localhost/testdb"));
+        ref7.add(new StringRefAddr("driverClassName", "org.stone.beecp.mock.MockDriver"));
+        ref7.add(new StringRefAddr(CONFIG_SQL_EXCEPTION_CODE, "1,2,A"));
+        BeeDataSource ds7 = null;
         try {
-            ds6 = (BeeDataSource) factory.getObjectInstance(ref6, null, null, null);
+            ds7 = (BeeDataSource) factory.getObjectInstance(ref7, null, null, null);
         } catch (BeeDataSourceConfigException e) {
             String errorMsg = e.getMessage();
             Assert.assertTrue(errorMsg != null && errorMsg.contains("is not valid error code"));
         } finally {
-            if (ds6 != null) ds6.close();
+            if (ds7 != null) ds7.close();
         }
     }
 
