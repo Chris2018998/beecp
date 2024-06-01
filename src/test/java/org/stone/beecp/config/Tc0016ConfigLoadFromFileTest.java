@@ -16,8 +16,10 @@ import org.stone.beecp.BeeDataSourceConfig;
 import java.io.File;
 import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
+import static org.stone.base.TestUtil.getClassPathFileAbsolutePath;
 import static org.stone.tools.CommonUtil.loadPropertiesFromClassPathFile;
 
 /**
@@ -32,7 +34,7 @@ public class Tc0016ConfigLoadFromFileTest extends TestCase {
     public void testOnCorrectFile() throws Exception {
         String classFilename = "cp:" + filename;
         check(new BeeDataSourceConfig(classFilename));//classpath
-        check(new BeeDataSourceConfig(getClassPathFileAbsolutePath()));//from file
+        check(new BeeDataSourceConfig(getClassPathFileAbsolutePath(filename)));//from file
         check(new BeeDataSourceConfig(loadPropertiesFromClassPathFile(filename)));//from properties
 
         BeeDataSourceConfig config1 = DsConfigFactory.createEmpty();
@@ -40,7 +42,7 @@ public class Tc0016ConfigLoadFromFileTest extends TestCase {
         check(config1);
 
         BeeDataSourceConfig config2 = DsConfigFactory.createEmpty();
-        config2.loadFromPropertiesFile(getClassPathFileAbsolutePath());
+        config2.loadFromPropertiesFile(getClassPathFileAbsolutePath(filename));
         check(config2);
 
         BeeDataSourceConfig config3 = DsConfigFactory.createEmpty();
@@ -74,7 +76,7 @@ public class Tc0016ConfigLoadFromFileTest extends TestCase {
         }
 
         try {//failure test
-            String fullFilename = getClassPathFileAbsolutePath().toString();
+            String fullFilename = Objects.requireNonNull(getClassPathFileAbsolutePath(filename)).toString();
             String osFileName2 = "beecp/invalid.properties".replace("/", File.separator);
             int lasIndex = fullFilename.lastIndexOf(filename.replace("/", File.separator));
             String invalidFilePath = fullFilename.substring(0, lasIndex) + osFileName2;
@@ -85,7 +87,8 @@ public class Tc0016ConfigLoadFromFileTest extends TestCase {
         }
 
         try {//success test
-            File path = getClassPathFileAbsolutePath();
+            File path = getClassPathFileAbsolutePath(filename);
+            assert path != null;
             config1.loadFromPropertiesFile(path.toString());
         } catch (Exception e) {
             String message = e.getMessage();
@@ -172,13 +175,6 @@ public class Tc0016ConfigLoadFromFileTest extends TestCase {
             String message = e.getMessage();
             Assert.assertTrue(message != null && message.contains("not a properties file"));
         }
-    }
-
-    private File getClassPathFileAbsolutePath() throws Exception {
-        Class<?> selfClass = Tc0016ConfigLoadFromFileTest.class;
-        URL fileUrl = selfClass.getClassLoader().getResource(filename);
-        Assert.assertNotNull(fileUrl);
-        return new File(fileUrl.toURI());
     }
 
     private void check(BeeDataSourceConfig config) {

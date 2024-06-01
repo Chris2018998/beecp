@@ -48,6 +48,7 @@ public class Tc0012ConnectionFactoryTest extends TestCase {
         try {
             BeeDataSourceConfig config1 = DsConfigFactory.createEmpty();
             config1.setConnectionFactoryClass(NullConnectionFactory.class);
+
             config1.check();
 
             BeeDataSourceConfig config2 = DsConfigFactory.createEmpty();
