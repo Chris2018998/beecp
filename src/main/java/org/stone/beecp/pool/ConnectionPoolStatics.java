@@ -21,7 +21,9 @@ import java.lang.reflect.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Pool Static Center
@@ -29,7 +31,7 @@ import java.util.*;
  * @author Chris Liao
  * @version 1.0
  */
-public class ConnectionPoolStatics {
+public final class ConnectionPoolStatics {
     public static final Logger CommonLog = LoggerFactory.getLogger(ConnectionPoolStatics.class);
     //properties configuration separator
     public static final String Separator_MiddleLine = "-";
@@ -111,9 +113,7 @@ public class ConnectionPoolStatics {
             new Class[]{Connection.class},
             new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    if ("isClosed".equals(method.getName())) {
-                        return Boolean.TRUE;
-                    } else if ("toString".equals(method.getName())) {
+                    if ("toString".equals(method.getName())) {
                         return "Connection has been closed";
                     } else {
                         throw new SQLException("No operations allowed after connection closed");
@@ -126,9 +126,7 @@ public class ConnectionPoolStatics {
             new Class[]{CallableStatement.class},
             new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    if ("isClosed".equals(method.getName())) {
-                        return Boolean.TRUE;
-                    } else if ("toString".equals(method.getName())) {
+                    if ("toString".equals(method.getName())) {
                         return "CallableStatement has been closed";
                     } else {
                         throw new SQLException("No operations allowed after statement closed");
@@ -141,9 +139,7 @@ public class ConnectionPoolStatics {
             new Class[]{ResultSet.class},
             new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    if ("isClosed".equals(method.getName())) {
-                        return Boolean.TRUE;
-                    } else if ("toString".equals(method.getName())) {
+                    if ("toString".equals(method.getName())) {
                         return "ResultSet has been closed";
                     } else {
                         throw new SQLException("No operations allowed after resultSet closed");
@@ -284,8 +280,11 @@ public class ConnectionPoolStatics {
         HashMap<String, Method> methodMap = new LinkedHashMap<>(methods.length);
         for (Method method : methods) {
             String methodName = method.getName();
-            if (method.getParameterTypes().length == 1 && methodName.startsWith("set") && methodName.length() > 3)
-                methodMap.put(methodName.substring(3), method);
+            if (method.getParameterTypes().length == 1 && methodName.startsWith("set") && methodName.length() > 3) {
+                String propertyName = methodName.substring(3);
+                propertyName = propertyName.substring(0, 1).toLowerCase() + propertyName.substring(1);
+                methodMap.put(propertyName, method);
+            }
         }
         return methodMap;
     }
@@ -300,19 +299,20 @@ public class ConnectionPoolStatics {
      * @param propertyName config item name
      * @return configuration item value
      */
-    public static String getPropertyValue(Map<String, String> properties, final String propertyName) {
+    public static String getPropertyValue(Map<String, String> properties, String propertyName) {
         String value = readPropertyValue(properties, propertyName);
         if (value != null) return value;
-
-        String newPropertyName = propertyName.substring(0, 1).toLowerCase(Locale.US) + propertyName.substring(1);
-
-        value = readPropertyValue(properties, newPropertyName);
+        value = readPropertyValue(properties, propertyNameToFieldId(propertyName, Separator_MiddleLine));
+        if (value != null) return value;
+        value = readPropertyValue(properties, propertyNameToFieldId(propertyName, Separator_UnderLine));
         if (value != null) return value;
 
-        value = readPropertyValue(properties, propertyNameToFieldId(newPropertyName, Separator_MiddleLine));
-        if (value != null) return value;
-
-        return readPropertyValue(properties, propertyNameToFieldId(newPropertyName, Separator_UnderLine));
+        String firstChar = propertyName.substring(0, 1);
+        if (Character.isLowerCase(firstChar.charAt(0))) {
+            propertyName = firstChar.toUpperCase() + propertyName.substring(1);
+            return readPropertyValue(properties, propertyName);
+        }
+        return null;
     }
 
     /**
@@ -325,18 +325,20 @@ public class ConnectionPoolStatics {
      * @param propertyName config item name
      * @return configuration item value
      */
-    private static Object getFieldValue(Map<String, ?> valueMap, final String propertyName) {
+    private static Object getFieldValue(Map<String, ?> valueMap, String propertyName) {
         Object value = valueMap.get(propertyName);
         if (value != null) return value;
-
-        String newPropertyName = propertyName.substring(0, 1).toLowerCase(Locale.US) + propertyName.substring(1);
-        value = valueMap.get(newPropertyName);
+        value = valueMap.get(propertyNameToFieldId(propertyName, Separator_MiddleLine));
+        if (value != null) return value;
+        value = valueMap.get(propertyNameToFieldId(propertyName, Separator_UnderLine));
         if (value != null) return value;
 
-        value = valueMap.get(propertyNameToFieldId(newPropertyName, Separator_MiddleLine));
-        if (value != null) return value;
-
-        return valueMap.get(propertyNameToFieldId(newPropertyName, Separator_UnderLine));
+        String firstChar = propertyName.substring(0, 1);
+        if (Character.isLowerCase(firstChar.charAt(0))) {
+            propertyName = firstChar.toUpperCase() + propertyName.substring(1);
+            return valueMap.get(propertyName);
+        }
+        return null;
     }
 
     public static String propertyNameToFieldId(String property, String separator) {
@@ -415,6 +417,7 @@ public class ConnectionPoolStatics {
         String text = setValue.toString();
         text = text.trim();
         if (text.isEmpty()) return null;
+
         if (type == char.class || type == Character.class) {
             return text.toCharArray()[0];
         } else if (type == boolean.class || type == Boolean.class) {
@@ -441,18 +444,19 @@ public class ConnectionPoolStatics {
             } catch (ClassNotFoundException e) {
                 throw new BeeDataSourceConfigException("Not found class:" + text);
             }
-        } else if (type.isArray() || Collection.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type)) {//do nothing
+        } else if (type.isArray()) {//do nothing
             return null;
         } else {
             try {
                 Object objInstance = Class.forName(text).newInstance();
                 if (!type.isInstance(objInstance))
-                    throw new BeeDataSourceConfigException("Config value can't mach property(" + propName + ")type:" + type.getName());
+                    throw new BeeDataSourceConfigException("Config a string[" + text + "]can't match property(" + propName + ":" + type + ")");
                 return objInstance;
             } catch (BeeDataSourceConfigException e) {
                 throw e;
             } catch (Throwable e) {
-                throw new BeeDataSourceConfigException("Failed to create property(" + propName + ")value by type:" + text, e);
+                e.printStackTrace();
+                throw new BeeDataSourceConfigException("Failed to set a string[" + text + "]to property(" + propName + ":" + type + ")", e);
             }
         }
     }
@@ -461,37 +465,45 @@ public class ConnectionPoolStatics {
     //                               8: class check(3)                                                               //
     //***************************************************************************************************************//
     //check subclass,if failed,then return error message;
-    public static Object createClassInstance(Class objectClass, Class parentClass, String objectClassType) throws Exception {
-        return createClassInstance(objectClass, parentClass != null ? new Class[]{parentClass} : null, objectClassType);
+    public static Object createClassInstance(Class beanClass, Class parentClass, String objectClassType) throws Exception {
+        return createClassInstance(beanClass, parentClass != null ? new Class[]{parentClass} : null, objectClassType);
     }
 
     //check subclass,if failed,then return error message;
-    public static Object createClassInstance(Class objectClass, Class[] parentClasses, String objectClassType) throws Exception {
-        //1:check class abstract modifier
-        if (Modifier.isAbstract(objectClass.getModifiers()))
-            throw new BeeDataSourceConfigException("Can‘t create a instance on abstract class[" + objectClass.getName() + "],creation category[" + objectClassType + "]");
+    public static Object createClassInstance(Class beanClass, Class[] parentClasses, String objectClassType) throws Exception {
+        //1: null class check
+        if (beanClass == null)
+            throw new BeeDataSourceConfigException("Can‘t create a instance on null class");
+        //2:check class abstract modifier
+        int modifiers = beanClass.getModifiers();
+        if (Modifier.isAbstract(modifiers))
+            throw new BeeDataSourceConfigException("Can‘t create a instance on abstract class[" + beanClass.getName() + "],creation category[" + objectClassType + "]");
         //2:check class public modifier
-        if (!Modifier.isPublic(objectClass.getModifiers()))
-            throw new BeeDataSourceConfigException("Can’t create a instance on non-public class[" + objectClass.getName() + "],creation category[" + objectClassType + "]");
-        //3:check extension
-        boolean isSubClass = false;//pass when match one
+        if (!Modifier.isPublic(modifiers))
+            throw new BeeDataSourceConfigException("Can’t create a instance on non-public class[" + beanClass.getName() + "],creation category[" + objectClassType + "]");
+        //4:check extension
         if (parentClasses != null && parentClasses.length > 0) {
+            int parentClassCount = 0;
+            boolean isSubClass = false;//pass when match one
             for (Class parentClass : parentClasses) {
-                if (parentClass != null && parentClass.isAssignableFrom(objectClass)) {
+                if (parentClass == null) continue;
+                parentClassCount++;
+                if (parentClass.isAssignableFrom(beanClass)) {
                     isSubClass = true;
                     break;
                 }
             }
-            if (!isSubClass)
-                throw new BeeDataSourceConfigException("Can‘t create a instance on class[" + objectClass.getName() + "]which must extend from one of type[" + getClassName(parentClasses) + "]at least,creation category[" + objectClassType + "]");
+            if (parentClassCount > 0 && !isSubClass)
+                throw new BeeDataSourceConfigException("Can‘t create a instance on class[" + beanClass.getName() + "]which must extend from one of type[" + getClassName(parentClasses) + "]at least,creation category[" + objectClassType + "]");
         }
         //4:check class constructor
-        return objectClass.getConstructor().newInstance();
+        return beanClass.getConstructor().newInstance();
     }
 
     private static String getClassName(Class[] classes) {
         StringBuilder buf = new StringBuilder(classes.length * 10);
         for (Class clazz : classes) {
+            if (clazz == null) continue;
             if (buf.length() > 0) buf.append(",");
             buf.append(clazz.getName());
         }
