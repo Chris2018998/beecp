@@ -13,10 +13,13 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.core.Appender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.stone.tools.CommonUtil;
 
 import javax.sql.XAConnection;
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -46,6 +49,12 @@ public class TestUtil {
             }
         }
         return logAppender;
+    }
+
+    public static File getClassPathFileAbsolutePath(String classFileName) throws Exception {
+        Class<?> selfClass = CommonUtil.class;
+        URL fileUrl = selfClass.getClassLoader().getResource(classFileName);
+        return fileUrl != null ? new File(fileUrl.toURI()) : null;
     }
 
 
