@@ -17,6 +17,7 @@ public class MockBase implements Wrapper, AutoCloseable {
     private boolean isClosed = false;
 
     public void close() throws SQLException {
+        if (isClosed) throw new SQLException("has been closed");
         isClosed = true;
     }
 
