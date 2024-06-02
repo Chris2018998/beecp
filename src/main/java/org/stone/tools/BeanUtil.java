@@ -179,13 +179,13 @@ public class BeanUtil {
                 try {
                     setMethod.invoke(bean, setValue);
                 } catch (IllegalAccessException e) {
-                    throw new PropertyValueSetFailedException("Failed to set value on property[" + propertyName + "],message" + e.getMessage(), e);
+                    throw new PropertyValueSetFailedException("Failed to set value on property[" + propertyName + "],message:" + e.getMessage(), e);
                 } catch (InvocationTargetException e) {
                     Throwable cause = e.getTargetException();
                     if (cause == null) {
-                        throw new PropertyValueSetFailedException("Failed to set value on property[" + propertyName + "],message" + e.getMessage(), e);
+                        throw new PropertyValueSetFailedException("Failed to set value on property[" + propertyName + "],message:" + e.getMessage(), e);
                     } else {
-                        throw new PropertyValueSetFailedException("Failed to set value on property[" + propertyName + "],message" + cause.getMessage(), cause);
+                        throw new PropertyValueSetFailedException("Failed to set value on property[" + propertyName + "],message:" + cause.getMessage(), cause);
                     }
                 }
             }
@@ -193,7 +193,7 @@ public class BeanUtil {
     }
 
     /**
-     * Create an instance for a bean class
+     * Create instance for a bean class
      *
      * @param beanClass       is need be instantiated
      * @param parentClass     is parent class for type check(it may be an interface should be implemented by bean class)
@@ -206,7 +206,7 @@ public class BeanUtil {
     }
 
     /**
-     * Create an instance for a bean class
+     * Create instance for a bean class
      *
      * @param beanClass     is need be instantiated
      * @param parentClasses is an array for type check(bean parent class and interfaces)
@@ -238,7 +238,7 @@ public class BeanUtil {
                 }
             }
             if (parentClassCount > 0 && !isSubClass)
-                throw new BeanException("Can‘t create a instance on class[" + beanClass.getName() + "]which must extend from one of type[" + getClassName(parentClasses) + "]at least,creation category[" + beanClassType + "]");
+                throw new BeanException("Can‘t create instance on class[" + beanClass.getName() + "]which must extend from one of type[" + getClassName(parentClasses) + "]at least,creation category[" + beanClassType + "]");
         }
 
         //4:create instance with constructor
