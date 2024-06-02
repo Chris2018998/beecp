@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.stone.beecp.pool.ConnectionPoolStatics.*;
+import static org.stone.tools.BeanUtil.CommonLog;
 import static org.stone.tools.CommonUtil.isNotBlank;
 
 /**

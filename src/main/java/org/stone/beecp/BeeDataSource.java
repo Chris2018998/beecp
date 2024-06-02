@@ -28,7 +28,9 @@ import java.util.logging.Logger;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.stone.beecp.pool.ConnectionPoolStatics.*;
+import static org.stone.beecp.pool.ConnectionPoolStatics.Dummy_CommonDataSource;
+import static org.stone.tools.BeanUtil.CommonLog;
+import static org.stone.tools.BeanUtil.createClassInstance;
 
 /**
  * Bee DataSource impl.

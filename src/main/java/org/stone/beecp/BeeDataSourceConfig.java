@@ -10,6 +10,7 @@
 package org.stone.beecp;
 
 import org.stone.beecp.pool.*;
+import org.stone.tools.exception.BeanException;
 
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
@@ -28,6 +29,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.stone.beecp.TransactionIsolation.TRANS_LEVEL_CODE_LIST;
 import static org.stone.beecp.pool.ConnectionPoolStatics.*;
+import static org.stone.tools.BeanUtil.*;
 import static org.stone.tools.CommonUtil.*;
 
 /**
@@ -788,7 +790,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         String sqlExceptionCode = setValueMap.remove(CONFIG_SQL_EXCEPTION_CODE);//remove item if exists in properties file before injection
         String sqlExceptionState = setValueMap.remove(CONFIG_SQL_EXCEPTION_STATE);//remove item if exists in properties file before injection
         String exclusionListText = setValueMap.remove(CONFIG_CONFIG_PRINT_EXCLUSION_LIST);
-        setPropertiesValue(this, setValueMap);
+        try {
+            setPropertiesValue(this, setValueMap);
+        } catch (BeanException e) {
+            throw new BeeDataSourceConfigException(e.getMessage(), e);
+        }
+
 
         //3:try to find 'connectProperties' config value and put to ds config object
         this.addConnectProperty(connectPropertiesText);
