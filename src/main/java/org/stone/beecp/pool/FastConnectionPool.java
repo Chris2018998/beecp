@@ -837,7 +837,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
     }
 
-    //Method-4.2: removes all pooled connections,then startup with new configuration when it not be null and valid
+    //Method-4.2: removes all pooled connections,then startup with new configuration if it is not null and valid
     public void clear(boolean forceCloseUsing, BeeDataSourceConfig config) throws SQLException {
         if (PoolStateUpd.compareAndSet(this, POOL_READY, POOL_CLEARING)) {
             Log.info("BeeCP({})begin to remove all connections", this.poolName);
@@ -877,7 +877,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
         //2:interrupt waiters on semaphore
         this.semaphore.interruptQueuedWaitThreads();
-        if(!this.waitQueue.isEmpty()) {
+        if (!this.waitQueue.isEmpty()) {
             PoolInClearingException exception = new PoolInClearingException("Access rejected,pool in clearing");
             while (!this.waitQueue.isEmpty()) this.transferException(exception);
         }
@@ -1060,7 +1060,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         return false;
     }
 
-    //Method-5.13: creates monitor view object,some runtime info of pool may filled into this object
+    //Method-5.13: creates monitor view object,some runtime info of pool may fill into this object
     private FastConnectionPoolMonitorVo createPoolMonitorVo() {
         Thread currentThread = Thread.currentThread();
         this.poolThreadId = currentThread.getId();
@@ -1132,7 +1132,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
     }
 
-    //class-6.3: A timed thead to scan idle connections and close them
+    //class-6.3: A timed thread to scan idle connections and close them
     private static final class IdleTimeoutScanThread extends Thread {
         private final FastConnectionPool pool;
 
@@ -1240,7 +1240,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     st.execute(this.testSql);
                     p.lastAccessTime = System.currentTimeMillis();
                 } finally {
-                    rawConn.rollback();//must rollback avoid dirty data into db.if rollback failed,the connection need be abandon
+                    rawConn.rollback();//must roll back avoid dirty data into db.if rollback failed,the connection need be abandon
                 }
             } catch (Throwable e) {
                 checkPassed = false;
