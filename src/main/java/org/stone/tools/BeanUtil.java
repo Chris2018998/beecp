@@ -11,7 +11,9 @@ package org.stone.tools;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stone.beecp.BeeDataSourceConfigException;
+import org.stone.tools.exception.BeanException;
+import org.stone.tools.exception.PropertyValueConvertException;
+import org.stone.tools.exception.PropertyValueSetFailedException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -140,10 +142,10 @@ public class BeanUtil {
      *
      * @param bean     is target set object
      * @param valueMap properties value store
-     * @throws IllegalArgumentException if bean is null
+     * @throws BeanException if bean is null
      */
-    public static void setPropertiesValue(Object bean, Map<String, ?> valueMap) {
-        if (bean == null) throw new IllegalArgumentException("Bean can't be null");
+    public static void setPropertiesValue(Object bean, Map<String, ?> valueMap) throws BeanException {
+        if (bean == null) throw new BeanException("Bean can't be null");
         setPropertiesValue(bean, getClassSetMethodMap(bean.getClass()), valueMap);
     }
 
@@ -152,54 +154,125 @@ public class BeanUtil {
      *
      * @param bean     is target set object
      * @param valueMap properties value store
-     * @throws IllegalArgumentException if bean is null
+     * @throws BeanException if bean is null
      */
-    public static void setPropertiesValue(Object bean, Map<String, Method> setMethodMap, Map<String, ?> valueMap) {
-        if (bean == null) throw new IllegalArgumentException("Bean can't be null");
+    public static void setPropertiesValue(Object bean, Map<String, Method> setMethodMap, Map<String, ?> valueMap) throws BeanException {
+        if (bean == null) throw new BeanException("Bean can't be null");
         if (setMethodMap == null || setMethodMap.isEmpty() || valueMap == null || valueMap.isEmpty()) return;
         for (Map.Entry<String, Method> entry : setMethodMap.entrySet()) {
             String propertyName = entry.getKey();
             Method setMethod = entry.getValue();
 
-            //1: get property value from value map
+            //1: gets property value from value map
             Object setValue = getFieldValue(valueMap, propertyName);
 
-            //2；converts value to target type
+            //2: converts value to target type
             if (setValue != null) {
                 Class<?> type = setMethod.getParameterTypes()[0];
                 try {
-                    setValue = convert(propertyName, setValue, type);
+                    setValue = convert(setValue, type);
                 } catch (Throwable e) {
-                    throw new IllegalArgumentException("Failed to convert config value to property(" + propertyName + ")type:" + type.getName(), e);
+                    throw new PropertyValueConvertException("Failed to convert value[" + setValue + "]to property type(" + propertyName + ":" + type + ")", e);
                 }
 
-                //3；injects converted value on bean
+                //3: injects converted value on bean
                 try {
                     setMethod.invoke(bean, setValue);
                 } catch (IllegalAccessException e) {
-                    throw new BeeDataSourceConfigException("Failed to inject config value to property:" + propertyName, e);
+                    throw new PropertyValueSetFailedException("Failed to set value on property[" + propertyName + "],message" + e.getMessage(), e);
                 } catch (InvocationTargetException e) {
                     Throwable cause = e.getTargetException();
-                    if (cause != null) {
-                        throw new BeeDataSourceConfigException("Failed to inject config value to property:" + propertyName, cause);
+                    if (cause == null) {
+                        throw new PropertyValueSetFailedException("Failed to set value on property[" + propertyName + "],message" + e.getMessage(), e);
                     } else {
-                        throw new BeeDataSourceConfigException("Failed to inject config value to property:" + propertyName, e);
+                        throw new PropertyValueSetFailedException("Failed to set value on property[" + propertyName + "],message" + cause.getMessage(), cause);
                     }
                 }
             }
         }
     }
 
+    /**
+     * Create an instance for a bean class
+     *
+     * @param beanClass       is need be instantiated
+     * @param parentClass     is parent class for type check(it may be an interface should be implemented by bean class)
+     * @param objectClassType is a desc of bean class
+     * @return an instance of bean class
+     * @throws BeanException when create failed
+     */
+    public static Object createClassInstance(Class<?> beanClass, Class<?> parentClass, String objectClassType) throws BeanException {
+        return createClassInstance(beanClass, parentClass != null ? new Class[]{parentClass} : null, objectClassType);
+    }
 
     /**
-     * converts a property name to specified type
+     * Create an instance for a bean class
      *
-     * @param propName  is a bean property name
+     * @param beanClass     is need be instantiated
+     * @param parentClasses is an array for type check(bean parent class and interfaces)
+     * @param beanClassType is a desc of bean class
+     * @return an instance of bean class
+     * @throws BeanException when create failed
+     */
+    public static Object createClassInstance(Class<?> beanClass, Class<?>[] parentClasses, String beanClassType) throws BeanException {
+        //1: null class check
+        if (beanClass == null)
+            throw new BeanException("Bean class can't be null");
+        //2:check class abstract modifier
+        int modifiers = beanClass.getModifiers();
+        if (Modifier.isAbstract(modifiers))
+            throw new BeanException("Bean class can't be abstract");
+        //2:check class public modifier
+        if (!Modifier.isPublic(modifiers))
+            throw new BeanException("Not defined public constructor in bean class");
+        //4:check extension
+        if (parentClasses != null && parentClasses.length > 0) {
+            int parentClassCount = 0;
+            boolean isSubClass = false;//pass when match one
+            for (Class<?> parentClass : parentClasses) {
+                if (parentClass == null) continue;
+                parentClassCount++;
+                if (parentClass.isAssignableFrom(beanClass)) {
+                    isSubClass = true;
+                    break;
+                }
+            }
+            if (parentClassCount > 0 && !isSubClass)
+                throw new BeanException("Can‘t create a instance on class[" + beanClass.getName() + "]which must extend from one of type[" + getClassName(parentClasses) + "]at least,creation category[" + beanClassType + "]");
+        }
+
+        //4:create instance with constructor
+        try {
+            return beanClass.getConstructor().newInstance();
+        } catch (Throwable e) {
+            throw new BeanException("Failed to create instance on class[" + beanClass + "]", e);
+        }
+    }
+
+    /**
+     * builds class array to a string contains class names
+     *
+     * @param classes is a classes array
+     * @return a string
+     */
+    private static String getClassName(Class<?>[] classes) {
+        StringBuilder buf = new StringBuilder(classes.length * 10);
+        for (Class<?> clazz : classes) {
+            if (clazz == null) continue;
+            if (buf.length() > 0) buf.append(",");
+            buf.append(clazz.getName());
+        }
+        return buf.toString();
+    }
+
+    /**
+     * converts value to specified type
+     *
      * @param propValue is value of the property
      * @param type      target conversion type
      * @return converted value
      */
-    private static Object convert(String propName, Object propValue, Class<?> type) {
+    private static Object convert(Object propValue, Class<?> type) throws Exception {
         if (type.isInstance(propValue)) {
             return propValue;
         } else if (type == String.class) {
@@ -231,87 +304,13 @@ public class BeanUtil {
         } else if (type == BigDecimal.class) {
             return new BigDecimal(text);
         } else if (type == Class.class) {
-            try {
-                return Class.forName(text);
-            } catch (ClassNotFoundException e) {
-                throw new BeeDataSourceConfigException("Not found class:" + text);
-            }
+            return Class.forName(text);
         } else if (type.isArray()) {//do nothing
             return null;
         } else {
-            try {
-                Object objInstance = Class.forName(text).newInstance();
-                if (!type.isInstance(objInstance))
-                    throw new BeeDataSourceConfigException("Config a string[" + text + "]can't match property(" + propName + ":" + type + ")");
-                return objInstance;
-            } catch (BeeDataSourceConfigException e) {
-                throw e;
-            } catch (Throwable e) {
-                throw new BeeDataSourceConfigException("Failed to set a string[" + text + "]to property(" + propName + ":" + type + ")", e);
-            }
+            Object objInstance = Class.forName(text).newInstance();
+            if (type.isInstance(objInstance)) return objInstance;
+            throw new ClassCastException();
         }
-    }
-
-
-    /**
-     * Create an instance for a class
-     *
-     * @param beanClass       is need be instantiated
-     * @param parentClass     is parent class for type check(it may be an interface should be implemented by bean class)
-     * @param objectClassType is a desc of bean class
-     * @return an instance of bean class
-     * @throws Exception when create failed
-     */
-    public static Object createClassInstance(Class<?> beanClass, Class<?> parentClass, String objectClassType) throws Exception {
-        return createClassInstance(beanClass, parentClass != null ? new Class[]{parentClass} : null, objectClassType);
-    }
-
-    /**
-     * Create an instance for a class
-     *
-     * @param beanClass       is need be instantiated
-     * @param parentClasses   is an array for type check(bean parent class and interfaces)
-     * @param objectClassType is a desc of bean class
-     * @return an instance of bean class
-     * @throws Exception when create failed
-     */
-    public static Object createClassInstance(Class<?> beanClass, Class<?>[] parentClasses, String objectClassType) throws Exception {
-        //1: null class check
-        if (beanClass == null)
-            throw new BeeDataSourceConfigException("Can‘t create a instance on null class");
-        //2:check class abstract modifier
-        int modifiers = beanClass.getModifiers();
-        if (Modifier.isAbstract(modifiers))
-            throw new BeeDataSourceConfigException("Can‘t create a instance on abstract class[" + beanClass.getName() + "],creation category[" + objectClassType + "]");
-        //2:check class public modifier
-        if (!Modifier.isPublic(modifiers))
-            throw new BeeDataSourceConfigException("Can’t create a instance on non-public class[" + beanClass.getName() + "],creation category[" + objectClassType + "]");
-        //4:check extension
-        if (parentClasses != null && parentClasses.length > 0) {
-            int parentClassCount = 0;
-            boolean isSubClass = false;//pass when match one
-            for (Class<?> parentClass : parentClasses) {
-                if (parentClass == null) continue;
-                parentClassCount++;
-                if (parentClass.isAssignableFrom(beanClass)) {
-                    isSubClass = true;
-                    break;
-                }
-            }
-            if (parentClassCount > 0 && !isSubClass)
-                throw new BeeDataSourceConfigException("Can‘t create a instance on class[" + beanClass.getName() + "]which must extend from one of type[" + getClassName(parentClasses) + "]at least,creation category[" + objectClassType + "]");
-        }
-        //4:check class constructor
-        return beanClass.getConstructor().newInstance();
-    }
-
-    private static String getClassName(Class<?>[] classes) {
-        StringBuilder buf = new StringBuilder(classes.length * 10);
-        for (Class<?> clazz : classes) {
-            if (clazz == null) continue;
-            if (buf.length() > 0) buf.append(",");
-            buf.append(clazz.getName());
-        }
-        return buf.toString();
     }
 }
