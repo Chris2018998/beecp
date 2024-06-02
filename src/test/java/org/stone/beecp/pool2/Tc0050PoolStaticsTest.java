@@ -12,7 +12,7 @@ import org.stone.beecp.factory.MockConnectionFactory;
 import org.stone.beecp.factory.PropertiesTestSetObject;
 import org.stone.beecp.mock.MockDriver;
 import org.stone.beecp.mock.MockXaDataSource;
-import org.stone.beecp.pool.ConnectionPoolStatics;
+import org.stone.tools.exception.BeanException;
 
 import javax.sql.XAConnection;
 import java.lang.reflect.Method;
@@ -23,11 +23,15 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.stone.beecp.pool.ConnectionPoolStatics.loadDriver;
+import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
+import static org.stone.tools.BeanUtil.*;
+
 public class Tc0050PoolStaticsTest extends TestCase {
 
     public void testInvalidDriverClass() {
         try {
-            ConnectionPoolStatics.loadDriver("org.stone.beecp.mock.MockDriver2");
+            loadDriver("org.stone.beecp.mock.MockDriver2");
         } catch (Exception e) {
             Assert.assertTrue(e instanceof BeeDataSourceConfigException);
         }
@@ -51,16 +55,16 @@ public class Tc0050PoolStaticsTest extends TestCase {
         } catch (Exception e) {
             //do nothing
         } finally {
-            ConnectionPoolStatics.oclose(resultSet);
-            ConnectionPoolStatics.oclose(statement);
-            ConnectionPoolStatics.oclose(con);
-            ConnectionPoolStatics.oclose(xaCon);
+            oclose(resultSet);
+            oclose(statement);
+            oclose(con);
+            oclose(xaCon);
         }
 
-        ConnectionPoolStatics.oclose(resultSet);
-        ConnectionPoolStatics.oclose(statement);
-        ConnectionPoolStatics.oclose(con);
-        ConnectionPoolStatics.oclose(xaCon);
+        oclose(resultSet);
+        oclose(statement);
+        oclose(con);
+        oclose(xaCon);
     }
 
     public void testOnDummyCommonDataSource() {
@@ -131,7 +135,7 @@ public class Tc0050PoolStaticsTest extends TestCase {
         }
 
         //test on closed statement
-        Assert.assertTrue(statement.toString().contains("CallableStatement has been closed"));
+        Assert.assertTrue(statement.toString().contains("Statement has been closed"));
         try {
             Assert.assertTrue(statement.isClosed());
         } catch (Exception e) {
@@ -160,7 +164,7 @@ public class Tc0050PoolStaticsTest extends TestCase {
     }
 
     public void testSetMethodsLookup() {
-        Map<String, Method> map = ConnectionPoolStatics.getClassSetMethodMap(Tc0050PoolStaticsTest.SetTestBean.class);
+        Map<String, Method> map = getClassSetMethodMap(Tc0050PoolStaticsTest.SetTestBean.class);
         Assert.assertEquals(1, map.size());
     }
 
@@ -170,28 +174,28 @@ public class Tc0050PoolStaticsTest extends TestCase {
         map1.put("max-active", "10");
         map1.put("max_active", "20");
         map1.put("URL", "http://localhost:8080/testdb");
-        Assert.assertEquals("http://localhost:8080/testdb", ConnectionPoolStatics.getPropertyValue(map1, "URL"));
-        Assert.assertEquals("http://localhost:8080/testdb", ConnectionPoolStatics.getPropertyValue(map1, "uRL"));
-        Assert.assertEquals("5", ConnectionPoolStatics.getPropertyValue(map1, "maxActive"));
+        Assert.assertEquals("http://localhost:8080/testdb", getPropertyValue(map1, "URL"));
+        Assert.assertEquals("http://localhost:8080/testdb", getPropertyValue(map1, "uRL"));
+        Assert.assertEquals("5", getPropertyValue(map1, "maxActive"));
         map1.remove("maxActive");
-        Assert.assertEquals("10", ConnectionPoolStatics.getPropertyValue(map1, "maxActive"));
+        Assert.assertEquals("10", getPropertyValue(map1, "maxActive"));
         map1.remove("max-active");
-        Assert.assertEquals("20", ConnectionPoolStatics.getPropertyValue(map1, "maxActive"));
+        Assert.assertEquals("20", getPropertyValue(map1, "maxActive"));
         map1.remove("max_active");
-        Assert.assertNull(ConnectionPoolStatics.getPropertyValue(map1, "maxActive"));
+        Assert.assertNull(getPropertyValue(map1, "maxActive"));
     }
 
     public void testOnPropertiesValueSet() throws Exception {
         try {
-            ConnectionPoolStatics.setPropertiesValue(null, null);
+            setPropertiesValue(null, null);
         } catch (Exception e) {
-            Assert.assertTrue(e instanceof BeeDataSourceConfigException);
+            Assert.assertTrue(e instanceof BeanException);
         }
 
         try {
-            ConnectionPoolStatics.setPropertiesValue(null, null, null);
+            setPropertiesValue(null, null, null);
         } catch (Exception e) {
-            Assert.assertTrue(e instanceof BeeDataSourceConfigException);
+            Assert.assertTrue(e instanceof BeanException);
         }
 
         BeeDataSourceConfig bean = new BeeDataSourceConfig();
@@ -201,70 +205,70 @@ public class Tc0050PoolStaticsTest extends TestCase {
         Map<String, Object> nonEmptySetValueMap = new HashMap<>();
         nonEmptySetValueMap.put("maxActive", 10);
         nonEmptySetMethodMap.put("maxActive", BeeDataSourceConfig.class.getDeclaredMethod("setMaxActive", int.class));
-        ConnectionPoolStatics.setPropertiesValue(bean, null, null);//null null
-        ConnectionPoolStatics.setPropertiesValue(bean, null, emptySetValueMap);//null,empty
-        ConnectionPoolStatics.setPropertiesValue(bean, null, nonEmptySetValueMap);//null,not empty
-        ConnectionPoolStatics.setPropertiesValue(bean, emptySetMethodMap, null);//empty ---> null
-        ConnectionPoolStatics.setPropertiesValue(bean, emptySetMethodMap, emptySetValueMap);//empty ---> empty
-        ConnectionPoolStatics.setPropertiesValue(bean, emptySetMethodMap, nonEmptySetValueMap);//empty ---> not empty
-        ConnectionPoolStatics.setPropertiesValue(bean, nonEmptySetMethodMap, null);//not empty ---> null
-        ConnectionPoolStatics.setPropertiesValue(bean, nonEmptySetMethodMap, emptySetValueMap);//not empty ---> empty
-        ConnectionPoolStatics.setPropertiesValue(bean, nonEmptySetMethodMap, nonEmptySetValueMap);//not empty ---> not empty
+        setPropertiesValue(bean, null, null);//null null
+        setPropertiesValue(bean, null, emptySetValueMap);//null,empty
+        setPropertiesValue(bean, null, nonEmptySetValueMap);//null,not empty
+        setPropertiesValue(bean, emptySetMethodMap, null);//empty ---> null
+        setPropertiesValue(bean, emptySetMethodMap, emptySetValueMap);//empty ---> empty
+        setPropertiesValue(bean, emptySetMethodMap, nonEmptySetValueMap);//empty ---> not empty
+        setPropertiesValue(bean, nonEmptySetMethodMap, null);//not empty ---> null
+        setPropertiesValue(bean, nonEmptySetMethodMap, emptySetValueMap);//not empty ---> empty
+        setPropertiesValue(bean, nonEmptySetMethodMap, nonEmptySetValueMap);//not empty ---> not empty
 
         Map<String, String> valueMap = new HashMap<>(3);
         valueMap.put("maxActive", "10");
         valueMap.put("max-active", "20");
         valueMap.put("max_active", "30");
-        ConnectionPoolStatics.setPropertiesValue(bean, valueMap);
+        setPropertiesValue(bean, valueMap);
         Assert.assertEquals(10, bean.getMaxActive());
 
         valueMap.remove("maxActive");
-        ConnectionPoolStatics.setPropertiesValue(bean, valueMap);
+        setPropertiesValue(bean, valueMap);
         Assert.assertEquals(20, bean.getMaxActive());
 
         valueMap.remove("max-active");
-        ConnectionPoolStatics.setPropertiesValue(bean, valueMap);
+        setPropertiesValue(bean, valueMap);
         Assert.assertEquals(30, bean.getMaxActive());
 
     }
 
     public void testClassInstanceCreation() throws Exception {
         Class clazz = org.stone.beecp.pool.RawConnectionPool.class;
-        BeeConnectionPool pool1 = (BeeConnectionPool) ConnectionPoolStatics.createClassInstance(clazz, (Class) null, "pool");
-        BeeConnectionPool pool2 = (BeeConnectionPool) ConnectionPoolStatics.createClassInstance(clazz, BeeConnectionPool.class, "pool");
+        BeeConnectionPool pool1 = (BeeConnectionPool) createClassInstance(clazz, (Class) null, "pool");
+        BeeConnectionPool pool2 = (BeeConnectionPool) createClassInstance(clazz, BeeConnectionPool.class, "pool");
         Assert.assertNotNull(pool1);
         Assert.assertNotNull(pool2);
 
         try {
-            ConnectionPoolStatics.createClassInstance(null, BeeConnectionPool.class, "pool");
+            createClassInstance(null, BeeConnectionPool.class, "pool");
         } catch (Throwable e) {
-            Assert.assertTrue(e instanceof BeeDataSourceConfigException);
+            Assert.assertTrue(e instanceof BeanException);
         }
 
         try {
-            ConnectionPoolStatics.createClassInstance(SetTestBean.class, BeeConnectionPool.class, "pool");
+            createClassInstance(SetTestBean.class, BeeConnectionPool.class, "pool");
         } catch (Throwable e) {
-            Assert.assertTrue(e instanceof BeeDataSourceConfigException);
+            Assert.assertTrue(e instanceof BeanException);
         }
 
         try {
-            ConnectionPoolStatics.createClassInstance(SetTestBean2.class, BeeConnectionPool.class, "pool");
+            createClassInstance(SetTestBean2.class, BeeConnectionPool.class, "pool");
         } catch (Throwable e) {
-            Assert.assertTrue(e instanceof BeeDataSourceConfigException);
+            Assert.assertTrue(e instanceof BeanException);
         }
 
-        ConnectionPoolStatics.createClassInstance(clazz, (Class[]) null, "pool");
-        ConnectionPoolStatics.createClassInstance(clazz, new Class[0], "pool");
-        ConnectionPoolStatics.createClassInstance(clazz, new Class[]{null, null, null}, "pool");
-        ConnectionPoolStatics.createClassInstance(clazz, new Class[]{BeeConnectionPool.class, null, null}, "pool");
+        createClassInstance(clazz, (Class[]) null, "pool");
+        createClassInstance(clazz, new Class[0], "pool");
+        createClassInstance(clazz, new Class[]{null, null, null}, "pool");
+        createClassInstance(clazz, new Class[]{BeeConnectionPool.class, null, null}, "pool");
         try {
-            ConnectionPoolStatics.createClassInstance(clazz, new Class[]{Number.class, null, String.class}, "pool");
+            createClassInstance(clazz, new Class[]{Number.class, null, String.class}, "pool");
         } catch (Throwable e) {
-            Assert.assertTrue(e instanceof BeeDataSourceConfigException);
+            Assert.assertTrue(e instanceof BeanException);
         }
     }
 
-    public void testSetPropertiesValue() {
+    public void testSetPropertiesValue() throws Exception {
         Map<String, Object> localConnectProperties = new HashMap<>(100);
         localConnectProperties.put("nullTxt", " ");
         localConnectProperties.put("string", new Long(1));
@@ -294,7 +298,7 @@ public class Tc0050PoolStaticsTest extends TestCase {
         localConnectProperties.put("collection", "java.util.ArrayList");
         localConnectProperties.put("map", "java.util.HashMap");
         PropertiesTestSetObject bean = new PropertiesTestSetObject();
-        ConnectionPoolStatics.setPropertiesValue(bean, localConnectProperties);
+        setPropertiesValue(bean, localConnectProperties);
         Assert.assertNotNull(bean.getURL());
         Assert.assertNotNull(bean.getMap());
         Assert.assertNotNull(bean.getCollection());

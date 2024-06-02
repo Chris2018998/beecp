@@ -24,7 +24,6 @@ public class StoneTestRunner {
 
     public static void main(String[] ags) throws Throwable {
         if (ags != null && ags.length == 2) {
-            printTestInfo(ags[0]);
             StoneTestRunner.run(getTestCaseClasses(ags[1]));
         }
     }
@@ -59,17 +58,6 @@ public class StoneTestRunner {
                 } catch (IOException e) {
                 }
         }
-    }
-
-    private static void printTestInfo(String moduleName) {
-        String buf = "********************************************************************************\n" +
-                "*                                                                               *\n" +
-                "*                             Test case(" + moduleName + ")                                  *\n" +
-                "*                                                                               *\n" +
-                "*                                                     Author:Chris2018998       *\n" +
-                "*                                                     All rights reserved       *\n" +
-                "********************************************************************************\n";
-        System.out.print(buf);
     }
 
     private static void run(String[] classNames) throws Throwable {

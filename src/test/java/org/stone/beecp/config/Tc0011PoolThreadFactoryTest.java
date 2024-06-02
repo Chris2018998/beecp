@@ -59,7 +59,9 @@ public class Tc0011PoolThreadFactoryTest extends TestCase {
         try {
             config.check();
         } catch (Exception e) {
-            String message = e.getMessage();
+            Throwable cause =e.getCause();
+            Assert.assertNotNull(cause);
+            String message = cause.getMessage();
             Assert.assertTrue(message != null && message.contains("which must extend from one of type"));
         }
     }

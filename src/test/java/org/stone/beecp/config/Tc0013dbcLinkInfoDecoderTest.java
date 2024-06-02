@@ -81,7 +81,9 @@ public class Tc0013dbcLinkInfoDecoderTest extends TestCase {
         try {
             config.check();
         } catch (BeeDataSourceConfigException e) {
-            String message = e.getMessage();
+            Throwable cause =e.getCause();
+            Assert.assertNotNull(cause);
+            String message = cause.getMessage();
             Assert.assertTrue(message != null && message.contains("decoder"));
         }
     }

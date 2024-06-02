@@ -74,7 +74,9 @@ public class Tc0012ConnectionFactoryTest extends TestCase {
             config.setConnectionFactoryClass(String.class);//invalid config
             config.check();
         } catch (BeeDataSourceConfigException e) {
-            String message = e.getMessage();
+            Throwable cause =e.getCause();
+            Assert.assertNotNull(cause);
+            String message = cause.getMessage();
             Assert.assertTrue(message != null && message.contains("which must extend from one of type"));
         }
     }
@@ -85,7 +87,9 @@ public class Tc0012ConnectionFactoryTest extends TestCase {
             config.setConnectionFactoryClassName("java.lang.String");//invalid config
             config.check();
         } catch (BeeDataSourceConfigException e) {
-            String message = e.getMessage();
+            Throwable cause =e.getCause();
+            Assert.assertNotNull(cause);
+            String message = cause.getMessage();
             Assert.assertTrue(message != null && message.contains("which must extend from one of type"));
         }
     }
