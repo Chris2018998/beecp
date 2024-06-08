@@ -1,5 +1,6 @@
 <p align="left">
 <a><img src="https://img.shields.io/circleci/build/github/Chris2018998/beecp"></a>
+<a><img src="https://app.codacy.com/project/badge/Grade/574e512b3d48465cb9b85acb72b01c31"/></a>
 <a><img src="https://codecov.io/gh/Chris2018998/beecp/graph/badge.svg?token=JLS7NFR3NP"/></a>
 <a><img src="https://maven-badges.herokuapp.com/maven-central/com.github.chris2018998/beecp/badge.svg"></a>
 <a><img src="https://img.shields.io/badge/Java-7+-green.svg"></a>
