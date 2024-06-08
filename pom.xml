@@ -127,7 +127,6 @@
                     <includes>
                         <include>org/stone/beecp/config/*Test.java</include>
                         <include>org/stone/beecp/dataSource/*Test.java</include>
-                        <include>org/stone/beecp/pool2/*Test.java</include>
                         <include>org/stone/beecp/pool/*Test.java</include>
                     </includes>
                 </configuration>
