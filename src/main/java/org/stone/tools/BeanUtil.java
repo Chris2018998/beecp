@@ -153,6 +153,7 @@ public class BeanUtil {
      * sets mapping properties value on a bean
      *
      * @param bean     is target set object
+     * @param setMethodMap set method map
      * @param valueMap properties value store
      * @throws BeanException if bean is null
      */
