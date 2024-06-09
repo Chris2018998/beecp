@@ -44,11 +44,15 @@ abstract class ProxyResultSetBase extends ProxyBaseWrapper implements ResultSet 
         return this.raw == raw;
     }
 
+    final void checkClosed() throws SQLException {
+        if (this.isClosed) throw new SQLException("No operations allowed after resultSet closed");
+    }
+
     //***************************************************************************************************************//
     //                                              Below are override methods                                       //
     //***************************************************************************************************************//
     public Statement getStatement() throws SQLException {
-        if (this.isClosed) throw new SQLException("No operations allowed after resultSet closed");
+        checkClosed();
         return this.owner;
     }
 
