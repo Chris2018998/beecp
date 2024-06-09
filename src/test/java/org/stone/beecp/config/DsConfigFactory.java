@@ -94,22 +94,22 @@ public class DsConfigFactory {
             }
 
             if (isBlank(JDBC_USER))
-                throw new NullPointerException("'USER_ID' missed");
+                throw new IllegalArgumentException("'USER_ID' missed");
             if (isBlank(JDBC_DRIVER))
-                throw new NullPointerException("'JDBC_DRIVER' missed");
+                throw new IllegalArgumentException("'JDBC_DRIVER' missed");
             if (isBlank(JDBC_URL))
-                throw new NullPointerException("'JDBC_URL' missed");
+                throw new IllegalArgumentException("'JDBC_URL' missed");
             if (isBlank(TEST_TABLE))
-                throw new NullPointerException("'TEST_TABLE' missed");
+                throw new IllegalArgumentException("'TEST_TABLE' missed");
             if (isBlank(TEST_PROCEDURE))
-                throw new NullPointerException("'TEST_PROCEDURE' missed");
+                throw new IllegalArgumentException("'TEST_PROCEDURE' missed");
 
             if (POOL_MAX_ACTIVE <= 0)
-                throw new NullPointerException("'POOL_MAX_ACTIVE' must be more than zero");
+                throw new IllegalArgumentException("'POOL_MAX_ACTIVE' must be more than zero");
             if (POOL_INIT_SIZE < 0)
-                throw new NullPointerException("'POOL_INIT_SIZE' can't be less than zero");
+                throw new IllegalArgumentException("'POOL_INIT_SIZE' can't be less than zero");
             if (POOL_INIT_SIZE > POOL_MAX_ACTIVE)
-                throw new NullPointerException("'POOL_INIT_SIZE' must be less than 'POOL_MAX_ACTIVE'");
+                throw new IllegalArgumentException("'POOL_INIT_SIZE' must be less than 'POOL_MAX_ACTIVE'");
         } finally {
             if (fileStream != null) {
                 try {
