@@ -4,22 +4,17 @@ import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
+import org.stone.beecp.config.DsConfigFactory;
 
 import java.sql.*;
 
-import static org.stone.beecp.config.DsConfigFactory.*;
 import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
 
 public class Tc0071ProxyObjectUnwrapTest extends TestCase {
     private BeeDataSource ds;
 
     public void setUp() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setJdbcUrl(JDBC_URL);
-        config.setDriverClassName(JDBC_DRIVER);
-        config.setUsername(JDBC_USER);
-        config.setPassword(JDBC_PASSWORD);
-
+        BeeDataSourceConfig config = DsConfigFactory.createDefault();
         config.setInitialSize(5);
         config.setAliveTestSql("SELECT 1 from dual");
         config.setIdleTimeout(3000);
@@ -30,7 +25,7 @@ public class Tc0071ProxyObjectUnwrapTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws Exception {
+    public void testUnwrap() throws Exception {
         Connection con = null;
         Statement st = null;
         PreparedStatement ps = null;

@@ -25,7 +25,7 @@ public class Tc0072ProxyResultSetFromDsMetaCloseTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws Exception {
+    public void testMetaData() throws Exception {
         Connection con = null;
         ResultSet rs;
         try {
