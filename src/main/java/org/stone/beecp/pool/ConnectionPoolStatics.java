@@ -198,7 +198,7 @@ public final class ConnectionPoolStatics {
         }
     }
 
-    static void checkJdbcProxyClass() {
+    static void checkJdbcProxyClass() throws ClassNotFoundException {
         String[] classNames = {
                 "org.stone.beecp.pool.Borrower",
                 "org.stone.beecp.pool.PooledConnection",
@@ -208,13 +208,10 @@ public final class ConnectionPoolStatics {
                 "org.stone.beecp.pool.ProxyCsStatement",
                 "org.stone.beecp.pool.ProxyDatabaseMetaData",
                 "org.stone.beecp.pool.ProxyResultSet"};
-        try {
-            ClassLoader loader = ConnectionPoolStatics.class.getClassLoader();
-            for (String className : classNames)
-                Class.forName(className, true, loader);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Jdbc proxy classes missed", e);
-        }
+
+        ClassLoader loader = ConnectionPoolStatics.class.getClassLoader();
+        for (String className : classNames)
+            Class.forName(className, true, loader);
     }
 
     static boolean validateTestSql(String poolName, Connection rawCon, String testSql, int validTestTimeout, boolean isDefaultAutoCommit) throws SQLException {
