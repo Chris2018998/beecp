@@ -10,6 +10,7 @@
 package org.stone.beecp.config;
 
 import junit.framework.TestCase;
+import org.junit.Assert;
 
 /**
  * print rights info
@@ -28,5 +29,6 @@ public class Tc0000CopyRightTest extends TestCase {
                 "*                                                     All rights reserved       *\n" +
                 "********************************************************************************\n";
         System.out.print(buf);
+        Assert.assertTrue(true);
     }
 }

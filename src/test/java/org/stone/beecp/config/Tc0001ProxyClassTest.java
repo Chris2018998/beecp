@@ -16,7 +16,8 @@ import org.stone.beecp.pool.ConnectionPoolStatics;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+
+import static org.stone.base.TestUtil.invokeMethod;
 
 /**
  * @author Chris Liao
@@ -35,15 +36,13 @@ public class Tc0001ProxyClassTest extends TestCase {
 
         try {
             Assert.assertTrue(classFile1.renameTo(classFile2));
-            Method method = ConnectionPoolStatics.class.getDeclaredMethod("checkJdbcProxyClass");
-            method.setAccessible(true);
-            method.invoke(null);
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException e) {
-            fail("checkJdbcProxyClass method missed");
-        } catch (InvocationTargetException e) {
-            Throwable firstCause = e.getCause();
-            Assert.assertTrue(firstCause instanceof RuntimeException);
-            Assert.assertTrue(firstCause.getCause() instanceof ClassNotFoundException);
+            invokeMethod(ConnectionPoolStatics.class, "checkJdbcProxyClass");
+        } catch (RuntimeException e) {
+            Throwable runtimeCause = e.getCause();
+            Assert.assertTrue(runtimeCause instanceof InvocationTargetException);
+            InvocationTargetException invocationTargetException = (InvocationTargetException) runtimeCause;
+            Throwable invocationCause = invocationTargetException.getCause();
+            Assert.assertTrue(invocationCause instanceof ClassNotFoundException);
         } finally {
             Assert.assertTrue(classFile2.renameTo(classFile1));
         }

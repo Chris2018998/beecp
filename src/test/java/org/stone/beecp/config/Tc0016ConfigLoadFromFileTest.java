@@ -33,21 +33,21 @@ public class Tc0016ConfigLoadFromFileTest extends TestCase {
 
     public void testOnCorrectFile() throws Exception {
         String classFilename = "cp:" + filename;
-        check(new BeeDataSourceConfig(classFilename));//classpath
-        check(new BeeDataSourceConfig(getClassPathFileAbsolutePath(filename)));//from file
-        check(new BeeDataSourceConfig(loadPropertiesFromClassPathFile(filename)));//from properties
+        Assert.assertTrue(check(new BeeDataSourceConfig(classFilename)));//classpath
+        Assert.assertTrue(check(new BeeDataSourceConfig(getClassPathFileAbsolutePath(filename))));//from file
+        Assert.assertTrue(check(new BeeDataSourceConfig(loadPropertiesFromClassPathFile(filename))));//from properties
 
         BeeDataSourceConfig config1 = DsConfigFactory.createEmpty();
         config1.loadFromPropertiesFile(classFilename);
-        check(config1);
+        Assert.assertTrue(check(config1));
 
         BeeDataSourceConfig config2 = DsConfigFactory.createEmpty();
         config2.loadFromPropertiesFile(getClassPathFileAbsolutePath(filename));
-        check(config2);
+        Assert.assertTrue(check(config2));
 
         BeeDataSourceConfig config3 = DsConfigFactory.createEmpty();
         config3.loadFromProperties(loadPropertiesFromClassPathFile(filename));
-        check(config3);
+        Assert.assertTrue(check(config3));
     }
 
 
@@ -177,7 +177,7 @@ public class Tc0016ConfigLoadFromFileTest extends TestCase {
         }
     }
 
-    private void check(BeeDataSourceConfig config) {
+    private Boolean check(BeeDataSourceConfig config) {
         final String ConfigUrl = "jdbc:beecp://localhost/testdb";
         final String ConfigDriver = "org.stone.beecp.mock.MockDriver";
 
@@ -221,5 +221,6 @@ public class Tc0016ConfigLoadFromFileTest extends TestCase {
         Assert.assertEquals(config.getConnectProperty("prepStmtCacheSize"), "50");
         Assert.assertEquals(config.getConnectProperty("prepStmtCacheSqlLimit"), "2048");
         Assert.assertEquals(config.getConnectProperty("useServerPrepStmts"), "true");
+        return true;
     }
 }

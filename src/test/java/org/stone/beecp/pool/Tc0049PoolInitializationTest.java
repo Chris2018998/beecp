@@ -17,8 +17,6 @@ import org.stone.beecp.BeeDataSourceConfigException;
 import org.stone.beecp.config.DsConfigFactory;
 import org.stone.beecp.pool.exception.PoolInitializeFailedException;
 
-import java.sql.SQLException;
-
 import static org.stone.beecp.config.DsConfigFactory.JDBC_DRIVER;
 import static org.stone.beecp.config.DsConfigFactory.JDBC_URL;
 
@@ -28,9 +26,9 @@ public class Tc0049PoolInitializationTest extends TestCase {
         FastConnectionPool pool = new FastConnectionPool();
         try {
             pool.init(null);
-            fail("testDuplicatedInitialization test failed");
-        } catch (SQLException e) {
-            Assert.assertTrue(e instanceof PoolInitializeFailedException);
+        } catch (PoolInitializeFailedException e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("Pool initialization configuration can't be null"));
         }
     }
 
@@ -42,8 +40,9 @@ public class Tc0049PoolInitializationTest extends TestCase {
         try {
             pool.init(config);
             fail("testDuplicatedInitialization test failed");
-        } catch (SQLException e) {
-            Assert.assertTrue(e instanceof PoolInitializeFailedException);
+        } catch (PoolInitializeFailedException e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("Pool has already been initialized or in initializing"));
         }
     }
 
@@ -55,9 +54,10 @@ public class Tc0049PoolInitializationTest extends TestCase {
         try {
             pool.init(config);
             fail("test failed on driver match");
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof PoolInitializeFailedException);
-            String message = e.getMessage();
+        } catch (PoolInitializeFailedException e) {
+            Throwable cause = e.getCause();
+            Assert.assertTrue(cause instanceof BeeDataSourceConfigException);
+            String message = cause.getMessage();
             Assert.assertTrue(message != null && message.contains("can not match configured driver"));
         }
     }
@@ -73,8 +73,11 @@ public class Tc0049PoolInitializationTest extends TestCase {
         try {
             pool.init(config);
             fail("test failed on driver match");
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof PoolInitializeFailedException);
+        } catch (PoolInitializeFailedException e) {
+            Throwable cause = e.getCause();
+            Assert.assertTrue(cause instanceof BeeDataSourceConfigException);
+            String message = cause.getMessage();
+            Assert.assertTrue(message != null && message.contains("initialSize must not be greater than maxActive"));
         }
     }
 

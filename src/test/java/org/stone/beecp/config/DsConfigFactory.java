@@ -42,6 +42,8 @@ public class DsConfigFactory {
     static {
         try {
             loadConfig();
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

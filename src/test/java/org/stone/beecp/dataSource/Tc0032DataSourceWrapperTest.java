@@ -31,22 +31,19 @@ public class Tc0032DataSourceWrapperTest extends TestCase {
 
         try {
             ds.unwrap(null);
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof SQLException);
+        } catch (SQLException e) {
             Assert.assertTrue(e.getMessage().contains("The wrapper object was not an instance of"));
         }
 
         try {
             ds.unwrap(Connection.class);
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof SQLException);
+        } catch (SQLException e) {
             Assert.assertTrue(e.getMessage().contains("The wrapper object was not an instance of"));
         }
 
         try {
             ds.unwrap(BeeDataSource.class);
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof SQLException);
+        } catch (SQLException e) {
             Assert.assertTrue(e.getMessage().contains("The wrapper object was not an instance of"));
         }
     }
