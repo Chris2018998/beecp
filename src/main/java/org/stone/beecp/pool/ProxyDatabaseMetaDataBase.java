@@ -21,20 +21,16 @@ import java.sql.SQLException;
  */
 abstract class ProxyDatabaseMetaDataBase extends ProxyBaseWrapper implements DatabaseMetaData {
     protected final DatabaseMetaData raw;
-    private final ProxyConnectionBase owner;//called by subclass to check close state
+    protected final ProxyConnectionBase owner;//called by subclass to check close state
 
     ProxyDatabaseMetaDataBase(DatabaseMetaData raw, PooledConnection p) {
         super(p);
         this.raw = raw;
-        owner = p.proxyInUsing;
-    }
-
-    final void checkClosed() throws SQLException {
-        this.owner.checkClosed();
+        this.owner = p.proxyInUsing;
     }
 
     public Connection getConnection() throws SQLException {
-        this.checkClosed();
+        this.owner.checkClosed();
         return this.owner;
     }
 
