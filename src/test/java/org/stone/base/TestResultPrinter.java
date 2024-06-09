@@ -19,17 +19,22 @@ public class TestResultPrinter extends ResultPrinter {
     }
 
     public void startTest(Test test) {
+        //do nothing
     }
 
     protected void printHeader(long runTime) {
+        //do nothing
     }
 
     protected void printErrors(TestResult result) {
+        //do nothing
     }
 
     protected void printFailures(TestResult result) {
+        //do nothing
     }
 
     protected void printFooter(TestResult result) {
+        //do nothing
     }
 }
