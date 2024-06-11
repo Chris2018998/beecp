@@ -89,6 +89,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     private AtomicInteger idleScanState;
     private IdleTimeoutScanThread idleScanThread;
     private ConcurrentLinkedQueue<Borrower> waitQueue;
+    private boolean enableThreadLocal;
     private ThreadLocal<WeakReference<Borrower>> threadLocal;
     private BeeDataSourceConfig poolConfig;
     private FastConnectionPoolMonitorVo monitorVo;
@@ -176,8 +177,9 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         this.semaphoreSize = poolConfig.getBorrowSemaphoreSize();
 
         //step6: creates semaphore and threadLocal
+        this.enableThreadLocal = poolConfig.isEnableThreadLocal();
         this.semaphore = new InterruptionSemaphore(this.semaphoreSize, isFairMode);
-        this.threadLocal = new BorrowerThreadLocal();//as a cache to store one used connection
+        if (enableThreadLocal) this.threadLocal = new BorrowerThreadLocal();//as a cache to store one used connection
 
         //step7: creates wait queue,scan thread and others
         if (POOL_STARTING == poolWorkState) {
@@ -581,16 +583,21 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             throw new ConnectionGetForbiddenException("Pool was closed or in clearing");
 
         //0: get the last used connection from threadLocal and try to hold it via cas
-        Borrower b = this.threadLocal.get().get();
-        if (b != null) {
-            PooledConnection p = b.lastUsed;
-            if (p != null && p.state == CON_IDLE && ConStUpd.compareAndSet(p, CON_IDLE, CON_USING)) {
-                if (this.testOnBorrow(p)) return b.lastUsed = p;
-                b.lastUsed = null;
+        Borrower b;
+        if (this.enableThreadLocal) {//set false to support virtual threads
+            b = this.threadLocal.get().get();
+            if (b != null) {
+                PooledConnection p = b.lastUsed;
+                if (p != null && p.state == CON_IDLE && ConStUpd.compareAndSet(p, CON_IDLE, CON_USING)) {
+                    if (this.testOnBorrow(p)) return b.lastUsed = p;
+                    b.lastUsed = null;
+                }
+            } else {
+                b = new Borrower();
+                this.threadLocal.set(new WeakReference<>(b));
             }
         } else {
             b = new Borrower();
-            this.threadLocal.set(new WeakReference<>(b));
         }
 
         long deadline = System.nanoTime();

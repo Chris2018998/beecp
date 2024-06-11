@@ -9,7 +9,10 @@
  */
 package org.stone.beecp;
 
-import org.stone.beecp.pool.*;
+import org.stone.beecp.pool.ConnectionFactoryByDriver;
+import org.stone.beecp.pool.ConnectionFactoryByDriverDs;
+import org.stone.beecp.pool.FastConnectionPool;
+import org.stone.beecp.pool.XaConnectionFactoryByDriverDs;
 import org.stone.tools.exception.BeanException;
 
 import javax.sql.DataSource;
@@ -112,6 +115,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //transaction isolation name,which can get a mapping code as initial value of property transactionIsolation
     private String defaultTransactionIsolationName;
 
+    //thread local cache enable,default is true(set to be false to support virtual threads)
+    private boolean enableThreadLocal = true;
     //enable indicator to set default value on property catalog
     private boolean enableDefaultOnCatalog = true;
     //enable indicator to set default value on property schema
@@ -127,14 +132,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private boolean forceDirtyOnSchemaAfterSet;
     //dirty force indicator on catalog property(supports recover under transaction in PG database)
     private boolean forceDirtyOnCatalogAfterSet;
-
-
-    //thread factory instance(creation order-1)
-    private BeeConnectionPoolThreadFactory threadFactory;
-    //thread factory class(creation order-2)
-    private Class<? extends BeeConnectionPoolThreadFactory> threadFactoryClass;
-    //thread factory class name(creation order-3),if not set,default factory will be applied in pool
-    private String threadFactoryClassName = ConnectionPoolThreadFactory.class.getName();
 
     /**
      * connection factory class,which must be implement one of the below four interfaces
@@ -469,6 +466,14 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         return this.configPrintExclusionList.contains(fieldName);
     }
 
+    public boolean isEnableThreadLocal() {
+        return enableThreadLocal;
+    }
+
+    public void setEnableThreadLocal(boolean enableThreadLocal) {
+        this.enableThreadLocal = enableThreadLocal;
+    }
+
     //****************************************************************************************************************//
     //                                     4: connection default value set methods(12)                                //
     //****************************************************************************************************************//
@@ -525,6 +530,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             throw new BeeDataSourceConfigException("Invalid transaction isolation name:" + transactionIsolationNameTemp + ", value is one of[" + TRANS_LEVEL_CODE_LIST + "]");
         }
     }
+
 
     //****************************************************************************************************************//
     //                                     5: connection default value set Indicator methods(10)                      //
@@ -599,30 +605,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
     public void setRawXaConnectionFactory(RawXaConnectionFactory factory) {
         this.connectionFactory = factory;
-    }
-
-    public Class<? extends BeeConnectionPoolThreadFactory> getThreadFactoryClass() {
-        return threadFactoryClass;
-    }
-
-    public void setThreadFactoryClass(Class<? extends BeeConnectionPoolThreadFactory> factoryClass) {
-        this.threadFactoryClass = factoryClass;
-    }
-
-    public String getThreadFactoryClassName() {
-        return threadFactoryClassName;
-    }
-
-    public void setThreadFactoryClassName(String threadFactoryClassName) {
-        if (isNotBlank(threadFactoryClassName)) this.threadFactoryClassName = trimString(threadFactoryClassName);
-    }
-
-    public BeeConnectionPoolThreadFactory getThreadFactory() {
-        return threadFactory;
-    }
-
-    public void setThreadFactory(BeeConnectionPoolThreadFactory threadFactory) {
-        this.threadFactory = threadFactory;
     }
 
     public Class getConnectionFactoryClass() {
@@ -852,14 +834,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         }
 
         Object connectionFactory = createConnectionFactory();
-        BeeConnectionPoolThreadFactory threadFactory = this.createThreadFactory();
         BeeConnectionPredicate predicate = this.createConnectionEvictPredicate();
 
         BeeDataSourceConfig checkedConfig = new BeeDataSourceConfig();
         copyTo(checkedConfig);
 
         //set some factories to config
-        checkedConfig.threadFactory = threadFactory;
         this.connectionFactory = connectionFactory;
         checkedConfig.connectionFactory = connectionFactory;
         checkedConfig.evictPredicate = predicate;
@@ -1080,7 +1060,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
                 predicationClass = evictPredicateClass != null ? evictPredicateClass : Class.forName(evictPredicateClassName);
                 return (BeeConnectionPredicate) createClassInstance(predicationClass, BeeConnectionPredicate.class, "sql exception predicate");
             } catch (ClassNotFoundException e) {
-                throw new BeeDataSourceConfigException("Not found sql exception predicate class[" + threadFactoryClassName + "]", e);
+                throw new BeeDataSourceConfigException("Not found sql exception predicate class[" + evictPredicateClassName + "]", e);
             } catch (BeeDataSourceConfigException e) {
                 throw e;
             } catch (Throwable e) {
@@ -1089,29 +1069,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         }
 
         return null;
-    }
-
-    //create Thread factory
-    private BeeConnectionPoolThreadFactory createThreadFactory() throws BeeDataSourceConfigException {
-        //step1:if exists thread factory,then return it
-        if (this.threadFactory != null) return this.threadFactory;
-
-//        //step2: configuration of thread factory
-//        if (this.threadFactoryClass == null && isBlank(this.threadFactoryClassName))
-//            throw new BeeDataSourceConfigException("Must provide one of config items[threadFactory,threadFactoryClass,threadFactoryClassName]");
-
-        //step3: create thread factory with class or class name
-        Class<?> threadFactClass = null;
-        try {
-            threadFactClass = threadFactoryClass != null ? threadFactoryClass : Class.forName(threadFactoryClassName);
-            return (BeeConnectionPoolThreadFactory) createClassInstance(threadFactClass, BeeConnectionPoolThreadFactory.class, "pool thread factory");
-        } catch (ClassNotFoundException e) {
-            throw new BeeDataSourceConfigException("Not found thread factory class[" + threadFactoryClassName + "]", e);
-        } catch (BeeDataSourceConfigException e) {
-            throw e;
-        } catch (Throwable e) {
-            throw new BeeDataSourceConfigException("Failed to create pool thread factory with class[" + threadFactClass + "]", e);
-        }
     }
 
     //print check passed configuration
