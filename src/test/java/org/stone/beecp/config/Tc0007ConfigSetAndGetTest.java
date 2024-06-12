@@ -66,7 +66,6 @@ public class Tc0007ConfigSetAndGetTest extends TestCase {
         config.setHoldTimeout(3000L);
         Assert.assertEquals(config.getHoldTimeout(), 3000L);
 
-
         //aliveTestTimeout
         config.setAliveTestTimeout(-1);
         Assert.assertNotEquals(config.getAliveTestTimeout(), -1);
@@ -104,8 +103,8 @@ public class Tc0007ConfigSetAndGetTest extends TestCase {
         //defaultCatalog
         config.setDefaultCatalog(null);
         Assert.assertNull(config.getDefaultCatalog());
-        config.setDefaultCatalog("catlog");
-        Assert.assertEquals(config.getDefaultCatalog(), "catlog");
+        config.setDefaultCatalog("catalog");
+        Assert.assertEquals(config.getDefaultCatalog(), "catalog");
 
         //defaultSchema
         config.setDefaultSchema(null);
@@ -166,6 +165,10 @@ public class Tc0007ConfigSetAndGetTest extends TestCase {
         //printRuntimeLog
         config.setPrintRuntimeLog(true);
         Assert.assertTrue(config.isPrintRuntimeLog());
+
+        //printRuntimeLog
+        config.setEnableThreadLocal(true);
+        Assert.assertTrue(config.isEnableThreadLocal());
 
         //poolImplementClassName
         config.setPoolImplementClassName(null);
