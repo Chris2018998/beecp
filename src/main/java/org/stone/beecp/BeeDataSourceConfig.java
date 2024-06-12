@@ -778,7 +778,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
             throw new BeeDataSourceConfigException(e.getMessage(), e);
         }
 
-
         //3:try to find 'connectProperties' config value and put to ds config object
         this.addConnectProperty(connectPropertiesText);
         if (isNotBlank(connectPropertiesSize)) {
@@ -851,35 +850,34 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
 
     //copy configuration info to other from local
     void copyTo(BeeDataSourceConfig config) {
-        String fieldName = "";
-        try {
-            for (Field field : BeeDataSourceConfig.class.getDeclaredFields()) {
-                if (Modifier.isStatic(field.getModifiers())) continue;
+        for (Field field : BeeDataSourceConfig.class.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers())) continue;
 
-                fieldName = field.getName();
-                switch (fieldName) {
-                    case "configPrintExclusionList": //copy 'exclusionConfigPrintList'
-                        config.configPrintExclusionList = new ArrayList<>(configPrintExclusionList);//support empty list copy
-                        break;
-                    case "connectProperties": //copy 'connectProperties'
-                        for (Map.Entry<String, Object> entry : this.connectProperties.entrySet())
-                            config.addConnectProperty(entry.getKey(), entry.getValue());
-                        break;
-                    case "sqlExceptionCodeList": //copy 'sqlExceptionCodeList'
-                        if (this.sqlExceptionCodeList != null && !sqlExceptionCodeList.isEmpty())
-                            config.sqlExceptionCodeList = new ArrayList<>(sqlExceptionCodeList);
-                        break;
-                    case "sqlExceptionStateList": //copy 'sqlExceptionStateList'
-                        if (this.sqlExceptionStateList != null && !sqlExceptionStateList.isEmpty())
-                            config.sqlExceptionStateList = new ArrayList<>(sqlExceptionStateList);
-                        break;
-                    default: //other config items
+            String fieldName = field.getName();
+            switch (fieldName) {
+                case "configPrintExclusionList": //copy 'exclusionConfigPrintList'
+                    config.configPrintExclusionList = new ArrayList<>(configPrintExclusionList);//support empty list copy
+                    break;
+                case "connectProperties": //copy 'connectProperties'
+                    for (Map.Entry<String, Object> entry : this.connectProperties.entrySet())
+                        config.addConnectProperty(entry.getKey(), entry.getValue());
+                    break;
+                case "sqlExceptionCodeList": //copy 'sqlExceptionCodeList'
+                    if (this.sqlExceptionCodeList != null && !sqlExceptionCodeList.isEmpty())
+                        config.sqlExceptionCodeList = new ArrayList<>(sqlExceptionCodeList);
+                    break;
+                case "sqlExceptionStateList": //copy 'sqlExceptionStateList'
+                    if (this.sqlExceptionStateList != null && !sqlExceptionStateList.isEmpty())
+                        config.sqlExceptionStateList = new ArrayList<>(sqlExceptionStateList);
+                    break;
+                default: //other config items
+                    try {
                         field.set(config, field.get(this));
                         break;
-                }
+                    } catch (IllegalArgumentException | IllegalAccessException e) {
+                        throw new BeeDataSourceConfigException("Failed to copy field[" + fieldName + "]", e);
+                    }
             }
-        } catch (Throwable e) {
-            throw new BeeDataSourceConfigException("Failed to copy field[" + fieldName + "]", e);
         }
     }
 
