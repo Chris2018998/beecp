@@ -36,7 +36,7 @@ public class Tc0077TransactionAutoCommitResetTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws Exception {
+    public void testAutoCommitReset() throws Exception {
         Connection con1 = null;
         PreparedStatement ps1 = null;
         ResultSet re1 = null;

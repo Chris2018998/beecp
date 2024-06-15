@@ -37,7 +37,7 @@ public class Tc0061DataSourceConnectionFactoryTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws Exception {
+    public void testDataSourceConnectionFactory() throws Exception {
         Connection con = null;
         try {
             con = ds.getConnection();

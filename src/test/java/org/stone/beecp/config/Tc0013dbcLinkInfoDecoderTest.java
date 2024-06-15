@@ -27,7 +27,7 @@ import static org.stone.beecp.config.DsConfigFactory.*;
  */
 public class Tc0013dbcLinkInfoDecoderTest extends TestCase {
     private final String username = "user";
-    private final String password = "passwor";
+    private final String password = "password";
     private final String url = MOCK_URL;
     private final String driver = MOCK_DRIVER;
 

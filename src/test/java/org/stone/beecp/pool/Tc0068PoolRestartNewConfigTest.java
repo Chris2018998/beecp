@@ -21,7 +21,7 @@ public class Tc0068PoolRestartNewConfigTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws Exception {
+    public void testRestartNewConfig() throws Exception {
         FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
         Assert.assertEquals(initSize, pool.getTotalSize());
         Assert.assertEquals(initSize, pool.getIdleSize());

@@ -26,7 +26,7 @@ public class Tc0073ProxyResultSetFromStatementCloseTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws Exception {
+    public void testProxyResultSet() throws Exception {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;

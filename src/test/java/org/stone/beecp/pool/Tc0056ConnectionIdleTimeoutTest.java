@@ -34,7 +34,7 @@ public class Tc0056ConnectionIdleTimeoutTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws Exception {
+    public void testIdleTimeout() throws Exception {
         FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
 
         Assert.assertEquals(initSize, pool.getTotalSize());

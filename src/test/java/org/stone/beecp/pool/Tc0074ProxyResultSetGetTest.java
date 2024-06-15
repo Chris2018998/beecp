@@ -32,7 +32,7 @@ public class Tc0074ProxyResultSetGetTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws Exception {
+    public void testProxyResultSetGet() throws Exception {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;

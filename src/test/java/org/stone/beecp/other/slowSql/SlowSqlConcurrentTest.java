@@ -29,7 +29,7 @@ public class SlowSqlConcurrentTest extends TestCase {
     public static void main(String[] args) throws Throwable {
         SlowSqlConcurrentTest test = new SlowSqlConcurrentTest();
         test.setUp();
-        test.test();
+        test.testSqlConcurrent();
         test.tearDown();
     }
 
@@ -43,7 +43,7 @@ public class SlowSqlConcurrentTest extends TestCase {
         ds = new BeeDataSource(config);
     }
 
-    public void test() throws Exception {
+    public void testSqlConcurrent() throws Exception {
         FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
         Assert.assertEquals("Total initial connections not as expected 0", 0, pool.getTotalSize());
 

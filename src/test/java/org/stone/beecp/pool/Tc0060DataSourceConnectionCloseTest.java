@@ -27,7 +27,7 @@ public class Tc0060DataSourceConnectionCloseTest extends TestCase {
         //do nothing
     }
 
-    public void test() throws Exception {
+    public void testConnectionClose() {
         ds.close();
         Connection con = null;
         try {

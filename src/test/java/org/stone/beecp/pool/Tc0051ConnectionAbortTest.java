@@ -25,7 +25,7 @@ public class Tc0051ConnectionAbortTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws SQLException {
+    public void testConnectionAbort() throws SQLException {
         Connection con = null;
         try {
             BeeConnectionPoolMonitorVo vo = ds.getPoolMonitorVo();

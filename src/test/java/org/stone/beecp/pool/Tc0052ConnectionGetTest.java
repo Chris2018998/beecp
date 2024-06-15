@@ -21,7 +21,7 @@ public class Tc0052ConnectionGetTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws SQLException {
+    public void testConnectionGet() throws SQLException {
         Connection con = null;
         try {
             con = ds.getConnection();

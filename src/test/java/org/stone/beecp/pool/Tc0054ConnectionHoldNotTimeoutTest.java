@@ -32,7 +32,7 @@ public class Tc0054ConnectionHoldNotTimeoutTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws Exception {
+    public void testHoldNotTimeout() throws Exception {
         Connection con = null;
         try {
             FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");

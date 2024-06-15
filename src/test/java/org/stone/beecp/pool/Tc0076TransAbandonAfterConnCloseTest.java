@@ -24,7 +24,7 @@ public class Tc0076TransAbandonAfterConnCloseTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws Exception {
+    public void testTransAbandon() throws Exception {
         Connection con1 = null;
         PreparedStatement ps1 = null;
         ResultSet re1 = null;

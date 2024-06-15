@@ -21,7 +21,7 @@ public class Tc0075SavePointRollbackTest extends TestCase {
         ds = new BeeDataSource(config);
     }
 
-    public void test() throws Exception {
+    public void testSavePointRollback() throws Exception {
 
         try (Connection conn1 = ds.getConnection()) {//
             conn1.setAutoCommit(false);//

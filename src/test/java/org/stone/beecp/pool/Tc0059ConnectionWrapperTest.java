@@ -25,7 +25,7 @@ public class Tc0059ConnectionWrapperTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws Exception {
+    public void testConnectionWrapper() throws Exception {
         Connection con = null;
         Statement st = null;
         CallableStatement cs = null;

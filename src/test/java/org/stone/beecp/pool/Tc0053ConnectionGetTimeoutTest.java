@@ -32,7 +32,7 @@ public class Tc0053ConnectionGetTimeoutTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws Exception {
+    public void testGetTimeout() throws Exception {
         Connection con = null;
         try {
             con = ds.getConnection();

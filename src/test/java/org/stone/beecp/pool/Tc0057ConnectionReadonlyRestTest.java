@@ -31,7 +31,7 @@ public class Tc0057ConnectionReadonlyRestTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws Exception {
+    public void testReadonlyRest() throws Exception {
         Connection con1 = null;
         try {
             con1 = ds.getConnection();

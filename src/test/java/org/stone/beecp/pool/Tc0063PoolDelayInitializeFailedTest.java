@@ -26,7 +26,7 @@ public class Tc0063PoolDelayInitializeFailedTest extends TestCase {
         //do nothing
     }
 
-    public void testPoolInit() throws Exception {
+    public void testPoolInit() {
         Connection con = null;
         BeeDataSource ds = null;
         try {

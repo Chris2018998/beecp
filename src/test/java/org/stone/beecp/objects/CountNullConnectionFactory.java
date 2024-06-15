@@ -19,14 +19,23 @@ public class CountNullConnectionFactory implements RawConnectionFactory {
     private final int maxCount;
     private final MockDriver driver = new MockDriver();
     private int createdCount;
+    private boolean thrownExceptionInd;
 
     public CountNullConnectionFactory(int maxCount) {
         this.maxCount = maxCount;
     }
 
+    public CountNullConnectionFactory(int maxCount, boolean thrownExceptionInd) {
+        this.maxCount = maxCount;
+        this.thrownExceptionInd = thrownExceptionInd;
+    }
+
     //create connection instance
     public Connection create() throws SQLException {
-        if (createdCount >= maxCount) return null;
+        if (createdCount >= maxCount) {
+            if (thrownExceptionInd) throw new SQLException("The count of creation has reach max size");
+            return null;
+        }
         Connection con = driver.connect("testdb", null);
         createdCount++;
         return con;

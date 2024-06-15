@@ -39,7 +39,7 @@ public class Tc0058ConnectionResetTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws Exception {
+    public void testConnectionReset() throws Exception {
         Connection con = null;
         try {
             con = ds.getConnection();

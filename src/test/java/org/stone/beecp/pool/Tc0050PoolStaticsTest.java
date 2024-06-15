@@ -271,8 +271,8 @@ public class Tc0050PoolStaticsTest extends TestCase {
     public void testSetPropertiesValue() throws Exception {
         Map<String, Object> localConnectProperties = new HashMap<>(100);
         localConnectProperties.put("nullTxt", " ");
-        localConnectProperties.put("string", new Long(1));
-        localConnectProperties.put("workLongTime", new Long(1000));
+        localConnectProperties.put("string", 1L);
+        localConnectProperties.put("workLongTime", 1000L);
         localConnectProperties.put("defaultCatalog", "MyDB");
         localConnectProperties.put("char1", "char1");
         localConnectProperties.put("char2", "char2");

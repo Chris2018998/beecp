@@ -29,7 +29,7 @@ public class SlowSqlInitTest extends TestCase {
         ds = new BeeDataSource(config);
     }
 
-    public void test() throws Exception {
+    public void testSlowSql() throws Exception {
         FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
         Assert.assertEquals(30, pool.getTotalSize());
     }
