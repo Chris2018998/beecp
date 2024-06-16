@@ -224,15 +224,12 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         pooledArrayLock.lock();
         try {
             for (int i = 0; i < initSize; i++)
-                this.createPooledConn(CON_IDLE);
-        } catch (Throwable e) {
+                this.createPooledConn(CON_IDLE);//<-- only thrown SQLException from this method
+        } catch (SQLException e) {
             for (PooledConnection p : this.pooledArray)
                 this.removePooledConn(p, DESC_RM_INIT);
             if (syn) {//throws failure exception on syn mode
-                if (e instanceof SQLException)
-                    throw (SQLException) e;
-                else
-                    throw new PoolInitializeFailedException(e);
+                throw e;
             } else {
                 Log.warn("Failed to create initial connections", e);
             }
