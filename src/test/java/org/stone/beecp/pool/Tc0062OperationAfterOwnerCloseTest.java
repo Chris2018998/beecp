@@ -48,29 +48,29 @@ public class Tc0062OperationAfterOwnerCloseTest extends TestCase {
             try {
                 st.getConnection();
                 fail("statement operation after connection close(dbs)");
-            } catch (Exception e) {
-                Assert.assertTrue(e instanceof SQLException);
+            } catch (SQLException e) {
+                Assert.assertTrue(e.getMessage().contains("No operations allowed after statement closed"));
             }
 
             try {
                 ps.getConnection();
                 fail("preparedStatement operation after connection close(ps)");
-            } catch (Exception e) {
-                Assert.assertTrue(e instanceof SQLException);
+            } catch (SQLException e) {
+                Assert.assertTrue(e.getMessage().contains("No operations allowed after statement closed"));
             }
 
             try {
                 cs.getConnection();
                 fail("callableStatement operation after connection close(cs)");
-            } catch (Exception e) {
-                Assert.assertTrue(e instanceof SQLException);
+            } catch (SQLException e) {
+                Assert.assertTrue(e.getMessage().contains("No operations allowed after statement closed"));
             }
 
             try {
                 dbs.getConnection();
                 fail("DatabaseMetaData operation after connection close(dbs)");
-            } catch (Exception e) {
-                Assert.assertTrue(e instanceof SQLException);
+            } catch (SQLException e) {
+                Assert.assertTrue(e.getMessage().contains("No operations allowed after connection closed"));
             }
         } finally {
             if (st != null)
@@ -99,10 +99,10 @@ public class Tc0062OperationAfterOwnerCloseTest extends TestCase {
                 st.close();
                 if (rs1 != null) {
                     rs1.getStatement();
-                    fail("result operation after statememnt close(st)");
+                    fail("result operation after statement close(st)");
                 }
-            } catch (Exception e) {
-                Assert.assertTrue(e instanceof SQLException);
+            } catch (SQLException e) {
+                Assert.assertTrue(e.getMessage().contains("No operations allowed after statement closed"));
             } finally {
                 if (rs1 != null) oclose(rs1);
             }
@@ -115,8 +115,8 @@ public class Tc0062OperationAfterOwnerCloseTest extends TestCase {
                     rs2.getStatement();
                     fail("result operation after preparedStatement close(ps)");
                 }
-            } catch (Exception e) {
-                Assert.assertTrue(e instanceof SQLException);
+            } catch (SQLException e) {
+                Assert.assertTrue(e.getMessage().contains("No operations allowed after statement closed"));
             } finally {
                 if (rs2 != null) oclose(rs2);
             }
@@ -129,8 +129,8 @@ public class Tc0062OperationAfterOwnerCloseTest extends TestCase {
                     rs3.getStatement();
                     fail("result operation after callableStatement close(cs)");
                 }
-            } catch (Exception e) {
-                Assert.assertTrue(e instanceof SQLException);
+            } catch (SQLException e) {
+                Assert.assertTrue(e.getMessage().contains("No operations allowed after statement closed"));
             } finally {
                 if (rs3 != null) oclose(rs3);
             }

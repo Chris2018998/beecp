@@ -10,6 +10,7 @@ import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.config.DsConfigFactory;
+import org.stone.beecp.pool.exception.ConnectionGetForbiddenException;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -27,14 +28,15 @@ public class Tc0060DataSourceConnectionCloseTest extends TestCase {
         //do nothing
     }
 
-    public void testConnectionClose() {
+    public void testGetFromClosedDataSource() {
         ds.close();
         Connection con = null;
         try {
             con = ds.getConnection();
             fail("Failed test on closed data source");
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof SQLException);
+        } catch (SQLException e) {
+            Assert.assertTrue(e instanceof ConnectionGetForbiddenException);
+            Assert.assertTrue(e.getMessage().contains("Pool was closed or in clearing"));
         } finally {
             if (con != null)
                 oclose(con);

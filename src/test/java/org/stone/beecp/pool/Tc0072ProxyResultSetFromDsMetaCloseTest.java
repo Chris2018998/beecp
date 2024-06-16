@@ -1,6 +1,7 @@
 package org.stone.beecp.pool;
 
 import junit.framework.TestCase;
+import org.junit.Assert;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.config.DsConfigFactory;
@@ -8,6 +9,7 @@ import org.stone.beecp.config.DsConfigFactory;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
 
@@ -26,15 +28,20 @@ public class Tc0072ProxyResultSetFromDsMetaCloseTest extends TestCase {
     }
 
     public void testMetaData() throws Exception {
-        Connection con = null;
+        Connection con;
         ResultSet rs;
+
+        con = ds.getConnection();
+        DatabaseMetaData dsMeta = con.getMetaData();
+        rs = dsMeta.getTableTypes();
+        oclose(rs);
+
+        Assert.assertEquals(con, dsMeta.getConnection());
+        con.close();
         try {
-            con = ds.getConnection();
-            DatabaseMetaData dsMeta = con.getMetaData();
-            rs = dsMeta.getTableTypes();
-            oclose(rs);
-        } finally {
-            if (con != null) oclose(con);
+            dsMeta.getTableTypes();
+        } catch (SQLException e) {
+            Assert.assertTrue(e.getMessage().contains("No operations allowed after connection closed"));
         }
     }
 }

@@ -225,7 +225,6 @@ public class Tc0049PoolInitializationTest extends TestCase {
         pool2.close();
     }
 
-
     public void testCreationInterruption() throws Exception {
         BeeDataSourceConfig config = DsConfigFactory.createDefault();
         config.setInitialSize(0);

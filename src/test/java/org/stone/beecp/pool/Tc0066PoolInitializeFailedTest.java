@@ -5,6 +5,8 @@ import org.junit.Assert;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
 
+import java.sql.SQLException;
+
 import static org.stone.beecp.config.DsConfigFactory.*;
 
 public class Tc0066PoolInitializeFailedTest extends TestCase {
@@ -27,8 +29,9 @@ public class Tc0066PoolInitializeFailedTest extends TestCase {
             config.setInitialSize(initSize);
             new BeeDataSource(config);
             fail("A initializerError need be thrown,but not");
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof RuntimeException);
+        } catch (RuntimeException e) {
+            Assert.assertTrue(e.getCause() instanceof SQLException);
+            Assert.assertTrue(e.getCause().getMessage().contains("db not found"));
         }
     }
 }
