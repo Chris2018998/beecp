@@ -262,10 +262,10 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                 try {
                     if (this.isRawXaConnFactory) {
                         rawXaConn = this.rawXaConnFactory.create();//Stuck here? try <method>BeeDataSource.interruptThreadsOnCreationLock()<method>?
-                        if (rawXaConn == null) {//
-                            if (Thread.interrupted())
+                        if (rawXaConn == null) {
+                            if (Thread.interrupted())//test interrupted flag and clear it
                                 throw new ConnectionGetInterruptedException("An interruption occurred in xa-connection factory");
-                            throw new ConnectionCreateException("An Internal error occurred in xa-Connection factory");
+                            throw new ConnectionCreateException("An internal error occurred in xa-Connection factory");
                         }
 
                         rawConn = rawXaConn.getConnection();
@@ -273,9 +273,9 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     } else {
                         rawConn = this.rawConnFactory.create();
                         if (rawConn == null) {
-                            if (Thread.interrupted())
+                            if (Thread.interrupted())//test interrupted flag and clear it
                                 throw new ConnectionGetInterruptedException("An interruption occurred in connection factory");
-                            throw new ConnectionCreateException("An Internal error occurred in connection factory");
+                            throw new ConnectionCreateException("An internal error occurred in connection factory");
                         }
                     }
 
