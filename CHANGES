@@ -1,5 +1,11 @@
 beecp changes
 
+Changes in 4.0.5
+
+1：add a boolean indicator on threadlocal(set false to support virtual threads)
+2: fix a nullpoint exception when pool close
+
+
 Changes in 4.0.4
 
 1: add a new util method: CommonUtil.isNotBlank
