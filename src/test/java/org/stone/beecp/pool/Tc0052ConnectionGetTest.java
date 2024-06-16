@@ -43,7 +43,7 @@ public class Tc0052ConnectionGetTest extends TestCase {
         config.setRawConnectionFactory(new MockNetBlockConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
-        new InterruptedThread(Thread.currentThread()).start();//let me save u
+        new InterruptedThread(Thread.currentThread()).start();
 
         try {
             pool.getConnection();
@@ -81,7 +81,7 @@ public class Tc0052ConnectionGetTest extends TestCase {
         config.setRawConnectionFactory(new MockNetBlockConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
-        FirstStuckThread first = new FirstStuckThread(pool);//mock stuck in driver.getConnection()
+        FirstGetThread first = new FirstGetThread(pool);//mock stuck in driver.getConnection()
         first.start();
         TestUtil.joinUtilWaiting(first);
         try {
@@ -103,7 +103,7 @@ public class Tc0052ConnectionGetTest extends TestCase {
         FastConnectionPool pool2 = new FastConnectionPool();
         pool2.init(config2);
 
-        first = new FirstStuckThread(pool2);//mock stuck in driver.getConnection()
+        first = new FirstGetThread(pool2);//mock stuck in driver.getConnection()
         first.start();
         TestUtil.joinUtilWaiting(first);
         try {
@@ -114,6 +114,27 @@ public class Tc0052ConnectionGetTest extends TestCase {
             first.interrupt();
         }
         pool2.close();
+
+
+        //3: timeout in wait queue
+        BeeDataSourceConfig config3 = DsConfigFactory.createDefault();
+        config3.setInitialSize(0);
+        config3.setMaxActive(1);
+        config3.setForceCloseUsingOnClear(true);
+        config3.setBorrowSemaphoreSize(2);
+        config3.setMaxWait(TimeUnit.SECONDS.toMillis(1));
+        FastConnectionPool pool3 = new FastConnectionPool();
+        pool3.init(config3);
+        first = new FirstGetThread(pool3);
+        first.start();
+        TestUtil.joinUtilWaiting(first);
+        try {
+            pool3.getConnection();
+        } catch (SQLException e) {
+            Assert.assertTrue(e instanceof ConnectionGetTimeoutException);
+            Assert.assertTrue(e.getMessage().contains("Wait timeout for a released connection"));
+        }
+        pool3.close();
     }
 
     public void testGetInterruption() throws Exception {
@@ -126,7 +147,7 @@ public class Tc0052ConnectionGetTest extends TestCase {
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
-        FirstStuckThread first = new FirstStuckThread(pool);
+        FirstGetThread first = new FirstGetThread(pool);
         first.start();
         TestUtil.joinUtilWaiting(first);
         new InterruptedThread(Thread.currentThread()).start();
@@ -149,7 +170,7 @@ public class Tc0052ConnectionGetTest extends TestCase {
         FastConnectionPool pool2 = new FastConnectionPool();
         pool2.init(config2);
 
-        first = new FirstStuckThread(pool2);
+        first = new FirstGetThread(pool2);
         first.start();
         TestUtil.joinUtilWaiting(first);
 
@@ -165,15 +186,15 @@ public class Tc0052ConnectionGetTest extends TestCase {
         pool2.close();
     }
 
-    private static class FirstStuckThread extends Thread {
+    private static class FirstGetThread extends Thread {
         private final boolean getXA;
         private final FastConnectionPool pool;
 
-        FirstStuckThread(FastConnectionPool pool) {
+        FirstGetThread(FastConnectionPool pool) {
             this(pool, false);
         }
 
-        FirstStuckThread(FastConnectionPool pool, boolean getXA) {
+        FirstGetThread(FastConnectionPool pool, boolean getXA) {
             this.pool = pool;
             this.getXA = getXA;
             this.setDaemon(true);
@@ -187,8 +208,6 @@ public class Tc0052ConnectionGetTest extends TestCase {
                     pool.getConnection();
             } catch (SQLException e) {
                 Assert.assertTrue(e instanceof ConnectionGetInterruptedException);
-            } finally {
-                pool.close();
             }
         }
     }
@@ -210,5 +229,4 @@ public class Tc0052ConnectionGetTest extends TestCase {
             }
         }
     }
-
 }
