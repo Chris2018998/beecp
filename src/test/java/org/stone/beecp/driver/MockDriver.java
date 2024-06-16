@@ -21,7 +21,7 @@ public class MockDriver implements Driver {
         try {
             DriverManager.registerDriver(new MockDriver());
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 

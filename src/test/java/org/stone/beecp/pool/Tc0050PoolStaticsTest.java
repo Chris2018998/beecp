@@ -9,8 +9,8 @@ import org.stone.beecp.BeeDataSourceConfigException;
 import org.stone.beecp.config.DsConfigFactory;
 import org.stone.beecp.driver.MockDriver;
 import org.stone.beecp.driver.MockXaDataSource;
-import org.stone.beecp.objects.MockConnectionFactory;
-import org.stone.beecp.objects.PropertiesTestSetObject;
+import org.stone.beecp.objects.MockDriverConnectionFactory;
+import org.stone.beecp.objects.MockObjectForPropertiesSet;
 import org.stone.tools.exception.BeanException;
 
 import javax.sql.XAConnection;
@@ -69,7 +69,7 @@ public class Tc0050PoolStaticsTest extends TestCase {
 
     public void testOnDummyCommonDataSource() {
         BeeDataSourceConfig config = DsConfigFactory.createDefault();
-        config.setConnectionFactoryClass(MockConnectionFactory.class);
+        config.setConnectionFactoryClass(MockDriverConnectionFactory.class);
         BeeDataSource ds = new BeeDataSource(config);
         try {
             ds.getLogWriter();
@@ -297,7 +297,7 @@ public class Tc0050PoolStaticsTest extends TestCase {
         localConnectProperties.put("intArray", "1");
         localConnectProperties.put("collection", "java.util.ArrayList");
         localConnectProperties.put("map", "java.util.HashMap");
-        PropertiesTestSetObject bean = new PropertiesTestSetObject();
+        MockObjectForPropertiesSet bean = new MockObjectForPropertiesSet();
         setPropertiesValue(bean, localConnectProperties);
         Assert.assertNotNull(bean.getURL());
         Assert.assertNotNull(bean.getMap());

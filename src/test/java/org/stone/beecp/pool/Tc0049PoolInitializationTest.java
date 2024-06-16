@@ -16,12 +16,19 @@ import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 import org.stone.beecp.config.DsConfigFactory;
-import org.stone.beecp.objects.CountNullConnectionFactory;
+import org.stone.beecp.objects.MockCreateExceptionConnectionFactory;
+import org.stone.beecp.objects.MockFailSizeReachConnectionFactory;
+import org.stone.beecp.objects.MockNetBlockConnectionFactory;
+import org.stone.beecp.pool.exception.ConnectionCreateException;
+import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
+import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
 import org.stone.beecp.pool.exception.PoolInitializeFailedException;
 
 import java.sql.SQLException;
+import java.util.concurrent.TimeUnit;
 
 import static org.stone.base.TestUtil.getStoneLogAppender;
+import static org.stone.base.TestUtil.joinUtilWaiting;
 import static org.stone.beecp.config.DsConfigFactory.JDBC_DRIVER;
 import static org.stone.beecp.config.DsConfigFactory.JDBC_URL;
 
@@ -133,40 +140,175 @@ public class Tc0049PoolInitializationTest extends TestCase {
     }
 
     public void testClearConnectionsOnInitializeFailed() throws Exception {
-        FastConnectionPool pool =null;
+        FastConnectionPool pool = null;
         try {
             BeeDataSourceConfig config = DsConfigFactory.createDefault();
             config.setInitialSize(2);
-            config.setRawConnectionFactory(new CountNullConnectionFactory(1, true));
+            config.setRawConnectionFactory(new MockFailSizeReachConnectionFactory(1, true));
             pool = new FastConnectionPool();
             pool.init(config);
-        }catch(SQLException e){
+        } catch (SQLException e) {
             Assert.assertTrue(e.getMessage().contains("The count of creation has reach max size"));
-            Assert.assertEquals(0,pool.getIdleSize());
+            Assert.assertEquals(0, pool.getIdleSize());
         }
 
-        FastConnectionPool pool2;
+        pool.close();
+        FastConnectionPool pool2 = null;
+        try {
+            BeeDataSourceConfig config2 = DsConfigFactory.createDefault();
+            config2.setInitialSize(2);
+            config2.setRawConnectionFactory(new MockCreateExceptionConnectionFactory(new IllegalArgumentException()));
+            pool2 = new FastConnectionPool();
+            pool2.init(config2);
+        } catch (SQLException e) {
+            Assert.assertTrue(e instanceof ConnectionCreateException);
+            Assert.assertTrue(e.getCause() instanceof IllegalArgumentException);
+            Assert.assertEquals(0, pool2.getIdleSize());
+        }
+        pool2.close();
+
+        FastConnectionPool pool3;
         StoneLogAppender logAppender = getStoneLogAppender();
-        BeeDataSourceConfig config2 = DsConfigFactory.createDefault();
-        config2.setInitialSize(2);
-        config2.setRawConnectionFactory(new CountNullConnectionFactory(1, true));
-        config2.setAsyncCreateInitConnection(true);
-        pool2 = new FastConnectionPool();
+        BeeDataSourceConfig config3 = DsConfigFactory.createDefault();
+        config3.setInitialSize(2);
+        config3.setRawConnectionFactory(new MockFailSizeReachConnectionFactory(1, true));
+        config3.setAsyncCreateInitConnection(true);
+        pool3 = new FastConnectionPool();
 
         logAppender.beginCollectStoneLog();
-        pool2.init(config2);
+        pool3.init(config3);
         String logs = logAppender.endCollectedStoneLog();
         Assert.assertFalse(logs.isEmpty());
+        pool3.close();
     }
 
-    public void testTimeoutOnCreateLock() throws Exception {
+    public void testCreationTimeout() throws Exception {
         BeeDataSourceConfig config = DsConfigFactory.createDefault();
-        config.setInitialSize(1);
-        config.setPrintRuntimeLog(true);
-        config.setAsyncCreateInitConnection(true);
+        config.setInitialSize(0);
+        config.setMaxActive(2);
+        config.setMaxWait(TimeUnit.SECONDS.toMillis(1));
+        config.setRawConnectionFactory(new MockNetBlockConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
+        FirstGetThread first = new FirstGetThread(pool);
+        first.start();
+        TestUtil.joinUtilWaiting(first);
+        try {
+            pool.getConnection();
+        } catch (SQLException e) {
+            Assert.assertTrue(e instanceof ConnectionGetTimeoutException);
+            Assert.assertTrue(e.getMessage().contains("Wait timeout on pool semaphore acquisition"));
+            first.interrupt();
+        }
         pool.close();
+
+        BeeDataSourceConfig config2 = DsConfigFactory.createDefault();
+        config2.setInitialSize(0);
+        config2.setMaxActive(2);
+        config2.setBorrowSemaphoreSize(2);
+        config2.setMaxWait(TimeUnit.SECONDS.toMillis(1));
+        config2.setRawConnectionFactory(new MockNetBlockConnectionFactory());
+        FastConnectionPool pool2 = new FastConnectionPool();
+        pool2.init(config2);
+
+        first = new FirstGetThread(pool2);
+        first.start();
+        TestUtil.joinUtilWaiting(first);
+        try {
+            pool2.getConnection();
+        } catch (SQLException e) {
+            Assert.assertTrue(e instanceof ConnectionCreateException);
+            Assert.assertTrue(e.getMessage().contains("Wait timeout on pool lock acquisition"));
+            first.interrupt();
+        }
+        pool2.close();
+    }
+
+
+    public void testCreationInterruption() throws Exception {
+        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        config.setInitialSize(0);
+        config.setMaxActive(2);
+        config.setMaxWait(TimeUnit.SECONDS.toMillis(1));
+        config.setRawConnectionFactory(new MockNetBlockConnectionFactory());
+        FastConnectionPool pool = new FastConnectionPool();
+        pool.init(config);
+
+        FirstGetThread first = new FirstGetThread(pool);
+        first.start();
+        TestUtil.joinUtilWaiting(first);
+
+        new InterruptedThread(Thread.currentThread()).start();
+
+        try {
+            pool.getConnection();
+        } catch (SQLException e) {
+            Assert.assertTrue(e instanceof ConnectionGetInterruptedException);
+            Assert.assertTrue(e.getMessage().contains("An interruption occurred on pool semaphore acquisition"));
+            first.interrupt();
+        }
+        pool.close();
+
+        BeeDataSourceConfig config2 = DsConfigFactory.createDefault();
+        config2.setInitialSize(0);
+        config2.setMaxActive(2);
+        config2.setBorrowSemaphoreSize(2);
+        config2.setMaxWait(TimeUnit.SECONDS.toMillis(1));
+        config2.setRawConnectionFactory(new MockNetBlockConnectionFactory());
+        FastConnectionPool pool2 = new FastConnectionPool();
+        pool2.init(config2);
+
+        first = new FirstGetThread(pool2);
+        first.start();
+        TestUtil.joinUtilWaiting(first);
+
+        new InterruptedThread(Thread.currentThread()).start();
+
+        try {
+            pool2.getConnection();
+        } catch (SQLException e) {
+            Assert.assertTrue(e instanceof ConnectionCreateException);
+            Assert.assertTrue(e.getMessage().contains("An interruption occurred on pool lock acquisition"));
+            first.interrupt();
+        }
+        pool2.close();
+    }
+
+    private static class FirstGetThread extends Thread {
+        private final FastConnectionPool pool;
+
+        FirstGetThread(FastConnectionPool pool) {
+            this.pool = pool;
+            this.setDaemon(true);
+        }
+
+        public void run() {
+            try {
+                pool.getConnection();
+            } catch (Exception e) {
+                //do noting
+            } finally {
+                pool.close();
+            }
+        }
+    }
+
+    //A mock thread to interrupt wait threads on ds-read lock
+    private static class InterruptedThread extends Thread {
+        private final Thread readThread;
+
+        InterruptedThread(Thread readThread) {
+            this.readThread = readThread;
+        }
+
+        public void run() {
+            try {
+                if (joinUtilWaiting(readThread))
+                    readThread.interrupt();
+            } catch (Exception e) {
+                //do nothing
+            }
+        }
     }
 }

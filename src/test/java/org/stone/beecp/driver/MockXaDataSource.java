@@ -61,11 +61,11 @@ public class MockXaDataSource implements XADataSource {
         this.properties = properties;
     }
 
-    public XAConnection getXAConnection() throws SQLException {
+    public XAConnection getXAConnection() {
         return new MockXaConnection(new MockConnection(), new MockXaResource());
     }
 
-    public XAConnection getXAConnection(String user, String password) throws SQLException {
+    public XAConnection getXAConnection(String user, String password) {
         return new MockXaConnection(new MockConnection(), new MockXaResource());
     }
 
