@@ -152,7 +152,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         //step3: creates initial connections by thread syn mode
         this.maxWaitNs = TimeUnit.MILLISECONDS.toNanos(poolConfig.getMaxWait());//timeout for acquiring on a semaphore or a lock
         if (poolConfig.getInitialSize() > 0 && !poolConfig.isAsyncCreateInitConnection())
-            createInitConnections(poolConfig.getInitialSize(), true);
+            createInitConnections(poolConfig.getInitialSize(), true);//<!--if failed here,pool state will set to POOL_NEW(pool is empty)
 
         //step4: creates connections transfer
         if (poolConfig.isFairMode()) {
@@ -929,6 +929,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         do {
             int poolStateCode = this.poolState;
             if (poolStateCode == POOL_CLOSED || poolStateCode == POOL_CLOSING) return;
+            if (poolStateCode == POOL_NEW && PoolStateUpd.compareAndSet(this, POOL_NEW, POOL_CLOSED)) return;
             if (poolStateCode == POOL_STARTING || poolStateCode == POOL_CLEARING) {
                 LockSupport.parkNanos(this.delayTimeForNextClearNs);//delay and retry
             } else if (PoolStateUpd.compareAndSet(this, poolStateCode, POOL_CLOSING)) {//poolStateCode == POOL_NEW || poolStateCode == POOL_READY
