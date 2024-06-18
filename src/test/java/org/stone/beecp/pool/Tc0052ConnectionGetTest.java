@@ -12,6 +12,7 @@ import org.stone.beecp.pool.exception.ConnectionCreateException;
 import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
 import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
 
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
@@ -127,13 +128,20 @@ public class Tc0052ConnectionGetTest extends TestCase {
         pool3.init(config3);
         first = new FirstGetThread(pool3);
         first.start();
-        TestUtil.joinUtilWaiting(first);
+        first.join();
+
         try {
             pool3.getConnection();
         } catch (SQLException e) {
             Assert.assertTrue(e instanceof ConnectionGetTimeoutException);
             Assert.assertTrue(e.getMessage().contains("Wait timeout for a released connection"));
         }
+
+        //mock concurrent to create connection
+        Method createMethod = FastConnectionPool.class.getDeclaredMethod("createPooledConn", Integer.TYPE);
+        createMethod.setAccessible(true);
+        Assert.assertNull(createMethod.invoke(pool3, 1));
+        oclose(first.con);
         pool3.close();
     }
 
@@ -189,6 +197,7 @@ public class Tc0052ConnectionGetTest extends TestCase {
     private static class FirstGetThread extends Thread {
         private final boolean getXA;
         private final FastConnectionPool pool;
+        private Connection con;
 
         FirstGetThread(FastConnectionPool pool) {
             this(pool, false);
@@ -205,7 +214,7 @@ public class Tc0052ConnectionGetTest extends TestCase {
                 if (getXA)
                     pool.getXAConnection();
                 else
-                    pool.getConnection();
+                    con = pool.getConnection();
             } catch (SQLException e) {
                 Assert.assertTrue(e instanceof ConnectionGetInterruptedException);
             }
