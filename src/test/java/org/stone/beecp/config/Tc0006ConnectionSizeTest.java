@@ -14,6 +14,8 @@ import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 
+import static org.stone.tools.CommonUtil.NCPU;
+
 /**
  * @author Chris Liao
  */
@@ -43,7 +45,9 @@ public class Tc0006ConnectionSizeTest extends TestCase {
         config.setMaxActive(20);
         Assert.assertEquals(config.getInitialSize(), 10);
         Assert.assertEquals(config.getMaxActive(), 20);
-        Assert.assertEquals(config.getBorrowSemaphoreSize(), 10);
+
+        int borrowSemaphoreExpectSize = Math.min(20 / 2, NCPU);
+        Assert.assertEquals(config.getBorrowSemaphoreSize(), borrowSemaphoreExpectSize);
     }
 
     public void testOnErrorInitialSize() throws Exception {
