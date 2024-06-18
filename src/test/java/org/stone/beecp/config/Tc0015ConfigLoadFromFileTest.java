@@ -155,7 +155,8 @@ public class Tc0015ConfigLoadFromFileTest extends TestCase {
         }
 
         try {//valid file
-            File configFile = new File("C:\\");
+            String os = System.getProperty("os.name").toLowerCase();
+            File configFile = os.contains("windows") ? new File("C:\\") : new File("//");
             config1.loadFromPropertiesFile(configFile);
         } catch (Exception e) {
             String message = e.getMessage();
