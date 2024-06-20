@@ -15,6 +15,7 @@ import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static org.stone.base.TestUtil.joinUtilWaiting;
@@ -150,7 +151,7 @@ public class Tc0052ConnectionGetTest extends TestCase {
         BeeDataSourceConfig config = DsConfigFactory.createDefault();
         config.setInitialSize(0);
         config.setMaxActive(2);
-        config.setMaxWait(TimeUnit.SECONDS.toMillis(1));
+        config.setMaxWait(TimeUnit.SECONDS.toMillis(10));
         config.setRawConnectionFactory(new MockNetBlockConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
@@ -173,7 +174,7 @@ public class Tc0052ConnectionGetTest extends TestCase {
         config2.setInitialSize(0);
         config2.setMaxActive(2);
         config2.setBorrowSemaphoreSize(2);
-        config2.setMaxWait(TimeUnit.SECONDS.toMillis(1));
+        config2.setMaxWait(TimeUnit.SECONDS.toMillis(10));
         config2.setRawConnectionFactory(new MockNetBlockConnectionFactory());
         FastConnectionPool pool2 = new FastConnectionPool();
         pool2.init(config2);
@@ -181,8 +182,8 @@ public class Tc0052ConnectionGetTest extends TestCase {
         first = new FirstGetThread(pool2);
         first.start();
         TestUtil.joinUtilWaiting(first);
-
-        new InterruptedThread(Thread.currentThread()).start();
+        Assert.assertTrue(pool2.getPoolLockHoldTime() > 0);//pool lock hold by first borrower thread
+        new InterruptedThread(Thread.currentThread(), pool2).start();//main thread will be blocked on pool lock
 
         try {
             pool2.getConnection();
@@ -224,15 +225,33 @@ public class Tc0052ConnectionGetTest extends TestCase {
     //A mock thread to interrupt wait threads on ds-read lock
     private static class InterruptedThread extends Thread {
         private final Thread readThread;
+        private final FastConnectionPool pool;
 
         InterruptedThread(Thread readThread) {
+            this(readThread, null);
+        }
+
+        InterruptedThread(Thread readThread, FastConnectionPool pool) {
             this.readThread = readThread;
+            this.pool = pool;
         }
 
         public void run() {
             try {
-                if (joinUtilWaiting(readThread))
-                    readThread.interrupt();
+                if (joinUtilWaiting(readThread)) {
+                    if (pool != null) {
+                        boolean threadInterrupted = false;
+                        for (Thread thread : Objects.requireNonNull(pool.interruptOnPoolLock())) {
+                            if (thread == readThread) {
+                                threadInterrupted = true;
+                                break;
+                            }
+                        }
+                        assertTrue(threadInterrupted);
+                    } else {
+                        readThread.interrupt();
+                    }
+                }
             } catch (Exception e) {
                 //do nothing
             }
