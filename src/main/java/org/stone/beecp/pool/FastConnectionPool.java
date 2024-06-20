@@ -341,17 +341,12 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
     //Method-1.7: interrupts all threads on pool lock,include wait threads and lock owner thread.
     public Thread[] interruptOnPoolLock() {
-        try {
-            List<Thread> interrupedList = new LinkedList<>(this.pooledArrayLock.interruptQueuedWaitThreads());
-            Thread ownerThread = this.pooledArrayLock.interruptOwnerThread();
-            if (ownerThread != null) interrupedList.add(ownerThread);
+        List<Thread> interrupedList = new LinkedList<>(this.pooledArrayLock.interruptQueuedWaitThreads());
+        Thread ownerThread = this.pooledArrayLock.interruptOwnerThread();
+        if (ownerThread != null) interrupedList.add(ownerThread);
 
-            Thread[] interruptThreads = new Thread[interrupedList.size()];
-            return interrupedList.toArray(interruptThreads);
-        } catch (Throwable e) {
-            Log.warn("BeeCP({})failed to interrupt threads on lock", this.poolName, e);
-            return null;
-        }
+        Thread[] interruptThreads = new Thread[interrupedList.size()];
+        return interrupedList.toArray(interruptThreads);
     }
 
     //Method-1.8: creates a template pooled connection on first connection
