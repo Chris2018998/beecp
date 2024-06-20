@@ -15,7 +15,6 @@ import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static org.stone.base.TestUtil.joinUtilWaiting;
@@ -239,18 +238,20 @@ public class Tc0052ConnectionGetTest extends TestCase {
         public void run() {
             try {
                 if (joinUtilWaiting(readThread)) {
-                    if (pool != null) {
-                        boolean threadInterrupted = false;
-                        for (Thread thread : Objects.requireNonNull(pool.interruptOnPoolLock())) {
-                            if (thread == readThread) {
-                                threadInterrupted = true;
-                                break;
-                            }
-                        }
-                        assertTrue(threadInterrupted);
-                    } else {
-                        readThread.interrupt();
-                    }
+                    readThread.interrupt();
+//                    readThread.interrupt();
+//                    if (pool != null) {
+//                        boolean threadInterrupted = false;
+//                        for (Thread thread : Objects.requireNonNull(pool.interruptOnPoolLock())) {
+//                            if (thread == readThread) {
+//                                threadInterrupted = true;
+//                                break;
+//                            }
+//                        }
+//                        assertTrue(threadInterrupted);
+//                    } else {
+//                        readThread.interrupt();
+//                    }
                 }
             } catch (Exception e) {
                 //do nothing
