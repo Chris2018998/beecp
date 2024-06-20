@@ -143,39 +143,39 @@ Example
 ![图片](https://user-images.githubusercontent.com/32663325/153597176-e48382b9-7395-4c6c-9f34-425072d7c510.png)
 
 ## :blue_book: Configuration 
-|**Item Name**                     |**Desc**                                                               |**Default**                                                                                |
-| ---------------------------------| ----------------------------------------------------------------------|------------------------------------------------------------------------------------------ |
-|username                          |a username link to db                                                   |null                                                                                       |
-|password                          |password of a db user                                                   |null                                                                                       |
-|jdbcUrl                           |url link to db                                                          |null                                                                                       |
-|driverClassName                   |jdbc driver class name                                                  |null                                                                                       |
-|poolName	                       |a generation name assgin to it if not set                               |null                                                                                       |
-|fairMode                          |pool work mode                                                          |false                                                                                      | 
-|initialSize                       |connection number of creation on pool initizization                     |0                                                                                          |
-|asyncCreateInitConnection         |creation mode of initial connections                                    |false(synchronization mode)                                                                |   
-|maxActive                         |max reachable count of connections in pool                              |10                                                                                         | 
-|borrowSemaphoreSize               |max permit size of pool semaphore                                       |min(maxActive/2，CPU size）                                                                 |
-|defaultAutoCommit                 |initial value of autoCommit prop on created connections                 |null,read prop value from first connection as initial value for other connections          |
-|defaultTransactionIsolationCode   |initial value of transactionIsolation prop on created connections       |null,read prop value from first connection as initial value for other connections          |
-|enableThreadLocal                 |thread local cache enable indicator                                     |true,set false to support virtual threads                                                  |
-|defaultCatalog                    |initial value of catalog prop on created connections                    |null,read prop value from first connection as initial value for other connections          |
-|defaultSchema                     |initial value of schema  prop on created connections                    |null,read prop value from first connection as initial value for other connections          |
-|defaultReadOnly                   |initial value of readOnly prop on created connections                   |null,read prop value from first connection as initial value for other connections          |
-|maxWait                           |max wait time in pool for borrowers to get connection,time unit：milliseconds|8000                                                                                  |
-|idleTimeout                       |idle time out for connections in pool,time unit：milliseconds                |18000                                                                                 |                             
-|holdTimeout                       |max inactive time of borrowed connections,time unit：milliseconds            |0(never timeout)                                                                      |  
-|aliveTestSql                      |alive test sql on borrowed connections,pool remove dead connections          |SELECT 1                                                                              |  
-|aliveTestTimeout                  |max wait time to get validation result on test connectionstime unit：seconds  |3                                                                                     |  
-|aliveAssumeTime                   |a gap time value from last activity time to borrowed time point,if less,not test,time unit：milliseconds|500                                                                                |  
-|forceCloseUsingOnClear            |indicator on direct closing borrowed connections while pool clears               |false                                                                             |
-|timerCheckInterval                |an interval time to scan idle connections,time unit：milliseconds                |18000                                                                             |
-|connectionFactoryClassName        |connection factory class name                                                    |null                                                                              |
-|sqlExceptionCodeList              |store sql exception codes for connection eviction check                          |null,related methods:addSqlExceptionCode,removeSqlExceptionCode                   |
-|sqlExceptionStateList             |store sql exception state for connection eviction check                          |null,related methods:addSqlExceptionCode,removeSqlExceptionCode                   |
-|evictPredicateClassName           |eviction predicate class name                                                    |null,pool only it to check exception if set                                       |
-|jdbcLinkInfoDecoderClassName      |short lifecycle object and used to decode jdbc link info                         |null                                                                              |
-|forceDirtyOnSchemaAfterSet        |dirty force indicator on schema property under PG driver                         |false                                                                             |
-|forceDirtyOnCatalogAfterSet       |dirty force indicator on schema property underr PG driver                        |false                                                                             |
-|enableJmx                         |enable indicator to register configuration and pool to Jmx                       |false                                                                             | 
-|printConfigInfo                   |boolean indicator,true:print config item info on pool starting                   |false                                                                             | 
-|printRuntimeLog                   |boolean indicator,true:print runtime log                                         |false                                                                             | 
+|**Item Name**                   |**Desc**                                                               |**Default**                                                                              |
+| -------------------------------| ----------------------------------------------------------------------|------------------------------------------------------------------------------------------ |
+|username                        |a username link to db                                                   |null                                                                                       |
+|password                        |password of a db user                                                   |null                                                                                       |
+|jdbcUrl                         |url link to db                                                          |null                                                                                       |
+|driverClassName                 |jdbc driver class name                                                  |null                                                                                       |
+|poolName	                     |a generation name assgin to it if not set                               |null                                                                                       |
+|fairMode                        |pool work mode                                                          |false                                                                                      | 
+|initialSize                     |connection number of creation on pool initizization                     |0                                                                                          |
+|asyncCreateInitConnection       |creation mode for initial connections                                    |false(synchronization mode)                                                                |   
+|maxActive                       |max reachable count of connections in pool                              |10                                                                                         | 
+|borrowSemaphoreSize             |max permit size of pool semaphore                                       |min(maxActive/2，CPU size）                                                                 |
+|defaultAutoCommit               |initial value of autoCommit prop on created connections                 |null,read prop value from first connection as initial value for other connections          |
+|defaultTransactionIsolationCode |initial value of transactionIsolation prop on created connections       |null,read prop value from first connection as initial value for other connections          |
+|enableThreadLocal               |thread local cache enable indicator                                     |true,set false to support virtual threads                                                  |
+|defaultCatalog                  |initial value of catalog prop on created connections                    |null,read prop value from first connection as initial value for other connections          |
+|defaultSchema                   |initial value of schema  prop on created connections                    |null,read prop value from first connection as initial value for other connections          |
+|defaultReadOnly                 |initial value of readOnly prop on created connections                   |null,read prop value from first connection as initial value for other connections          |
+|maxWait                         |max wait time in pool for borrowers to get connection,time unit：milliseconds|8000                                                                                  |
+|idleTimeout                     |idle time out for connections in pool,time unit：milliseconds                |18000                                                                                 |                             
+|holdTimeout                     |max inactive time of borrowed connections,time unit：milliseconds            |0(never timeout)                                                                      |  
+|aliveTestSql                    |alive test sql on borrowed connections,pool remove dead connections          |SELECT 1                                                                              |  
+|aliveTestTimeout                |max wait time to get validation result on test connectionstime unit：seconds  |3                                                                                     |  
+|aliveAssumeTime                 |a gap time value from last activity time to borrowed time point,if less,not test,time unit：milliseconds|500                                                         |  
+|forceCloseUsingOnClear          |indicator on direct closing borrowed connections while pool clears               |false                                                                             |
+|timerCheckInterval              |an interval time to scan idle connections,time unit：milliseconds                |18000                                                                             |
+|connectionFactoryClassName      |connection factory class name                                                    |null                                                                              |
+|sqlExceptionCodeList            |store sql exception codes for connection eviction check                          |null,related methods:addSqlExceptionCode,removeSqlExceptionCode                   |
+|sqlExceptionStateList           |store sql exception state for connection eviction check                          |null,related methods:addSqlExceptionCode,removeSqlExceptionCode                   |
+|evictPredicateClassName         |eviction predicate class name                                                    |null,pool only it to check exception if set                                       |
+|jdbcLinkInfoDecoderClassName    |short lifecycle object and used to decode jdbc link info                         |null                                                                              |
+|forceDirtyOnSchemaAfterSet      |dirty force indicator on schema property under PG driver                         |false                                                                             |
+|forceDirtyOnCatalogAfterSet     |dirty force indicator on schema property under PG driver                         |false                                                                             |
+|enableJmx                       |enable indicator to register configuration and pool to Jmx                       |false                                                                             | 
+|printConfigInfo                 |boolean indicator,true:print config item info on pool starting                   |false                                                                             | 
+|printRuntimeLog                 |boolean indicator,true:print runtime log                                         |false                                                                             | 
