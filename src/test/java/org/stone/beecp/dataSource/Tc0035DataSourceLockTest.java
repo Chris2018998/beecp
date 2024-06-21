@@ -12,6 +12,8 @@ package org.stone.beecp.dataSource;
 import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.beecp.BeeDataSource;
+import org.stone.beecp.objects.BorrowThread;
+import org.stone.beecp.objects.InterruptionAction;
 import org.stone.beecp.objects.MockBlockPoolImplementation1;
 import org.stone.beecp.objects.MockBlockPoolImplementation2;
 import org.stone.beecp.pool.ConnectionPoolStatics;
@@ -32,7 +34,7 @@ public class Tc0035DataSourceLockTest extends TestCase {
 
     public void testWaitTimeoutOnDsRLock() {
         BeeDataSource ds;
-        FirstGetThread firstThread;
+        BorrowThread firstThread;
 
         ds = new BeeDataSource();
         ds.setJdbcUrl(JDBC_URL);
@@ -41,7 +43,7 @@ public class Tc0035DataSourceLockTest extends TestCase {
         ds.setMaxWait(TimeUnit.SECONDS.toMillis(1));//timeout on wait
         ds.setPoolImplementClassName(MockBlockPoolImplementation1.class.getName());
 
-        firstThread = new FirstGetThread(ds);//first thread create pool under write-lock
+        firstThread = new BorrowThread(ds);//first thread create pool under write-lock
         firstThread.start();
 
         if (joinUtilWaiting(firstThread)) {
@@ -62,11 +64,11 @@ public class Tc0035DataSourceLockTest extends TestCase {
         ds.setUsername(JDBC_USER);
         ds.setPoolImplementClassName(MockBlockPoolImplementation1.class.getName());
 
-        FirstGetThread firstThread = new FirstGetThread(ds);
+        BorrowThread firstThread = new BorrowThread(ds);
         firstThread.start();
 
         if (joinUtilWaiting(firstThread)) {
-            new DsLockInterruptedThread(Thread.currentThread()).start();
+            new InterruptionAction(Thread.currentThread()).start();
 
             try {
                 ds.getConnection();
@@ -80,7 +82,7 @@ public class Tc0035DataSourceLockTest extends TestCase {
 
     public void testSuccessOnRLock() {
         BeeDataSource ds;
-        FirstGetThread firstThread;
+        BorrowThread firstThread;
 
         ds = new BeeDataSource();
         ds.setJdbcUrl(JDBC_URL);
@@ -90,7 +92,7 @@ public class Tc0035DataSourceLockTest extends TestCase {
         ds.setPoolImplementClassName(MockBlockPoolImplementation2.class.getName());
 
         //first borrower thread for this case test(blocked in write lock)
-        firstThread = new FirstGetThread(ds);
+        firstThread = new BorrowThread(ds);
         firstThread.start();
 
         if (joinUtilWaiting(firstThread)) {
@@ -102,43 +104,6 @@ public class Tc0035DataSourceLockTest extends TestCase {
             } finally {
                 if (con != null) ConnectionPoolStatics.oclose(con);
                 ds.close();
-            }
-        }
-    }
-
-    private static class FirstGetThread extends Thread {
-        private final BeeDataSource ds;
-
-        FirstGetThread(BeeDataSource ds) {
-            this.ds = ds;
-            this.setDaemon(true);
-        }
-
-        public void run() {
-            try {
-                ds.getConnection();
-            } catch (Exception e) {
-                //do noting
-            } finally {
-                ds.close();
-            }
-        }
-    }
-
-    //A mock thread to interrupt wait threads on ds-read lock
-    private static class DsLockInterruptedThread extends Thread {
-        private final Thread readThread;
-
-        DsLockInterruptedThread(Thread readThread) {
-            this.readThread = readThread;
-        }
-
-        public void run() {
-            try {
-                if (joinUtilWaiting(readThread))
-                    readThread.interrupt();
-            } catch (Exception e) {
-                //do nothing
             }
         }
     }
