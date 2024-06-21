@@ -2,6 +2,8 @@ package org.stone.beecp.pool;
 
 import junit.framework.TestCase;
 import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.config.DsConfigFactory;
@@ -12,6 +14,7 @@ import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 public class Tc0055PoolInternalLockTest extends TestCase {
+    private final Logger log = LoggerFactory.getLogger(Tc0055PoolInternalLockTest.class);
 
     public void testWaitOnPoolLock() throws SQLException {
         BeeDataSourceConfig config = DsConfigFactory.createDefault();
@@ -22,11 +25,14 @@ public class Tc0055PoolInternalLockTest extends TestCase {
         config.setRawConnectionFactory(new MockNetBlockConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
+        Assert.assertEquals(0, pool.getIdleSize());
 
         BorrowThread first = new BorrowThread(pool);
         first.start();
         TestUtil.joinUtilWaiting(first);
-        Assert.assertTrue(pool.getPoolLockHoldTime() > 0L);//first thread has hold lock and blocked in driver
+        long lockHoldTime = pool.getPoolLockHoldTime();
+        log.info("Current hold time point:{},gap:{}", lockHoldTime);
+        Assert.assertTrue(lockHoldTime > 0L);//first thread has hold lock and blocked in driver
 
         BorrowThread second = new BorrowThread(pool);
         second.start();
