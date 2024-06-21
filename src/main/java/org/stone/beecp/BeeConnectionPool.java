@@ -79,7 +79,7 @@ public interface BeeConnectionPool {
     BeeConnectionPoolMonitorVo getPoolMonitorVo();
 
     /**
-     * Gets owner hold time(milliseconds) on pool lock.
+     * Gets owner hold time point(milliseconds) on pool lock.
      *
      * @return lock hold time
      */
