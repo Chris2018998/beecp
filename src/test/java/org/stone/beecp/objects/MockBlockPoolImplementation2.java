@@ -24,7 +24,7 @@ import java.util.concurrent.locks.LockSupport;
 public class MockBlockPoolImplementation2 implements BeeConnectionPool {
 
     public MockBlockPoolImplementation2() {
-        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(2));
+        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
     }
 
     public void init(BeeDataSourceConfig config) {
