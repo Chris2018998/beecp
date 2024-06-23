@@ -13,7 +13,7 @@ jobs:
 
       # Use mvn clean and package as the standard maven build phase
       - run:
-          name: package
+          name: test-package
           command: mvn clean package
       - codecov/upload
 
