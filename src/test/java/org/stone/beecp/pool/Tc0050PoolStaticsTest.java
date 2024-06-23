@@ -32,8 +32,8 @@ public class Tc0050PoolStaticsTest extends TestCase {
     public void testInvalidDriverClass() {
         try {
             loadDriver("org.stone.beecp.mock.MockDriver2");
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof BeeDataSourceConfigException);
+        } catch (BeeDataSourceConfigException e) {
+            Assert.assertTrue(e.getMessage().contains("Failed to create jdbc driver by class:"));
         }
     }
 
@@ -176,14 +176,14 @@ public class Tc0050PoolStaticsTest extends TestCase {
     public void testOnPropertiesValueSet() throws Exception {
         try {
             setPropertiesValue(null, null);
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof BeanException);
+        } catch (BeanException e) {
+            Assert.assertTrue(e.getMessage().contains("Bean can't be null"));
         }
 
         try {
             setPropertiesValue(null, null, null);
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof BeanException);
+        } catch (BeanException e) {
+            Assert.assertTrue(e.getMessage().contains("Bean can't be null"));
         }
 
         BeeDataSourceConfig bean = new BeeDataSourceConfig();
@@ -229,20 +229,20 @@ public class Tc0050PoolStaticsTest extends TestCase {
 
         try {
             createClassInstance(null, BeeConnectionPool.class, "pool");
-        } catch (Throwable e) {
-            Assert.assertTrue(e instanceof BeanException);
+        } catch (BeanException e) {
+            Assert.assertTrue(e.getMessage().contains("Bean class can't be null"));
         }
 
         try {
             createClassInstance(SetTestBean.class, BeeConnectionPool.class, "pool");
-        } catch (Throwable e) {
-            Assert.assertTrue(e instanceof BeanException);
+        } catch (BeanException e) {
+            Assert.assertTrue(e.getMessage().contains("Bean class can't be abstract"));
         }
 
         try {
             createClassInstance(SetTestBean2.class, BeeConnectionPool.class, "pool");
-        } catch (Throwable e) {
-            Assert.assertTrue(e instanceof BeanException);
+        } catch (BeanException e) {
+            Assert.assertTrue(e.getMessage().contains("Not defined public constructor in bean class"));
         }
 
         createClassInstance(clazz, (Class<?>[]) null, "pool");
@@ -251,8 +251,8 @@ public class Tc0050PoolStaticsTest extends TestCase {
         createClassInstance(clazz, new Class[]{BeeConnectionPool.class, null, null}, "pool");
         try {
             createClassInstance(clazz, new Class[]{Number.class, null, String.class}, "pool");
-        } catch (Throwable e) {
-            Assert.assertTrue(e instanceof BeanException);
+        } catch (BeanException e) {
+            Assert.assertTrue(e.getMessage().contains("which must extend from one of type"));
         }
     }
 

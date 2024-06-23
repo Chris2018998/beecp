@@ -128,11 +128,12 @@ public class Tc0051PoolInitializeTest extends TestCase {
         pool2.close();
     }
 
-    public void testSyncCreateInitialConnections() throws Exception {
+    public void testSyncCreateInitialConnections() throws SQLException {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(1);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
+
         pool.close();
 
         BeeDataSourceConfig config2 = createDefault();
@@ -141,6 +142,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
         config2.setAsyncCreateInitConnection(true);//<--async
         FastConnectionPool pool2 = new FastConnectionPool();
         pool2.init(config2);
+
         pool2.close();
     }
 
