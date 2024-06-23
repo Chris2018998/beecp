@@ -44,7 +44,7 @@ public class Tc0037XaDataSourcePropertyTest extends TestCase {
         ds.close();
     }
 
-    public void test() throws Exception {
+    public void testDsProperty() throws Exception {
         FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
         RawXaConnectionFactory rawXaConnFactory = (RawXaConnectionFactory) TestUtil.getFieldValue(pool, "rawXaConnFactory");
         MockXaDataSource xaDs = (MockXaDataSource) TestUtil.getFieldValue(rawXaConnFactory, "dataSource");

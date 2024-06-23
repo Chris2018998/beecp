@@ -58,30 +58,30 @@ public class Tc0031DataSourcePoolTest extends TestCase {
         Assert.assertTrue(ds.isClosed());
         try {
             ds.getPoolMonitorVo();
-        } catch (SQLException e) {
-            Assert.assertTrue(e instanceof PoolNotCreatedException);
+        } catch (PoolNotCreatedException e) {
+            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
         }
         try {
             ds.getPoolLockHoldTime();
-        } catch (SQLException e) {
-            Assert.assertTrue(e instanceof PoolNotCreatedException);
+        } catch (PoolNotCreatedException e) {
+            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
         }
         try {
             ds.interruptOnPoolLock();
-        } catch (SQLException e) {
-            Assert.assertTrue(e instanceof PoolNotCreatedException);
+        } catch (PoolNotCreatedException e) {
+            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
         }
 
         try {
             ds.clear(true);
-        } catch (SQLException e) {
-            Assert.assertTrue(e instanceof PoolNotCreatedException);
+        } catch (PoolNotCreatedException e) {
+            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
         }
 
         try {
             ds.clear(true, null);
-        } catch (SQLException e) {
-            Assert.assertTrue(e instanceof PoolNotCreatedException);
+        } catch (PoolNotCreatedException e) {
+            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
         }
 
 

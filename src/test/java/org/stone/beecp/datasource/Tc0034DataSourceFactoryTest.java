@@ -127,6 +127,7 @@ public class Tc0034DataSourceFactoryTest extends TestCase {
         }
 
         protected void init(Hashtable<?, ?> environment) {
+            //do nothing
         }
 
         public Object lookup(String name) {
@@ -137,9 +138,11 @@ public class Tc0034DataSourceFactoryTest extends TestCase {
     //a dummy impl
     private static class TransactionManagerImpl implements TransactionManager {
         public void begin() {
+            //do nothing
         }
 
         public void commit() {
+            //do nothing
         }
 
         public int getStatus() {
@@ -151,15 +154,19 @@ public class Tc0034DataSourceFactoryTest extends TestCase {
         }
 
         public void resume(Transaction tobj) {
+            //do nothing
         }
 
         public void rollback() {
+            //do nothing
         }
 
         public void setRollbackOnly() {
+            //do nothing
         }
 
         public void setTransactionTimeout(int seconds) {
+            //do nothing
         }
 
         public Transaction suspend() {

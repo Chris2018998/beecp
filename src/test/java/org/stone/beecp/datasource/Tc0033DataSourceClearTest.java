@@ -42,8 +42,8 @@ public class Tc0033DataSourceClearTest extends TestCase {
 
             try {
                 ds.clear(true, null);
-            } catch (Exception e) {
-                Assert.assertTrue(e instanceof BeeDataSourceConfigException);
+            } catch (BeeDataSourceConfigException e) {
+                Assert.assertTrue(e.getMessage().contains("Pool configuration object can't be null"));
             }
 
             BeeDataSourceConfig config2 = createDefault();

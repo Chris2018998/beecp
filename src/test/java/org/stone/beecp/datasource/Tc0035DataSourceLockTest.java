@@ -32,7 +32,7 @@ import static org.stone.beecp.config.DsConfigFactory.*;
  */
 public class Tc0035DataSourceLockTest extends TestCase {
 
-    public void testWaitTimeoutOnDsRLock() {
+    public void testWaitTimeoutOnDsRLock() throws SQLException {
         BeeDataSource ds;
         BorrowThread firstThread;
 
@@ -50,13 +50,13 @@ public class Tc0035DataSourceLockTest extends TestCase {
             try {
                 ds.getConnection();//second thread will be locked on read-lock
                 Assert.fail("Ds Lock timeout test failed");
-            } catch (Exception e) {
-                Assert.assertTrue(e instanceof ConnectionGetTimeoutException);
+            } catch (ConnectionGetTimeoutException e) {
+                Assert.assertTrue(e.getMessage().contains("Timeout on waiting for pool ready"));
             }
         }
     }
 
-    public void testInterruptionOnDsRLock() {
+    public void testInterruptionOnDsRLock() throws SQLException {
         BeeDataSource ds;
         ds = new BeeDataSource();
         ds.setJdbcUrl(JDBC_URL);
@@ -73,12 +73,11 @@ public class Tc0035DataSourceLockTest extends TestCase {
             try {
                 ds.getConnection();
                 Assert.fail("Ds Lock interruption test failed");
-            } catch (SQLException e) {
-                Assert.assertTrue(e instanceof ConnectionGetInterruptedException);
+            } catch (ConnectionGetInterruptedException e) {
+                Assert.assertTrue(e.getMessage().contains("An interruption occurred while waiting for pool ready"));
             }
         }
     }
-
 
     public void testSuccessOnRLock() {
         BeeDataSource ds;
@@ -100,7 +99,7 @@ public class Tc0035DataSourceLockTest extends TestCase {
             try {
                 con = ds.getConnection();
             } catch (Exception e) {
-                //do nothing
+                fail("test failed on testSuccessOnRLock");
             } finally {
                 if (con != null) ConnectionPoolStatics.oclose(con);
                 ds.close();
