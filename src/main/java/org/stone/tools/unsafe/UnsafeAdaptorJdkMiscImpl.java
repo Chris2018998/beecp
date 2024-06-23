@@ -12,6 +12,8 @@ package org.stone.tools.unsafe;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 /**
  * A Unsafe adaptor,whose inside unsafe field type should be declared to
@@ -24,13 +26,18 @@ public final class UnsafeAdaptorJdkMiscImpl implements UnsafeAdaptor {
     private static final Unsafe U;
 
     static {
-        try {
-            Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
-            theUnsafe.setAccessible(true);
-            U = (Unsafe) theUnsafe.get(null);
-        } catch (Exception e) {
-            throw new Error(e);
-        }
+        U = AccessController.doPrivileged(new PrivilegedAction<Unsafe>() {
+            @Override
+            public Unsafe run() {
+                try {
+                    Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
+                    theUnsafe.setAccessible(true);
+                    return (Unsafe) theUnsafe.get(null);
+                } catch (ReflectiveOperationException | SecurityException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 
     //****************************************************************************************************************//
