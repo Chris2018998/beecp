@@ -24,7 +24,9 @@ public class StoneTestRunner {
 
     public static void main(String[] ags) throws Throwable {
         if (ags != null && ags.length == 2) {
+            long beginTime = System.currentTimeMillis();
             StoneTestRunner.run(getTestCaseClasses(ags[1]));
+            System.out.println("Took time:(" + (System.currentTimeMillis() - beginTime) + ")ms");
         }
     }
 
@@ -70,7 +72,7 @@ public class StoneTestRunner {
 
                 TestResult result = runner.doRun(new TestSuite(caseClass));
                 long endTime = System.currentTimeMillis();
-                System.out.println("...Tests run: " + result.runCount() + ", Failures: " + result.failureCount() + ", Errors: " + result.errorCount() + ", Time elapsed: " + (endTime - startTime) + " millis");
+                System.out.println("...Tests run:" + result.runCount() + ", Failures:" + result.failureCount() + ", Errors:" + result.errorCount() + ",Time elapsed:" + (endTime - startTime) + " millis");
                 Enumeration<TestFailure> failureEnum = result.failures();
                 if (failureEnum != null) {
                     while (failureEnum.hasMoreElements()) {
