@@ -129,7 +129,7 @@
                         <include>org/stone/beecp/config/*Test.java</include>
                         <include>org/stone/beecp/datasource/*Test.java</include>
                         <include>org/stone/beecp/pool/*Test.java</include>
-                        <include>org/stone/beecp/other/slowSql/*Test.java</include>
+                        <include>org/stone/beecp/other/slow/*Test.java</include>
                     </includes>
                 </configuration>
             </plugin>
