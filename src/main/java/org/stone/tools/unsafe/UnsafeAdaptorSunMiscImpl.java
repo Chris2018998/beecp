@@ -9,6 +9,7 @@
  */
 package org.stone.tools.unsafe;
 
+import org.stone.tools.exception.ReflectionOperationException;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
@@ -32,8 +33,8 @@ public final class UnsafeAdaptorSunMiscImpl implements UnsafeAdaptor {
                     Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
                     theUnsafe.setAccessible(true);
                     return (Unsafe) theUnsafe.get(null);
-                } catch (ReflectiveOperationException | SecurityException e) {
-                    throw new RuntimeException(e);
+                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    throw new ReflectionOperationException(e);
                 }
             }
         });

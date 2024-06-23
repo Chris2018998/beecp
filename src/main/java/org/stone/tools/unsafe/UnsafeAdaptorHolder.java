@@ -38,9 +38,7 @@ public final class UnsafeAdaptorHolder {
 
         try {
             U = (UnsafeAdaptor) Class.forName(adaptorImplClassName).newInstance();
-        } catch (InstantiationException e) {
-            throw new Error("Failed to create unsafe adaptor by class:" + adaptorImplClassName, e);
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             throw new Error("Failed to create unsafe adaptor by class:" + adaptorImplClassName, e);
         } catch (ClassNotFoundException e) {
             throw new Error("Not found unsafe adaptor class:" + adaptorImplClassName);
