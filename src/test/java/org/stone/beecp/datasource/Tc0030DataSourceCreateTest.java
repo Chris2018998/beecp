@@ -20,6 +20,7 @@ import static org.stone.beecp.config.DsConfigFactory.*;
 /**
  * @author Chris Liao
  */
+
 public class Tc0030DataSourceCreateTest extends TestCase {
 
     public void testWithoutParameter() {

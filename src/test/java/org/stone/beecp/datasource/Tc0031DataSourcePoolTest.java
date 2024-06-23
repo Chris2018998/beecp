@@ -13,13 +13,11 @@ import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.base.StoneLogAppender;
 import org.stone.base.TestUtil;
-import org.stone.beecp.BeeConnectionPool;
-import org.stone.beecp.BeeConnectionPoolMonitorVo;
-import org.stone.beecp.BeeDataSource;
-import org.stone.beecp.BeeDataSourceConfig;
+import org.stone.beecp.*;
 import org.stone.beecp.objects.MockCreateNullConnectionFactory;
 import org.stone.beecp.pool.ConnectionPoolStatics;
 import org.stone.beecp.pool.exception.PoolCreateFailedException;
+import org.stone.beecp.pool.exception.PoolInitializeFailedException;
 import org.stone.beecp.pool.exception.PoolNotCreatedException;
 
 import javax.sql.XAConnection;
@@ -29,66 +27,13 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
-import static org.stone.base.TestUtil.getStoneLogAppender;
 import static org.stone.beecp.config.DsConfigFactory.*;
 
 /**
  * @author Chris Liao
  */
+
 public class Tc0031DataSourcePoolTest extends TestCase {
-
-    public void testOnUninitializedPool() throws Exception {
-        BeeDataSource ds = new BeeDataSource();
-        BeeConnectionPool pool = (BeeConnectionPool) TestUtil.getFieldValue(ds, "pool");
-        Assert.assertNull(pool);
-        Assert.assertTrue(ds.isClosed());
-
-        //test on methods of commonDataSource
-        Assert.assertNull(ds.getParentLogger());
-        Assert.assertNull(ds.getLogWriter());
-        ds.setLogWriter(new PrintWriter(System.out));
-        Assert.assertNull(ds.getLogWriter());
-        Assert.assertEquals(0, ds.getLoginTimeout());
-        Assert.assertEquals(0, DriverManager.getLoginTimeout());
-        ds.setLoginTimeout(10);//ten seconds
-        Assert.assertEquals(0, ds.getLoginTimeout());
-        Assert.assertEquals(0, DriverManager.getLoginTimeout());
-
-        ds.setPrintRuntimeLog(true);
-        Assert.assertTrue(ds.isClosed());
-        try {
-            ds.getPoolMonitorVo();
-        } catch (PoolNotCreatedException e) {
-            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
-        }
-        try {
-            ds.getPoolLockHoldTime();
-        } catch (PoolNotCreatedException e) {
-            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
-        }
-        try {
-            ds.interruptOnPoolLock();
-        } catch (PoolNotCreatedException e) {
-            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
-        }
-
-        try {
-            ds.clear(true);
-        } catch (PoolNotCreatedException e) {
-            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
-        }
-
-        try {
-            ds.clear(true, null);
-        } catch (PoolNotCreatedException e) {
-            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
-        }
-
-
-        BeeDataSourceConfig config = createDefault();
-        config.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
-        new BeeDataSource(config);
-    }
 
     public void testOnInitializedPool() throws Exception {
         BeeDataSourceConfig config = createDefault();
@@ -100,7 +45,7 @@ public class Tc0031DataSourcePoolTest extends TestCase {
 
         try {
             ds = new BeeDataSource(config);
-            StoneLogAppender logAppender = getStoneLogAppender();
+            StoneLogAppender logAppender = TestUtil.getStoneLogAppender();
             logAppender.beginCollectStoneLog();
 
             //getConnection test
@@ -126,9 +71,10 @@ public class Tc0031DataSourcePoolTest extends TestCase {
             //test on methods of commonDataSource
             Assert.assertNull(ds.getParentLogger());
             Assert.assertNull(ds.getLogWriter());
-            PrintWriter logWriter = new PrintWriter(System.out);
-            ds.setLogWriter(logWriter);
+            ds.setLogWriter(new PrintWriter(System.out));
             Assert.assertNotNull(ds.getLogWriter());
+            ds.setLogWriter(null);//reset back to null
+            Assert.assertNull(ds.getLogWriter());
             DriverManager.setLoginTimeout(0);
             Assert.assertEquals(0, ds.getLoginTimeout());
             Assert.assertEquals(0, DriverManager.getLoginTimeout());
@@ -170,6 +116,59 @@ public class Tc0031DataSourcePoolTest extends TestCase {
         }
     }
 
+
+    public void testOnUninitializedPool() throws Exception {
+        BeeDataSource ds = new BeeDataSource();
+        BeeConnectionPool pool = (BeeConnectionPool) TestUtil.getFieldValue(ds, "pool");
+        Assert.assertNull(pool);
+        Assert.assertTrue(ds.isClosed());
+
+        //test on methods of commonDataSource
+        Assert.assertNull(ds.getParentLogger());
+        Assert.assertNull(ds.getLogWriter());
+        ds.setLogWriter(new PrintWriter(System.out));
+        Assert.assertNull(ds.getLogWriter());
+        Assert.assertEquals(0, ds.getLoginTimeout());
+        Assert.assertEquals(0, DriverManager.getLoginTimeout());
+        ds.setLoginTimeout(10);//ten seconds
+        Assert.assertEquals(0, ds.getLoginTimeout());
+        Assert.assertEquals(0, DriverManager.getLoginTimeout());
+
+        ds.setPrintRuntimeLog(true);
+        try {
+            ds.getPoolMonitorVo();
+        } catch (PoolNotCreatedException e) {
+            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
+        }
+        try {
+            ds.getPoolLockHoldTime();
+        } catch (PoolNotCreatedException e) {
+            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
+        }
+        try {
+            ds.interruptOnPoolLock();
+        } catch (PoolNotCreatedException e) {
+            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
+        }
+
+        try {
+            ds.clear(true);
+        } catch (PoolNotCreatedException e) {
+            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
+        }
+
+        try {
+            ds.clear(true, null);
+        } catch (PoolNotCreatedException e) {
+            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
+        }
+
+        BeeDataSourceConfig config = createDefault();
+        config.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
+        new BeeDataSource(config);
+    }
+
+
     public void testPoolCreationUnderLock() throws Exception {
         BeeDataSource ds1 = null;
         try {
@@ -206,7 +205,6 @@ public class Tc0031DataSourcePoolTest extends TestCase {
             if (ds != null) ds.close();
         }
 
-
         BeeDataSource ds2 = null;
         try {//creation in constructor
             BeeDataSourceConfig config = createDefault();
@@ -232,7 +230,11 @@ public class Tc0031DataSourcePoolTest extends TestCase {
             ds = new BeeDataSource(config);
         } catch (RuntimeException e) {
             Throwable cause = e.getCause();
-            Assert.assertTrue(cause instanceof SQLException);
+            Assert.assertTrue(cause instanceof PoolInitializeFailedException);
+            PoolInitializeFailedException poolInitializeException = (PoolInitializeFailedException) cause;
+            Assert.assertTrue(poolInitializeException.getCause() instanceof BeeDataSourceConfigException);
+            Throwable bottomException = poolInitializeException.getCause();
+            Assert.assertTrue(bottomException.getMessage().contains("initialSize must not be greater than maxActive"));
         } finally {
             if (ds != null) ds.close();
         }

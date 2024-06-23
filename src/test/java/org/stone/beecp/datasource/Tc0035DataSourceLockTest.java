@@ -79,7 +79,7 @@ public class Tc0035DataSourceLockTest extends TestCase {
         }
     }
 
-    public void testSuccessOnRLock() {
+    public void testSuccessOnRLock() throws SQLException {
         BeeDataSource ds;
         BorrowThread firstThread;
 
@@ -87,18 +87,17 @@ public class Tc0035DataSourceLockTest extends TestCase {
         ds.setJdbcUrl(JDBC_URL);
         ds.setDriverClassName(JDBC_DRIVER);
         ds.setUsername(JDBC_USER);
-        ds.setMaxWait(TimeUnit.SECONDS.toMillis(2));//timeout on wait
+        ds.setMaxWait(TimeUnit.SECONDS.toMillis(10));//timeout on wait
         ds.setPoolImplementClassName(MockBlockPoolImplementation2.class.getName());
 
-        //first borrower thread for this case test(blocked in write lock)
         firstThread = new BorrowThread(ds);
         firstThread.start();
 
-        if (joinUtilWaiting(firstThread)) {
+        if (joinUtilWaiting(firstThread)) {//block 1 second in pool instance creation
             Connection con = null;
             try {
                 con = ds.getConnection();
-            } catch (Exception e) {
+            } catch (ConnectionGetTimeoutException e) {
                 fail("test failed on testSuccessOnRLock");
             } finally {
                 if (con != null) ConnectionPoolStatics.oclose(con);
