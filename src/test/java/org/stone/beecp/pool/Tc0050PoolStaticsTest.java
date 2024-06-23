@@ -307,6 +307,7 @@ public class Tc0050PoolStaticsTest extends TestCase {
         }
 
         public void set() {
+            //do nothing
         }
 
         public void set(String name) {

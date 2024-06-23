@@ -23,11 +23,19 @@ import static org.stone.beecp.config.DsConfigFactory.*;
 public class Tc0030DataSourceCreateTest extends TestCase {
 
     public void testWithoutParameter() {
-        new BeeDataSource();
+        try {
+            new BeeDataSource();
+        } catch (Exception e) {
+            fail("test failed on testWithoutParameter");
+        }
     }
 
     public void testOnConfig() {
-        new BeeDataSource(createDefault());
+        try {
+            new BeeDataSource(createDefault());
+        } catch (Exception e) {
+            fail("test failed on testOnConfig");
+        }
     }
 
     public void testOnJdbcInfo() {
@@ -38,6 +46,7 @@ public class Tc0030DataSourceCreateTest extends TestCase {
         BeeDataSource ds = null;
         try {
             ds = new BeeDataSource(driver, url, user, password);
+            Assert.assertNotNull(ds);
         } finally {
             if (ds != null) ds.close();
         }

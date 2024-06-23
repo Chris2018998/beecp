@@ -27,6 +27,7 @@ public class MockBlockPoolImplementation1 implements BeeConnectionPool {
     }
 
     public void init(BeeDataSourceConfig config) {
+        //do noting
     }
 
     public Connection getConnection() {
