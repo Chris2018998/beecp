@@ -37,22 +37,22 @@ public class Tc0015ConfigLoadFromFileTest extends TestCase {
         Assert.assertTrue(check(new BeeDataSourceConfig(getClassPathFileAbsolutePath(filename))));//from file
         Assert.assertTrue(check(new BeeDataSourceConfig(loadPropertiesFromClassPathFile(filename))));//from properties
 
-        BeeDataSourceConfig config1 = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config1 = createEmpty();
         config1.loadFromPropertiesFile(classFilename);
         Assert.assertTrue(check(config1));
 
-        BeeDataSourceConfig config2 = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config2 = createEmpty();
         config2.loadFromPropertiesFile(getClassPathFileAbsolutePath(filename));
         Assert.assertTrue(check(config2));
 
-        BeeDataSourceConfig config3 = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config3 = createEmpty();
         config3.loadFromProperties(loadPropertiesFromClassPathFile(filename));
         Assert.assertTrue(check(config3));
     }
 
 
     public void testOnLoadByFileName() {
-        BeeDataSourceConfig config1 = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config1 = createEmpty();
         try {
             config1.loadFromPropertiesFile("");
         } catch (Exception e) {
@@ -111,7 +111,7 @@ public class Tc0015ConfigLoadFromFileTest extends TestCase {
     }
 
     public void testOnLoadProperties() {
-        BeeDataSourceConfig config1 = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config1 = createEmpty();
         try {
             config1.loadFromProperties(null);
         } catch (Exception e) {
@@ -129,7 +129,7 @@ public class Tc0015ConfigLoadFromFileTest extends TestCase {
     }
 
     public void testOnLoadByFile() {
-        BeeDataSourceConfig config1 = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config1 = createEmpty();
 
         try {//null file test
             config1.loadFromPropertiesFile((File) null);

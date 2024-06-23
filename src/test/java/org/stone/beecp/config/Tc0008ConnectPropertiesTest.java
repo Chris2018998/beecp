@@ -15,13 +15,15 @@ import org.stone.beecp.BeeDataSourceConfig;
 
 import java.util.Properties;
 
+import static org.stone.beecp.config.DsConfigFactory.createEmpty;
+
 /**
  * @author Chris Liao
  */
 public class Tc0008ConnectPropertiesTest extends TestCase {
 
     public void testOnAddProperty() {
-        BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config = createEmpty();
         config.addConnectProperty(null, null);
         config.addConnectProperty(null, "value");
         config.addConnectProperty("key", null);
@@ -29,7 +31,7 @@ public class Tc0008ConnectPropertiesTest extends TestCase {
     }
 
     public void testOnRemoval() {
-        BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config = createEmpty();
         config.addConnectProperty("prop1", "value1");
         Assert.assertEquals(config.getConnectProperty("prop1"), "value1");
         Assert.assertEquals(config.removeConnectProperty("prop1"), "value1");
@@ -38,7 +40,7 @@ public class Tc0008ConnectPropertiesTest extends TestCase {
 
     //prop1=value&prop2=value2&prop3=value3
     public void testOnAddTextProperty1() {
-        BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config = createEmpty();
         config.addConnectProperty("prop1=value1&prop2=value2&prop3=value3");
 
         Assert.assertEquals("value1", config.getConnectProperty("prop1"));
@@ -48,7 +50,7 @@ public class Tc0008ConnectPropertiesTest extends TestCase {
 
     //prop1:value&prop2:value2&prop3:value3
     public void testOnAddTextProperty2() {
-        BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config = createEmpty();
         config.addConnectProperty("prop1:value1&prop2:value2&prop3:value3&prop4:value4:value5");
 
         Assert.assertEquals("value1", config.getConnectProperty("prop1"));
@@ -58,7 +60,7 @@ public class Tc0008ConnectPropertiesTest extends TestCase {
     }
 
     public void testLoadFromProperties() {
-        BeeDataSourceConfig config1 = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config1 = createEmpty();
         Properties prop1 = new Properties();
         prop1.setProperty("connectProperties", "prop1=value1&prop2=value2&prop3=value3");
         config1.loadFromProperties(prop1);
@@ -66,7 +68,7 @@ public class Tc0008ConnectPropertiesTest extends TestCase {
         Assert.assertEquals("value2", config1.getConnectProperty("prop2"));
         Assert.assertEquals("value3", config1.getConnectProperty("prop3"));
 
-        BeeDataSourceConfig config2 = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config2 = createEmpty();
         Properties prop2 = new Properties();
         prop2.setProperty("connectProperties", "prop1:value1&prop2:value2&prop3:value3");
         config2.loadFromProperties(prop2);
@@ -74,7 +76,7 @@ public class Tc0008ConnectPropertiesTest extends TestCase {
         Assert.assertEquals("value2", config2.getConnectProperty("prop2"));
         Assert.assertEquals("value3", config2.getConnectProperty("prop3"));
 
-        BeeDataSourceConfig config3 = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config3 = createEmpty();
         Properties prop3 = new Properties();
         prop3.setProperty("connectProperties.size", "3");
         prop3.setProperty("connectProperties.1", "prop1=value1");

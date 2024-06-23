@@ -24,7 +24,6 @@ public class Tc0061DataSourceConnectionFactoryTest extends TestCase {
         config.setUsername(JDBC_USER);
         config.setPassword(JDBC_PASSWORD);
         config.addConnectProperty("url", JDBC_URL);
-        //config.setConnectionFactoryClassName("com.mysql.cj.jdbc.MysqlDataSource");
         config.setConnectionFactoryClassName("org.stone.beecp.driver.MockDataSource");
 
         config.setInitialSize(5);

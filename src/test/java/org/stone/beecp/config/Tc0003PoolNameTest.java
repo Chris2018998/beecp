@@ -15,6 +15,9 @@ import org.stone.beecp.BeeDataSourceConfig;
 
 import java.util.Properties;
 
+import static org.stone.beecp.config.DsConfigFactory.createDefault;
+import static org.stone.beecp.config.DsConfigFactory.createEmpty;
+
 /**
  * @author Chris Liao
  */
@@ -22,7 +25,7 @@ import java.util.Properties;
 public class Tc0003PoolNameTest extends TestCase {
 
     public void testOnSetGet() {
-        BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config = createEmpty();
 
         config.setPoolName(null);
         Assert.assertNull(config.getPoolName());
@@ -32,7 +35,7 @@ public class Tc0003PoolNameTest extends TestCase {
     }
 
     public void testOnGeneration() throws Exception {
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         BeeDataSourceConfig checkConfig = config.check();
         Assert.assertTrue(checkConfig.getPoolName().contains("FastPool-"));
 
@@ -42,7 +45,7 @@ public class Tc0003PoolNameTest extends TestCase {
     }
 
     public void testInProperties() {
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         Properties prop = new Properties();
 
         prop.setProperty("poolName", "pool1");

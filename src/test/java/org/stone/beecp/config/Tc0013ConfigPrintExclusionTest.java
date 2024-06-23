@@ -21,7 +21,7 @@ import java.util.Properties;
 public class Tc0013ConfigPrintExclusionTest extends TestCase {
 
     public void testOnSetAndGet() {
-        BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config = createEmpty();
         Assert.assertTrue(config.existConfigPrintExclusion("username"));
         config.addConfigPrintExclusion("password");
         config.addConfigPrintExclusion("poolName");
@@ -34,7 +34,7 @@ public class Tc0013ConfigPrintExclusionTest extends TestCase {
         Properties prop = new Properties();
         prop.put("configPrintExclusionList", "username,password,poolName");
 
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         config.loadFromProperties(prop);
         Assert.assertTrue(config.existConfigPrintExclusion("username"));
         Assert.assertTrue(config.existConfigPrintExclusion("password"));
@@ -42,7 +42,7 @@ public class Tc0013ConfigPrintExclusionTest extends TestCase {
     }
 
     public void testOnConfigCopy() throws Exception {
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         config.setPrintConfigInfo(true);
         config.addConnectProperty("DB-Name", "MySQL");
         config.addConnectProperty("DB-URL", "jdbc:test");

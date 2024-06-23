@@ -12,7 +12,6 @@ import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.TransactionIsolation;
-import org.stone.beecp.config.DsConfigFactory;
 
 import java.sql.Connection;
 
@@ -21,7 +20,7 @@ import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
 public class Tc0058ConnectionResetTest extends TestCase {
 
     public void testReadonlyRest() throws Exception {
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         config.setInitialSize(1);
         config.setMaxActive(1);
         config.setBorrowSemaphoreSize(1);
@@ -42,7 +41,7 @@ public class Tc0058ConnectionResetTest extends TestCase {
     public void testCatalogReset() throws Exception {
         String catalog = "mysql";
         String schema = "mysql";
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         config.setInitialSize(1);
         config.setMaxActive(1);
         config.setDefaultAutoCommit(false);

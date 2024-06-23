@@ -4,7 +4,6 @@ import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.config.DsConfigFactory;
 import org.stone.beecp.objects.InterruptionAction;
 import org.stone.beecp.objects.MockNetBlockConnectionFactory;
 import org.stone.beecp.objects.MockNetBlockXaConnectionFactory;
@@ -19,7 +18,7 @@ import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
 public class Tc0052GetBlockedTest extends TestCase {
 
     public void testGetSuccess() throws SQLException {
-        BeeDataSource ds = new BeeDataSource(DsConfigFactory.createDefault());
+        BeeDataSource ds = new BeeDataSource(createDefault());
         Connection con = null;
 
         try {
@@ -33,7 +32,7 @@ public class Tc0052GetBlockedTest extends TestCase {
 
     public void testBlockedInCreatingConnection() throws SQLException {
         //1: connection creation blocked in driver(mock)
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         config.setInitialSize(0);
         config.setMaxActive(2);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(1));
@@ -53,7 +52,7 @@ public class Tc0052GetBlockedTest extends TestCase {
 
     public void testBlockedInCreatingXaConnection() throws SQLException {
         //2: xa-connection creation blocked in driver(mock)
-        BeeDataSourceConfig config2 = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config2 = createDefault();
         config2.setInitialSize(0);
         config2.setMaxActive(2);
         config2.setMaxWait(TimeUnit.SECONDS.toMillis(1));

@@ -16,8 +16,7 @@ import org.stone.beecp.BeeDataSourceConfigException;
 
 import java.sql.SQLException;
 
-import static org.stone.beecp.config.DsConfigFactory.JDBC_DRIVER;
-import static org.stone.beecp.config.DsConfigFactory.JDBC_URL;
+import static org.stone.beecp.config.DsConfigFactory.*;
 
 /**
  * @author Chris Liao
@@ -27,7 +26,7 @@ public class Tc0004JdbcDriverTest extends TestCase {
 
     public void testNoSuitableDriver() {
         try {
-            BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+            BeeDataSourceConfig config = createEmpty();
             config.setUrl("jdbc:beecp://localhost/testdb");
             config.check();
         } catch (SQLException e) {//thrown from DriverManager
@@ -38,7 +37,7 @@ public class Tc0004JdbcDriverTest extends TestCase {
 
     public void testUrlNotMatchDriver() throws Exception {
         try {
-            BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+            BeeDataSourceConfig config = createEmpty();
             config.setJdbcUrl("Test:" + JDBC_URL);
             config.setDriverClassName(JDBC_DRIVER);
             config.check();

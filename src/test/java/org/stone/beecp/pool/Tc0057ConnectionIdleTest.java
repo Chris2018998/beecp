@@ -11,7 +11,6 @@ import org.junit.Assert;
 import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.config.DsConfigFactory;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
@@ -20,7 +19,7 @@ public class Tc0057ConnectionIdleTest extends TestCase {
 
     public void testIdleTimeout() throws Exception {
         final int initSize = 5;
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         config.setInitialSize(initSize);
         config.setMaxActive(initSize);
         config.setAliveTestSql("SELECT 1 from dual");

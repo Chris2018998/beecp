@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.config.DsConfigFactory;
 import org.stone.beecp.objects.BorrowThread;
 import org.stone.beecp.objects.MockNetBlockConnectionFactory;
 
@@ -17,7 +16,7 @@ public class Tc0055PoolInternalLockTest extends TestCase {
     private final Logger log = LoggerFactory.getLogger(Tc0055PoolInternalLockTest.class);
 
     public void testWaitOnPoolLock() throws SQLException {
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         config.setInitialSize(0);
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(2);

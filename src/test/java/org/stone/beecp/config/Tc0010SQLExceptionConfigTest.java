@@ -25,7 +25,7 @@ import java.util.Properties;
 public class Tc0010SQLExceptionConfigTest extends TestCase {
 
     public void testOnExceptionCodeAddRemove() {
-        BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config = createEmpty();
 
         Assert.assertNull(config.getSqlExceptionCodeList());
         config.removeSqlExceptionCode(500151);
@@ -44,7 +44,7 @@ public class Tc0010SQLExceptionConfigTest extends TestCase {
     }
 
     public void testOnExceptionStateAddRemove() {
-        BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config = createEmpty();
 
         Assert.assertNull(config.getSqlExceptionStateList());
         config.removeSqlExceptionState("0A000");
@@ -63,7 +63,7 @@ public class Tc0010SQLExceptionConfigTest extends TestCase {
     }
 
     public void testOnPredicationSettingAndGetting() {
-        BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config = createEmpty();
 
         BeeConnectionPredicate predication = new MockNotEvictConnectionPredicate1();
         config.setEvictPredicate(predication);
@@ -80,26 +80,26 @@ public class Tc0010SQLExceptionConfigTest extends TestCase {
 
     public void testOnPredicationCreation() throws Exception {
         BeeConnectionPredicate predication = new MockNotEvictConnectionPredicate1();
-        BeeDataSourceConfig config1 = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config1 = createDefault();
         config1.setEvictPredicate(predication);
         BeeDataSourceConfig checkConfig1 = config1.check();
         Assert.assertEquals(checkConfig1.getEvictPredicate(), predication);
 
-        BeeDataSourceConfig config2 = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config2 = createDefault();
         Class<? extends BeeConnectionPredicate> predicationClass = MockNotEvictConnectionPredicate1.class;
         config2.setEvictPredicateClass(predicationClass);
         Assert.assertEquals(config2.getEvictPredicateClass(), predicationClass);
         BeeDataSourceConfig checkConfig2 = config2.check();
         Assert.assertNotNull(checkConfig2.getEvictPredicate());
 
-        BeeDataSourceConfig config3 = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config3 = createDefault();
         String predicationClassName = "org.stone.beecp.objects.MockNotEvictConnectionPredicate1";
         config3.setEvictPredicateClassName(predicationClassName);
         Assert.assertEquals(config3.getEvictPredicateClassName(), predicationClassName);
         BeeDataSourceConfig checkConfig3 = config3.check();
         Assert.assertNotNull(checkConfig3.getEvictPredicate());
 
-        BeeDataSourceConfig config5 = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config5 = createDefault();
         config5.setEvictPredicateClassName("String");
         try {
             config5.check();
@@ -110,7 +110,7 @@ public class Tc0010SQLExceptionConfigTest extends TestCase {
     }
 
     public void testLoadFromProperties() {
-        BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config = createEmpty();
         Properties prop = new Properties();
         prop.setProperty("sqlExceptionCodeList", "123");
         prop.setProperty("sqlExceptionStateList", "A");
@@ -128,7 +128,7 @@ public class Tc0010SQLExceptionConfigTest extends TestCase {
     }
 
     public void testOnCheckCopy() throws Exception {
-        BeeDataSourceConfig config1 = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config1 = createDefault();
         config1.addSqlExceptionCode(500151);
         config1.addSqlExceptionState("0A000");
         BeeDataSourceConfig checkConfig = config1.check();

@@ -4,7 +4,6 @@ import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.config.DsConfigFactory;
 import org.stone.beecp.objects.BorrowThread;
 import org.stone.beecp.objects.MockNetBlockConnectionFactory;
 import org.stone.beecp.pool.exception.ConnectionCreateException;
@@ -19,7 +18,7 @@ import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
 public class Tc0053GetTimeoutTest extends TestCase {
     public void testGetTimeoutOnSemaphore() throws SQLException {
         //1:timeout on pool semaphore
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         config.setInitialSize(0);
         config.setMaxActive(2);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(2));
@@ -41,7 +40,7 @@ public class Tc0053GetTimeoutTest extends TestCase {
 
     public void testGetTimeoutOnPoolLock() throws SQLException {
         //2:timeout on pool lock
-        BeeDataSourceConfig config2 = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config2 = createDefault();
         config2.setInitialSize(0);
         config2.setMaxActive(2);
         config2.setBorrowSemaphoreSize(2);
@@ -65,7 +64,7 @@ public class Tc0053GetTimeoutTest extends TestCase {
 
     public void testGetTimeoutOnWaitQueue() throws Exception {
         //3: timeout in wait queue
-        BeeDataSourceConfig config3 = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config3 = createDefault();
         config3.setInitialSize(0);
         config3.setMaxActive(1);
         config3.setForceCloseUsingOnClear(true);

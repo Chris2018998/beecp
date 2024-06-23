@@ -4,7 +4,6 @@ import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.config.DsConfigFactory;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -17,7 +16,7 @@ public class Tc0072ProxyResultSetFromDsMetaCloseTest extends TestCase {
     private BeeDataSource ds;
 
     public void setUp() {
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         config.setInitialSize(0);
         config.setAliveTestSql("SELECT 1 from dual");
         ds = new BeeDataSource(config);

@@ -16,7 +16,6 @@ import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
-import org.stone.beecp.config.DsConfigFactory;
 import org.stone.beecp.objects.MockCreateExceptionConnectionFactory;
 import org.stone.beecp.objects.MockCreateNullConnectionFactory;
 import org.stone.beecp.objects.MockCreateNullXaConnectionFactory;
@@ -33,7 +32,7 @@ import static org.stone.beecp.config.DsConfigFactory.JDBC_URL;
 public class Tc0051PoolInitializeTest extends TestCase {
 
     public void testPoolInitializeSuccess() throws Exception {
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         config.setInitialSize(3);
         BeeDataSource ds = new BeeDataSource(config);
         FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
@@ -52,7 +51,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
     }
 
     public void testDuplicatedInitialization() throws Exception {
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
@@ -101,7 +100,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
     }
 
     public void testOnEnableThreadLocal() throws Exception {
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
         Assert.assertNotNull(TestUtil.getFieldValue(pool, "threadLocal"));
@@ -115,14 +114,14 @@ public class Tc0051PoolInitializeTest extends TestCase {
     }
 
     public void testPoolInitializeInFairModeAndCompeteMode() throws Exception {
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         config.setFairMode(true);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
         Assert.assertEquals("fair", TestUtil.getFieldValue(pool, "poolMode"));
         pool.close();
 
-        BeeDataSourceConfig config2 = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config2 = createDefault();
         config2.setFairMode(false);
         FastConnectionPool pool2 = new FastConnectionPool();
         pool2.init(config2);
@@ -131,13 +130,13 @@ public class Tc0051PoolInitializeTest extends TestCase {
     }
 
     public void testSyncCreateInitialConnections() throws Exception {
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         config.setInitialSize(1);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
         pool.close();
 
-        BeeDataSourceConfig config2 = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config2 = createDefault();
         config2.setInitialSize(1);
         config2.setPrintRuntimeLog(true);
         config2.setAsyncCreateInitConnection(true);//<--async
@@ -149,7 +148,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
     public void testCreateNullConnection() throws Exception {
         FastConnectionPool pool;
         try {
-            BeeDataSourceConfig config = DsConfigFactory.createDefault();
+            BeeDataSourceConfig config = createDefault();
             config.setInitialSize(2);
             config.setRawConnectionFactory(new MockCreateNullConnectionFactory());
             pool = new FastConnectionPool();
@@ -160,7 +159,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
 
         FastConnectionPool pool2;
         try {
-            BeeDataSourceConfig config2 = DsConfigFactory.createDefault();
+            BeeDataSourceConfig config2 = createDefault();
             config2.setInitialSize(2);
             config2.setRawXaConnectionFactory(new MockCreateNullXaConnectionFactory());
             pool2 = new FastConnectionPool();
@@ -173,7 +172,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
     public void testClearConnectionsOnInitializeFailed() throws Exception {
         FastConnectionPool pool = null;
         try {
-            BeeDataSourceConfig config = DsConfigFactory.createDefault();
+            BeeDataSourceConfig config = createDefault();
             config.setInitialSize(2);
             config.setRawConnectionFactory(new MockFailSizeReachConnectionFactory(1, true));
             pool = new FastConnectionPool();
@@ -186,7 +185,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
         pool.close();
         FastConnectionPool pool2 = null;
         try {
-            BeeDataSourceConfig config2 = DsConfigFactory.createDefault();
+            BeeDataSourceConfig config2 = createDefault();
             config2.setInitialSize(2);
             config2.setRawConnectionFactory(new MockCreateExceptionConnectionFactory(new IllegalArgumentException()));
             pool2 = new FastConnectionPool();
@@ -200,7 +199,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
 
         FastConnectionPool pool3;
         StoneLogAppender logAppender = getStoneLogAppender();
-        BeeDataSourceConfig config3 = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config3 = createDefault();
         config3.setInitialSize(2);
         config3.setRawConnectionFactory(new MockFailSizeReachConnectionFactory(1, true));
         config3.setAsyncCreateInitConnection(true);

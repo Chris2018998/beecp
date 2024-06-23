@@ -28,7 +28,7 @@ import java.sql.SQLException;
 public class Tc0011ConnectionFactoryTest extends TestCase {
 
     public void testOnSetGet() {
-        BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config = createEmpty();
 
         Class<? extends RawXaConnectionFactory> factClass = MockCreateNullXaConnectionFactory.class;
         config.setConnectionFactoryClass(factClass);
@@ -49,20 +49,20 @@ public class Tc0011ConnectionFactoryTest extends TestCase {
 
     public void testOnCreateFactory() {
         try {
-            BeeDataSourceConfig config1 = DsConfigFactory.createEmpty();
+            BeeDataSourceConfig config1 = createEmpty();
             config1.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
 
             config1.check();
 
-            BeeDataSourceConfig config2 = DsConfigFactory.createEmpty();
+            BeeDataSourceConfig config2 = createEmpty();
             config2.setConnectionFactoryClass(MockCreateNullXaConnectionFactory.class);
             config2.check();
 
-            BeeDataSourceConfig config3 = DsConfigFactory.createEmpty();
+            BeeDataSourceConfig config3 = createEmpty();
             config3.setConnectionFactoryClass(MockXaDataSource.class);
             config3.check();
 
-            BeeDataSourceConfig config4 = DsConfigFactory.createEmpty();
+            BeeDataSourceConfig config4 = createEmpty();
             config4.setConnectionFactoryClass(MockDataSource.class);
             config4.check();
         } catch (SQLException e) {
@@ -73,7 +73,7 @@ public class Tc0011ConnectionFactoryTest extends TestCase {
 
     public void testOnInvalidFactoryClass() throws SQLException {
         try {
-            BeeDataSourceConfig config = DsConfigFactory.createDefault();
+            BeeDataSourceConfig config = createDefault();
             config.setConnectionFactoryClass(String.class);//invalid config
             config.check();
         } catch (BeeDataSourceConfigException e) {
@@ -86,7 +86,7 @@ public class Tc0011ConnectionFactoryTest extends TestCase {
 
     public void testOnInvalidFactoryClassName() throws Exception {
         try {
-            BeeDataSourceConfig config = DsConfigFactory.createDefault();
+            BeeDataSourceConfig config = createDefault();
             config.setConnectionFactoryClassName("java.lang.String");//invalid config
             config.check();
         } catch (BeeDataSourceConfigException e) {
@@ -99,7 +99,7 @@ public class Tc0011ConnectionFactoryTest extends TestCase {
 
     public void testOnNotFoundFactoryClassName() throws Exception {
         try {
-            BeeDataSourceConfig config = DsConfigFactory.createDefault();
+            BeeDataSourceConfig config = createDefault();
             config.setConnectionFactoryClassName("xx.xx.xx");//class not found
             config.check();
         } catch (BeeDataSourceConfigException e) {

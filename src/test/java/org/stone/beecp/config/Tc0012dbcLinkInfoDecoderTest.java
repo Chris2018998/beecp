@@ -33,7 +33,7 @@ public class Tc0012dbcLinkInfoDecoderTest extends TestCase {
 
 
     public void testOnSetGet() {
-        BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config = createEmpty();
         Class<? extends BeeJdbcLinkInfoDecoder> decodeClass = SampleMockJdbcLinkInfoDecoder.class;
         config.setJdbcLinkInfoDecoderClass(decodeClass);
         Assert.assertEquals(config.getJdbcLinkInfoDecoderClass(), decodeClass);

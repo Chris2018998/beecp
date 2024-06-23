@@ -31,7 +31,7 @@ public class Tc0002JdbcLinkInfoTest extends TestCase {
 
     public void testOnSetAndGet() {
         //situation1: check null setting
-        BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config = createEmpty();
         config.setUsername(null);
         config.setPassword(null);
         config.setUrl(null);
@@ -45,7 +45,7 @@ public class Tc0002JdbcLinkInfoTest extends TestCase {
         Assert.assertNull(config.getJdbcUrl());
 
         //situation1: check non-null setting
-        BeeDataSourceConfig config2 = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config2 = createEmpty();
         config2.setUsername(user);
         config2.setPassword(password);
         config2.setUrl(url);
@@ -82,7 +82,7 @@ public class Tc0002JdbcLinkInfoTest extends TestCase {
 
     public void testLoadFromProperties() {
         //situation1: load config from properties
-        BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config = createEmpty();
         Properties prop = new Properties();
         prop.setProperty("username", user);
         prop.setProperty("password", password);
@@ -98,7 +98,7 @@ public class Tc0002JdbcLinkInfoTest extends TestCase {
         prop.clear();
         prop.setProperty("jdbc-url", url);
         prop.setProperty("driver-class-name", driver);
-        config = DsConfigFactory.createEmpty();
+        config = createEmpty();
         config.loadFromProperties(prop);
         Assert.assertEquals(config.getUrl(), url);
         Assert.assertEquals(config.getJdbcUrl(), url);
@@ -108,7 +108,7 @@ public class Tc0002JdbcLinkInfoTest extends TestCase {
         prop.clear();
         prop.setProperty("jdbc_url", url);
         prop.setProperty("driver_class_name", driver);
-        config = DsConfigFactory.createEmpty();
+        config = createEmpty();
         config.loadFromProperties(prop);
         Assert.assertEquals(config.getUrl(), url);
         Assert.assertEquals(config.getJdbcUrl(), url);
@@ -116,7 +116,7 @@ public class Tc0002JdbcLinkInfoTest extends TestCase {
     }
 
     public void testOnJdbcUrl() throws Exception {
-        BeeDataSourceConfig config1 = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config1 = createDefault();
 
         //situation1: jdbc url check(can't be null)
         config1.setJdbcUrl(null);
@@ -132,7 +132,7 @@ public class Tc0002JdbcLinkInfoTest extends TestCase {
         System.setProperty("beecp.url", url);
         System.setProperty("beecp.user", user);
         System.setProperty("beecp.password", password);
-        BeeDataSourceConfig config2 = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config2 = createEmpty();
         config2.setDriverClassName(driver);
         BeeDataSourceConfig checkConfig = config2.check();
         Object connectionFactory = checkConfig.getConnectionFactory();
@@ -144,14 +144,14 @@ public class Tc0002JdbcLinkInfoTest extends TestCase {
         //situation3: load 'beecp.jdbcUrl' from system.properties
         clearBeeCPInfoFromSystemProperties();
         System.setProperty("beecp.jdbcUrl", url);
-        BeeDataSourceConfig config3 = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config3 = createEmpty();
         config3.setDriverClassName(driver);
         connectionFactory = checkConfig.getConnectionFactory();
         Assert.assertEquals(url, TestUtil.getFieldValue(connectionFactory, "url"));
     }
 
     public void testLoadFromConnectProperties() throws Exception {
-        BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config = createEmpty();
         config.setUrl(url);
         config.setDriverClassName(driver);
         config.addConnectProperty("user", user);

@@ -14,6 +14,7 @@ import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 
+import static org.stone.beecp.config.DsConfigFactory.createEmpty;
 import static org.stone.tools.CommonUtil.NCPU;
 
 /**
@@ -23,7 +24,7 @@ import static org.stone.tools.CommonUtil.NCPU;
 public class Tc0006ConnectionSizeTest extends TestCase {
 
     public void testOnSetAndGet() {
-        BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config = createEmpty();
 
         config.setInitialSize(-1);
         config.setMaxActive(-1);
@@ -51,7 +52,7 @@ public class Tc0006ConnectionSizeTest extends TestCase {
     }
 
     public void testOnErrorInitialSize() throws Exception {
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         config.setMaxActive(5);
         config.setInitialSize(10);
 

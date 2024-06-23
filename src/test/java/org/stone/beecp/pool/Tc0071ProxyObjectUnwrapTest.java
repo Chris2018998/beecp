@@ -4,7 +4,6 @@ import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.config.DsConfigFactory;
 
 import java.sql.*;
 
@@ -14,7 +13,7 @@ public class Tc0071ProxyObjectUnwrapTest extends TestCase {
     private BeeDataSource ds;
 
     public void setUp() {
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         config.setInitialSize(5);
         config.setAliveTestSql("SELECT 1 from dual");
         config.setIdleTimeout(3000);

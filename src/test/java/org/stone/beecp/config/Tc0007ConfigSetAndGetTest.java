@@ -13,6 +13,8 @@ import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 
+import static org.stone.beecp.config.DsConfigFactory.createEmpty;
+
 /**
  * @author Chris Liao
  */
@@ -20,7 +22,7 @@ import org.stone.beecp.BeeDataSourceConfig;
 public class Tc0007ConfigSetAndGetTest extends TestCase {
 
     public void testOnSetAndGet() {
-        BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config = createEmpty();
 
         //fairMode
         Assert.assertFalse(config.isFairMode());

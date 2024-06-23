@@ -23,7 +23,7 @@ public class Tc0014ConfigInfoLogPrintTest extends TestCase {
 
     public void testOnConfigPrintInd() throws Exception {
         StoneLogAppender logAppender = getStoneLogAppender();
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
 
         //situation1: not print config
         config.setPrintConfigInfo(false);//test point
@@ -42,7 +42,7 @@ public class Tc0014ConfigInfoLogPrintTest extends TestCase {
 
     public void testOnExclusionConfigItems() throws Exception {
         StoneLogAppender logAppender = getStoneLogAppender();
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         config.setPrintConfigInfo(true);
 
         //situation1: check default exclusion print

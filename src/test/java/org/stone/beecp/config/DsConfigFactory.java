@@ -70,7 +70,7 @@ public class DsConfigFactory {
         }
     }
 
-    public static void loadConfig() throws Exception {
+    private static void loadConfig() throws Exception {
         InputStream fileStream = null;
 
         try {

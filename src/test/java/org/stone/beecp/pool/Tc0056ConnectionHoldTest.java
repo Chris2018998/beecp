@@ -5,7 +5,6 @@ import org.junit.Assert;
 import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.config.DsConfigFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -17,7 +16,7 @@ import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
 public class Tc0056ConnectionHoldTest extends TestCase {
 
     public void testHoldTimeout() throws Exception {
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         config.setInitialSize(0);
         config.setAliveTestSql("SELECT 1 from dual");
 
@@ -49,7 +48,7 @@ public class Tc0056ConnectionHoldTest extends TestCase {
     }
 
     public void testHoldNotTimeout() throws Exception {
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         config.setInitialSize(0);
         config.setAliveTestSql("SELECT 1 from dual");
         config.setHoldTimeout(0);//not timeout in hold

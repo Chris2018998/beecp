@@ -3,7 +3,6 @@ package org.stone.beecp.pool;
 import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.beecp.BeeDataSource;
-import org.stone.beecp.config.DsConfigFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,7 +16,7 @@ public class Tc0076TransAbandonAfterConnCloseTest extends TestCase {
     private BeeDataSource ds;
 
     public void setUp() {
-        ds = new BeeDataSource(DsConfigFactory.createDefault());
+        ds = new BeeDataSource(createDefault());
     }
 
     public void tearDown() {

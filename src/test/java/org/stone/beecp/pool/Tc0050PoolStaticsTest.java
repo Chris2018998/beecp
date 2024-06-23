@@ -6,7 +6,6 @@ import org.stone.beecp.BeeConnectionPool;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
-import org.stone.beecp.config.DsConfigFactory;
 import org.stone.beecp.driver.MockDriver;
 import org.stone.beecp.driver.MockXaDataSource;
 import org.stone.beecp.objects.MockDriverConnectionFactory;
@@ -68,7 +67,7 @@ public class Tc0050PoolStaticsTest extends TestCase {
     }
 
     public void testOnDummyCommonDataSource() {
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
         config.setConnectionFactoryClass(MockDriverConnectionFactory.class);
         BeeDataSource ds = new BeeDataSource(config);
         try {
@@ -104,7 +103,7 @@ public class Tc0050PoolStaticsTest extends TestCase {
     }
 
     public void testOnCloseMethod() throws SQLException {
-        BeeDataSource ds = new BeeDataSource(DsConfigFactory.createDefault());
+        BeeDataSource ds = new BeeDataSource(createDefault());
         Connection con = null;
         Statement statement = null;
         ResultSet resultSet = null;

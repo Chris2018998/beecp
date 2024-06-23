@@ -14,13 +14,15 @@ import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 
+import static org.stone.beecp.config.DsConfigFactory.createEmpty;
+
 /**
  * @author Chris Liao
  */
 public class Tc0005ConnectionAliveSqlTest extends TestCase {
 
     public void testOnSetAndGet() {
-        BeeDataSourceConfig config = DsConfigFactory.createEmpty();
+        BeeDataSourceConfig config = createEmpty();
         config.setAliveTestSql(null);
         Assert.assertNotNull(config.getAliveTestSql());
 
@@ -29,7 +31,7 @@ public class Tc0005ConnectionAliveSqlTest extends TestCase {
     }
 
     public void testOnInvalidSql() throws Exception {
-        BeeDataSourceConfig config = DsConfigFactory.createDefault();
+        BeeDataSourceConfig config = createDefault();
 
         config.setAliveTestSql("SELECT1");
         try {
