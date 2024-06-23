@@ -39,12 +39,8 @@ public class Tc0001ProxyClassTest extends TestCase {
         try {
             Assert.assertTrue(classFile1.renameTo(classFile2));
             invokeMethod(ConnectionPoolStatics.class, "checkJdbcProxyClass");
-        } catch (RuntimeException e) {
-            Throwable runtimeCause = e.getCause();
-            Assert.assertTrue(runtimeCause instanceof InvocationTargetException);
-            InvocationTargetException invocationTargetException = (InvocationTargetException) runtimeCause;
-            Throwable invocationCause = invocationTargetException.getCause();
-            Assert.assertTrue(invocationCause instanceof ClassNotFoundException);
+        } catch (InvocationTargetException e) {
+            Assert.assertTrue(e.getCause() instanceof ClassNotFoundException);
         } finally {
             Assert.assertTrue(classFile2.renameTo(classFile1));
         }

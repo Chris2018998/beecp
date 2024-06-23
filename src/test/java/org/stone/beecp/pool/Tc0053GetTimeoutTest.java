@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
+import static org.stone.tools.BeanUtil.setAccessible;
 
 public class Tc0053GetTimeoutTest extends TestCase {
     public void testGetTimeoutOnSemaphore() throws SQLException {
@@ -86,7 +87,7 @@ public class Tc0053GetTimeoutTest extends TestCase {
 
         //mock concurrent to create connection
         Method createMethod = FastConnectionPool.class.getDeclaredMethod("createPooledConn", Integer.TYPE);
-
+        setAccessible(createMethod);
         Assert.assertNull(createMethod.invoke(pool3, 1));
         oclose(first.getConnection());
         pool3.close();
