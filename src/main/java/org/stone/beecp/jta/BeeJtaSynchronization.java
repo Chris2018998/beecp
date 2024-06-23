@@ -30,6 +30,7 @@ public class BeeJtaSynchronization implements Synchronization {
     }
 
     public void beforeCompletion() {
+        //do nothing
     }
 
     public void afterCompletion(int status) {
