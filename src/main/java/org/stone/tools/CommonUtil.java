@@ -53,11 +53,12 @@ public class CommonUtil {
     }
 
     //xor
-    public static int advanceProbe(int probe) {
-        probe ^= probe << 13;
-        probe ^= probe >>> 17;
-        probe ^= probe << 5;
-        return probe;
+    public static int advanceProbe(final int probe) {
+        int adProbe = probe;
+        adProbe ^= adProbe << 13;
+        adProbe ^= adProbe >>> 17;
+        adProbe ^= adProbe << 5;
+        return adProbe;
     }
 
     public static Properties loadPropertiesFromClassPathFile(String filename) {
