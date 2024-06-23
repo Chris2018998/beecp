@@ -15,11 +15,14 @@ import org.stone.tools.exception.BeanException;
 import org.stone.tools.exception.PropertyValueConvertException;
 import org.stone.tools.exception.PropertyValueSetFailedException;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -37,6 +40,39 @@ public class BeanUtil {
     public static final String Separator_UnderLine = "_";
     //a SLF4 logger used in stone project
     public static final Logger CommonLog = LoggerFactory.getLogger(BeanUtil.class);
+
+
+    /**
+     * set a field accessible under AccessController
+     *
+     * @param field reflection access field
+     */
+    public static void setFieldAccessible(final Field field) {
+        if (!field.isAccessible()) {
+            AccessController.doPrivileged(new PrivilegedAction<Field>() {
+                public Field run() {
+                    field.setAccessible(true);
+                    return field;
+                }
+            });
+        }
+    }
+
+    /**
+     * set a method accessible under AccessController
+     *
+     * @param method reflection access method
+     */
+    public static void setMethodAccessible(final Method method) {
+        if (!method.isAccessible()) {
+            AccessController.doPrivileged(new PrivilegedAction<Method>() {
+                public Method run() {
+                    method.setAccessible(true);
+                    return method;
+                }
+            });
+        }
+    }
 
     /**
      * finds out all properties set method with public modifier from a bean class
