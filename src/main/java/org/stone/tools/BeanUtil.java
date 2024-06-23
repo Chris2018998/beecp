@@ -71,7 +71,7 @@ public class BeanUtil {
      * @param propertyName is a value search key
      * @return mapped value
      */
-    public static String getPropertyValue(Map<String, String> valueMap, String propertyName) {
+    public static String getPropertyValue(Map<String, String> valueMap, final String propertyName) {
         String value = valueMap.get(propertyName);
         if (value != null) return value;
         value = valueMap.get(propertyNameToFieldId(propertyName, Separator_MiddleLine));
@@ -81,8 +81,7 @@ public class BeanUtil {
 
         String firstChar = propertyName.substring(0, 1);
         if (Character.isLowerCase(firstChar.charAt(0))) {//try again if first char is lowercase
-            propertyName = firstChar.toUpperCase() + propertyName.substring(1);
-            return valueMap.get(propertyName);
+            return valueMap.get(firstChar.toUpperCase() + propertyName.substring(1));
         }
         return null;
     }
@@ -100,7 +99,7 @@ public class BeanUtil {
      * @param propertyName is a value search key
      * @return mapped value
      */
-    private static Object getFieldValue(Map<String, ?> valueMap, String propertyName) {
+    private static Object getFieldValue(Map<String, ?> valueMap, final String propertyName) {
         Object value = valueMap.get(propertyName);
         if (value != null) return value;
         value = valueMap.get(propertyNameToFieldId(propertyName, Separator_MiddleLine));
@@ -110,8 +109,7 @@ public class BeanUtil {
 
         String firstChar = propertyName.substring(0, 1);
         if (Character.isLowerCase(firstChar.charAt(0))) {
-            propertyName = firstChar.toUpperCase() + propertyName.substring(1);
-            return valueMap.get(propertyName);
+            return valueMap.get(firstChar.toUpperCase() + propertyName.substring(1));
         }
         return null;
     }
@@ -152,9 +150,9 @@ public class BeanUtil {
     /**
      * sets mapping properties value on a bean
      *
-     * @param bean     is target set object
+     * @param bean         is target set object
      * @param setMethodMap set method map
-     * @param valueMap properties value store
+     * @param valueMap     properties value store
      * @throws BeanException if bean is null
      */
     public static void setPropertiesValue(Object bean, Map<String, Method> setMethodMap, Map<String, ?> valueMap) throws BeanException {
