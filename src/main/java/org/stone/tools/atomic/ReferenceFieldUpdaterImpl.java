@@ -9,6 +9,7 @@
  */
 package org.stone.tools.atomic;
 
+import org.stone.tools.exception.ReflectionOperationException;
 import org.stone.tools.unsafe.UnsafeAdaptor;
 import org.stone.tools.unsafe.UnsafeAdaptorHolder;
 
@@ -32,9 +33,9 @@ public final class ReferenceFieldUpdaterImpl<T, V> extends AtomicReferenceFieldU
 
     public static <T, V> AtomicReferenceFieldUpdater<T, V> newUpdater(Class<T> beanClass, Class<V> fieldType, String fieldName) {
         try {
-            return new ReferenceFieldUpdaterImpl<T, V>(unsafe.objectFieldOffset(beanClass.getDeclaredField(fieldName)), fieldType);
+            return new ReferenceFieldUpdaterImpl<>(unsafe.objectFieldOffset(beanClass.getDeclaredField(fieldName)), fieldType);
         } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
+            throw new ReflectionOperationException(e);
         } catch (SecurityException e) {
             throw e;
         } catch (Throwable e) {

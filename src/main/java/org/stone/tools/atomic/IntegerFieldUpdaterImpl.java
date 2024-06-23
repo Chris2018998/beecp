@@ -9,6 +9,7 @@
  */
 package org.stone.tools.atomic;
 
+import org.stone.tools.exception.ReflectionOperationException;
 import org.stone.tools.unsafe.UnsafeAdaptor;
 import org.stone.tools.unsafe.UnsafeAdaptorHolder;
 
@@ -30,9 +31,9 @@ public final class IntegerFieldUpdaterImpl<T> extends AtomicIntegerFieldUpdater<
 
     public static <T> AtomicIntegerFieldUpdater<T> newUpdater(Class<T> beanClass, String fieldName) {
         try {
-            return new IntegerFieldUpdaterImpl<T>(UA.objectFieldOffset(beanClass.getDeclaredField(fieldName)));
+            return new IntegerFieldUpdaterImpl<>(UA.objectFieldOffset(beanClass.getDeclaredField(fieldName)));
         } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
+            throw new ReflectionOperationException(e);
         } catch (SecurityException e) {
             throw e;
         } catch (Throwable e) {

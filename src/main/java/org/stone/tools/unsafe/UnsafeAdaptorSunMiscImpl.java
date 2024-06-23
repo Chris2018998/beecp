@@ -16,6 +16,8 @@ import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
+import static org.stone.tools.BeanUtil.setFieldAccessible;
+
 /**
  * Unsafe adaptor
  *
@@ -48,17 +50,17 @@ public final class UnsafeAdaptorSunMiscImpl implements UnsafeAdaptor {
     //                                            field offset                                                        //
     //****************************************************************************************************************//
     public long objectFieldOffset(Field field) {
-        if (!field.isAccessible()) field.setAccessible(true);
+        if (!field.isAccessible()) setFieldAccessible(field);
         return U.objectFieldOffset(field);
     }
 
     public long staticFieldOffset(Field field) {
-        if (!field.isAccessible()) field.setAccessible(true);
+        if (!field.isAccessible()) setFieldAccessible(field);
         return U.staticFieldOffset(field);
     }
 
     public Object staticFieldBase(Field field) {
-        if (!field.isAccessible()) field.setAccessible(true);
+        if (!field.isAccessible()) setFieldAccessible(field);
         return U.staticFieldBase(field);
     }
 

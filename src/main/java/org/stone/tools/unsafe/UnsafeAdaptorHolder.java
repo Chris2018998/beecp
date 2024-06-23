@@ -9,6 +9,8 @@
  */
 package org.stone.tools.unsafe;
 
+import org.stone.tools.exception.ReflectionOperationException;
+
 /**
  * Unsafe adaptor holder
  *
@@ -32,16 +34,16 @@ public final class UnsafeAdaptorHolder {
                 Class.forName(SunMiscUnsafeClassName);
                 adaptorImplClassName = SunMiscUnsafeAdaptorImplClass;
             } catch (ClassNotFoundException e2) {
-                throw new Error("Failed to load Unsafe class:" + SunMiscUnsafeClassName, e);
+                throw new ReflectionOperationException("Failed to load Unsafe class:" + SunMiscUnsafeClassName, e);
             }
         }
 
         try {
             U = (UnsafeAdaptor) Class.forName(adaptorImplClassName).newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
-            throw new Error("Failed to create unsafe adaptor by class:" + adaptorImplClassName, e);
+            throw new ReflectionOperationException("Failed to create unsafe adaptor by class:" + adaptorImplClassName, e);
         } catch (ClassNotFoundException e) {
-            throw new Error("Not found unsafe adaptor class:" + adaptorImplClassName);
+            throw new ReflectionOperationException("Not found unsafe adaptor class:" + adaptorImplClassName);
         }
     }
 }

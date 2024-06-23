@@ -16,6 +16,8 @@ import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
+import static org.stone.tools.BeanUtil.setFieldAccessible;
+
 /**
  * An Unsafe adaptor,whose inside unsafe field type should be declared to
  * {@code jdk.internal.misc.Unsafe} at jdk higher version(Java8)
@@ -45,17 +47,17 @@ public final class UnsafeAdaptorJdkMiscImpl implements UnsafeAdaptor {
     //                                          methods of int type                                                   //
     //****************************************************************************************************************//
     public long objectFieldOffset(Field field) {
-        if (!field.isAccessible()) field.setAccessible(true);
+        if (!field.isAccessible()) setFieldAccessible(field);
         return U.objectFieldOffset(field);
     }
 
     public long staticFieldOffset(Field field) {
-        if (!field.isAccessible()) field.setAccessible(true);
+        if (!field.isAccessible()) setFieldAccessible(field);
         return U.staticFieldOffset(field);
     }
 
     public Object staticFieldBase(Field field) {
-        if (!field.isAccessible()) field.setAccessible(true);
+        if (!field.isAccessible()) setFieldAccessible(field);
         return U.staticFieldBase(field);
     }
 
