@@ -63,16 +63,15 @@ public class Tc0012dbcLinkInfoDecoderTest extends TestCase {
 
         BeeDataSourceConfig config2 = new BeeDataSourceConfig(driver, url, username, password);
         config2.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
-        config2.setJdbcLinkInfoDecoderClass(org.stone.beecp.BeeJdbcLinkInfoDecoder.class);
         checkConfig = config2.check();
         factory = (MockCreateNullConnectionFactory) checkConfig.getConnectionFactory();
 
         String decodedUrl = factory.getUrl();
         String decodedUser = factory.getUser();
         String decodedPassword = factory.getPassword();
-        Assert.assertSame(url, decodedUrl);
-        Assert.assertSame(username, decodedUser);
-        Assert.assertSame(password, decodedPassword);
+        Assert.assertEquals(url, decodedUrl);
+        Assert.assertEquals(username, decodedUser);
+        Assert.assertEquals(password, decodedPassword);
 
 
         BeeDataSourceConfig config3 = new BeeDataSourceConfig(driver, url, username, password);

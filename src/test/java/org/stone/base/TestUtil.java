@@ -16,12 +16,11 @@ import org.stone.tools.CommonUtil;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.concurrent.locks.LockSupport;
+
+import static org.stone.tools.BeanUtil.setAccessible;
 
 /**
  * @author Chris Liao
@@ -50,36 +49,17 @@ public class TestUtil {
     }
 
     public static Object getFieldValue(final Object ob, final String fieldName) throws Exception {
-        return AccessController.doPrivileged(new PrivilegedAction<Object>() {
-            @Override
-            public Object run() {
-
-                try {
-                    Class<?> clazz = (ob instanceof Class) ? (Class<?>) ob : ob.getClass();
-                    Field field = clazz.getDeclaredField(fieldName);
-                    field.setAccessible(true);
-                    return field.get(ob);
-                } catch (NoSuchFieldException | IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
+        Class<?> clazz = (ob instanceof Class) ? (Class<?>) ob : ob.getClass();
+        Field field = clazz.getDeclaredField(fieldName);
+        setAccessible(field);
+        return field.get(ob);
     }
 
-    public static Object invokeMethod(final Object ob, final String methodName) {
-        return AccessController.doPrivileged(new PrivilegedAction<Object>() {
-            @Override
-            public Object run() {
-                try {
-                    Class<?> clazz = (ob instanceof Class) ? (Class<?>) ob : ob.getClass();
-                    Method method = clazz.getDeclaredMethod(methodName);
-                    method.setAccessible(true);
-                    return method.invoke(ob);
-                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
+    public static Object invokeMethod(final Object ob, final String methodName) throws Exception {
+        Class<?> clazz = (ob instanceof Class) ? (Class<?>) ob : ob.getClass();
+        Method method = clazz.getDeclaredMethod(methodName);
+        setAccessible(method);
+        return method.invoke(ob);
     }
 
     public static boolean joinUtilWaiting(Thread thread) {

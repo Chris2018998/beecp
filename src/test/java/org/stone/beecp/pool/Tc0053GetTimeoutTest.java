@@ -86,7 +86,7 @@ public class Tc0053GetTimeoutTest extends TestCase {
 
         //mock concurrent to create connection
         Method createMethod = FastConnectionPool.class.getDeclaredMethod("createPooledConn", Integer.TYPE);
-        createMethod.setAccessible(true);
+
         Assert.assertNull(createMethod.invoke(pool3, 1));
         oclose(first.getConnection());
         pool3.close();

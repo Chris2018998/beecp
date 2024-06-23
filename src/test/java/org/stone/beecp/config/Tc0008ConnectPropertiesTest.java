@@ -25,9 +25,13 @@ public class Tc0008ConnectPropertiesTest extends TestCase {
     public void testOnAddProperty() {
         BeeDataSourceConfig config = createEmpty();
         config.addConnectProperty(null, null);
+        Assert.assertNull(config.getConnectProperty(null));
         config.addConnectProperty(null, "value");
+        Assert.assertNull(config.getConnectProperty(null));
         config.addConnectProperty("key", null);
+        Assert.assertNull(config.getConnectProperty(null));
         config.addConnectProperty("key", "value");
+        Assert.assertNotNull(config.getConnectProperty("key"));
     }
 
     public void testOnRemoval() {
