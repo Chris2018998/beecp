@@ -16,9 +16,7 @@ public class TestRunner extends TestCase {
     private static final String defaultFilename = "beecp/testCase.properties";
 
     public static void main(String[] ags) throws Throwable {
-        long beginTime = System.currentTimeMillis();
         StoneTestRunner.main(new String[]{"beecp", defaultFilename});
-        System.out.println("Took time:(" + (System.currentTimeMillis() - beginTime) + ")ms");
     }
 
     public void testRun() throws Throwable {
