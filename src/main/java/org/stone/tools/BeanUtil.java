@@ -41,13 +41,12 @@ public class BeanUtil {
     //a SLF4 logger used in stone project
     public static final Logger CommonLog = LoggerFactory.getLogger(BeanUtil.class);
 
-
     /**
      * set a field accessible under AccessController
      *
      * @param field reflection access field
      */
-    public static void setFieldAccessible(final Field field) {
+    public static void setAccessible(final Field field) {
         if (!field.isAccessible()) {
             AccessController.doPrivileged(new PrivilegedAction<Field>() {
                 public Field run() {
@@ -63,7 +62,7 @@ public class BeanUtil {
      *
      * @param method reflection access method
      */
-    public static void setMethodAccessible(final Method method) {
+    public static void setAccessible(final Method method) {
         if (!method.isAccessible()) {
             AccessController.doPrivileged(new PrivilegedAction<Method>() {
                 public Method run() {
