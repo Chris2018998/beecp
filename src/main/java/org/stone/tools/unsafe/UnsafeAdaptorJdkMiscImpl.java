@@ -13,8 +13,6 @@ import org.stone.tools.exception.ReflectionOperationException;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 import static org.stone.tools.BeanUtil.setFieldAccessible;
 
@@ -29,18 +27,13 @@ public final class UnsafeAdaptorJdkMiscImpl implements UnsafeAdaptor {
     private static final Unsafe U;
 
     static {
-        U = AccessController.doPrivileged(new PrivilegedAction<Unsafe>() {
-            @Override
-            public Unsafe run() {
-                try {
-                    Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
-                    theUnsafe.setAccessible(true);
-                    return (Unsafe) theUnsafe.get(null);
-                } catch (NoSuchFieldException | IllegalAccessException e) {
-                    throw new ReflectionOperationException(e);
-                }
-            }
-        });
+        try {
+            Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
+            setFieldAccessible(theUnsafe);
+            U = (Unsafe) theUnsafe.get(null);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new ReflectionOperationException(e);
+        }
     }
 
     //****************************************************************************************************************//
