@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.Properties;
 
 import static org.stone.base.TestUtil.getClassPathFileAbsolutePath;
+import static org.stone.beecp.config.DsConfigFactory.createEmpty;
 import static org.stone.tools.CommonUtil.loadPropertiesFromClassPathFile;
 
 /**

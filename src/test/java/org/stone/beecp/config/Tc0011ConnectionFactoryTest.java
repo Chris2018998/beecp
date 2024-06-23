@@ -22,6 +22,9 @@ import org.stone.beecp.objects.MockCreateNullXaConnectionFactory;
 
 import java.sql.SQLException;
 
+import static org.stone.beecp.config.DsConfigFactory.createDefault;
+import static org.stone.beecp.config.DsConfigFactory.createEmpty;
+
 /**
  * @author Chris Liao
  */

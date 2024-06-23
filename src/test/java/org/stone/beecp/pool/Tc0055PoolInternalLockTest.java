@@ -12,6 +12,8 @@ import org.stone.beecp.objects.MockNetBlockConnectionFactory;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
+import static org.stone.beecp.config.DsConfigFactory.createDefault;
+
 public class Tc0055PoolInternalLockTest extends TestCase {
     private final Logger log = LoggerFactory.getLogger(Tc0055PoolInternalLockTest.class);
 

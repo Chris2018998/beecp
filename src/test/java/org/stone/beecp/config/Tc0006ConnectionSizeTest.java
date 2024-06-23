@@ -14,6 +14,7 @@ import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 
+import static org.stone.beecp.config.DsConfigFactory.createDefault;
 import static org.stone.beecp.config.DsConfigFactory.createEmpty;
 import static org.stone.tools.CommonUtil.NCPU;
 

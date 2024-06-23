@@ -13,6 +13,7 @@ import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
+import static org.stone.beecp.config.DsConfigFactory.createDefault;
 import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
 
 public class Tc0053GetTimeoutTest extends TestCase {

@@ -19,6 +19,9 @@ import org.stone.beecp.objects.MockNotEvictConnectionPredicate1;
 import java.util.List;
 import java.util.Properties;
 
+import static org.stone.beecp.config.DsConfigFactory.createDefault;
+import static org.stone.beecp.config.DsConfigFactory.createEmpty;
+
 /**
  * @author Chris Liao
  */

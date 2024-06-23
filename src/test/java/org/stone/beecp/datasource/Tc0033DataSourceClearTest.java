@@ -16,6 +16,8 @@ import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 
+import static org.stone.beecp.config.DsConfigFactory.createDefault;
+
 /**
  * @author Chris Liao
  */

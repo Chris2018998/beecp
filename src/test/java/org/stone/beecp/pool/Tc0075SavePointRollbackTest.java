@@ -8,6 +8,8 @@ import org.stone.beecp.BeeDataSourceConfig;
 import java.sql.Connection;
 import java.sql.Savepoint;
 
+import static org.stone.beecp.config.DsConfigFactory.createDefault;
+
 //test case for issue #2142 of HikariCP
 public class Tc0075SavePointRollbackTest extends TestCase {
     private BeeDataSource ds;

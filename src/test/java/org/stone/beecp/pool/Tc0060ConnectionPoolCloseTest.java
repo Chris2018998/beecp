@@ -14,6 +14,7 @@ import org.stone.beecp.pool.exception.ConnectionGetForbiddenException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import static org.stone.beecp.config.DsConfigFactory.createDefault;
 import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
 
 public class Tc0060ConnectionPoolCloseTest extends TestCase {

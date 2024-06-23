@@ -15,6 +15,9 @@ import org.stone.beecp.BeeDataSourceConfig;
 
 import java.util.Properties;
 
+import static org.stone.beecp.config.DsConfigFactory.createDefault;
+import static org.stone.beecp.config.DsConfigFactory.createEmpty;
+
 /**
  * @author Chris Liao
  */

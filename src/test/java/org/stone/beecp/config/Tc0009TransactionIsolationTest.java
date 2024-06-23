@@ -15,6 +15,8 @@ import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 import org.stone.beecp.TransactionIsolation;
 
+import static org.stone.beecp.config.DsConfigFactory.createEmpty;
+
 /**
  * @author Chris Liao
  */

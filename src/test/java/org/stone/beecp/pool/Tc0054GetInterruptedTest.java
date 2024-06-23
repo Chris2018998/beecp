@@ -13,6 +13,8 @@ import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
+import static org.stone.beecp.config.DsConfigFactory.createDefault;
+
 public class Tc0054GetInterruptedTest extends TestCase {
 
     public void testGetInterruptionOnSemaphore() throws SQLException {

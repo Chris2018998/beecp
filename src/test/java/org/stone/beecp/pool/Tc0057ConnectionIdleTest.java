@@ -15,6 +15,8 @@ import org.stone.beecp.BeeDataSourceConfig;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
+import static org.stone.beecp.config.DsConfigFactory.createDefault;
+
 public class Tc0057ConnectionIdleTest extends TestCase {
 
     public void testIdleTimeout() throws Exception {

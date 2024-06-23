@@ -15,6 +15,7 @@ import org.stone.beecp.TransactionIsolation;
 
 import java.sql.Connection;
 
+import static org.stone.beecp.config.DsConfigFactory.createDefault;
 import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
 
 public class Tc0058ConnectionResetTest extends TestCase {

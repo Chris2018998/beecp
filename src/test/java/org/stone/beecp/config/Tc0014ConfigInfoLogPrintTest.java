@@ -15,6 +15,7 @@ import org.stone.base.StoneLogAppender;
 import org.stone.beecp.BeeDataSourceConfig;
 
 import static org.stone.base.TestUtil.getStoneLogAppender;
+import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
 /**
  * @author Chris Liao

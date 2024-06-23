@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.util.Random;
 
 import static org.stone.beecp.config.DsConfigFactory.TEST_TABLE;
+import static org.stone.beecp.config.DsConfigFactory.createDefault;
 import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
 
 public class Tc0076TransAbandonAfterConnCloseTest extends TestCase {

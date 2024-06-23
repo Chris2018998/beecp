@@ -26,8 +26,7 @@ import org.stone.beecp.pool.exception.PoolInitializeFailedException;
 import java.sql.SQLException;
 
 import static org.stone.base.TestUtil.getStoneLogAppender;
-import static org.stone.beecp.config.DsConfigFactory.JDBC_DRIVER;
-import static org.stone.beecp.config.DsConfigFactory.JDBC_URL;
+import static org.stone.beecp.config.DsConfigFactory.*;
 
 public class Tc0051PoolInitializeTest extends TestCase {
 

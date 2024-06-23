@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.stone.beecp.config.DsConfigFactory.MOCK_URL;
+import static org.stone.beecp.config.DsConfigFactory.createDefault;
 import static org.stone.beecp.pool.ConnectionPoolStatics.loadDriver;
 import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
 import static org.stone.tools.BeanUtil.*;

@@ -7,6 +7,7 @@ import org.stone.beecp.BeeDataSourceConfig;
 
 import java.sql.*;
 
+import static org.stone.beecp.config.DsConfigFactory.createDefault;
 import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
 
 public class Tc0071ProxyObjectUnwrapTest extends TestCase {
