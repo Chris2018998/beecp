@@ -37,7 +37,7 @@ public class Tc0050PoolStaticsTest extends TestCase {
         }
     }
 
-    public void testDuplicateClose() {
+    public void testTwiceClose() {
         MockDriver driver = new MockDriver();
         MockXaDataSource xaDataSource = new MockXaDataSource();
         String url = MOCK_URL;
@@ -74,32 +74,32 @@ public class Tc0050PoolStaticsTest extends TestCase {
         try {
             ds.getLogWriter();
             fail("Failed to test getLogWriter on dummy ds");
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof SQLException);
+        } catch (SQLException e) {
+            Assert.assertTrue(e.getMessage().contains("Not supported"));
         }
         try {
             ds.setLogWriter(null);
             fail("Failed to test setLogWriter on dummy ds");
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof SQLException);
+        } catch (SQLException e) {
+            Assert.assertTrue(e.getMessage().contains("Not supported"));
         }
         try {
             ds.getLoginTimeout();
             fail("Failed to test getLoginTimeout on dummy ds");
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof SQLException);
+        } catch (SQLException e) {
+            Assert.assertTrue(e.getMessage().contains("Not supported"));
         }
         try {
             ds.setLoginTimeout(10);
             fail("Failed to test setLoginTimeout on dummy ds");
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof SQLException);
+        } catch (SQLException e) {
+            Assert.assertTrue(e.getMessage().contains("Not supported"));
         }
         try {
             ds.getParentLogger();
             fail("Failed to test getParentLogger on dummy ds");
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof SQLException);
+        } catch (SQLException e) {
+            Assert.assertTrue(e.getMessage().contains("Not supported"));
         }
     }
 
@@ -121,44 +121,32 @@ public class Tc0050PoolStaticsTest extends TestCase {
 
         //test on closed resultSet
         assert resultSet != null;
-        try {
-            Assert.assertTrue(resultSet.isClosed());
-            Assert.assertTrue(resultSet.toString().contains("ResultSet has been closed"));
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof SQLException);
-        }
+        Assert.assertTrue(resultSet.isClosed());
+        Assert.assertTrue(resultSet.toString().contains("ResultSet has been closed"));
+
         try {
             resultSet.getString(0);
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof SQLException);
+        } catch (SQLException e) {
             Assert.assertTrue(e.getMessage().contains("No operations allowed after resultSet closed"));
         }
 
         //test on closed statement
         Assert.assertTrue(statement.toString().contains("Statement has been closed"));
-        try {
-            Assert.assertTrue(statement.isClosed());
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof SQLException);
-        }
+        Assert.assertTrue(statement.isClosed());
+
         try {
             statement.executeQuery("select * from Test_User");
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof SQLException);
+        } catch (SQLException e) {
             Assert.assertTrue(e.getMessage().contains("No operations allowed after statement closed"));
         }
 
         //test on closed connection
         Assert.assertTrue(con.toString().contains("Connection has been closed"));
-        try {
-            Assert.assertTrue(con.isClosed());
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof SQLException);
-        }
+        Assert.assertTrue(con.isClosed());
+
         try {
             con.createStatement();
-        } catch (Exception e) {
-            Assert.assertTrue(e instanceof SQLException);
+        } catch (SQLException e) {
             Assert.assertTrue(e.getMessage().contains("No operations allowed after connection closed"));
         }
     }
@@ -233,7 +221,7 @@ public class Tc0050PoolStaticsTest extends TestCase {
     }
 
     public void testClassInstanceCreation() throws Exception {
-        Class<?> clazz = org.stone.beecp.pool.RawConnectionPool.class;
+        Class<?> clazz = RawConnectionPool.class;
         BeeConnectionPool pool1 = (BeeConnectionPool) createClassInstance(clazz, (Class<?>) null, "pool");
         BeeConnectionPool pool2 = (BeeConnectionPool) createClassInstance(clazz, BeeConnectionPool.class, "pool");
         Assert.assertNotNull(pool1);

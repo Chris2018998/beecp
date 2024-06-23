@@ -37,8 +37,8 @@ public class Tc0056ConnectionHoldTest extends TestCase {
             try {
                 con.getCatalog();
                 fail("must throw closed exception");
-            } catch (Exception e) {
-                Assert.assertTrue(e instanceof SQLException);
+            } catch (SQLException e) {
+                Assert.assertTrue(e.getMessage().contains("No operations allowed after connection closed"));
             }
 
             LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(2));

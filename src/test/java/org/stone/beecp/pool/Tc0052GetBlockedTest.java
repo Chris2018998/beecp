@@ -44,8 +44,7 @@ public class Tc0052GetBlockedTest extends TestCase {
 
         try {
             pool.getConnection();
-        } catch (SQLException e) {
-            Assert.assertTrue(e instanceof ConnectionGetInterruptedException);
+        } catch (ConnectionGetInterruptedException e) {
             Assert.assertTrue(e.getMessage().contains("An interruption occurred in connection factory"));
         }
         pool.close();
@@ -63,8 +62,7 @@ public class Tc0052GetBlockedTest extends TestCase {
         new InterruptionAction(Thread.currentThread()).start();
         try {
             pool2.getXAConnection();
-        } catch (SQLException e) {
-            Assert.assertTrue(e instanceof ConnectionGetInterruptedException);
+        } catch (ConnectionGetInterruptedException e) {
             Assert.assertTrue(e.getMessage().contains("An interruption occurred in xa-connection factory"));
         }
         pool2.close();

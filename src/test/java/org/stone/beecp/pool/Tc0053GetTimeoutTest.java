@@ -32,8 +32,7 @@ public class Tc0053GetTimeoutTest extends TestCase {
         TestUtil.joinUtilWaiting(first);
         try {
             pool.getConnection();
-        } catch (SQLException e) {
-            Assert.assertTrue(e instanceof ConnectionGetTimeoutException);
+        } catch (ConnectionGetTimeoutException e) {
             Assert.assertTrue(e.getMessage().contains("Wait timeout on pool semaphore acquisition"));
             first.interrupt();
         }
@@ -56,8 +55,7 @@ public class Tc0053GetTimeoutTest extends TestCase {
         TestUtil.joinUtilWaiting(first);
         try {
             pool2.getConnection();
-        } catch (SQLException e) {
-            Assert.assertTrue(e instanceof ConnectionCreateException);
+        } catch (ConnectionCreateException e) {
             Assert.assertTrue(e.getMessage().contains("Wait timeout on pool lock acquisition"));
             first.interrupt();
         }
@@ -80,8 +78,7 @@ public class Tc0053GetTimeoutTest extends TestCase {
 
         try {
             pool3.getConnection();
-        } catch (SQLException e) {
-            Assert.assertTrue(e instanceof ConnectionGetTimeoutException);
+        } catch (ConnectionGetTimeoutException e) {
             Assert.assertTrue(e.getMessage().contains("Wait timeout for a released connection"));
         }
 

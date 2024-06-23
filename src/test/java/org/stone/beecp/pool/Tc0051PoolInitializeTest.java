@@ -72,9 +72,9 @@ public class Tc0051PoolInitializeTest extends TestCase {
             pool.init(config);
             fail("test failed on driver match");
         } catch (PoolInitializeFailedException e) {
-            Throwable cause = e.getCause();
-            Assert.assertTrue(cause instanceof BeeDataSourceConfigException);
-            String message = cause.getMessage();
+            Assert.assertTrue(e.getCause() instanceof BeeDataSourceConfigException);
+            BeeDataSourceConfigException ee = (BeeDataSourceConfigException) e.getCause();
+            String message = ee.getMessage();
             Assert.assertTrue(message != null && message.contains("can not match configured driver"));
         }
     }
@@ -91,9 +91,9 @@ public class Tc0051PoolInitializeTest extends TestCase {
             pool.init(config);
             fail("test failed on driver match");
         } catch (PoolInitializeFailedException e) {
-            Throwable cause = e.getCause();
-            Assert.assertTrue(cause instanceof BeeDataSourceConfigException);
-            String message = cause.getMessage();
+            Assert.assertTrue(e.getCause() instanceof BeeDataSourceConfigException);
+            BeeDataSourceConfigException ee = (BeeDataSourceConfigException) e.getCause();
+            String message = ee.getMessage();
             Assert.assertTrue(message != null && message.contains("initialSize must not be greater than maxActive"));
         }
     }
@@ -189,8 +189,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
             config2.setRawConnectionFactory(new MockCreateExceptionConnectionFactory(new IllegalArgumentException()));
             pool2 = new FastConnectionPool();
             pool2.init(config2);
-        } catch (SQLException e) {
-            Assert.assertTrue(e instanceof ConnectionCreateException);
+        } catch (ConnectionCreateException e) {
             Assert.assertTrue(e.getCause() instanceof IllegalArgumentException);
             Assert.assertEquals(0, pool2.getIdleSize());
         }

@@ -35,8 +35,7 @@ public class Tc0054GetInterruptedTest extends TestCase {
 
         try {
             pool.getConnection();
-        } catch (SQLException e) {
-            Assert.assertTrue(e instanceof ConnectionGetInterruptedException);
+        } catch (ConnectionGetInterruptedException e) {
             Assert.assertTrue(e.getMessage().contains("An interruption occurred on pool semaphore acquisition"));
             first.interrupt();
         }
@@ -61,8 +60,7 @@ public class Tc0054GetInterruptedTest extends TestCase {
 
         try {
             pool2.getConnection();
-        } catch (SQLException e) {
-            Assert.assertTrue(e instanceof ConnectionCreateException);
+        } catch (ConnectionCreateException e) {
             Assert.assertTrue(e.getMessage().contains("An interruption occurred on pool lock acquisition"));
             first.interrupt();
         }
@@ -87,8 +85,7 @@ public class Tc0054GetInterruptedTest extends TestCase {
 
         try {
             pool3.getConnection();
-        } catch (SQLException e) {
-            Assert.assertTrue(e instanceof ConnectionGetInterruptedException);
+        } catch (ConnectionGetInterruptedException e) {
             Assert.assertTrue(e.getMessage().contains("An interruption occurred while waiting for a released connection"));
         }
     }
