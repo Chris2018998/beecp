@@ -218,7 +218,8 @@ final class ProxyClassGenerator {
                 ctProxyCsStatementClass,
                 ctProxyDatabaseMetaDataClass,
                 ctProxyResultSetClass,
-                ctProxyObjectFactoryClass};
+                ctProxyObjectFactoryClass,
+                ctProxyResultSetMetaDataClass};
     }
 
 
@@ -413,7 +414,7 @@ final class ProxyClassGenerator {
             } else {
                 CtClass ctReturnType = ctMethod.getReturnType();
                 if (ctReturnType == ctResultSetMetaDataClass) {
-                    methodBuffer.append("return new ProxyResultSetMetaDataBase(raw." + methodName + "($$),this,p);");
+                    methodBuffer.append("return new ProxyResultSetMetaData(raw." + methodName + "($$),this,p);");
                 } else if (ctReturnType == CtClass.voidType) {
                     methodBuffer.append("raw." + methodName + "($$);");
                 } else {
