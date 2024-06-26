@@ -49,14 +49,20 @@ public class TestUtil {
     }
 
     public static Object getFieldValue(final Object ob, final String fieldName) throws Exception {
-        Class<?> clazz = (ob instanceof Class) ? (Class<?>) ob : ob.getClass();
+        return getFieldValue(ob, ob.getClass(), fieldName);
+    }
+
+    public static Object getFieldValue(final Object ob, final Class clazz, final String fieldName) throws Exception {
         Field field = clazz.getDeclaredField(fieldName);
         setAccessible(field);
         return field.get(ob);
     }
 
     public static Object invokeMethod(final Object ob, final String methodName) throws Exception {
-        Class<?> clazz = (ob instanceof Class) ? (Class<?>) ob : ob.getClass();
+        return invokeMethod(ob, ob.getClass(), methodName);
+    }
+
+    public static Object invokeMethod(final Object ob, final Class clazz, final String methodName) throws Exception {
         Method method = clazz.getDeclaredMethod(methodName);
         setAccessible(method);
         return method.invoke(ob);
