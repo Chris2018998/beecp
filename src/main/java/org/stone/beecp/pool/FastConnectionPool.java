@@ -310,9 +310,9 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     }
 
     //Method-1.5: remove a pooled connection under lock
-    private void removePooledConn(PooledConnection p, String removeType) {
+    private void removePooledConn(PooledConnection p, String cause) {
         if (this.printRuntimeLog)
-            Log.info("BeeCP({}))begin to remove a pooled connection:{} by reason:{}", this.poolName, p, removeType);
+            Log.info("BeeCP({}))begin to remove a pooled connection:{} for cause:{}", this.poolName, p, cause);
         p.onBeforeRemove();
 
         this.pooledArrayLock.lock();
@@ -325,7 +325,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     if (m > 0) System.arraycopy(this.pooledArray, i + 1, arrayNew, i, m);//copy after
                     this.pooledArray = arrayNew;
                     if (this.printRuntimeLog)
-                        Log.info("BeeCP({}))removed a pooled connection:{} for reason:{}", this.poolName, p, removeType);
+                        Log.info("BeeCP({}))removed a pooled connection:{} for cause:{}", this.poolName, p, cause);
                     break;
                 }
             }
