@@ -47,12 +47,12 @@ public class Tc0007ConfigSetAndGetTest extends TestCase {
         Assert.assertEquals(config.getMaxWait(), 5000L);
 
         //connectTimeout
-        config.setConnectTimeout(-1);
-        Assert.assertNotEquals(config.getConnectTimeout(), -1);
-        config.setConnectTimeout(0);
-        Assert.assertEquals(config.getConnectTimeout(), 0);
-        config.setConnectTimeout(3);
-        Assert.assertEquals(config.getConnectTimeout(), 3);
+        config.setCreateTimeout(-1);
+        Assert.assertNotEquals(config.getCreateTimeout(), -1);
+        config.setCreateTimeout(0);
+        Assert.assertEquals(config.getCreateTimeout(), 0);
+        config.setCreateTimeout(3);
+        Assert.assertEquals(config.getCreateTimeout(), 3);
 
         //idleTimeout
         config.setIdleTimeout(0);
