@@ -83,7 +83,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
                 ds.subDs = Dummy_CommonDataSource;
 
             //timeout on connect to db
-            if (ds.getConnectTimeout() > 0) ds.subDs.setLoginTimeout(ds.getConnectTimeout());
+            if (ds.getCreateTimeout() > 0) ds.subDs.setLoginTimeout(ds.getCreateTimeout());
             ds.ready = true;
         } catch (SQLException e) {
             throw e;
