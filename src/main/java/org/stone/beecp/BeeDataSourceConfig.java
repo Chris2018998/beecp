@@ -79,7 +79,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     //* import tips: factory mode is priority for pool,if connection creation works under driver mode,this item value
     // is assigned to field loginTimeout of DriverManager on pool initialization,but the loginTimeout field is sharable,
     // in same JVM,other drivers maybe read its value,so need more careful on this item(connectTimeout),default is zero
-    private int connectTimeout;
+    private int createTimeout;
     //milliseconds: max idle time check on not borrowed connections,if timeout,then remove them from pool,default is 18000 milliseconds(3 minutes)
     private long idleTimeout = MINUTES.toMillis(3);
     //milliseconds: max inactive time check on borrowed connections,if timeout,pool recycled them by force to avoid connections leak,default is zero
@@ -178,7 +178,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
     private boolean printConfigInfo;
     //config items exclusion list on info-level print
     private List<String> configPrintExclusionList = new ArrayList<>(DefaultExclusionList);
-
 
     //pool implementation class name,if not be set,a default implementation applied in bee datasource
     private String poolImplementClassName = FastConnectionPool.class.getName();
@@ -319,12 +318,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
         if (maxWait > 0L) this.maxWait = maxWait;
     }
 
-    public int getConnectTimeout() {
-        return connectTimeout;
+    public int getCreateTimeout() {
+        return this.createTimeout;
     }
 
-    public void setConnectTimeout(int connectTimeout) {
-        if (connectTimeout >= 0) this.connectTimeout = connectTimeout;
+    public void setCreateTimeout(int createTimeout) {
+        if (createTimeout >= 0) this.createTimeout = createTimeout;
     }
 
     public long getIdleTimeout() {
