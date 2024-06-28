@@ -33,6 +33,7 @@ public class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonitorVo {
     private int usingSize;
     private int semaphoreWaitingSize;
     private int transferWaitingSize;
+    private long poolLockHoldTime;
 
     public String getDsId() {
         return dsId;
@@ -136,5 +137,13 @@ public class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonitorVo {
 
     void setTransferWaitingSize(int transferWaitingSize) {
         this.transferWaitingSize = transferWaitingSize;
+    }
+
+    public long getPoolLockHoldTime() {
+        return poolLockHoldTime;
+    }
+
+    void setPoolLockHoldTime(long poolLockHoldTime) {
+        this.poolLockHoldTime = poolLockHoldTime;
     }
 }

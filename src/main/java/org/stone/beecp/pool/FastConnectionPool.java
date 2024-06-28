@@ -1090,6 +1090,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         monitorVo.setUsingSize(totSize - idleSize);
         monitorVo.setSemaphoreWaitingSize(this.getSemaphoreWaitingSize());
         monitorVo.setTransferWaitingSize(this.getTransferWaitingSize());
+        monitorVo.setPoolLockHoldTime(this.pooledArrayLockedTimePoint);
         return this.monitorVo;
     }
 
