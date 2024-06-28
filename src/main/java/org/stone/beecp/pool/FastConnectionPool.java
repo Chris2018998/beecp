@@ -796,7 +796,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
         //step2:interrupt all waiting on pool lock if create timeout
         if (createTimeoutMs > 0L) {
-            long holdTimePoint = this.getPoolLockHoldTime();
+            long holdTimePoint = this.pooledArrayLockedTimePoint;
             if (holdTimePoint > 0L && System.currentTimeMillis() - holdTimePoint >= createTimeoutMs) {
                 this.interruptOnPoolLock();
             }
