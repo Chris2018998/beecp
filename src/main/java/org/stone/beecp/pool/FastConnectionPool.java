@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.locks.LockSupport;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.stone.beecp.pool.ConnectionPoolStatics.*;
 import static org.stone.tools.CommonUtil.*;
 
@@ -65,6 +66,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     private int semaphoreSize;
     private InterruptionSemaphore semaphore;
     private long maxWaitNs;//nanoseconds
+    private long createTimeoutMs;//milliseconds
     private long idleTimeoutMs;//milliseconds
     private long holdTimeoutMs;//milliseconds
     private boolean supportHoldTimeout;
@@ -167,6 +169,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         this.stateCodeOnRelease = this.transferPolicy.getStateCodeOnRelease();
 
         //step5: copy some config items to pool local
+        this.createTimeoutMs = SECONDS.toMillis(poolConfig.getCreateTimeout());
         this.idleTimeoutMs = poolConfig.getIdleTimeout();
         this.holdTimeoutMs = poolConfig.getHoldTimeout();
         this.supportHoldTimeout = holdTimeoutMs > 0L;
@@ -505,7 +508,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     Log.warn("BeeCP({})'networkTimeout' property of connection not supported by driver", this.poolName);
             } else {//driver support networkTimeout
                 if (this.networkTimeoutExecutor == null) {
-                    this.networkTimeoutExecutor = new ThreadPoolExecutor(poolMaxSize, poolMaxSize, 10, TimeUnit.SECONDS,
+                    this.networkTimeoutExecutor = new ThreadPoolExecutor(poolMaxSize, poolMaxSize, 10, SECONDS,
                             new LinkedBlockingQueue<Runnable>(poolMaxSize), new PoolThreadThreadFactory("BeeCP(" + poolName + ")"));
                     this.networkTimeoutExecutor.allowCoreThreadTimeOut(true);
                 }
@@ -791,7 +794,15 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             Log.info("BeeCP({})before idle clear,{idle:{},using:{},semaphore-waiting:{},transfer-waiting:{}}", this.poolName, vo.getIdleSize(), vo.getUsingSize(), vo.getSemaphoreWaitingSize(), vo.getTransferWaitingSize());
         }
 
-        //step2:remove idle timeout and hold timeout
+        //step2:interrupt all waiting on pool lock if create timeout
+        if (createTimeoutMs > 0L) {
+            long holdTimePoint = this.getPoolLockHoldTime();
+            if (holdTimePoint > 0L && System.currentTimeMillis() - holdTimePoint >= createTimeoutMs) {
+                this.interruptOnPoolLock();
+            }
+        }
+
+        //step3:remove idle timeout and hold timeout
         PooledConnection[] array = this.pooledArray;
         for (PooledConnection p : array) {
             final int state = p.state;
@@ -817,7 +828,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             }
         }
 
-        //step3: print pool info after idle clean
+        //step4: print pool info after idle clean
         if (printRuntimeLog) {
             BeeConnectionPoolMonitorVo vo = getPoolMonitorVo();
             Log.info("BeeCP({})after idle clear,{idle:{},using:{},semaphore-waiting:{},transfer-waiting:{}}", this.poolName, vo.getIdleSize(), vo.getUsingSize(), vo.getSemaphoreWaitingSize(), vo.getTransferWaitingSize());
