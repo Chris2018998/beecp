@@ -99,7 +99,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     private boolean printRuntimeLog;
 
     //***************************************************************************************************************//
-    //               1: Pool initializes and maintenance on pooled connections(7)                                    //                                                                                  //
+    //               1: Pool initializes and maintenance on pooled connections(9)                                    //                                                                                  //
     //***************************************************************************************************************//
 
     /**
@@ -337,12 +337,17 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
     }
 
-    //Method-1.6:  Gets owner hold time point(milliseconds) on pool lock.
+    //Method-1.6: Gets owner hold time point(milliseconds) on pool lock.
     public long getPoolLockHoldTime() {
         return this.pooledArrayLockedTimePoint;
     }
 
-    //Method-1.7: interrupts all threads on pool lock,include wait threads and lock owner thread.
+    //Method-1.7: return check result of pool lock hold timeout
+    public boolean isPoolLockHoldTimeout() {
+        return createTimeoutMs > 0L && pooledArrayLockedTimePoint > 0L && System.currentTimeMillis() - pooledArrayLockedTimePoint >= createTimeoutMs;
+    }
+
+    //Method-1.8: Interrupts lock owner and all waiters on pool lock
     public Thread[] interruptOnPoolLock() {
         List<Thread> interrupedList = new LinkedList<>(this.pooledArrayLock.interruptQueuedWaitThreads());
         Thread ownerThread = this.pooledArrayLock.interruptOwnerThread();
@@ -352,7 +357,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         return interrupedList.toArray(interruptThreads);
     }
 
-    //Method-1.8: creates a template pooled connection on first connection
+    //Method-1.9: create a base pooled connection which is used to make other pooled connections by clone
     private PooledConnection createTemplatePooledConn(Connection rawCon) throws SQLException {
         //step1:set default value of property auto-commit on first connection
         Boolean defaultAutoCommit = poolConfig.isDefaultAutoCommit();
@@ -794,7 +799,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             Log.info("BeeCP({})before idle clear,{idle:{},using:{},semaphore-waiting:{},transfer-waiting:{}}", this.poolName, vo.getIdleSize(), vo.getUsingSize(), vo.getSemaphoreWaitingSize(), vo.getTransferWaitingSize());
         }
 
-        //step2:interrupt all waiting on pool lock if create timeout
+        //step2: interrupt lock owner and all waiters on pool lock
         if (createTimeoutMs > 0L) {
             long holdTimePoint = this.pooledArrayLockedTimePoint;
             if (holdTimePoint > 0L && System.currentTimeMillis() - holdTimePoint >= createTimeoutMs) {

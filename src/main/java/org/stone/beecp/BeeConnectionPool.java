@@ -30,8 +30,8 @@ public interface BeeConnectionPool {
     void init(BeeDataSourceConfig config) throws SQLException;
 
     /**
-     * Attempts to borrow a connection from pool.If all are out,borrower thread blocked in pool until it gets one released
-     * from other borrower or waits timeout.
+     * Attempts to borrow a connection from pool,if not get one,then wait in pool for a released one util timeout or
+     * interrupted.
      *
      * @return a borrowed connection
      * @throws SQLException when failed to create a new connection
@@ -41,8 +41,8 @@ public interface BeeConnectionPool {
     Connection getConnection() throws SQLException;
 
     /**
-     * Attempts to borrow a xa connection from pool.If all are out,borrower thread blocked in pool until it gets one released
-     * from other borrower or waits timeout.
+     * Attempts to borrow a connection from pool,if not get one,then wait in pool for a released one util timeout or
+     * interrupted.
      *
      * @return a borrowed connection
      * @throws SQLException when failed to create a new connection
@@ -86,7 +86,14 @@ public interface BeeConnectionPool {
     long getPoolLockHoldTime();
 
     /**
-     * Interrupts all threads on pool lock,include wait threads and lock owner thread.
+     * checks pool lock state with lock hold time,refer to {@link #getPoolLockHoldTime()}
+     *
+     * @return an indicator of pool lock hold timeout,true or false
+     */
+    boolean isPoolLockHoldTimeout();
+
+    /**
+     * Interrupts lock owner and all waiters on pool lock
      *
      * @return interrupted threads
      */

@@ -166,6 +166,10 @@ public final class RawConnectionPool implements BeeConnectionPool, BeeConnection
         return 0;
     }
 
+    public boolean isPoolLockHoldTimeout() {
+        return false;
+    }
+
     public Thread[] interruptOnPoolLock() {
         //do noting
         return null;
