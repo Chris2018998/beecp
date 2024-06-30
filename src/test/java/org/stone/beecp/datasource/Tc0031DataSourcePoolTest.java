@@ -97,6 +97,7 @@ public class Tc0031DataSourcePoolTest extends TestCase {
 
             //test on pool built-in lock
             Assert.assertEquals(0, ds.getCreatingTime());
+            Assert.assertFalse(ds.isCreatingTimeout());
             Thread[] interruptedThreads = ds.interruptOnCreation();
             Assert.assertNotNull(interruptedThreads);
             Assert.assertEquals(0, interruptedThreads.length);
@@ -145,6 +146,13 @@ public class Tc0031DataSourcePoolTest extends TestCase {
         } catch (PoolNotCreatedException e) {
             Assert.assertTrue(e.getMessage().contains("Pool not be created"));
         }
+
+        try {
+            ds.isCreatingTimeout();
+        } catch (PoolNotCreatedException e) {
+            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
+        }
+
         try {
             ds.interruptOnCreation();
         } catch (PoolNotCreatedException e) {
