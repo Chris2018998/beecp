@@ -42,47 +42,42 @@ import static org.stone.tools.CommonUtil.*;
  * @version 1.0
  */
 public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
-    //pool name generation index which is an atomic integer start with 1
+    //an int sequence generator for pool names,its value starts with 1
     private static final AtomicInteger PoolNameIndex = new AtomicInteger(1);
-    //default exclusion list of config print(info level,still print them under debug mode)
+    //a default exclusion list on configuration items INFO print(pool still print them under debug mode)
     private static final List<String> DefaultExclusionList = Arrays.asList("username", "password", "jdbcUrl", "user", "url");
 
-    //properties applied in a factory{@code RawConnectionFactory,RawXaConnectionFactory} to establish connections
+    //a properties map,whose entry values are injected to a connection factory or a datasource on pool initializes
     private final Map<String, Object> connectProperties = new HashMap<>();
-    //username of a database,default is null
+    //jdbc username link to a database,default is null
     private String username;
-    //user password security link to database,default is null
+    //jdbc password link to a database,default is null
     private String password;
-    //database link url for jdbc,default is null
+    //jdbc url link to a database,default is null
     private String jdbcUrl;
-    //database link driver class name,default is null(if not set,pool try to search a matched driver from driver manager with valid configured url)
+    //jdbc driver class name,default is null;if not set,pool try to search a matched driver with non {@code dbcUrl}
     private String driverClassName;
-    //pool name for log trace,if null or empty,a generation name will be assigned to pool after configuration check passed
+    //pool name,default is null;if not set,a pool name generated with {@code PoolNameIndex} for it
     private String poolName;
-    //work mode of pool semaphore,default is false(unfair mode,I call it competition mode)
+    //a mechanism for borrowers to get connections from pool,default is false(unfair)
     private boolean fairMode;
     //creation size of initial connections,default is zero
     private int initialSize;
-    //creation mode of initial connections;default is false(synchronization mode)
+    //an indicator to create initial connections by an async thread,default is false(synchronization)
     private boolean asyncCreateInitConnection;
-    //maximum of connections in pool,default is 10(default range: 10 =< number <=50)
+    //maximum of connections in pool,its original value is calculated with an expression
     private int maxActive = Math.min(Math.max(10, NCPU), 50);
-    //max permits size of pool semaphore
+    //max permit size of pool semaphore,its original value is calculated with an expression
     private int borrowSemaphoreSize = Math.min(this.maxActive / 2, NCPU);
-    //milliseconds: max wait time in pool to get connections,default is 8000 milliseconds(8 seconds)
+    //milliseconds: max wait time for borrowers in pool for a released connection,default is 8000 milliseconds(8 seconds)
     private long maxWait = SECONDS.toMillis(8);
 
-    //seconds: a driver level item,which is a max wait time establish connections to db.
-    //Two connection creation modes supported in bee datasource configuration
-    //1: driver mode,driverClassName field has been set or a matched driver can be searched with url
-    //2: factory mode,@see field connectionFactoryClass(supports four types)
-    //* import tips: factory mode is priority for pool,if connection creation works under driver mode,this item value
-    // is assigned to field loginTimeout of DriverManager on pool initialization,but the loginTimeout field is sharable,
-    // in same JVM,other drivers maybe read its value,so need more careful on this item(connectTimeout),default is zero
+    //seconds: max wait time on pool connection factory or pool internal datasource to create a connection
+    //if this field value is greater than zero,its value will be assigned to loginTimeout field of DriverManager.
     private int createTimeout;
-    //milliseconds: max idle time check on not borrowed connections,if timeout,then remove them from pool,default is 18000 milliseconds(3 minutes)
+    //milliseconds: max idle time on connections,if timeout,pool will close them and remove from pool,default is 18000 milliseconds(3 minutes)
     private long idleTimeout = MINUTES.toMillis(3);
-    //milliseconds: max inactive time check on borrowed connections,if timeout,pool recycled them by force to avoid connections leak,default is zero
+    //milliseconds: max inactive time on borrowed connections,if timeout,pool recycled them by force to avoid connections leak,default is zero
     private long holdTimeout;
 
     //an alive test sql executed on borrowed connections,if dead,removed from pool
