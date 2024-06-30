@@ -36,7 +36,7 @@ public class Tc0055CreateTimeoutTest extends TestCase {
         config.setBorrowSemaphoreSize(2);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(10));
         config.setCreateTimeout(1);//1 seconds
-        config.setTimerCheckInterval(TimeUnit.SECONDS.toMillis(2));//internal thread to interrupt waiters
+        config.setTimerCheckInterval(TimeUnit.SECONDS.toMillis(3));//internal thread to interrupt waiters
         config.setRawConnectionFactory(new MockNetBlockConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
@@ -47,7 +47,7 @@ public class Tc0055CreateTimeoutTest extends TestCase {
 
         Assert.assertTrue(pool.getCreatingTime() > 0);
         Assert.assertFalse(pool.isCreatingTimeout());
-        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(2));
+        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
         Assert.assertTrue(pool.isCreatingTimeout());
 
         try {
