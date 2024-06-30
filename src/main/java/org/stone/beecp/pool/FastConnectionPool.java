@@ -796,13 +796,14 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         //step1:print pool info before clean
         if (printRuntimeLog) {
             BeeConnectionPoolMonitorVo vo = getPoolMonitorVo();
-            Log.info("BeeCP({})before idle clear,{idle:{},using:{},semaphore-waiting:{},transfer-waiting:{}}", this.poolName, vo.getIdleSize(), vo.getUsingSize(), vo.getSemaphoreWaitingSize(), vo.getTransferWaitingSize());
+            Log.info("BeeCP({})before idle clear,{idle:{},using:{},semaphore-waiting:{},transfer-waiting:{}", this.poolName, vo.getIdleSize(), vo.getUsingSize(), vo.getSemaphoreWaitingSize(), vo.getTransferWaitingSize());
         }
 
         //step2: interrupt lock owner and all waiters on pool lock
         if (createTimeoutMs > 0L) {
             long holdTimePoint = this.pooledArrayLockedTimePoint;
             if (holdTimePoint > 0L && System.currentTimeMillis() - holdTimePoint >= createTimeoutMs) {
+                Log.info("BeeCP({})pool lock has been hold timeout and an interruption will be executed on lock", this.poolName);
                 this.interruptOnPoolLock();
             }
         }
