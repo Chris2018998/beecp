@@ -139,7 +139,7 @@ public class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonitorVo {
         this.transferWaitingSize = transferWaitingSize;
     }
 
-    public long getPoolLockHoldTime() {
+    public long getCreatingTime() {
         return poolLockHoldTime;
     }
 

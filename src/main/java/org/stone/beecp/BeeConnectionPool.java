@@ -79,18 +79,18 @@ public interface BeeConnectionPool {
     BeeConnectionPoolMonitorVo getPoolMonitorVo();
 
     /**
-     * Get start time to create a connection in pool,timeunit:milliseconds
+     * Get start time in creating a connection in pool,timeunit:milliseconds
      *
      * @return start time of creation
      */
-    long getCreateStartTime();
+    long getCreatingTime();
 
     /**
-     * checks creation timeout,refer to {@link #getCreateStartTime()}
+     * checks current creation timeout,refer to {@link #getCreatingTime()}
      *
      * @return an indicator of timeout,true or false
      */
-    boolean isCreateTimeout();
+    boolean isCreatingTimeout();
 
     /**
      * interrupt creation thread of connection and all waiters to create connections

@@ -338,12 +338,12 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     }
 
     //Method-1.6: Gets owner hold time point(milliseconds) on pool lock.
-    public long getCreateStartTime() {
+    public long getCreatingTime() {
         return this.pooledArrayLockedTimePoint;
     }
 
     //Method-1.7: return check result of pool lock hold timeout
-    public boolean isCreateTimeout() {
+    public boolean isCreatingTimeout() {
         return createTimeoutMs > 0L && pooledArrayLockedTimePoint > 0L && System.currentTimeMillis() - pooledArrayLockedTimePoint >= createTimeoutMs;
     }
 

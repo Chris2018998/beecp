@@ -162,11 +162,11 @@ public final class RawConnectionPool implements BeeConnectionPool, BeeConnection
         }
     }
 
-    public long getCreateStartTime() {
+    public long getCreatingTime() {
         return 0;
     }
 
-    public boolean isCreateTimeout() {
+    public boolean isCreatingTimeout() {
         return false;
     }
 

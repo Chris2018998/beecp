@@ -43,6 +43,6 @@ public interface BeeConnectionPoolMonitorVo {
 
     int getTransferWaitingSize();
 
-    long getPoolLockHoldTime();
+    long getCreatingTime();
 
 }
