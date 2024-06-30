@@ -17,7 +17,7 @@ import java.sql.SQLException;
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
 
-public class Tc0061ConnectionPoolCloseTest extends TestCase {
+public class Tc0062ConnectionPoolCloseTest extends TestCase {
     private BeeDataSource ds;
 
     public void setUp() {

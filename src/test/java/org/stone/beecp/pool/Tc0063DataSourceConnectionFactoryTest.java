@@ -16,7 +16,7 @@ import java.sql.Connection;
 import static org.stone.beecp.config.DsConfigFactory.*;
 import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
 
-public class Tc0061DataSourceConnectionFactoryTest extends TestCase {
+public class Tc0063DataSourceConnectionFactoryTest extends TestCase {
     private BeeDataSource ds;
 
     public void setUp() {
