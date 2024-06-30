@@ -59,6 +59,10 @@ public class MockBlockPoolImplementation2 implements BeeConnectionPool {
         return 0L;
     }
 
+    public boolean isPoolLockHoldTimeout() {
+        return false;
+    }
+
     public Thread[] interruptOnPoolLock() {
         return null;
     }
