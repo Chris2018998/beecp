@@ -79,25 +79,25 @@ public interface BeeConnectionPool {
     BeeConnectionPoolMonitorVo getPoolMonitorVo();
 
     /**
-     * Gets owner hold time point(milliseconds) on pool lock.
+     * Get start time to create a connection in pool,timeunit:milliseconds
      *
-     * @return lock hold time
+     * @return start time of creation
      */
-    long getPoolLockHoldTime();
+    long getCreateStartTime();
 
     /**
-     * checks pool lock state with lock hold time,refer to {@link #getPoolLockHoldTime()}
+     * checks creation timeout,refer to {@link #getCreateStartTime()}
      *
-     * @return an indicator of pool lock hold timeout,true or false
+     * @return an indicator of timeout,true or false
      */
-    boolean isPoolLockHoldTimeout();
+    boolean isCreateTimeout();
 
     /**
-     * Interrupts lock owner and all waiters on pool lock
+     * interrupt creation thread of connection and all waiters to create connections
      *
      * @return interrupted threads
      */
-    Thread[] interruptOnPoolLock();
+    Thread[] interruptOnCreation();
 
     /**
      * Closes all connections and removes them from pool.

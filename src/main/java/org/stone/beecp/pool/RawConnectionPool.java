@@ -162,15 +162,15 @@ public final class RawConnectionPool implements BeeConnectionPool, BeeConnection
         }
     }
 
-    public long getPoolLockHoldTime() {
+    public long getCreateStartTime() {
         return 0;
     }
 
-    public boolean isPoolLockHoldTimeout() {
+    public boolean isCreateTimeout() {
         return false;
     }
 
-    public Thread[] interruptOnPoolLock() {
+    public Thread[] interruptOnCreation() {
         //do noting
         return null;
     }

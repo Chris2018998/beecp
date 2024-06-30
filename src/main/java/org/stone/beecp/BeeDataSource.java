@@ -202,32 +202,43 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     }
 
     public BeeConnectionPoolMonitorVo getPoolMonitorVo() throws SQLException {
-        if (this.pool == null) throw new PoolNotCreatedException("Pool not be created");
+        this.checkPool();
         return this.pool.getPoolMonitorVo();
     }
 
     //Gets owner hold time(milliseconds) on pool lock.
-    public long getPoolLockHoldTime() throws SQLException {
-        if (this.pool == null) throw new PoolNotCreatedException("Pool not be created");
-        return this.pool.getPoolLockHoldTime();
+    public long getCreateStartTime() throws SQLException {
+        this.checkPool();
+        return this.pool.getCreateStartTime();
+    }
+
+    //checks creation timeout
+    public boolean isCreateTimeout() throws SQLException {
+        this.checkPool();
+        return this.pool.isCreateTimeout();
     }
 
     //Interrupts all threads on pool lock,include wait threads and lock owner thread.
-    public Thread[] interruptOnPoolLock() throws SQLException {
-        if (this.pool == null) throw new PoolNotCreatedException("Pool not be created");
-        return this.pool.interruptOnPoolLock();
+    public Thread[] interruptOnCreation() throws SQLException {
+        this.checkPool();
+        return this.pool.interruptOnCreation();
     }
 
     public void clear(boolean forceCloseUsing) throws SQLException {
-        if (this.pool == null) throw new PoolNotCreatedException("Pool not be created");
+        this.checkPool();
         this.pool.clear(forceCloseUsing);
     }
 
     public void clear(boolean forceCloseUsing, BeeDataSourceConfig config) throws SQLException {
-        if (this.pool == null) throw new PoolNotCreatedException("Pool not be created");
+        this.checkPool();
         if (config == null) throw new BeeDataSourceConfigException("Pool configuration object can't be null");
         this.pool.clear(forceCloseUsing, config);
         config.copyTo(this);
         this.maxWaitNanos = MILLISECONDS.toNanos(config.getMaxWait());
     }
+
+    private void checkPool() throws SQLException {
+        if (this.pool == null) throw new PoolNotCreatedException("Pool not be created");
+    }
+
 }

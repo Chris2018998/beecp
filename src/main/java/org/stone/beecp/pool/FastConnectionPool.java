@@ -338,17 +338,17 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     }
 
     //Method-1.6: Gets owner hold time point(milliseconds) on pool lock.
-    public long getPoolLockHoldTime() {
+    public long getCreateStartTime() {
         return this.pooledArrayLockedTimePoint;
     }
 
     //Method-1.7: return check result of pool lock hold timeout
-    public boolean isPoolLockHoldTimeout() {
+    public boolean isCreateTimeout() {
         return createTimeoutMs > 0L && pooledArrayLockedTimePoint > 0L && System.currentTimeMillis() - pooledArrayLockedTimePoint >= createTimeoutMs;
     }
 
     //Method-1.8: Interrupts lock owner and all waiters on pool lock
-    public Thread[] interruptOnPoolLock() {
+    public Thread[] interruptOnCreation() {
         List<Thread> interrupedList = new LinkedList<>(this.pooledArrayLock.interruptQueuedWaitThreads());
         Thread ownerThread = this.pooledArrayLock.interruptOwnerThread();
         if (ownerThread != null) interrupedList.add(ownerThread);
@@ -804,7 +804,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             long holdTimePoint = this.pooledArrayLockedTimePoint;
             if (holdTimePoint > 0L && System.currentTimeMillis() - holdTimePoint >= createTimeoutMs) {
                 Log.info("BeeCP({})pool lock has been hold timeout and an interruption will be executed on lock", this.poolName);
-                this.interruptOnPoolLock();
+                this.interruptOnCreation();
             }
         }
 
