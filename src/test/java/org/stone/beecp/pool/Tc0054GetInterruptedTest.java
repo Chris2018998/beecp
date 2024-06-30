@@ -85,9 +85,9 @@ public class Tc0054GetInterruptedTest extends TestCase {
         first.start();
         TestUtil.joinUtilWaiting(first);
 
-        Assert.assertTrue(pool.getPoolLockHoldTime() > 0);
+        Assert.assertTrue(pool.getCreateStartTime() > 0);
         LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
-        Assert.assertTrue(pool.isPoolLockHoldTimeout());
+        Assert.assertTrue(pool.isCreateTimeout());
 
         try {
             pool.getConnection();
