@@ -28,7 +28,7 @@ public class Tc0056PoolInternalLockTest extends TestCase {
         BorrowThread first = new BorrowThread(pool);
         first.start();
         TestUtil.joinUtilWaiting(first);
-        Assert.assertTrue(pool.getCreateStartTime() > 0L);//first thread has hold lock and blocked in driver
+        Assert.assertTrue(pool.getCreatingTime() > 0L);//first thread has hold lock and blocked in driver
 
         BorrowThread second = new BorrowThread(pool);
         second.start();

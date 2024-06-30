@@ -54,11 +54,11 @@ public class MockBlockPoolImplementation1 implements BeeConnectionPool {
         return null;
     }
 
-    public long getCreateStartTime() {
+    public long getCreatingTime() {
         return 0L;
     }
 
-    public boolean isCreateTimeout() {
+    public boolean isCreatingTimeout() {
         return false;
     }
 
