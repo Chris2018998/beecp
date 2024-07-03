@@ -47,7 +47,7 @@ import static org.stone.tools.CommonUtil.*;
  * @author Chris Liao
  * @version 1.0
  */
-public final class FastConnectionPool extends Thread implements BeeConnectionPool, BeeConnectionPoolJmxBean, PooledConnectionAliveTest, PooledConnectionTransferPolicy {
+public final class FastConnectionPool extends Thread implements BeeConnectionPool, FastConnectionPoolMBean, PooledConnectionAliveTest, PooledConnectionTransferPolicy {
     private static final AtomicIntegerFieldUpdater<PooledConnection> ConStUpd = IntegerFieldUpdaterImpl.newUpdater(PooledConnection.class, "state");
     private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowStUpd = ReferenceFieldUpdaterImpl.newUpdater(Borrower.class, Object.class, "state");
     private static final AtomicIntegerFieldUpdater<FastConnectionPool> PoolStateUpd = IntegerFieldUpdaterImpl.newUpdater(FastConnectionPool.class, "poolState");

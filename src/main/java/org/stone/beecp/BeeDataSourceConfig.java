@@ -41,7 +41,7 @@ import static org.stone.tools.CommonUtil.*;
  * @author Chris Liao
  * @version 1.0
  */
-public class BeeDataSourceConfig implements BeeDataSourceConfigJmxBean {
+public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     //an int sequence generator for pool names,its value starts with 1
     private static final AtomicInteger PoolNameIndex = new AtomicInteger(1);
     //a default list of configuration items skip INFO print on pool initialization(pool still print them under debug mode)
