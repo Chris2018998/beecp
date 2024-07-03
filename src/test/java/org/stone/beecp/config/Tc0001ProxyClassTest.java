@@ -17,7 +17,7 @@ import org.stone.beecp.pool.ConnectionPoolStatics;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
-import static org.stone.base.TestUtil.invokeMethod;
+import static org.stone.base.TestUtil.invokeMethod2;
 
 /**
  * Proxy objects test case
@@ -38,7 +38,7 @@ public class Tc0001ProxyClassTest extends TestCase {
 
         try {
             Assert.assertTrue(classFile1.renameTo(classFile2));
-            invokeMethod(null, ConnectionPoolStatics.class, "checkJdbcProxyClass");
+            invokeMethod2(null, ConnectionPoolStatics.class, "checkJdbcProxyClass");
         } catch (InvocationTargetException e) {
             Assert.assertTrue(e.getCause() instanceof ClassNotFoundException);
         } finally {

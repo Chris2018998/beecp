@@ -22,11 +22,13 @@ import javax.naming.Reference;
 import javax.naming.StringRefAddr;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import java.lang.reflect.Method;
 import java.util.Hashtable;
 
 import static org.stone.beecp.config.DsConfigFactory.MOCK_DRIVER;
 import static org.stone.beecp.config.DsConfigFactory.MOCK_URL;
 import static org.stone.beecp.pool.ConnectionPoolStatics.*;
+import static org.stone.tools.BeanUtil.setAccessible;
 
 /**
  * @author Chris Liao
@@ -48,6 +50,10 @@ public class Tc0034DataSourceFactoryTest extends TestCase {
         ref2.add(new StringRefAddr("jdbcUrl", MOCK_URL));
         ref2.add(new StringRefAddr("driverClassName", MOCK_DRIVER));
         ref2.add(new StringRefAddr(CONFIG_TM_JNDI, "transactionManagerName"));
+
+        Method method = BeeDataSourceFactory.class.getDeclaredMethod("getConfigValue", Reference.class, String.class);
+        setAccessible(method);
+        Assert.assertNull(method.invoke(factory, ref2, "URL"));
         BeeDataSource ds2 = (BeeDataSource) factory.getObjectInstance(ref2, null, null, null);
         Assert.assertNotNull(ds2);
         ds2.close();

@@ -73,7 +73,6 @@ public class Tc0012dbcLinkInfoDecoderTest extends TestCase {
         Assert.assertEquals(username, decodedUser);
         Assert.assertEquals(password, decodedPassword);
 
-
         BeeDataSourceConfig config3 = new BeeDataSourceConfig(driver, url, username, password);
         config3.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
         config3.setJdbcLinkInfoDecoderClassName("org.stone.beecp.objects.SampleMockJdbcLinkInfoDecoder");
@@ -85,6 +84,18 @@ public class Tc0012dbcLinkInfoDecoderTest extends TestCase {
         Assert.assertTrue(url.endsWith("-Decoded"));
         Assert.assertTrue(user.endsWith("-Decoded"));
         Assert.assertTrue(password.endsWith("-Decoded"));
+
+        BeeDataSourceConfig config4 = new BeeDataSourceConfig(driver, url, username, password);
+        config4.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
+        config4.setJdbcLinkInfoDecoderClassName("org.stone.beecp.BeeJdbcLinkInfoDecoder");
+        checkConfig = config4.check();
+        factory = (MockCreateNullConnectionFactory) checkConfig.getConnectionFactory();
+        String factoryUrl = factory.getUrl();
+        String factoryUser = factory.getUser();
+        String factoryPassword = factory.getPassword();
+        Assert.assertEquals(url, factoryUrl);
+        Assert.assertEquals(username, factoryUser);
+        Assert.assertEquals(password, factoryPassword);
     }
 
     public void testOnErrorClass() throws Exception {
