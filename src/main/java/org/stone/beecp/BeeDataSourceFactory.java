@@ -21,7 +21,6 @@ import javax.transaction.TransactionManager;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Locale;
 import java.util.Map;
 
 import static org.stone.beecp.pool.ConnectionPoolStatics.*;
@@ -40,15 +39,16 @@ public final class BeeDataSourceFactory implements ObjectFactory {
     private static String getConfigValue(Reference ref, final String propertyName) {
         String value = readConfig(ref, propertyName);
         if (value != null) return value;
-
-        String newPropertyName = propertyName.substring(0, 1).toLowerCase(Locale.US) + propertyName.substring(1);
-        value = readConfig(ref, newPropertyName);
+        value = readConfig(ref, propertyNameToFieldId(propertyName, Separator_MiddleLine));
+        if (value != null) return value;
+        value = readConfig(ref, propertyNameToFieldId(propertyName, Separator_UnderLine));
         if (value != null) return value;
 
-        value = readConfig(ref, propertyNameToFieldId(newPropertyName, Separator_MiddleLine));
-        if (value != null) return value;
-
-        return readConfig(ref, propertyNameToFieldId(newPropertyName, Separator_UnderLine));
+        String firstChar = propertyName.substring(0, 1);
+        if (Character.isLowerCase(firstChar.charAt(0))) {//try again if first char is lowercase
+            return readConfig(ref, (firstChar.toUpperCase() + propertyName.substring(1)));
+        }
+        return null;
     }
 
     private static String readConfig(Reference ref, String propertyName) {
