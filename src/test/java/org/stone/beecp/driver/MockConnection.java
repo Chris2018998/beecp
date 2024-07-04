@@ -18,12 +18,58 @@ import java.util.concurrent.Executor;
  * @version 1.0
  */
 public class MockConnection extends MockBase implements Connection {
+    public int errorCode;
+    public String errorState;
+    private boolean isValid = true;
     private boolean readOnly;
     private String catalog;
     private int transactionIsolation;
     private boolean autoCommit;
     private int holdability;
     private String schema;
+
+    public MockConnection() {
+    }
+
+    public MockConnection(int errorCode) {
+        this.errorCode = errorCode;
+    }
+
+    public MockConnection(String errorState) {
+        this.errorState = errorState;
+    }
+
+    public MockConnection(int errorCode, String errorState) {
+        this.errorCode = errorCode;
+        this.errorState = errorState;
+    }
+
+    public String getSchema() throws SQLException {
+        if (errorCode != 0 || errorState != null) throw new SQLException(null, errorState, errorCode);
+        return schema;
+    }
+
+    public void setSchema(String schema) {
+        this.schema = schema;
+    }
+
+    //************************************* added for test**************************************************//
+    public void setValid(boolean valid) {
+        isValid = valid;
+    }
+
+    public void setErrorCode(int errorCode) {
+        this.errorCode = errorCode;
+    }
+
+    public void setErrorState(String errorState) {
+        this.errorState = errorState;
+    }
+
+    public boolean isValid(int timeout) throws SQLException {
+        if (errorCode != 0 || errorState != null) throw new SQLException(null, errorState, errorCode);
+        return isValid;
+    }
 
     public Statement createStatement() {
         return new MockStatement(this);
@@ -177,9 +223,6 @@ public class MockConnection extends MockBase implements Connection {
         return null;
     }
 
-    public boolean isValid(int timeout) {
-        return true;
-    }
 
     public void setClientInfo(String name, String value) throws SQLClientInfoException {
         //do nothing
@@ -203,14 +246,6 @@ public class MockConnection extends MockBase implements Connection {
 
     public Struct createStruct(String typeName, Object[] attributes) {
         return null;
-    }
-
-    public String getSchema() {
-        return schema;
-    }
-
-    public void setSchema(String schema) {
-        this.schema = schema;
     }
 
     public void abort(Executor executor) {
