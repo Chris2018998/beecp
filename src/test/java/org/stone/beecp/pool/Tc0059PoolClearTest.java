@@ -19,7 +19,7 @@ public class Tc0059PoolClearTest extends TestCase {
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
-        Assert.assertEquals(1, pool.getTotalSize());
+        Assert.assertEquals(2, pool.getTotalSize());
         pool.clear(false);
         Assert.assertEquals(0, pool.getTotalSize());
         pool.close();
