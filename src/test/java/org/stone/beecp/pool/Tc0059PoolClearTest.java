@@ -2,12 +2,14 @@ package org.stone.beecp.pool;
 
 import junit.framework.TestCase;
 import org.junit.Assert;
+import org.stone.base.StoneLogAppender;
 import org.stone.beecp.BeeDataSourceConfig;
 
 import java.sql.Connection;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
+import static org.stone.base.TestUtil.getStoneLogAppender;
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
 public class Tc0059PoolClearTest extends TestCase {
@@ -20,9 +22,21 @@ public class Tc0059PoolClearTest extends TestCase {
         pool.init(config);
 
         Assert.assertEquals(2, pool.getTotalSize());
+        StoneLogAppender logAppender = getStoneLogAppender();
+        logAppender.beginCollectStoneLog();
         pool.clear(false);
+        String logs = logAppender.endCollectedStoneLog();
+        Assert.assertTrue(logs.contains("begin to remove all connections"));
+        Assert.assertTrue(logs.contains("removed all connections"));
         Assert.assertEquals(0, pool.getTotalSize());
         pool.close();
+
+        //test clear on closed pool
+        logAppender = getStoneLogAppender();
+        logAppender.beginCollectStoneLog();
+        pool.clear(false);
+        logs = logAppender.endCollectedStoneLog();
+        Assert.assertTrue(logs.isEmpty());
     }
 
     public void testForceClearUsings() throws Exception {
