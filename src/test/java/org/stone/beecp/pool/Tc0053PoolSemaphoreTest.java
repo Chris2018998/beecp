@@ -36,6 +36,8 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
         BorrowThread first = new BorrowThread(pool);//mock stuck in driver.getConnection()
         first.start();
         TestUtil.joinUtilWaiting(first);
+
+        Assert.assertEquals(1, pool.getSemaphoreAcquiredSize());
         try {
             pool.getConnection();
         } catch (ConnectionGetTimeoutException e) {

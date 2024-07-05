@@ -53,7 +53,7 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
         pool.close();
     }
 
-    public void testInterruption() throws SQLException {
+    public void testInterruptWaiters() throws SQLException {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(1);
         config.setForceCloseUsingOnClear(true);

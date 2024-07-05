@@ -46,7 +46,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         }
     }
 
-    public void testHoldTimeout() throws Exception {
+    public void testHoldTimeout() throws Exception {//pool timer clear timeout connections
         BeeDataSourceConfig config = createDefault();
         config.setHoldTimeout(500L);// hold and not using connection;
         config.setTimerCheckInterval(1000L);// two seconds interval

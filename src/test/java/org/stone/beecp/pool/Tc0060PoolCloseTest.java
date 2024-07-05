@@ -1,7 +1,32 @@
 package org.stone.beecp.pool;
 
-import org.junit.Ignore;
+import junit.framework.TestCase;
+import org.junit.Assert;
+import org.stone.beecp.BeeDataSourceConfig;
+import org.stone.beecp.pool.exception.ConnectionGetForbiddenException;
 
-@Ignore
-public class Tc0060PoolCloseTest {
+import static org.stone.beecp.config.DsConfigFactory.createDefault;
+
+public class Tc0060PoolCloseTest extends TestCase {
+
+    public void testClose() throws Exception {
+        BeeDataSourceConfig config = createDefault();
+        config.setInitialSize(2);
+        config.setMaxActive(2);
+        FastConnectionPool pool = new FastConnectionPool();
+        pool.init(config);
+
+        Assert.assertEquals(2, pool.getTotalSize());
+        Assert.assertFalse(pool.isClosed());
+        pool.close();
+        Assert.assertTrue(pool.isClosed());
+        Assert.assertEquals(0, pool.getTotalSize());
+
+        try {
+            pool.getConnection();
+        } catch (ConnectionGetForbiddenException e) {
+            assertEquals(e.getMessage(), "Pool was closed or in clearing");
+        }
+
+    }
 }
