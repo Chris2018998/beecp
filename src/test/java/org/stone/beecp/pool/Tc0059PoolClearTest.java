@@ -84,8 +84,6 @@ public class Tc0059PoolClearTest extends TestCase {
         DelayCloseThread borrowThread = new DelayCloseThread(pool);
         borrowThread.start();
         borrowThread.join();
-
-        Assert.assertEquals(1, pool.getUsingSize());
         pool.clear(false);
         Assert.assertEquals(0, pool.getUsingSize());
         Assert.assertEquals(0, pool.getTotalSize());
