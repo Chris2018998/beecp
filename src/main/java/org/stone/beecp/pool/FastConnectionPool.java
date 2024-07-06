@@ -881,21 +881,15 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
     //Method-4.3: remove all connections from pool
     private void removeAllConnections(boolean force, String source) {
-        //1:interrupt waiters on lock(maybe stuck on socket)
-        try {
-            this.pooledArrayLock.interruptQueuedWaitThreads();
-            this.pooledArrayLock.interruptOwnerThread();
-        } catch (Throwable e) {
-            Log.info("BeeCP({})failed to interrupt threads on pool lock", this.poolName, e);
-        }
-
-        //2:interrupt waiters on semaphore
+        //1:interrupt waiters on semaphore
         this.semaphore.interruptQueuedWaitThreads();
         if (!this.waitQueue.isEmpty()) {
             PoolInClearingException exception = new PoolInClearingException("Access rejected,pool in clearing");
             while (!this.waitQueue.isEmpty()) this.transferException(exception);
         }
 
+        //2:interrupt waiters on lock(maybe stuck on socket)
+        this.interruptOnCreation();
         //3:clear all connections
         while (true) {
             PooledConnection[] array = this.pooledArray;
