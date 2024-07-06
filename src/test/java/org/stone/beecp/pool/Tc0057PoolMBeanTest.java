@@ -84,6 +84,7 @@ public class Tc0057PoolMBeanTest extends TestCase {
         logAppender = getStoneLogAppender();
         logAppender.beginCollectStoneLog();
         pool.setPrintRuntimeLog(true);//print
+        Assert.assertTrue(pool.isPrintRuntimeLog());
         Connection con2 = null;
         try {
             con2 = pool.getConnection();

@@ -73,7 +73,7 @@ public class Tc0059PoolClearTest extends TestCase {
         Assert.assertEquals(0, pool.getTotalSize());
     }
 
-    public void testClearUsingOnReturn() throws SQLException {//manual clear hold timeout connections
+    public void testClearUsingOnReturn() throws Exception {//manual clear hold timeout connections
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(1);
         config.setMaxActive(1);
@@ -81,8 +81,10 @@ public class Tc0059PoolClearTest extends TestCase {
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
-        new DelayCloseThread(pool).start();
-        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(500L));
+        DelayCloseThread borrowThread = new DelayCloseThread(pool);
+        borrowThread.start();
+        borrowThread.join();
+
         Assert.assertEquals(1, pool.getUsingSize());
         pool.clear(false);
         Assert.assertEquals(0, pool.getUsingSize());

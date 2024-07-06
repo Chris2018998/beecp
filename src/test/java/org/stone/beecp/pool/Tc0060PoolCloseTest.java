@@ -28,6 +28,4 @@ public class Tc0060PoolCloseTest extends TestCase {
             assertEquals(e.getMessage(), "Pool was closed or in clearing");
         }
     }
-
-
 }
