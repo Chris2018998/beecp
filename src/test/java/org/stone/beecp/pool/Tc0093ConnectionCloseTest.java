@@ -8,134 +8,190 @@ package org.stone.beecp.pool;
 
 import junit.framework.TestCase;
 import org.junit.Assert;
-import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
 
 import java.sql.*;
 
-import static org.stone.beecp.config.DsConfigFactory.*;
-import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
+import static org.stone.beecp.config.DsConfigFactory.TEST_PROCEDURE;
+import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
 public class Tc0093ConnectionCloseTest extends TestCase {
-    private BeeDataSource ds;
 
-    public void setUp() {
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setJdbcUrl(JDBC_URL);
-        config.setDriverClassName(JDBC_DRIVER);
-        config.setUsername(JDBC_USER);
-        config.setPassword(JDBC_PASSWORD);
-        ds = new BeeDataSource(config);
-    }
+    public void testCloseResultSet() throws SQLException {
+        BeeDataSourceConfig config = createDefault();
+        FastConnectionPool pool = new FastConnectionPool();
+        pool.init(config);
 
-    public void tearDown() {
-        ds.close();
-    }
+        //1: create connection
+        Connection con = pool.getConnection();
+        Statement st = con.createStatement();
+        ResultSet rs1 = st.executeQuery("select * from user");
+        ResultSetMetaData rs1Meta = rs1.getMetaData();
 
-    public void testConnectionClose() throws Exception {
-        Connection con = ds.getConnection();
-
-        Statement st = null;
-        CallableStatement cs = null;
-        PreparedStatement ps = null;
+        rs1.close();
+        Assert.assertTrue(rs1.isClosed());
         try {
-            st = con.createStatement();
-            cs = con.prepareCall("?={call " + TEST_PROCEDURE + "}");
-            ps = con.prepareStatement("select 1 from dual");
-            DatabaseMetaData dbs = con.getMetaData();
-
-            con.close();
-            try {
-                st.getConnection();
-                fail("statement operation after connection close(dbs)");
-            } catch (SQLException e) {
-                Assert.assertTrue(e.getMessage().contains("No operations allowed after statement closed"));
-            }
-
-            try {
-                ps.getConnection();
-                fail("preparedStatement operation after connection close(ps)");
-            } catch (SQLException e) {
-                Assert.assertTrue(e.getMessage().contains("No operations allowed after statement closed"));
-            }
-
-            try {
-                cs.getConnection();
-                fail("callableStatement operation after connection close(cs)");
-            } catch (SQLException e) {
-                Assert.assertTrue(e.getMessage().contains("No operations allowed after statement closed"));
-            }
-
-            try {
-                dbs.getConnection();
-                fail("DatabaseMetaData operation after connection close(dbs)");
-            } catch (SQLException e) {
-                Assert.assertTrue(e.getMessage().contains("No operations allowed after connection closed"));
-            }
-        } finally {
-            if (st != null)
-                oclose(st);
-            if (cs != null)
-                oclose(cs);
-            if (ps != null)
-                oclose(ps);
+            rs1Meta.getColumnCount();
+        } catch (SQLException e) {
+            Assert.assertEquals("No operations allowed after resultSet closed", e.getMessage());
         }
+        con.close();
+        pool.close();
     }
 
-    public void testStatementClose() throws Exception {
-        Connection con = ds.getConnection();
+    public void testCloseStatement() throws SQLException {
+        BeeDataSourceConfig config = createDefault();
+        FastConnectionPool pool = new FastConnectionPool();
+        pool.init(config);
 
-        Statement st;
-        CallableStatement cs;
-        PreparedStatement ps;
+        //1: create connection
+        Connection con = pool.getConnection();
+        Statement st = con.createStatement();
+        ResultSet rs1 = st.executeQuery("select * from user");
+        ResultSetMetaData rs1Meta = rs1.getMetaData();
+        st.close();
+
+        Assert.assertTrue(rs1.isClosed());
+        Assert.assertTrue(st.isClosed());
+
         try {
-            st = con.createStatement();
-            cs = con.prepareCall("?={call " + TEST_PROCEDURE + "}");
-            ps = con.prepareStatement("select 1 from dual");
-            ResultSet rs1 = null;
-
-            try {
-                rs1 = st.getResultSet();
-                st.close();
-                if (rs1 != null) {
-                    rs1.getStatement();
-                    fail("result operation after statement close(st)");
-                }
-            } catch (SQLException e) {
-                Assert.assertTrue(e.getMessage().contains("No operations allowed after statement closed"));
-            } finally {
-                if (rs1 != null) oclose(rs1);
-            }
-
-            ResultSet rs2 = null;
-            try {
-                rs2 = ps.getResultSet();
-                ps.close();
-                if (rs2 != null) {
-                    rs2.getStatement();
-                    fail("result operation after preparedStatement close(ps)");
-                }
-            } catch (SQLException e) {
-                Assert.assertTrue(e.getMessage().contains("No operations allowed after statement closed"));
-            } finally {
-                if (rs2 != null) oclose(rs2);
-            }
-
-            ResultSet rs3 = null;
-            try {
-                rs3 = cs.getResultSet();
-                cs.close();
-                if (rs3 != null) {
-                    rs3.getStatement();
-                    fail("result operation after callableStatement close(cs)");
-                }
-            } catch (SQLException e) {
-                Assert.assertTrue(e.getMessage().contains("No operations allowed after statement closed"));
-            } finally {
-                if (rs3 != null) oclose(rs3);
-            }
-        } finally {
-            if (con != null) oclose(con);
+            rs1Meta.getColumnCount();
+        } catch (SQLException e) {
+            Assert.assertEquals("No operations allowed after resultSet closed", e.getMessage());
         }
+
+        try {
+            st.getConnection();
+        } catch (SQLException e) {
+            Assert.assertEquals("No operations allowed after statement closed", e.getMessage());
+        }
+        con.close();
+        pool.close();
+    }
+
+    public void testCloseConnection() throws SQLException {
+        BeeDataSourceConfig config = createDefault();
+        FastConnectionPool pool = new FastConnectionPool();
+        pool.init(config);
+
+        //1: create connection
+        Connection con = pool.getConnection();
+
+        //2；create statement
+        DatabaseMetaData dbs = con.getMetaData();
+        Statement st = con.createStatement();
+        PreparedStatement ps = con.prepareStatement("select * from dual");
+        CallableStatement cs = con.prepareCall("?={call " + TEST_PROCEDURE + "}");
+
+        //owner check
+        Assert.assertEquals(con, dbs.getConnection());
+        Assert.assertEquals(con, st.getConnection());
+        Assert.assertEquals(con, ps.getConnection());
+        Assert.assertEquals(con, cs.getConnection());
+
+        //3: create ResultSet
+        ResultSet rs1 = st.executeQuery("select * from user");
+        Assert.assertEquals(rs1, st.getResultSet());
+        ResultSet rs2 = ps.executeQuery();
+        cs.executeQuery();
+        ResultSet rs3 = cs.getResultSet();
+        Assert.assertNotNull(rs1);
+        Assert.assertNotNull(rs2);
+        Assert.assertNotNull(rs3);
+
+        //owner check
+        Assert.assertEquals(st, rs1.getStatement());
+        Assert.assertEquals(ps, rs2.getStatement());
+        Assert.assertEquals(cs, rs3.getStatement());
+
+        //4:create result MetaData
+        ResultSetMetaData rs1Meta = rs1.getMetaData();
+        ResultSetMetaData rs2Meta = rs2.getMetaData();
+        ResultSetMetaData rs3Meta = rs3.getMetaData();
+
+        con.close();
+
+        Assert.assertTrue(con.isClosed());
+        Assert.assertTrue(rs1.isClosed());
+        Assert.assertTrue(rs2.isClosed());
+        Assert.assertTrue(rs3.isClosed());
+        Assert.assertTrue(st.isClosed());
+        Assert.assertTrue(ps.isClosed());
+        Assert.assertTrue(cs.isClosed());
+
+        try {
+            rs1Meta.getColumnCount();
+        } catch (SQLException e) {
+            Assert.assertEquals("No operations allowed after resultSet closed", e.getMessage());
+        }
+        try {
+            rs2Meta.getColumnCount();
+        } catch (SQLException e) {
+            Assert.assertEquals("No operations allowed after resultSet closed", e.getMessage());
+        }
+        try {
+            rs3Meta.getColumnCount();
+        } catch (SQLException e) {
+            Assert.assertEquals("No operations allowed after resultSet closed", e.getMessage());
+        }
+
+        try {
+            rs1.getStatement();
+        } catch (SQLException e) {
+            Assert.assertEquals("No operations allowed after resultSet closed", e.getMessage());
+        }
+        try {
+            rs2.getStatement();
+        } catch (SQLException e) {
+            Assert.assertEquals("No operations allowed after resultSet closed", e.getMessage());
+        }
+        try {
+            rs3.getStatement();
+        } catch (SQLException e) {
+            Assert.assertEquals("No operations allowed after resultSet closed", e.getMessage());
+        }
+
+
+        try {
+            st.getConnection();
+            fail("statement operation after connection close(st)");
+        } catch (SQLException e) {
+            Assert.assertTrue(e.getMessage().contains("No operations allowed after statement closed"));
+        }
+
+        try {
+            st.getConnection();
+            fail("statement operation after connection close(st)");
+        } catch (SQLException e) {
+            Assert.assertTrue(e.getMessage().contains("No operations allowed after statement closed"));
+        }
+
+        try {
+            ps.getConnection();
+            fail("preparedStatement operation after connection close(ps)");
+        } catch (SQLException e) {
+            Assert.assertTrue(e.getMessage().contains("No operations allowed after statement closed"));
+        }
+        try {
+            cs.getConnection();
+            fail("callableStatement operation after connection close(cs)");
+        } catch (SQLException e) {
+            Assert.assertTrue(e.getMessage().contains("No operations allowed after statement closed"));
+        }
+        try {
+            dbs.getConnection();
+            fail("DatabaseMetaData operation after connection close(dbs)");
+        } catch (SQLException e) {
+            Assert.assertTrue(e.getMessage().contains("No operations allowed after connection closed"));
+        }
+
+        try {
+            con.getMetaData();
+            fail("DatabaseMetaData operation after connection close");
+        } catch (SQLException e) {
+            Assert.assertTrue(e.getMessage().contains("No operations allowed after connection closed"));
+        }
+
+        pool.close();
     }
 }

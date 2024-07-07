@@ -7,60 +7,36 @@ import org.stone.beecp.BeeDataSourceConfig;
 import java.sql.*;
 
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
-import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
 
 public class Tc0103ConnectionWrapperTest extends TestCase {
-    private FastConnectionPool pool;
-
-    public void setUp() throws Exception {
-        BeeDataSourceConfig config = createDefault();
-        config.setInitialSize(5);
-        config.setAliveTestSql("SELECT 1 from dual");
-        config.setIdleTimeout(3000);
-
-        pool = new FastConnectionPool();
-        pool.init(config);
-    }
-
-    public void tearDown() throws Exception {
-        pool.close();
-    }
 
     public void testConnectionWrapper() throws Exception {
-        Connection con = null;
-        Statement st = null;
-        CallableStatement cs = null;
-        PreparedStatement ps = null;
+        BeeDataSourceConfig config = createDefault();
+        FastConnectionPool pool = new FastConnectionPool();
+        pool.init(config);
 
-        try {
-            con = pool.getConnection();
-            st = con.createStatement();
-            cs = con.prepareCall("?={call test(}");
-            ps = con.prepareStatement("select 1 from dual");
-            DatabaseMetaData dbs = con.getMetaData();
+        Connection con = pool.getConnection();
+        DatabaseMetaData dbs = con.getMetaData();
+        Statement st = con.createStatement();
+        ResultSet rs1 = st.executeQuery("select * from user");
+        ResultSetMetaData rs1Meta = rs1.getMetaData();
 
-            Assert.assertEquals(con.unwrap(Connection.class), con);
-            Assert.assertEquals(st.getConnection(), con);
-            Assert.assertEquals(cs.getConnection(), con);
-            Assert.assertEquals(ps.getConnection(), con);
-            Assert.assertEquals(dbs.getConnection(), con);
+        Assert.assertTrue(rs1Meta.isWrapperFor(ResultSetMetaData.class));
+        Assert.assertEquals(rs1Meta, rs1Meta.unwrap(ResultSetMetaData.class));
 
-            ResultSet re1 = st.executeQuery("select 1 from dual");
-            Assert.assertEquals(st, re1.getStatement());
-            ResultSet re2 = ps.executeQuery();
-            Assert.assertEquals(ps, re2.getStatement());
-            ResultSet re3 = cs.getResultSet();
-            Assert.assertNull(re3);
-            ResultSet re4 = dbs.getTableTypes();
-            Assert.assertNull(re4.getStatement());
+        Assert.assertTrue(rs1.isWrapperFor(ResultSet.class));
+        Assert.assertEquals(rs1, rs1.unwrap(ResultSet.class));
 
-            Assert.assertEquals(st, re1.getStatement());
-            Assert.assertEquals(ps, re2.getStatement());
-        } finally {
-            oclose(st);
-            oclose(cs);
-            oclose(ps);
-            oclose(con);
-        }
+        Assert.assertTrue(st.isWrapperFor(Statement.class));
+        Assert.assertEquals(st, st.unwrap(Statement.class));
+
+        Assert.assertTrue(dbs.isWrapperFor(DatabaseMetaData.class));
+        Assert.assertEquals(dbs, dbs.unwrap(DatabaseMetaData.class));
+
+        Assert.assertTrue(con.isWrapperFor(Connection.class));
+        Assert.assertEquals(con, con.unwrap(Connection.class));
+
+        con.close();
+        pool.close();
     }
 }

@@ -1,8 +1,11 @@
 /*
- * Copyright(C) Chris2018998
- * Contact:Chris2018998@tom.com
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
- * Licensed under GNU Lesser General Public License v2.1
+ * Copyright(C) Chris2018998,All rights reserved.
+ *
+ * Project owner contact:Chris2018998@tom.com.
+ *
+ * Project Licensed under Apache License v2.0
  */
 package org.stone.beecp.pool;
 
@@ -11,6 +14,9 @@ import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 
 import java.sql.Connection;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static java.sql.Connection.TRANSACTION_READ_COMMITTED;
 import static java.sql.Connection.TRANSACTION_SERIALIZABLE;
@@ -36,6 +42,7 @@ public class Tc0102ConnectionResetTest extends TestCase {
             Assert.assertEquals(TRANSACTION_READ_COMMITTED, con.getTransactionIsolation());
             Assert.assertEquals("DefaultSchema", con.getSchema());
             Assert.assertEquals("DefaultCatalog", con.getCatalog());
+            Assert.assertEquals(0, con.getNetworkTimeout());
 
             //change properties
             con.setAutoCommit(true);
@@ -43,6 +50,12 @@ public class Tc0102ConnectionResetTest extends TestCase {
             con.setTransactionIsolation(TRANSACTION_SERIALIZABLE);
             con.setSchema("DefaultSchema1");
             con.setCatalog("DefaultCatalog1");
+            con.setNetworkTimeout(new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<>()), 10);
+
+            Assert.assertEquals(TRANSACTION_SERIALIZABLE, con.getTransactionIsolation());
+            Assert.assertEquals("DefaultSchema1", con.getSchema());
+            Assert.assertEquals("DefaultCatalog1", con.getCatalog());
+            Assert.assertEquals(10, con.getNetworkTimeout());
         }
 
         try (Connection con = pool.getConnection()) {
@@ -51,6 +64,7 @@ public class Tc0102ConnectionResetTest extends TestCase {
             Assert.assertEquals(TRANSACTION_READ_COMMITTED, con.getTransactionIsolation());
             Assert.assertEquals("DefaultSchema", con.getSchema());
             Assert.assertEquals("DefaultCatalog", con.getCatalog());
+            Assert.assertEquals(0, con.getNetworkTimeout());
         }
     }
 }
