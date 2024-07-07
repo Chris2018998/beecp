@@ -50,7 +50,7 @@ public class Tc0102ConnectionResetTest extends TestCase {
             con.setTransactionIsolation(TRANSACTION_SERIALIZABLE);
             con.setSchema("DefaultSchema1");
             con.setCatalog("DefaultCatalog1");
-            con.setNetworkTimeout(new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<>()), 10);
+            con.setNetworkTimeout(new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>()), 10);
 
             Assert.assertEquals(TRANSACTION_SERIALIZABLE, con.getTransactionIsolation());
             Assert.assertEquals("DefaultSchema1", con.getSchema());
