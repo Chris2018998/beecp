@@ -27,6 +27,7 @@ public class MockConnection extends MockBase implements Connection {
     private boolean autoCommit;
     private int holdability;
     private String schema;
+    private int networkTimeout;
 
     public MockConnection() {
     }
@@ -253,10 +254,10 @@ public class MockConnection extends MockBase implements Connection {
     }
 
     public void setNetworkTimeout(Executor executor, int milliseconds) {
-        //do nothing
+        this.networkTimeout = milliseconds;
     }
 
     public int getNetworkTimeout() {
-        return 0;
+        return this.networkTimeout;
     }
 }
