@@ -5,6 +5,7 @@ Changes in 4.0.5
 1：add a boolean indicator on threadlocal(set false to support virtual threads)
 2: fix a nullpoint exception when pool close
 3: fix pool jmx register exception
+4: remove config item:createTimeout
 
 
 Changes in 4.0.4
