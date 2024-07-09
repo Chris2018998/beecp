@@ -71,7 +71,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     private int borrowSemaphoreSize = Math.min(this.maxActive / 2, NCPU);
 
     //milliseconds: max wait time for borrowers in pool for a released connection,default is 8000 milliseconds(8 seconds)
-    //pool support four kind of timeout:semaphore timeout,lock timeout,waitQueue timeout,creation timeout
+    //pool supports four kind of timeout:semaphore timeout,lock timeout,waitQueue timeout,creation timeout
     private long maxWait = SECONDS.toMillis(8);
     //milliseconds: max idle time on connections,if timeout,pool will close them and remove from pool,default is 18000 milliseconds(3 minutes)
     private long idleTimeout = MINUTES.toMillis(3);
