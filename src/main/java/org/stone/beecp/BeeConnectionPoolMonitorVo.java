@@ -45,4 +45,6 @@ public interface BeeConnectionPoolMonitorVo {
 
     long getCreatingTime();
 
+    boolean isCreatingTimeout();
+
 }
