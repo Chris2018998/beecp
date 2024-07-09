@@ -69,12 +69,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     private int maxActive = Math.min(Math.max(10, NCPU), 50);
     //max permit size of pool semaphore,its original value is calculated with an expression
     private int borrowSemaphoreSize = Math.min(this.maxActive / 2, NCPU);
-    //milliseconds: max wait time for borrowers in pool for a released connection,default is 8000 milliseconds(8 seconds)
-    private long maxWait = SECONDS.toMillis(8);
 
-    //seconds: max wait time on pool connection factory or pool internal datasource to create a connection
-    //if this field value is greater than zero,its value will be assigned to loginTimeout field of DriverManager.
-    private int createTimeout;
+    //milliseconds: max wait time for borrowers in pool for a released connection,default is 8000 milliseconds(8 seconds)
+    //pool support four kind of timeout:semaphore timeout,lock timeout,waitQueue timeout,creation timeout
+    private long maxWait = SECONDS.toMillis(8);
     //milliseconds: max idle time on connections,if timeout,pool will close them and remove from pool,default is 18000 milliseconds(3 minutes)
     private long idleTimeout = MINUTES.toMillis(3);
     //milliseconds: max inactive time on borrowed connections,if timeout,pool recycled them by force to avoid connections leak,default is zero
@@ -311,14 +309,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setMaxWait(long maxWait) {
         if (maxWait > 0L) this.maxWait = maxWait;
-    }
-
-    public int getCreateTimeout() {
-        return this.createTimeout;
-    }
-
-    public void setCreateTimeout(int createTimeout) {
-        if (createTimeout >= 0) this.createTimeout = createTimeout;
     }
 
     public long getIdleTimeout() {

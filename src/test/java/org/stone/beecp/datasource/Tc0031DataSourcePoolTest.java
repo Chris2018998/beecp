@@ -39,7 +39,7 @@ public class Tc0031DataSourcePoolTest extends TestCase {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(1);
         config.setMaxActive(1);
-        config.setCreateTimeout(5);
+        //config.setCreateTimeout(5);
         config.setPrintConfigInfo(false);
         BeeDataSource ds = null;
 

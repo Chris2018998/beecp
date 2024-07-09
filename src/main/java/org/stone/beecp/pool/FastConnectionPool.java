@@ -66,7 +66,6 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     private int semaphoreSize;
     private InterruptionSemaphore semaphore;
     private long maxWaitNs;//nanoseconds
-    private long createTimeoutMs;//milliseconds
     private long idleTimeoutMs;//milliseconds
     private long holdTimeoutMs;//milliseconds
     private boolean supportHoldTimeout;
@@ -79,7 +78,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     private boolean templatePooledConnIsReady;
     private PooledConnection templatePooledConn;
     private InterruptionReentrantLock pooledArrayLock;
-    private volatile long pooledArrayLockedTimePoint;//milliseconds
+    private volatile long pooledArrayLockedTimePoint;//nanoseconds
     private volatile PooledConnection[] pooledArray;
     private boolean isRawXaConnFactory;
     private RawConnectionFactory rawConnFactory;
@@ -169,7 +168,6 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         this.stateCodeOnRelease = this.transferPolicy.getStateCodeOnRelease();
 
         //step5: copy some config items to pool local
-        this.createTimeoutMs = SECONDS.toMillis(poolConfig.getCreateTimeout());
         this.idleTimeoutMs = poolConfig.getIdleTimeout();
         this.holdTimeoutMs = poolConfig.getHoldTimeout();
         this.supportHoldTimeout = holdTimeoutMs > 0L;
@@ -253,7 +251,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
         //2:Creates a connection under acquired lock
         try {
-            this.pooledArrayLockedTimePoint = System.currentTimeMillis();
+            this.pooledArrayLockedTimePoint = System.nanoTime();
             int l = this.pooledArray.length;
             if (l < this.poolMaxSize) {
                 if (this.printRuntimeLog)
@@ -345,7 +343,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     //Method-1.7: return check result of pool lock hold timeout
     public boolean isCreatingTimeout() {
         final long lockHoldTime = pooledArrayLockedTimePoint;
-        return createTimeoutMs > 0L && lockHoldTime > 0L && System.currentTimeMillis() - lockHoldTime >= createTimeoutMs;
+        return lockHoldTime != 0L && System.nanoTime() - lockHoldTime > maxWaitNs;
     }
 
     //Method-1.8: Interrupts lock owner and all waiters on pool lock
