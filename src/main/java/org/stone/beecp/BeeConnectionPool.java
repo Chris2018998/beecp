@@ -14,7 +14,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * A container interface on maintaining pooled JDBC connection objects which can be borrowed out.
+ * A container interface,whose implementation instance works under {@link BeeDataSource} to maintain a set of jdbc
+ * connections.
  *
  * @author Chris Liao
  * @version 1.0
@@ -22,19 +23,19 @@ import java.sql.SQLException;
 public interface BeeConnectionPool {
 
     /**
-     * Pool initializes on startup.
+     * Pool initializes with a configuration object contains some sub items.
      *
-     * @param config is a configuration object for pool initialization
+     * @param config is a target configuration object for initialization
      * @throws SQLException while initializing failed
      */
     void init(BeeDataSourceConfig config) throws SQLException;
 
     /**
-     * Attempts to borrow a connection from pool,if not get one,then wait in pool for a released one util timeout or
-     * interrupted.
+     * Attempts to borrow a connection from pool;if pool is full and no idle connections,borrower then waits in pool
+     * util getting one success.
      *
      * @return a borrowed connection
-     * @throws SQLException when failed to create a new connection
+     * @throws SQLException while connection created failed if pool capacity is not reach maximum {@link BeeDataSourceConfig#getMaxActive()}
      * @throws SQLException when timeout on wait
      * @throws SQLException when interruption on wait
      */

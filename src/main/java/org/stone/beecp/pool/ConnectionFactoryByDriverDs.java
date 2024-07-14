@@ -9,7 +9,7 @@
  */
 package org.stone.beecp.pool;
 
-import org.stone.beecp.RawConnectionFactory;
+import org.stone.beecp.BeeConnectionFactory;
 
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
@@ -27,7 +27,7 @@ import static org.stone.tools.CommonUtil.isNotBlank;
  * @author Chris liao
  * @version 1.0
  */
-public final class ConnectionFactoryByDriverDs implements RawConnectionFactory, CommonDataSource {
+public final class ConnectionFactoryByDriverDs implements BeeConnectionFactory, CommonDataSource {
     //username
     private final String username;
     //password

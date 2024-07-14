@@ -9,7 +9,7 @@
  */
 package org.stone.beecp.pool;
 
-import org.stone.beecp.RawConnectionFactory;
+import org.stone.beecp.BeeConnectionFactory;
 
 import javax.sql.CommonDataSource;
 import java.io.PrintWriter;
@@ -23,7 +23,7 @@ import java.util.logging.Logger;
  * @author Chris liao
  * @version 1.0
  */
-public final class ConnectionFactoryByDriver implements RawConnectionFactory, CommonDataSource {
+public final class ConnectionFactoryByDriver implements BeeConnectionFactory, CommonDataSource {
     //Jdbc url
     private final String url;
     //jdbc driver build connections to database

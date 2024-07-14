@@ -9,7 +9,7 @@
  */
 package org.stone.beecp.pool;
 
-import org.stone.beecp.RawXaConnectionFactory;
+import org.stone.beecp.BeeXaConnectionFactory;
 
 import javax.sql.CommonDataSource;
 import javax.sql.XAConnection;
@@ -27,7 +27,7 @@ import static org.stone.tools.CommonUtil.isNotBlank;
  * @author Chris liao
  * @version 1.0
  */
-public class XaConnectionFactoryByDriverDs implements RawXaConnectionFactory, CommonDataSource {
+public class XaConnectionFactoryByDriverDs implements BeeXaConnectionFactory, CommonDataSource {
     //username
     private final String username;
     //password

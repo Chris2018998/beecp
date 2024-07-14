@@ -81,8 +81,8 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     private volatile long pooledArrayLockedTimePoint;//nanoseconds
     private volatile PooledConnection[] pooledArray;
     private boolean isRawXaConnFactory;
-    private RawConnectionFactory rawConnFactory;
-    private RawXaConnectionFactory rawXaConnFactory;
+    private BeeConnectionFactory rawConnFactory;
+    private BeeXaConnectionFactory rawXaConnFactory;
     private PooledConnectionAliveTest conValidTest;
     private ThreadPoolExecutor networkTimeoutExecutor;
     private AtomicInteger servantState;
@@ -134,11 +134,11 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         //step1: set connection factory to pool local
         //factory class must implement one of interfaces[RawConnectionFactory,RawXaConnectionFactory]
         Object rawFactory = poolConfig.getConnectionFactory();
-        if (rawFactory instanceof RawXaConnectionFactory) {
+        if (rawFactory instanceof BeeXaConnectionFactory) {
             this.isRawXaConnFactory = true;
-            this.rawXaConnFactory = (RawXaConnectionFactory) rawFactory;
+            this.rawXaConnFactory = (BeeXaConnectionFactory) rawFactory;
         } else {
-            this.rawConnFactory = (RawConnectionFactory) rawFactory;
+            this.rawConnFactory = (BeeConnectionFactory) rawFactory;
         }
 
         //step2: creates pool lock and a connections array
@@ -210,14 +210,16 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             new PoolInitAsyncCreateThread(this).start();
 
         //step9: print info of pool initialization after completion
-        Log.info("BeeCP({})has startup{mode:{},init size:{},max size:{},semaphore size:{},max wait:{}ms,driver:{}}",
-                poolName,
-                poolMode,
-                this.pooledArray.length,
-                this.poolMaxSize,
-                this.semaphoreSize,
-                poolConfig.getMaxWait(),
-                poolConfig.getDriverClassName());
+        String poolInitInfo;
+        String driverClassNameOrFactoryName;
+        if (isNotBlank(poolConfig.getDriverClassName())) {
+            driverClassNameOrFactoryName = poolConfig.getDriverClassName();
+            poolInitInfo = "BeeCP({})has startup{mode:{},init size:{},max size:{},semaphore size:{},max wait:{}ms,driver:{}}";
+        } else {
+            driverClassNameOrFactoryName = rawFactory.getClass().getName();
+            poolInitInfo = "BeeCP({})has startup{mode:{},init size:{},max size:{},semaphore size:{},max wait:{}ms,factory:{}}";
+        }
+        Log.info(poolInitInfo, poolName, poolMode, pooledArray.length, poolMaxSize, semaphoreSize, poolConfig.getMaxWait(), driverClassNameOrFactoryName);
     }
 
     //Method-1.3: creates initial connections

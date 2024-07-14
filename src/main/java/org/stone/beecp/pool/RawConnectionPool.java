@@ -43,8 +43,8 @@ public final class RawConnectionPool implements BeeConnectionPool {
     private Semaphore borrowSemaphore;
     private BeeDataSourceConfig poolConfig;
     private boolean isRawXaConnFactory;
-    private RawConnectionFactory rawConnFactory;
-    private RawXaConnectionFactory rawXaConnFactory;
+    private BeeConnectionFactory rawConnFactory;
+    private BeeXaConnectionFactory rawXaConnFactory;
 
     /**
      * initialize pool with configuration
@@ -64,11 +64,11 @@ public final class RawConnectionPool implements BeeConnectionPool {
         }
 
         Object rawFactory = this.poolConfig.getConnectionFactory();
-        if (rawFactory instanceof RawXaConnectionFactory) {
+        if (rawFactory instanceof BeeXaConnectionFactory) {
             this.isRawXaConnFactory = true;
-            this.rawXaConnFactory = (RawXaConnectionFactory) rawFactory;
-        } else if (rawFactory instanceof RawConnectionFactory) {
-            this.rawConnFactory = (RawConnectionFactory) rawFactory;
+            this.rawXaConnFactory = (BeeXaConnectionFactory) rawFactory;
+        } else if (rawFactory instanceof BeeConnectionFactory) {
+            this.rawConnFactory = (BeeConnectionFactory) rawFactory;
         } else {
             throw new PoolCreateFailedException("Invalid connection factory");
         }
