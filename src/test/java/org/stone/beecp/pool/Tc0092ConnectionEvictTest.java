@@ -19,7 +19,7 @@ public class Tc0092ConnectionEvictTest extends TestCase {
     public void testOnErrorCode() throws SQLException {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(2);
-        config.setRawConnectionFactory(new MockErrorCodeConnectionFactory(0b010000));
+        config.setConnectionFactory(new MockErrorCodeConnectionFactory(0b010000));
         config.addSqlExceptionCode(0b010000);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
@@ -37,7 +37,7 @@ public class Tc0092ConnectionEvictTest extends TestCase {
     public void testOnErrorState() throws SQLException {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(2);
-        config.setRawConnectionFactory(new MockErrorStateConnectionFactory("57P02"));
+        config.setConnectionFactory(new MockErrorStateConnectionFactory("57P02"));
         config.addSqlExceptionState("57P02");
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
@@ -55,7 +55,7 @@ public class Tc0092ConnectionEvictTest extends TestCase {
     public void testOnPredicate() throws SQLException {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(2);
-        config.setRawConnectionFactory(new MockEvictPredicateConnectionFactory(0b010000, "57P02"));
+        config.setConnectionFactory(new MockEvictPredicateConnectionFactory(0b010000, "57P02"));
         config.setEvictPredicate(new MockEvictConnectionPredicate(0b010000, "57P02"));
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);

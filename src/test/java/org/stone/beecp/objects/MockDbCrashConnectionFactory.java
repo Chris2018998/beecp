@@ -1,6 +1,6 @@
 package org.stone.beecp.objects;
 
-import org.stone.beecp.RawConnectionFactory;
+import org.stone.beecp.BeeConnectionFactory;
 import org.stone.beecp.driver.MockConnection;
 
 import java.sql.Connection;
@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @author Chris Liao
  */
-public class MockDbCrashConnectionFactory implements RawConnectionFactory {
+public class MockDbCrashConnectionFactory implements BeeConnectionFactory {
     private final List<MockConnection> connectionList = new LinkedList<>();
     private int errorCode;
     private String errorState;

@@ -9,7 +9,7 @@
  */
 package org.stone.beecp.objects;
 
-import org.stone.beecp.RawXaConnectionFactory;
+import org.stone.beecp.BeeXaConnectionFactory;
 
 import javax.sql.XAConnection;
 
@@ -18,7 +18,7 @@ import javax.sql.XAConnection;
  *
  * @author Chris Liao
  */
-public class MockCreateNullXaConnectionFactory extends DatabaseLinkInfo implements RawXaConnectionFactory {
+public class MockCreateNullXaConnectionFactory extends DatabaseLinkInfo implements BeeXaConnectionFactory {
 
     public XAConnection create() {
         return null;

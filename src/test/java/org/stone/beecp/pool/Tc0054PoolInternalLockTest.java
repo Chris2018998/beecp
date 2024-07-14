@@ -31,7 +31,7 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(2);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(2));
-        config.setRawConnectionFactory(new MockNetBlockConnectionFactory());
+        config.setConnectionFactory(new MockNetBlockConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
@@ -53,7 +53,7 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(2);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(10));
-        config.setRawConnectionFactory(new MockNetBlockConnectionFactory());
+        config.setConnectionFactory(new MockNetBlockConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
@@ -77,7 +77,7 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         config.setBorrowSemaphoreSize(2);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(2));
         config.setTimerCheckInterval(TimeUnit.SECONDS.toMillis(3));//internal thread to interrupt waiters
-        config.setRawConnectionFactory(new MockNetBlockConnectionFactory());
+        config.setConnectionFactory(new MockNetBlockConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 

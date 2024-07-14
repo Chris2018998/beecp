@@ -13,7 +13,7 @@ import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
-import org.stone.beecp.TransactionIsolation;
+import org.stone.beecp.BeeTransactionIsolationLevels;
 
 import static org.stone.beecp.config.DsConfigFactory.createEmpty;
 
@@ -28,8 +28,8 @@ public class Tc0009TransactionIsolationTest extends TestCase {
         config.setDefaultTransactionIsolationCode(123);
         Assert.assertEquals(config.getDefaultTransactionIsolationCode(), Integer.valueOf(123));
 
-        config.setDefaultTransactionIsolationName(TransactionIsolation.LEVEL_READ_COMMITTED);
-        Assert.assertEquals(config.getDefaultTransactionIsolationName(), TransactionIsolation.LEVEL_READ_COMMITTED);
+        config.setDefaultTransactionIsolationName(BeeTransactionIsolationLevels.LEVEL_READ_COMMITTED);
+        Assert.assertEquals(config.getDefaultTransactionIsolationName(), BeeTransactionIsolationLevels.LEVEL_READ_COMMITTED);
     }
 
     public void testOnInvalidIsolationName() {

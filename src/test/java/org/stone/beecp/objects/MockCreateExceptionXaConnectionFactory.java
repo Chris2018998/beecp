@@ -9,7 +9,7 @@
  */
 package org.stone.beecp.objects;
 
-import org.stone.beecp.RawXaConnectionFactory;
+import org.stone.beecp.BeeXaConnectionFactory;
 
 import javax.sql.XAConnection;
 import java.sql.SQLException;
@@ -19,7 +19,7 @@ import java.sql.SQLException;
  *
  * @author Chris Liao
  */
-public class MockCreateExceptionXaConnectionFactory extends MockCreateExceptionFactory implements RawXaConnectionFactory {
+public class MockCreateExceptionXaConnectionFactory extends MockCreateExceptionFactory implements BeeXaConnectionFactory {
 
     public MockCreateExceptionXaConnectionFactory() {
     }

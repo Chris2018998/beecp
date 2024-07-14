@@ -9,7 +9,7 @@
  */
 package org.stone.beecp.objects;
 
-import org.stone.beecp.RawConnectionFactory;
+import org.stone.beecp.BeeConnectionFactory;
 import org.stone.beecp.driver.MockDriver;
 
 import java.sql.Connection;
@@ -20,7 +20,7 @@ import java.sql.SQLException;
  *
  * @author Chris Liao
  */
-public class MockFailSizeReachConnectionFactory implements RawConnectionFactory {
+public class MockFailSizeReachConnectionFactory implements BeeConnectionFactory {
     private final int maxSize;
     private final boolean thrownExceptionInd;
     private final MockDriver driver = new MockDriver();

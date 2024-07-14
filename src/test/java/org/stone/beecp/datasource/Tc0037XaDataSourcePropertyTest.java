@@ -14,7 +14,7 @@ import org.junit.Assert;
 import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.RawXaConnectionFactory;
+import org.stone.beecp.BeeXaConnectionFactory;
 import org.stone.beecp.driver.MockXaDataSource;
 import org.stone.beecp.pool.FastConnectionPool;
 
@@ -46,7 +46,7 @@ public class Tc0037XaDataSourcePropertyTest extends TestCase {
 
     public void testDsProperty() throws Exception {
         FastConnectionPool pool = (FastConnectionPool) TestUtil.getFieldValue(ds, "pool");
-        RawXaConnectionFactory rawXaConnFactory = (RawXaConnectionFactory) TestUtil.getFieldValue(pool, "rawXaConnFactory");
+        BeeXaConnectionFactory rawXaConnFactory = (BeeXaConnectionFactory) TestUtil.getFieldValue(pool, "rawXaConnFactory");
         MockXaDataSource xaDs = (MockXaDataSource) TestUtil.getFieldValue(rawXaConnFactory, "dataSource");
 
         Assert.assertEquals(user, xaDs.getUser());

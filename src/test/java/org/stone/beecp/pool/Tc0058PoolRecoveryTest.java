@@ -23,7 +23,7 @@ public class Tc0058PoolRecoveryTest extends TestCase {
         config.setInitialSize(3);
         config.setMaxActive(3);
         config.setPrintRuntimeLog(true);
-        config.setRawConnectionFactory(factory);
+        config.setConnectionFactory(factory);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
         Assert.assertEquals(3, pool.getTotalSize());

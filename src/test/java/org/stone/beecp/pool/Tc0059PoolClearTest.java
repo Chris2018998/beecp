@@ -131,13 +131,13 @@ public class Tc0059PoolClearTest extends TestCase {
 
         BeeDataSourceConfig config3 = createDefault();
         config3.setInitialSize(1);
-        config3.setRawConnectionFactory(new MockCreateExceptionConnectionFactory());
+        config3.setConnectionFactory(new MockCreateExceptionConnectionFactory());
         try {
             pool.clear(false, config3);
             fail("failed test clear");
         } catch (SQLException e) {
             Assert.assertEquals("Network communications error", e.getMessage());
-            config3.setRawConnectionFactory(null);
+            config3.setConnectionFactory(null);
 
             pool.clear(false, config3);
             Assert.assertEquals(1, pool.getTotalSize());

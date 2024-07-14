@@ -9,7 +9,7 @@
  */
 package org.stone.beecp.objects;
 
-import org.stone.beecp.RawConnectionFactory;
+import org.stone.beecp.BeeConnectionFactory;
 
 import java.sql.Connection;
 
@@ -18,7 +18,7 @@ import java.sql.Connection;
  *
  * @author Chris Liao
  */
-public class MockCreateNullConnectionFactory extends DatabaseLinkInfo implements RawConnectionFactory {
+public class MockCreateNullConnectionFactory extends DatabaseLinkInfo implements BeeConnectionFactory {
 
     public Connection create() {
         return null;

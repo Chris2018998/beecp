@@ -27,7 +27,7 @@ public class Tc0056NetStuckMockTest extends TestCase {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(2);
-        config.setRawConnectionFactory(new MockNetBlockConnectionFactory());
+        config.setConnectionFactory(new MockNetBlockConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
         new InterruptionAction(Thread.currentThread()).start();//mock main thread
@@ -44,7 +44,7 @@ public class Tc0056NetStuckMockTest extends TestCase {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(2);
-        config.setRawXaConnectionFactory(new MockNetBlockXaConnectionFactory());
+        config.setXaConnectionFactory(new MockNetBlockXaConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
         new InterruptionAction(Thread.currentThread()).start();

@@ -58,7 +58,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
             BeeDataSourceConfig config = createDefault();
             config.setInitialSize(2);
             config.setAsyncCreateInitConnection(false);
-            config.setRawConnectionFactory(new MockCreateNullConnectionFactory());
+            config.setConnectionFactory(new MockCreateNullConnectionFactory());
             pool = new FastConnectionPool();
             pool.init(config);
         } catch (ConnectionCreateException e) {
@@ -70,7 +70,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
         try {
             BeeDataSourceConfig config2 = createDefault();
             config2.setInitialSize(2);
-            config2.setRawXaConnectionFactory(new MockCreateNullXaConnectionFactory());
+            config2.setXaConnectionFactory(new MockCreateNullXaConnectionFactory());
             pool2 = new FastConnectionPool();
             pool2.init(config2);
         } catch (ConnectionCreateException e) {
@@ -92,7 +92,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
         try {
             BeeDataSourceConfig config = createDefault();
             config.setInitialSize(2);
-            config.setRawConnectionFactory(new MockFailSizeReachConnectionFactory(1, true));
+            config.setConnectionFactory(new MockFailSizeReachConnectionFactory(1, true));
             pool = new FastConnectionPool();
             pool.init(config);
         } catch (SQLException e) {
@@ -104,7 +104,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
         StoneLogAppender logAppender = getStoneLogAppender();
         BeeDataSourceConfig config3 = createDefault();
         config3.setInitialSize(2);
-        config3.setRawConnectionFactory(new MockFailSizeReachConnectionFactory(1, true));
+        config3.setConnectionFactory(new MockFailSizeReachConnectionFactory(1, true));
         config3.setAsyncCreateInitConnection(true);
         FastConnectionPool pool2 = new FastConnectionPool();
 

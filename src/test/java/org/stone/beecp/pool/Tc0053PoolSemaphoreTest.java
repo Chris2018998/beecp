@@ -30,7 +30,7 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(2);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(2));
-        config.setRawConnectionFactory(new MockNetBlockConnectionFactory());
+        config.setConnectionFactory(new MockNetBlockConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
         BorrowThread first = new BorrowThread(pool);//mock stuck in driver.getConnection()
@@ -52,7 +52,7 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(1);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(10));
-        config.setRawConnectionFactory(new MockNetBlockConnectionFactory());
+        config.setConnectionFactory(new MockNetBlockConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
