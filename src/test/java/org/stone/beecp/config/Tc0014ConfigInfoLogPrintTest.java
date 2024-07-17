@@ -87,6 +87,7 @@ public class Tc0014ConfigInfoLogPrintTest extends TestCase {
         //situation6: test on exclusion connectProperties
         config.addConfigPrintExclusion("dbGroup");
         config.addConfigPrintExclusion("dbName");
+        config.addConfigPrintExclusion("connectProperties");
         logAppender.beginCollectStoneLog();
         config.check();
         logs = logAppender.endCollectedStoneLog();
