@@ -337,7 +337,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
     }
 
-    //Method-1.6: Gets owner hold time point(milliseconds) on pool lock.
+    //Method-1.6: Gets owner hold time point(nanoseconds) on pool lock.
     public long getCreatingTime() {
         return this.pooledArrayLockedTimePoint;
     }

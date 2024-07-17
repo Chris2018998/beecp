@@ -80,7 +80,7 @@ public interface BeeConnectionPool {
     BeeConnectionPoolMonitorVo getPoolMonitorVo();
 
     /**
-     * Get start time in creating a connection in pool,timeunit:milliseconds
+     * Get start time in creating a connection in pool,timeunit:nanoseconds
      *
      * @return start time of creation
      */
