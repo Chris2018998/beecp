@@ -29,6 +29,12 @@ public class MockConnection extends MockBase implements Connection {
     private String schema;
     private int networkTimeout;
 
+    private boolean exceptionOnAutoCommit;
+    private boolean exceptionOnTransactionIsolation;
+    private boolean exceptionOnReadOnly;
+    private boolean exceptionOnCatalog;
+    private boolean exceptionOnSchema;
+
     public MockConnection() {
     }
 
@@ -45,13 +51,53 @@ public class MockConnection extends MockBase implements Connection {
         this.errorState = errorState;
     }
 
+    public void enableExceptionOnDefault() {
+        this.exceptionOnAutoCommit = true;
+        this.exceptionOnTransactionIsolation = true;
+        this.exceptionOnReadOnly = true;
+        this.exceptionOnCatalog = true;
+        this.exceptionOnSchema = true;
+    }
+
     public String getSchema() throws SQLException {
+        if (exceptionOnSchema) throw new SQLException();
         if (errorCode != 0 || errorState != null) throw new SQLException(null, errorState, errorCode);
         return schema;
     }
 
-    public void setSchema(String schema) {
+    public void setSchema(String schema) throws SQLException {
+        if (exceptionOnSchema) throw new SQLException();
         this.schema = schema;
+    }
+
+    public boolean isReadOnly() throws SQLException {
+        if (exceptionOnReadOnly) throw new SQLException();
+        return readOnly;
+    }
+
+    public void setReadOnly(boolean readOnly) throws SQLException {
+        if (exceptionOnReadOnly) throw new SQLException();
+        this.readOnly = readOnly;
+    }
+
+    public String getCatalog() throws SQLException {
+        if (exceptionOnCatalog) throw new SQLException();
+        return catalog;
+    }
+
+    public void setCatalog(String catalog) throws SQLException {
+        if (exceptionOnCatalog) throw new SQLException();
+        this.catalog = catalog;
+    }
+
+    public int getTransactionIsolation() throws SQLException {
+        if (exceptionOnTransactionIsolation) throw new SQLException();
+        return transactionIsolation;
+    }
+
+    public void setTransactionIsolation(int level) throws SQLException {
+        if (exceptionOnTransactionIsolation) throw new SQLException();
+        transactionIsolation = level;
     }
 
     //************************************* added for test**************************************************//
@@ -88,11 +134,13 @@ public class MockConnection extends MockBase implements Connection {
         return null;
     }
 
-    public boolean getAutoCommit() {
+    public boolean getAutoCommit() throws SQLException {
+        if (exceptionOnAutoCommit) throw new SQLException();
         return autoCommit;
     }
 
-    public void setAutoCommit(boolean autoCommit) {
+    public void setAutoCommit(boolean autoCommit) throws SQLException {
+        if (exceptionOnAutoCommit) throw new SQLException();
         this.autoCommit = autoCommit;
     }
 
@@ -108,29 +156,6 @@ public class MockConnection extends MockBase implements Connection {
         return new MockDatabaseMetaData(this);
     }
 
-    public boolean isReadOnly() {
-        return readOnly;
-    }
-
-    public void setReadOnly(boolean readOnly) {
-        this.readOnly = readOnly;
-    }
-
-    public String getCatalog() {
-        return catalog;
-    }
-
-    public void setCatalog(String catalog) {
-        this.catalog = catalog;
-    }
-
-    public int getTransactionIsolation() {
-        return transactionIsolation;
-    }
-
-    public void setTransactionIsolation(int level) {
-        transactionIsolation = level;
-    }
 
     public SQLWarning getWarnings() {
         return null;
