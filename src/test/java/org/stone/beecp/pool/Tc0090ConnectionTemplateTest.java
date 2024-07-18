@@ -75,8 +75,7 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         con.close();
         pool.close();
     }
-
-
+    
     public void testLExceptionOnDefault() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(1);
@@ -124,11 +123,6 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         config.setEnableDefaultOnReadOnly(true);
         config.setEnableDefaultOnAutoCommit(true);
         config.setEnableDefaultOnTransactionIsolation(true);
-        config.setDefaultReadOnly(true);
-        config.setDefaultAutoCommit(true);
-        config.setDefaultTransactionIsolationCode(1);
-        config.setDefaultSchema("schema");
-        config.setDefaultCatalog("catalog");
         config.setConnectionFactoryClass(MockDefaultExceptionConnectionFactory.class);
 
         StoneLogAppender logAppender = getStoneLogAppender();
@@ -142,12 +136,30 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
 
         Assert.assertTrue(logs.contains("failed to get read-only on first connection"));
         Assert.assertTrue(logs.contains("as read-only default value"));
-        Assert.assertTrue(logs.contains("failed to set tread-only default"));
+        Assert.assertTrue(logs.contains("failed to set read-only default"));
 
         Assert.assertTrue(logs.contains("failed to get catalog on first connection"));
-        Assert.assertTrue(logs.contains("failed to set catalog default"));
-
         Assert.assertTrue(logs.contains("failed to get schema on first connection"));
-        Assert.assertTrue(logs.contains("failed to set schema default"));
+
+
+        BeeDataSourceConfig config2 = createDefault();
+        config2.setInitialSize(1);
+        config2.setMaxActive(2);
+        config2.setPrintRuntimeLog(true);
+        config2.setEnableDefaultOnCatalog(true);
+        config2.setEnableDefaultOnSchema(true);
+        config2.setEnableDefaultOnReadOnly(true);
+        config2.setEnableDefaultOnAutoCommit(true);
+        config2.setEnableDefaultOnTransactionIsolation(true);
+        config2.setConnectionFactoryClass(MockDefaultExceptionConnectionFactory.class);
+        config2.setDefaultSchema("schema");
+        config2.setDefaultCatalog("catalog");
+        StoneLogAppender logAppender2 = getStoneLogAppender();
+        logAppender2.beginCollectStoneLog();
+        FastConnectionPool pool2 = new FastConnectionPool();
+        pool2.init(config2);
+        String logs2 = logAppender.endCollectedStoneLog();
+        Assert.assertTrue(logs2.contains("failed to set catalog default"));
+        Assert.assertTrue(logs2.contains("failed to set schema default"));
     }
 }
