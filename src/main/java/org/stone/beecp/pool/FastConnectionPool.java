@@ -493,13 +493,13 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             } else {
                 supportIsValid = false;
                 if (this.printRuntimeLog) {
-                    Log.warn("BeeCP({})'isAlive' method of connection not supported by driver", this.poolName);
+                    Log.warn("BeeCP({})'isValid' method of connection not supported by driver", this.poolName);
                 }
             }
         } catch (Throwable e) {
             supportIsValid = false;
             if (this.printRuntimeLog)
-                Log.warn("BeeCP({}) 'isAlive' method check failed for driver", this.poolName, e);
+                Log.warn("BeeCP({}) 'isValid' method check failed for driver", this.poolName, e);
         }
 
         //step7:test driver whether support sql query timeout
