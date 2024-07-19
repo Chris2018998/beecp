@@ -27,13 +27,15 @@ public class MockConnection extends MockBase implements Connection {
     private boolean autoCommit;
     private int holdability;
     private String schema;
-    private int networkTimeout;
 
     private boolean exceptionOnAutoCommit;
     private boolean exceptionOnTransactionIsolation;
     private boolean exceptionOnReadOnly;
     private boolean exceptionOnCatalog;
     private boolean exceptionOnSchema;
+
+    private int networkTimeout;
+    private boolean exceptionOnNetworkTimeout;
 
     public MockConnection() {
     }
@@ -57,6 +59,10 @@ public class MockConnection extends MockBase implements Connection {
         this.exceptionOnReadOnly = true;
         this.exceptionOnCatalog = true;
         this.exceptionOnSchema = true;
+    }
+
+    public void setExceptionOnNetworkTimeout(boolean exceptionOnNetworkTimeout) {
+        this.exceptionOnNetworkTimeout = exceptionOnNetworkTimeout;
     }
 
     public String getSchema() throws SQLException {
@@ -278,11 +284,17 @@ public class MockConnection extends MockBase implements Connection {
         //do nothing
     }
 
-    public void setNetworkTimeout(Executor executor, int milliseconds) {
+    public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+        if (exceptionOnNetworkTimeout) throw new SQLException();
         this.networkTimeout = milliseconds;
     }
 
-    public int getNetworkTimeout() {
+    public int getNetworkTimeout() throws SQLException {
+        if (exceptionOnNetworkTimeout) throw new SQLException();
         return this.networkTimeout;
+    }
+
+    public void setNetworkTimeout(int networkTimeout) {
+        this.networkTimeout = networkTimeout;
     }
 }
