@@ -18,185 +18,166 @@ import java.util.concurrent.Executor;
  * @version 1.0
  */
 public class MockConnection extends MockBase implements Connection {
-    public int errorCode;
-    public String errorState;
-    private boolean isValid = true;
-    private boolean readOnly;
-    private String catalog;
-    private int transactionIsolation;
-    private boolean autoCommit;
-    private int holdability;
-    private String schema;
-
-    private boolean exceptionOnAutoCommit;
-    private boolean exceptionOnTransactionIsolation;
-    private boolean exceptionOnReadOnly;
-    private boolean exceptionOnCatalog;
-    private boolean exceptionOnSchema;
-
-    private int networkTimeout;
-    private boolean exceptionOnNetworkTimeout;
+    private final MockDatabaseMetaData metaData;
+    private final MockConnectionProperties properties;
 
     public MockConnection() {
+        this(new MockConnectionProperties());
     }
 
-    public MockConnection(int errorCode) {
-        this.errorCode = errorCode;
+    public MockConnection(MockConnectionProperties properties) {
+        this.properties = properties;
+        this.metaData = new MockDatabaseMetaData(this);
     }
 
-    public MockConnection(String errorState) {
-        this.errorState = errorState;
-    }
-
-    public MockConnection(int errorCode, String errorState) {
-        this.errorCode = errorCode;
-        this.errorState = errorState;
-    }
-
-    public void enableExceptionOnDefault() {
-        this.exceptionOnAutoCommit = true;
-        this.exceptionOnTransactionIsolation = true;
-        this.exceptionOnReadOnly = true;
-        this.exceptionOnCatalog = true;
-        this.exceptionOnSchema = true;
-    }
-
-    public void setExceptionOnNetworkTimeout(boolean exceptionOnNetworkTimeout) {
-        this.exceptionOnNetworkTimeout = exceptionOnNetworkTimeout;
-    }
-
-    public String getSchema() throws SQLException {
-        if (exceptionOnSchema) throw new SQLException();
-        if (errorCode != 0 || errorState != null) throw new SQLException(null, errorState, errorCode);
-        return schema;
-    }
-
-    public void setSchema(String schema) throws SQLException {
-        if (exceptionOnSchema) throw new SQLException();
-        this.schema = schema;
-    }
-
-    public boolean isReadOnly() throws SQLException {
-        if (exceptionOnReadOnly) throw new SQLException();
-        return readOnly;
-    }
-
-    public void setReadOnly(boolean readOnly) throws SQLException {
-        if (exceptionOnReadOnly) throw new SQLException();
-        this.readOnly = readOnly;
-    }
-
-    public String getCatalog() throws SQLException {
-        if (exceptionOnCatalog) throw new SQLException();
-        return catalog;
-    }
-
-    public void setCatalog(String catalog) throws SQLException {
-        if (exceptionOnCatalog) throw new SQLException();
-        this.catalog = catalog;
-    }
-
-    public int getTransactionIsolation() throws SQLException {
-        if (exceptionOnTransactionIsolation) throw new SQLException();
-        return transactionIsolation;
-    }
-
-    public void setTransactionIsolation(int level) throws SQLException {
-        if (exceptionOnTransactionIsolation) throw new SQLException();
-        transactionIsolation = level;
-    }
-
-    //************************************* added for test**************************************************//
-    public void setValid(boolean valid) {
-        isValid = valid;
-    }
-
-    public void setErrorCode(int errorCode) {
-        this.errorCode = errorCode;
-    }
-
-    public void setErrorState(String errorState) {
-        this.errorState = errorState;
-    }
-
-    public boolean isValid(int timeout) throws SQLException {
-        if (errorCode != 0 || errorState != null) throw new SQLException(null, errorState, errorCode);
-        return isValid;
-    }
-
-    public Statement createStatement() {
-        return new MockStatement(this);
-    }
-
-    public PreparedStatement prepareStatement(String sql) {
-        return new MockPreparedStatement(this);
-    }
-
-    public CallableStatement prepareCall(String sql) {
-        return new MockCallableStatement(this);
-    }
-
-    public String nativeSQL(String sql) {
-        return null;
-    }
-
+    //***************************************************************************************************************//
+    //                                          Properties                                                           //                                                                                  //
+    //***************************************************************************************************************//
     public boolean getAutoCommit() throws SQLException {
-        if (exceptionOnAutoCommit) throw new SQLException();
-        return autoCommit;
+        properties.mockThrowExceptionOnMethod("getAutoCommit");
+        return properties.isAutoCommit();
     }
 
     public void setAutoCommit(boolean autoCommit) throws SQLException {
-        if (exceptionOnAutoCommit) throw new SQLException();
-        this.autoCommit = autoCommit;
+        properties.mockThrowExceptionOnMethod("setAutoCommit");
+        properties.setAutoCommit(autoCommit);
     }
 
+    public int getTransactionIsolation() throws SQLException {
+        properties.mockThrowExceptionOnMethod("getTransactionIsolation");
+        return properties.getTransactionIsolation();
+    }
+
+    public void setTransactionIsolation(int level) throws SQLException {
+        properties.mockThrowExceptionOnMethod("setTransactionIsolation");
+        properties.setTransactionIsolation(level);
+    }
+
+    public boolean isReadOnly() throws SQLException {
+        properties.mockThrowExceptionOnMethod("isReadOnly");
+        return properties.isReadOnly();
+    }
+
+    public void setReadOnly(boolean readOnly) throws SQLException {
+        properties.mockThrowExceptionOnMethod("setReadOnly");
+        properties.setReadOnly(readOnly);
+    }
+
+    public String getCatalog() throws SQLException {
+        properties.mockThrowExceptionOnMethod("getCatalog");
+        return properties.getCatalog();
+    }
+
+    public void setCatalog(String catalog) throws SQLException {
+        properties.mockThrowExceptionOnMethod("setCatalog");
+        this.properties.setCatalog(catalog);
+    }
+
+    public String getSchema() throws SQLException {
+        properties.mockThrowExceptionOnMethod("getSchema");
+        return properties.getSchema();
+    }
+
+    public void setSchema(String schema) throws SQLException {
+        properties.mockThrowExceptionOnMethod("setSchema");
+        properties.setSchema(schema);
+    }
+
+    public int getNetworkTimeout() throws SQLException {
+        properties.mockThrowExceptionOnMethod("getNetworkTimeout");
+        return this.properties.getNetworkTimeout();
+    }
+
+    public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+        properties.mockThrowExceptionOnMethod("setNetworkTimeout");
+        properties.setNetworkTimeout(milliseconds);
+    }
+
+    public boolean isValid(int timeout) throws SQLException {
+        properties.mockThrowExceptionOnMethod("isValid");
+        return properties.isValid();
+    }
+
+    public int getHoldability() {
+        return properties.getHoldability();
+    }
+
+    public void setHoldability(int holdability) {
+        this.properties.setHoldability(holdability);
+    }
+
+    //***************************************************************************************************************//
+    //                                          Statement                                                            //                                                                                  //
+    //***************************************************************************************************************//
+    public Statement createStatement() throws SQLException {
+        properties.mockThrowExceptionOnMethod("createStatement");
+        return new MockStatement(this);
+    }
+
+    public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
+        properties.mockThrowExceptionOnMethod("createStatement");
+        return new MockStatement(this);
+    }
+
+    public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+        properties.mockThrowExceptionOnMethod("createStatement");
+        return new MockStatement(this);
+    }
+
+    public PreparedStatement prepareStatement(String sql) throws SQLException {
+        properties.mockThrowExceptionOnMethod("prepareStatement");
+        return new MockPreparedStatement(this);
+    }
+
+    public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
+        properties.mockThrowExceptionOnMethod("prepareStatement");
+        return new MockPreparedStatement(this);
+    }
+
+    public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
+        properties.mockThrowExceptionOnMethod("prepareStatement");
+        return new MockPreparedStatement(this);
+    }
+
+    public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
+        properties.mockThrowExceptionOnMethod("prepareStatement");
+        return new MockPreparedStatement(this);
+    }
+
+    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
+        properties.mockThrowExceptionOnMethod("prepareStatement");
+        return new MockPreparedStatement(this);
+    }
+
+    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+        properties.mockThrowExceptionOnMethod("prepareStatement");
+        return new MockPreparedStatement(this);
+    }
+
+    public CallableStatement prepareCall(String sql) throws SQLException {
+        properties.mockThrowExceptionOnMethod("prepareCall");
+        return new MockCallableStatement(this);
+    }
+
+    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
+        properties.mockThrowExceptionOnMethod("prepareCall");
+        return new MockCallableStatement(this);
+    }
+
+    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+        properties.mockThrowExceptionOnMethod("prepareCall");
+        return new MockCallableStatement(this);
+    }
+
+    //***************************************************************************************************************//
+    //                                          Transaction                                                          //                                                                                  //
+    //***************************************************************************************************************//
     public void commit() {
         //do nothing
     }
 
     public void rollback() {
         //do nothing
-    }
-
-    public DatabaseMetaData getMetaData() {
-        return new MockDatabaseMetaData(this);
-    }
-
-
-    public SQLWarning getWarnings() {
-        return null;
-    }
-
-    public void clearWarnings() {
-        //do nothing
-    }
-
-    public Statement createStatement(int resultSetType, int resultSetConcurrency) {
-        return new MockStatement(this);
-    }
-
-    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) {
-        return new MockPreparedStatement(this);
-    }
-
-    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) {
-        return new MockCallableStatement(this);
-    }
-
-    public java.util.Map<String, Class<?>> getTypeMap() {
-        return null;
-    }
-
-    public void setTypeMap(java.util.Map<String, Class<?>> map) {
-        //do nothing
-    }
-
-    public int getHoldability() {
-        return holdability;
-    }
-
-    public void setHoldability(int holdability) {
-        this.holdability = holdability;
     }
 
     public Savepoint setSavepoint() {
@@ -215,30 +196,47 @@ public class MockConnection extends MockBase implements Connection {
         //do nothing
     }
 
-    public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) {
-        return new MockStatement(this);
+    //***************************************************************************************************************//
+    //                                          Close                                                                //                                                                                  //
+    //***************************************************************************************************************//
+    public void abort(Executor executor) {
+        //do nothing
     }
 
-    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) {
-        return new MockPreparedStatement(this);
+
+    //***************************************************************************************************************//
+    //                                          Warning                                                              //                                                                                  //
+    //***************************************************************************************************************//
+    public SQLWarning getWarnings() {
+        return null;
     }
 
-    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) {
-        return new MockCallableStatement(this);
+    public void clearWarnings() {
+        //do nothing
     }
 
-    public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) {
-        return new MockPreparedStatement(this);
+    //***************************************************************************************************************//
+    //                                          ClientInfo                                                           //                                                                                  //
+    //***************************************************************************************************************//
+    public Properties getClientInfo() {
+        return null;
     }
 
-    public PreparedStatement prepareStatement(String sql, int[] columnIndexes) {
-        return new MockPreparedStatement(this);
+    public void setClientInfo(Properties properties) {
+        //do nothing
     }
 
-    public PreparedStatement prepareStatement(String sql, String[] columnNames) {
-        return new MockPreparedStatement(this);
+    public String getClientInfo(String name) {
+        return null;
     }
 
+    public void setClientInfo(String name, String value) {
+        //do nothing
+    }
+
+    //***************************************************************************************************************//
+    //                                          create jdbc objects                                                  //                                                                                  //
+    //***************************************************************************************************************//
     public Clob createClob() {
         return null;
     }
@@ -255,23 +253,6 @@ public class MockConnection extends MockBase implements Connection {
         return null;
     }
 
-
-    public void setClientInfo(String name, String value) throws SQLClientInfoException {
-        //do nothing
-    }
-
-    public String getClientInfo(String name) {
-        return null;
-    }
-
-    public Properties getClientInfo() {
-        return null;
-    }
-
-    public void setClientInfo(Properties properties) throws SQLClientInfoException {
-        //do nothing
-    }
-
     public Array createArrayOf(String typeName, Object[] elements) {
         return null;
     }
@@ -280,21 +261,22 @@ public class MockConnection extends MockBase implements Connection {
         return null;
     }
 
-    public void abort(Executor executor) {
+    public java.util.Map<String, Class<?>> getTypeMap() {
+        return null;
+    }
+
+    public void setTypeMap(java.util.Map<String, Class<?>> map) {
         //do nothing
     }
 
-    public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-        if (exceptionOnNetworkTimeout) throw new SQLException();
-        this.networkTimeout = milliseconds;
+    //***************************************************************************************************************//
+    //                                          Others                                                               //                                                                                  //
+    //***************************************************************************************************************//
+    public DatabaseMetaData getMetaData() {
+        return metaData;
     }
 
-    public int getNetworkTimeout() throws SQLException {
-        if (exceptionOnNetworkTimeout) throw new SQLException();
-        return this.networkTimeout;
-    }
-
-    public void setNetworkTimeout(int networkTimeout) {
-        this.networkTimeout = networkTimeout;
+    public String nativeSQL(String sql) {
+        return null;
     }
 }

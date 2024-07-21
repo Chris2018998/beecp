@@ -26,7 +26,7 @@ public final class MockXaConnection implements XAConnection {
     private final Connection con;
     private final MockXaResource res;
 
-    MockXaConnection(Connection con, MockXaResource res) {
+    public MockXaConnection(Connection con, MockXaResource res) {
         this.con = con;
         this.res = res;
     }
