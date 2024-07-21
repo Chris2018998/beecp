@@ -14,7 +14,7 @@ import org.junit.Assert;
 import org.stone.base.StoneLogAppender;
 import org.stone.base.TestUtil;
 import org.stone.beecp.*;
-import org.stone.beecp.objects.MockCreateNullConnectionFactory;
+import org.stone.beecp.objects.MockCommonConnectionFactory;
 import org.stone.beecp.pool.ConnectionPoolStatics;
 import org.stone.beecp.pool.exception.PoolCreateFailedException;
 import org.stone.beecp.pool.exception.PoolInitializeFailedException;
@@ -172,7 +172,9 @@ public class Tc0031DataSourcePoolTest extends TestCase {
         }
 
         BeeDataSourceConfig config = createDefault();
-        config.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
+        MockCommonConnectionFactory factory = new MockCommonConnectionFactory();
+        factory.setReturnNullOnCreate(true);
+        config.setConnectionFactory(factory);
         new BeeDataSource(config);
     }
 

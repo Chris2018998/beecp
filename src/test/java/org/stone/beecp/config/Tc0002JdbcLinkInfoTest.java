@@ -31,18 +31,18 @@ public class Tc0002JdbcLinkInfoTest extends TestCase {
 
     public void testOnSetAndGet() {
         //situation1: check null setting
-        BeeDataSourceConfig config = createEmpty();
-        config.setUsername(null);
-        config.setPassword(null);
-        config.setUrl(null);
-        config.setDriverClassName(null);
-        Assert.assertNull(config.getUsername());
-        Assert.assertNull(config.getPassword());
-        Assert.assertNull(config.getUrl());
-        Assert.assertNull(config.getDriverClassName());
-        config.setJdbcUrl(null);
-        Assert.assertNull(config.getUrl());
-        Assert.assertNull(config.getJdbcUrl());
+        BeeDataSourceConfig config1 = createEmpty();
+        config1.setUsername(null);
+        config1.setPassword(null);
+        config1.setUrl(null);
+        config1.setDriverClassName(null);
+        Assert.assertNull(config1.getUsername());
+        Assert.assertNull(config1.getPassword());
+        Assert.assertNull(config1.getUrl());
+        Assert.assertNull(config1.getDriverClassName());
+        config1.setJdbcUrl(null);
+        Assert.assertNull(config1.getUrl());
+        Assert.assertNull(config1.getJdbcUrl());
 
         //situation1: check non-null setting
         BeeDataSourceConfig config2 = createEmpty();

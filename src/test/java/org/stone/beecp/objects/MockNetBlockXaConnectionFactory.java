@@ -9,6 +9,8 @@
  */
 package org.stone.beecp.objects;
 
+import org.stone.beecp.BeeXaConnectionFactory;
+
 import javax.sql.XAConnection;
 import java.util.concurrent.locks.LockSupport;
 
@@ -17,7 +19,7 @@ import java.util.concurrent.locks.LockSupport;
  *
  * @author Chris Liao
  */
-public class MockNetBlockXaConnectionFactory extends MockCreateNullXaConnectionFactory {
+public class MockNetBlockXaConnectionFactory implements BeeXaConnectionFactory {
 
     public XAConnection create() {
         LockSupport.park();

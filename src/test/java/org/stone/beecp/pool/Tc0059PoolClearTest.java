@@ -1,3 +1,12 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * Copyright(C) Chris2018998,All rights reserved.
+ *
+ * Project owner contact:Chris2018998@tom.com.
+ *
+ * Project Licensed under Apache License v2.0
+ */
 package org.stone.beecp.pool;
 
 import junit.framework.TestCase;
@@ -5,7 +14,7 @@ import org.junit.Assert;
 import org.stone.base.StoneLogAppender;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
-import org.stone.beecp.objects.MockCreateExceptionConnectionFactory;
+import org.stone.beecp.objects.MockCommonConnectionFactory;
 import org.stone.beecp.pool.exception.PoolInitializeFailedException;
 
 import java.sql.Connection;
@@ -131,7 +140,9 @@ public class Tc0059PoolClearTest extends TestCase {
 
         BeeDataSourceConfig config3 = createDefault();
         config3.setInitialSize(1);
-        config3.setConnectionFactory(new MockCreateExceptionConnectionFactory());
+        MockCommonConnectionFactory connectionFactory = new MockCommonConnectionFactory();
+        connectionFactory.setCreateException1(new SQLException("Network communications error"));
+        config3.setConnectionFactory(connectionFactory);
         try {
             pool.clear(false, config3);
             fail("failed test clear");

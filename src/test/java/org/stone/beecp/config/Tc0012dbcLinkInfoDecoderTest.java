@@ -15,7 +15,7 @@ import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 import org.stone.beecp.BeeJdbcLinkInfoDecoder;
-import org.stone.beecp.objects.MockCreateNullConnectionFactory;
+import org.stone.beecp.objects.MockCommonConnectionFactory;
 import org.stone.beecp.objects.SampleMockJdbcLinkInfoDecoder;
 
 import java.util.Properties;
@@ -50,10 +50,10 @@ public class Tc0012dbcLinkInfoDecoderTest extends TestCase {
     public void testOnCreation() throws Exception {
         BeeDataSourceConfig config1 = new BeeDataSourceConfig(driver, url, username, password);
         config1.setJdbcLinkInfoDecoder(new SampleMockJdbcLinkInfoDecoder());
-        config1.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
+        config1.setConnectionFactoryClass(MockCommonConnectionFactory.class);
         BeeDataSourceConfig checkConfig = config1.check();
 
-        MockCreateNullConnectionFactory factory = (MockCreateNullConnectionFactory) checkConfig.getConnectionFactory();
+        MockCommonConnectionFactory factory = (MockCommonConnectionFactory) checkConfig.getConnectionFactory();
         String url = factory.getUrl();
         String user = factory.getUser();
         String password = factory.getPassword();
@@ -62,9 +62,9 @@ public class Tc0012dbcLinkInfoDecoderTest extends TestCase {
         Assert.assertTrue(password.endsWith("-Decoded"));
 
         BeeDataSourceConfig config2 = new BeeDataSourceConfig(driver, url, username, password);
-        config2.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
+        config2.setConnectionFactoryClass(MockCommonConnectionFactory.class);
         checkConfig = config2.check();
-        factory = (MockCreateNullConnectionFactory) checkConfig.getConnectionFactory();
+        factory = (MockCommonConnectionFactory) checkConfig.getConnectionFactory();
 
         String decodedUrl = factory.getUrl();
         String decodedUser = factory.getUser();
@@ -74,10 +74,10 @@ public class Tc0012dbcLinkInfoDecoderTest extends TestCase {
         Assert.assertEquals(password, decodedPassword);
 
         BeeDataSourceConfig config3 = new BeeDataSourceConfig(driver, url, username, password);
-        config3.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
+        config3.setConnectionFactoryClass(MockCommonConnectionFactory.class);
         config3.setJdbcLinkInfoDecoderClassName("org.stone.beecp.objects.SampleMockJdbcLinkInfoDecoder");
         checkConfig = config3.check();
-        factory = (MockCreateNullConnectionFactory) checkConfig.getConnectionFactory();
+        factory = (MockCommonConnectionFactory) checkConfig.getConnectionFactory();
         url = factory.getUrl();
         user = factory.getUser();
         password = factory.getPassword();
@@ -86,10 +86,10 @@ public class Tc0012dbcLinkInfoDecoderTest extends TestCase {
         Assert.assertTrue(password.endsWith("-Decoded"));
 
         BeeDataSourceConfig config4 = new BeeDataSourceConfig(driver, url, username, password);
-        config4.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
+        config4.setConnectionFactoryClass(MockCommonConnectionFactory.class);
         config4.setJdbcLinkInfoDecoderClassName("org.stone.beecp.BeeJdbcLinkInfoDecoder");
         checkConfig = config4.check();
-        factory = (MockCreateNullConnectionFactory) checkConfig.getConnectionFactory();
+        factory = (MockCommonConnectionFactory) checkConfig.getConnectionFactory();
         String factoryUrl = factory.getUrl();
         String factoryUser = factory.getUser();
         String factoryPassword = factory.getPassword();
@@ -162,19 +162,19 @@ public class Tc0012dbcLinkInfoDecoderTest extends TestCase {
     public void testJdbcDecoderOnFactory() throws Exception {
         clearBeeCPInfoFromSystemProperties();
         BeeDataSourceConfig config1 = new BeeDataSourceConfig();
-        config1.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
+        config1.setConnectionFactoryClass(MockCommonConnectionFactory.class);
         config1.setJdbcLinkInfoDecoderClass(SampleMockJdbcLinkInfoDecoder.class);
         BeeDataSourceConfig checkedConfig1 = config1.check();
-        MockCreateNullConnectionFactory factory1 = (MockCreateNullConnectionFactory) checkedConfig1.getConnectionFactory();
+        MockCommonConnectionFactory factory1 = (MockCommonConnectionFactory) checkedConfig1.getConnectionFactory();
         Assert.assertNull(factory1.getUser());
         Assert.assertNull(factory1.getPassword());
 
         BeeDataSourceConfig config2 = new BeeDataSourceConfig();
         config2.setUsername(username);
-        config2.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
+        config2.setConnectionFactoryClass(MockCommonConnectionFactory.class);
         config2.setJdbcLinkInfoDecoderClass(SampleMockJdbcLinkInfoDecoder.class);
         BeeDataSourceConfig checkedConfig2 = config2.check();
-        MockCreateNullConnectionFactory factory2 = (MockCreateNullConnectionFactory) checkedConfig2.getConnectionFactory();
+        MockCommonConnectionFactory factory2 = (MockCommonConnectionFactory) checkedConfig2.getConnectionFactory();
         Assert.assertTrue(factory2.getUser().endsWith("-Decoded"));
         Assert.assertNull(factory2.getPassword());
 
@@ -182,10 +182,10 @@ public class Tc0012dbcLinkInfoDecoderTest extends TestCase {
         config3.setUrl(this.url);
         config3.setUsername(this.username);
         config3.setPassword(this.password);
-        config3.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
+        config3.setConnectionFactoryClass(MockCommonConnectionFactory.class);
         config3.setJdbcLinkInfoDecoderClass(SampleMockJdbcLinkInfoDecoder.class);
         BeeDataSourceConfig checkedConfig3 = config3.check();
-        MockCreateNullConnectionFactory factory3 = (MockCreateNullConnectionFactory) checkedConfig3.getConnectionFactory();
+        MockCommonConnectionFactory factory3 = (MockCommonConnectionFactory) checkedConfig3.getConnectionFactory();
         Assert.assertTrue(factory3.getUrl().endsWith("-Decoded"));
         Assert.assertTrue(factory3.getUser().endsWith("-Decoded"));
         Assert.assertTrue(factory3.getPassword().endsWith("-Decoded"));
@@ -194,10 +194,10 @@ public class Tc0012dbcLinkInfoDecoderTest extends TestCase {
         config4.addConnectProperty("url", url);
         config4.addConnectProperty("user", this.username);
         config4.addConnectProperty("password", this.password);
-        config4.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
+        config4.setConnectionFactoryClass(MockCommonConnectionFactory.class);
         config4.setJdbcLinkInfoDecoderClass(SampleMockJdbcLinkInfoDecoder.class);
         BeeDataSourceConfig checkedConfig4 = config4.check();
-        MockCreateNullConnectionFactory factory4 = (MockCreateNullConnectionFactory) checkedConfig4.getConnectionFactory();
+        MockCommonConnectionFactory factory4 = (MockCommonConnectionFactory) checkedConfig4.getConnectionFactory();
         Assert.assertTrue(factory4.getUrl().endsWith("-Decoded"));
         Assert.assertTrue(factory4.getUser().endsWith("-Decoded"));
         Assert.assertTrue(factory4.getPassword().endsWith("-Decoded"));
@@ -207,10 +207,10 @@ public class Tc0012dbcLinkInfoDecoderTest extends TestCase {
         System.setProperty("beecp.url", url);
         System.setProperty("beecp.user", this.username);
         System.setProperty("beecp.password", this.password);
-        config5.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
+        config5.setConnectionFactoryClass(MockCommonConnectionFactory.class);
         config5.setJdbcLinkInfoDecoderClass(SampleMockJdbcLinkInfoDecoder.class);
         BeeDataSourceConfig checkedConfig5 = config5.check();
-        MockCreateNullConnectionFactory factory5 = (MockCreateNullConnectionFactory) checkedConfig5.getConnectionFactory();
+        MockCommonConnectionFactory factory5 = (MockCommonConnectionFactory) checkedConfig5.getConnectionFactory();
         Assert.assertTrue(factory5.getUrl().endsWith("-Decoded"));
         Assert.assertTrue(factory5.getUser().endsWith("-Decoded"));
         Assert.assertTrue(factory5.getPassword().endsWith("-Decoded"));

@@ -9,6 +9,8 @@
  */
 package org.stone.beecp.objects;
 
+import org.stone.beecp.BeeConnectionFactory;
+
 import java.sql.Connection;
 import java.util.concurrent.locks.LockSupport;
 
@@ -17,7 +19,7 @@ import java.util.concurrent.locks.LockSupport;
  *
  * @author Chris Liao
  */
-public class MockNetBlockConnectionFactory extends MockCreateNullConnectionFactory {
+public class MockNetBlockConnectionFactory implements BeeConnectionFactory {
 
     public Connection create() {
         LockSupport.park();

@@ -62,6 +62,7 @@ public class Tc0104ConnectionTransactionTest extends TestCase {
 
     public void testAutoCommitChange() throws Exception {
         BeeDataSourceConfig config = createDefault();
+        config.setDefaultAutoCommit(false);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
@@ -78,6 +79,7 @@ public class Tc0104ConnectionTransactionTest extends TestCase {
                 con1.setAutoCommit(true);
                 fail("AutoCommit reset false before rollback or commit");
             } catch (SQLException e) {
+                Assert.assertEquals("Change forbidden when in transaction", e.getMessage());
             }
         } finally {
             oclose(re1);

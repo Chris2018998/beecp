@@ -15,11 +15,8 @@ import org.stone.base.StoneLogAppender;
 import org.stone.beecp.BeeConnectionFactory;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
-import org.stone.beecp.BeeXaConnectionFactory;
-import org.stone.beecp.driver.MockDataSource;
-import org.stone.beecp.driver.MockXaDataSource;
-import org.stone.beecp.objects.MockCreateNullConnectionFactory;
-import org.stone.beecp.objects.MockCreateNullXaConnectionFactory;
+import org.stone.beecp.objects.MockCommonConnectionFactory;
+import org.stone.beecp.objects.MockCommonXaConnectionFactory;
 
 import java.sql.SQLException;
 
@@ -32,95 +29,67 @@ import static org.stone.beecp.config.DsConfigFactory.createEmpty;
  */
 public class Tc0011ConnectionFactoryTest extends TestCase {
 
-    public void testOnSetGet() {
+    public void testSetGetOnConfiguration() {
         BeeDataSourceConfig config = createEmpty();
-
-        Class<? extends BeeXaConnectionFactory> factClass = MockCreateNullXaConnectionFactory.class;
+        Class<? extends BeeConnectionFactory> factClass = MockCommonConnectionFactory.class;
         config.setConnectionFactoryClass(factClass);
         Assert.assertEquals(config.getConnectionFactoryClass(), factClass);
 
-        String factClassName = "org.stone.beecp.factory.NullConnectionFactory";
+        String factClassName = MockCommonConnectionFactory.class.getName();
         config.setConnectionFactoryClassName(factClassName);
         Assert.assertEquals(config.getConnectionFactoryClassName(), factClassName);
 
-        BeeConnectionFactory factory1 = new MockCreateNullConnectionFactory();
-        config.setConnectionFactory(factory1);
-        Assert.assertEquals(config.getConnectionFactory(), factory1);
+        BeeConnectionFactory connectionFactory = new MockCommonConnectionFactory();
+        config.setConnectionFactory(connectionFactory);
+        Assert.assertEquals(config.getConnectionFactory(), connectionFactory);
 
-        BeeXaConnectionFactory factory2 = new MockCreateNullXaConnectionFactory();
-        config.setXaConnectionFactory(factory2);
-        Assert.assertEquals(config.getConnectionFactory(), factory2);
+        MockCommonXaConnectionFactory xaConnectionFactory = new MockCommonXaConnectionFactory();
+        config.setXaConnectionFactory(xaConnectionFactory);
+        Assert.assertEquals(config.getConnectionFactory(), xaConnectionFactory);
     }
 
-    public void testOnCreateFactory() {
-        try {
-            BeeDataSourceConfig config1 = createEmpty();
-            config1.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
-            config1.check();
+    public void testAbandoningJdbcLinkInfo() throws SQLException {
+        MockCommonConnectionFactory connectionFactory = new MockCommonConnectionFactory();
+        BeeDataSourceConfig config1 = createEmpty();
+        config1.setUsername(DsConfigFactory.JDBC_USER);
+        config1.setConnectionFactory(connectionFactory);
+        StoneLogAppender logAppender = getStoneLogAppender();
+        logAppender.beginCollectStoneLog();
+        BeeDataSourceConfig checkedConfig = config1.check();
+        String logs = logAppender.endCollectedStoneLog();
+        Assert.assertTrue(logs.contains("configured jdbc link info abandoned according that a connection factory has been existed"));
+        Assert.assertNull(checkedConfig.getUsername());
 
-            BeeDataSourceConfig config2 = createEmpty();
-            config2.setConnectionFactoryClass(MockCreateNullXaConnectionFactory.class);
-            config2.check();
+        BeeDataSourceConfig config2 = createEmpty();
+        config2.setPassword(DsConfigFactory.JDBC_PASSWORD);
+        config2.setConnectionFactory(connectionFactory);
+        logAppender.beginCollectStoneLog();
+        checkedConfig = config2.check();
+        logs = logAppender.endCollectedStoneLog();
+        Assert.assertTrue(logs.contains("configured jdbc link info abandoned according that a connection factory has been existed"));
+        Assert.assertNull(checkedConfig.getPassword());
 
-            BeeDataSourceConfig config3 = createEmpty();
-            config3.setConnectionFactoryClass(MockXaDataSource.class);
-            config3.check();
+        BeeDataSourceConfig config3 = createEmpty();
+        config3.setUrl(DsConfigFactory.MOCK_URL);
+        config3.setConnectionFactory(connectionFactory);
+        logAppender.beginCollectStoneLog();
+        checkedConfig = config3.check();
+        logs = logAppender.endCollectedStoneLog();
+        Assert.assertTrue(logs.contains("configured jdbc link info abandoned according that a connection factory has been existed"));
+        Assert.assertNull(checkedConfig.getUrl());
 
-            BeeDataSourceConfig config4 = createEmpty();
-            config4.setConnectionFactoryClass(MockDataSource.class);
-            config4.check();
-        } catch (SQLException e) {
-            String message = e.getMessage();
-            Assert.assertTrue(message != null && message.contains("connection creation error"));
-        }
+        BeeDataSourceConfig config4 = createEmpty();
+        config4.setDriverClassName(DsConfigFactory.MOCK_DRIVER);
+        config4.setConnectionFactory(connectionFactory);
+        logAppender.beginCollectStoneLog();
+        checkedConfig = config4.check();
+        logs = logAppender.endCollectedStoneLog();
+        Assert.assertTrue(logs.contains("configured jdbc link info abandoned according that a connection factory has been existed"));
+        Assert.assertNull(checkedConfig.getDriverClassName());
     }
 
-    public void testOnCreateFactory2() {
-        try {
-            BeeDataSourceConfig config1 = createEmpty();
-            config1.setUsername(DsConfigFactory.JDBC_USER);
-            config1.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
-            StoneLogAppender logAppender = getStoneLogAppender();
-            logAppender.beginCollectStoneLog();
-            BeeDataSourceConfig newConfig = config1.check();
-            String logs = logAppender.endCollectedStoneLog();
-            Assert.assertFalse(logs.isEmpty());
-            Assert.assertNull(newConfig.getUsername());
-
-            BeeDataSourceConfig config2 = createEmpty();
-            config2.setPassword(DsConfigFactory.JDBC_PASSWORD);
-            config2.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
-            logAppender.beginCollectStoneLog();
-            newConfig = config2.check();
-            logs = logAppender.endCollectedStoneLog();
-            Assert.assertFalse(logs.isEmpty());
-            Assert.assertNull(newConfig.getPassword());
-
-            BeeDataSourceConfig config3 = createEmpty();
-            config3.setUrl(DsConfigFactory.MOCK_URL);
-            config3.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
-            logAppender.beginCollectStoneLog();
-            newConfig = config3.check();
-            logs = logAppender.endCollectedStoneLog();
-            Assert.assertFalse(logs.isEmpty());
-            Assert.assertNull(newConfig.getUrl());
-
-            BeeDataSourceConfig config4 = createEmpty();
-            config4.setDriverClassName(DsConfigFactory.MOCK_DRIVER);
-            config4.setConnectionFactoryClass(MockCreateNullConnectionFactory.class);
-            logAppender.beginCollectStoneLog();
-            newConfig = config4.check();
-            logs = logAppender.endCollectedStoneLog();
-            Assert.assertFalse(logs.isEmpty());
-            Assert.assertNull(newConfig.getDriverClassName());
-        } catch (SQLException e) {
-            String message = e.getMessage();
-            Assert.assertTrue(message != null && message.contains("connection creation error"));
-        }
-    }
-
-    public void testOnInvalidFactoryClass() throws SQLException {
-        try {
+    public void testConnectionFactoryCreationFailure() throws SQLException {
+        try {//error factory class
             BeeDataSourceConfig config = createDefault();
             config.setConnectionFactoryClass(String.class);//invalid config
             config.check();
@@ -130,10 +99,8 @@ public class Tc0011ConnectionFactoryTest extends TestCase {
             String message = cause.getMessage();
             Assert.assertTrue(message != null && message.contains("which must extend from one of type"));
         }
-    }
 
-    public void testOnInvalidFactoryClassName() throws Exception {
-        try {
+        try {//error factory class name
             BeeDataSourceConfig config = createDefault();
             config.setConnectionFactoryClassName("java.lang.String");//invalid config
             config.check();
@@ -143,10 +110,8 @@ public class Tc0011ConnectionFactoryTest extends TestCase {
             String message = cause.getMessage();
             Assert.assertTrue(message != null && message.contains("which must extend from one of type"));
         }
-    }
 
-    public void testOnNotFoundFactoryClassName() throws Exception {
-        try {
+        try {//not found factory class
             BeeDataSourceConfig config = createDefault();
             config.setConnectionFactoryClassName("xx.xx.xx");//class not found
             config.check();

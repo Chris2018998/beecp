@@ -13,10 +13,11 @@ import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.base.StoneLogAppender;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.objects.MockDefaultExceptionConnectionFactory;
-import org.stone.beecp.objects.MockValidFailConnectionFactory;
+import org.stone.beecp.driver.MockConnectionProperties;
+import org.stone.beecp.objects.MockCommonConnectionFactory;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import static org.stone.base.TestUtil.getStoneLogAppender;
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
@@ -37,7 +38,7 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool1.init(config1);
 
         Connection con1 = pool1.getConnection();
-        Assert.assertFalse(con1.getAutoCommit());
+        Assert.assertTrue(con1.getAutoCommit());
         Assert.assertFalse(con1.isReadOnly());
         Assert.assertEquals(0, con1.getTransactionIsolation());
         Assert.assertNull(con1.getSchema());
@@ -89,7 +90,7 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool.init(config);
 
         Connection con = pool.getConnection();
-        Assert.assertFalse(con.getAutoCommit());
+        Assert.assertTrue(con.getAutoCommit());
         Assert.assertFalse(con.isReadOnly());
         Assert.assertEquals(0, con.getTransactionIsolation());
         Assert.assertNull(con.getSchema());
@@ -119,7 +120,7 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool2.init(config2);
 
         Connection con2 = pool2.getConnection();
-        Assert.assertFalse(con2.getAutoCommit());
+        Assert.assertTrue(con2.getAutoCommit());
         Assert.assertFalse(con2.isReadOnly());
         Assert.assertEquals(0, con2.getTransactionIsolation());
         Assert.assertNull(con2.getSchema());
@@ -128,7 +129,7 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool2.close();
     }
 
-    public void testPrintRuntimeLog() throws Exception {
+    public void testDefaultIsNul() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(1);
         config.setPrintRuntimeLog(true);
@@ -137,7 +138,14 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         config.setEnableDefaultOnReadOnly(true);
         config.setEnableDefaultOnAutoCommit(true);
         config.setEnableDefaultOnTransactionIsolation(true);
-        config.setConnectionFactoryClass(MockDefaultExceptionConnectionFactory.class);
+
+        MockConnectionProperties connectionProperties = new MockConnectionProperties();
+        connectionProperties.setMockException1(new SQLException("Communication failed"));
+        connectionProperties.enableExceptionOnMethod("getAutoCommit,setAutoCommit,isReadOnly,setReadOnly");
+        connectionProperties.enableExceptionOnMethod("getTransactionIsolation,setTransactionIsolation");
+        connectionProperties.enableExceptionOnMethod("setCatalog,getCatalog,setSchema,getSchema");
+        MockCommonConnectionFactory factory = new MockCommonConnectionFactory(connectionProperties);
+        config.setConnectionFactory(factory);
 
         StoneLogAppender logAppender = getStoneLogAppender();
         logAppender.beginCollectStoneLog();
@@ -155,112 +163,110 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         Assert.assertTrue(logs.contains("as transaction-isolation default value"));
         Assert.assertTrue(logs.contains("as read-only default value"));
 
-        BeeDataSourceConfig config2 = createDefault();
-        config2.setInitialSize(1);
-        config2.setPrintRuntimeLog(true);
-        config2.setEnableDefaultOnCatalog(true);
-        config2.setEnableDefaultOnSchema(true);
-        config2.setEnableDefaultOnReadOnly(true);
-        config2.setEnableDefaultOnAutoCommit(true);
-        config2.setEnableDefaultOnTransactionIsolation(true);
-        //set defaults to config
-        config2.setDefaultReadOnly(true);
-        config2.setDefaultAutoCommit(true);
-        config2.setDefaultTransactionIsolationCode(1);
-        config2.setDefaultSchema("schema");
-        config2.setDefaultCatalog("catalog");
-        config2.setConnectionFactoryClass(MockDefaultExceptionConnectionFactory.class);
-
-        StoneLogAppender logAppender2 = getStoneLogAppender();
-        logAppender2.beginCollectStoneLog();
-        FastConnectionPool pool2 = new FastConnectionPool();
-        pool2.init(config2);
-        pool2.close();
-        String logs2 = logAppender2.endCollectedStoneLog();
-        Assert.assertTrue(logs2.contains("failed to set auto-commit default"));
-        Assert.assertTrue(logs2.contains("failed to set transaction-isolation default"));
-        Assert.assertTrue(logs2.contains("failed to set read-only default"));
-        Assert.assertTrue(logs2.contains("failed to set catalog default"));
-        Assert.assertTrue(logs2.contains("failed to set schema default"));
-    }
-
-    public void testDisablePrintRuntimeLog() throws Exception {
-        BeeDataSourceConfig config = createDefault();
-        config.setInitialSize(1);
+        //not print logs
         config.setPrintRuntimeLog(false);
-        config.setEnableDefaultOnCatalog(true);
-        config.setEnableDefaultOnSchema(true);
-        config.setEnableDefaultOnReadOnly(true);
-        config.setEnableDefaultOnAutoCommit(true);
-        config.setEnableDefaultOnTransactionIsolation(true);
-        config.setConnectionFactoryClass(MockDefaultExceptionConnectionFactory.class);
-
-        StoneLogAppender logAppender = getStoneLogAppender();
+        pool = new FastConnectionPool();
+        logAppender = getStoneLogAppender();
         logAppender.beginCollectStoneLog();
-        FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
         pool.close();
-        String logs = logAppender.endCollectedStoneLog();
+        logs = logAppender.endCollectedStoneLog();
         Assert.assertFalse(logs.contains("failed to get auto-commit on first connection"));
         Assert.assertFalse(logs.contains("failed to get transaction isolation on first connection"));
         Assert.assertFalse(logs.contains("failed to get read-only on first connection"));
         Assert.assertFalse(logs.contains("failed to get catalog on first connection"));
         Assert.assertFalse(logs.contains("failed to get schema on first connection"));
-
         Assert.assertFalse(logs.contains("as auto-commit default value"));
         Assert.assertFalse(logs.contains("as transaction-isolation default value"));
         Assert.assertFalse(logs.contains("as read-only default value"));
-
-        BeeDataSourceConfig config2 = createDefault();
-        config2.setInitialSize(1);
-        config2.setPrintRuntimeLog(false);
-        config2.setEnableDefaultOnCatalog(true);
-        config2.setEnableDefaultOnSchema(true);
-        config2.setEnableDefaultOnReadOnly(true);
-        config2.setEnableDefaultOnAutoCommit(true);
-        config2.setEnableDefaultOnTransactionIsolation(true);
-        //set defaults to config
-        config2.setDefaultReadOnly(true);
-        config2.setDefaultAutoCommit(true);
-        config2.setDefaultTransactionIsolationCode(1);
-        config2.setDefaultSchema("schema");
-        config2.setDefaultCatalog("catalog");
-        config2.setConnectionFactoryClass(MockDefaultExceptionConnectionFactory.class);
-
-        StoneLogAppender logAppender2 = getStoneLogAppender();
-        logAppender2.beginCollectStoneLog();
-        FastConnectionPool pool2 = new FastConnectionPool();
-        pool2.init(config2);
-        pool2.close();
-        String logs2 = logAppender2.endCollectedStoneLog();
-        Assert.assertFalse(logs2.contains("failed to set auto-commit default"));
-        Assert.assertFalse(logs2.contains("failed to set transaction-isolation default"));
-        Assert.assertFalse(logs2.contains("failed to set read-only default"));
-        Assert.assertFalse(logs2.contains("failed to set catalog default"));
-        Assert.assertFalse(logs2.contains("failed to set schema default"));
     }
 
-    public void testValidateFail() throws Exception {
+    public void testSetDefault() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(1);
         config.setPrintRuntimeLog(true);
-        MockValidFailConnectionFactory connectionFactory = new MockValidFailConnectionFactory();
-        connectionFactory.setValidate(false);
-        config.setConnectionFactory(connectionFactory);
+        config.setEnableDefaultOnCatalog(true);
+        config.setEnableDefaultOnSchema(true);
+        config.setEnableDefaultOnReadOnly(true);
+        config.setEnableDefaultOnAutoCommit(true);
+        config.setEnableDefaultOnTransactionIsolation(true);
+        //set defaults to config
+        config.setDefaultReadOnly(true);
+        config.setDefaultAutoCommit(true);
+        config.setDefaultTransactionIsolationCode(1);
+        config.setDefaultSchema("schema");
+        config.setDefaultCatalog("catalog");
+
+        MockConnectionProperties connectionProperties = new MockConnectionProperties();
+        connectionProperties.setMockException1(new SQLException("Communication failed"));
+        connectionProperties.enableExceptionOnMethod("getAutoCommit,setAutoCommit,isReadOnly,setReadOnly");
+        connectionProperties.enableExceptionOnMethod("getTransactionIsolation,setTransactionIsolation");
+        connectionProperties.enableExceptionOnMethod("setCatalog,getCatalog,setSchema,getSchema");
+        MockCommonConnectionFactory factory = new MockCommonConnectionFactory(connectionProperties);
+        config.setConnectionFactory(factory);
+
         StoneLogAppender logAppender = getStoneLogAppender();
         logAppender.beginCollectStoneLog();
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
         pool.close();
         String logs = logAppender.endCollectedStoneLog();
+        Assert.assertTrue(logs.contains("failed to set auto-commit default"));
+        Assert.assertTrue(logs.contains("failed to set transaction-isolation default"));
+        Assert.assertTrue(logs.contains("failed to set read-only default"));
+        Assert.assertTrue(logs.contains("failed to set catalog default"));
+        Assert.assertTrue(logs.contains("failed to set schema default"));
+
+        //not print logs
+        config.setPrintRuntimeLog(false);
+        pool = new FastConnectionPool();
+        logAppender = getStoneLogAppender();
+        logAppender.beginCollectStoneLog();
+        pool.init(config);
+        pool.close();
+        logs = logAppender.endCollectedStoneLog();
+        Assert.assertFalse(logs.contains("failed to set auto-commit default"));
+        Assert.assertFalse(logs.contains("failed to set transaction-isolation default"));
+        Assert.assertFalse(logs.contains("failed to set read-only default"));
+        Assert.assertFalse(logs.contains("failed to set catalog default"));
+        Assert.assertFalse(logs.contains("failed to set schema default"));
+    }
+
+    public void testValidateFail() throws Exception {
+        //return false from isValid
+        BeeDataSourceConfig config1 = createDefault();
+        config1.setInitialSize(1);
+        config1.setPrintRuntimeLog(true);
+        MockConnectionProperties connectionProperties = new MockConnectionProperties();
+        connectionProperties.setValid(false);
+        MockCommonConnectionFactory factory = new MockCommonConnectionFactory(connectionProperties);
+        config1.setConnectionFactory(factory);
+        StoneLogAppender logAppender = getStoneLogAppender();
+        logAppender.beginCollectStoneLog();
+        FastConnectionPool pool = new FastConnectionPool();
+        pool.init(config1);
+        pool.close();
+        String logs = logAppender.endCollectedStoneLog();
         Assert.assertTrue(logs.contains("'isValid' method of connection not supported by driver"));
 
+        //not print logs
+        config1.setPrintRuntimeLog(false);
+        pool = new FastConnectionPool();
+        logAppender = getStoneLogAppender();
+        logAppender.beginCollectStoneLog();
+        pool.init(config1);
+        pool.close();
+        logs = logAppender.endCollectedStoneLog();
+        Assert.assertFalse(logs.contains("'isValid' method of connection not supported by driver"));
+
+        //exception from isValid
         BeeDataSourceConfig config2 = createDefault();
         config2.setInitialSize(1);
         config2.setPrintRuntimeLog(true);
-        MockValidFailConnectionFactory connectionFactory2 = new MockValidFailConnectionFactory();
-        connectionFactory2.setErrorCode(100);
-        config2.setConnectionFactory(connectionFactory2);
+        connectionProperties.setValid(true);
+        connectionProperties.enableExceptionOnMethod("isValid");
+        connectionProperties.setMockException1(new SQLException("Communication failed"));
+        config2.setConnectionFactory(factory);
 
         StoneLogAppender logAppender2 = getStoneLogAppender();
         logAppender2.beginCollectStoneLog();
@@ -269,67 +275,72 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool2.close();
         String logs2 = logAppender2.endCollectedStoneLog();
         Assert.assertTrue(logs2.contains("'isValid' method check failed for driver"));
+
+        //not print logs
+        config2.setPrintRuntimeLog(false);
+        pool2 = new FastConnectionPool();
+        logAppender2 = getStoneLogAppender();
+        logAppender2.beginCollectStoneLog();
+        pool2.init(config2);
+        pool2.close();
+        logs2 = logAppender2.endCollectedStoneLog();
+        Assert.assertFalse(logs2.contains("'isValid' method check failed for driver"));
     }
 
     public void testNetworkFail() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(1);
         config.setPrintRuntimeLog(true);
-        MockValidFailConnectionFactory connectionFactory = new MockValidFailConnectionFactory();
-        connectionFactory.setNetWorkTimeout(-1);
-        config.setConnectionFactory(connectionFactory);
+        MockConnectionProperties connectionProperties = new MockConnectionProperties();
+        connectionProperties.setNetworkTimeout(-1);
+        MockCommonConnectionFactory factory = new MockCommonConnectionFactory(connectionProperties);
+        config.setConnectionFactory(factory);
+
+        FastConnectionPool pool = new FastConnectionPool();
         StoneLogAppender logAppender = getStoneLogAppender();
         logAppender.beginCollectStoneLog();
-        FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
         pool.close();
         String logs = logAppender.endCollectedStoneLog();
         Assert.assertTrue(logs.contains("'networkTimeout' property of connection not supported by driver"));
 
+        //not print logs
+        config.setPrintRuntimeLog(false);
+        pool = new FastConnectionPool();
+        logAppender = getStoneLogAppender();
+        logAppender.beginCollectStoneLog();
+        pool.init(config);
+        pool.close();
+        logs = logAppender.endCollectedStoneLog();
+        Assert.assertFalse(logs.contains("'networkTimeout' property of connection not supported by driver"));
+
+
+        //exception from  getNetworkTimeout
+        connectionProperties.setNetworkTimeout(0);
+        connectionProperties.enableExceptionOnMethod("getNetworkTimeout");
+        connectionProperties.setMockException1(new SQLException("NetworkTimeout"));
+
         BeeDataSourceConfig config2 = createDefault();
         config2.setInitialSize(1);
         config2.setPrintRuntimeLog(true);
-        MockValidFailConnectionFactory connectionFactory2 = new MockValidFailConnectionFactory();
-        connectionFactory2.setExceptionOnNetworkTimeout(true);
-        config2.setConnectionFactory(connectionFactory2);
+        config2.setConnectionFactory(factory);
 
+        FastConnectionPool pool2 = new FastConnectionPool();
         StoneLogAppender logAppender2 = getStoneLogAppender();
         logAppender2.beginCollectStoneLog();
-        FastConnectionPool pool2 = new FastConnectionPool();
         pool2.init(config2);
         pool2.close();
         String logs2 = logAppender2.endCollectedStoneLog();
         Assert.assertTrue(logs2.contains("'networkTimeout' property check failed for driver"));
-    }
 
-    public void testNotPrintLogForNetworkFail() throws Exception {
-        BeeDataSourceConfig config = createDefault();
-        config.setInitialSize(1);
-        config.setPrintRuntimeLog(false);
-        MockValidFailConnectionFactory connectionFactory = new MockValidFailConnectionFactory();
-        connectionFactory.setNetWorkTimeout(-1);
-        config.setConnectionFactory(connectionFactory);
-        StoneLogAppender logAppender = getStoneLogAppender();
-        logAppender.beginCollectStoneLog();
-        FastConnectionPool pool = new FastConnectionPool();
-        pool.init(config);
-        pool.close();
-        String logs = logAppender.endCollectedStoneLog();
-        Assert.assertFalse(logs.contains("'networkTimeout' property of connection not supported by driver"));
-
-        BeeDataSourceConfig config2 = createDefault();
-        config2.setInitialSize(1);
+        //not print logs
         config2.setPrintRuntimeLog(false);
-        MockValidFailConnectionFactory connectionFactory2 = new MockValidFailConnectionFactory();
-        connectionFactory2.setExceptionOnNetworkTimeout(true);
-        config2.setConnectionFactory(connectionFactory2);
-
-        StoneLogAppender logAppender2 = getStoneLogAppender();
+        logAppender2 = getStoneLogAppender();
         logAppender2.beginCollectStoneLog();
-        FastConnectionPool pool2 = new FastConnectionPool();
+        pool2 = new FastConnectionPool();
         pool2.init(config2);
         pool2.close();
-        String logs2 = logAppender2.endCollectedStoneLog();
+        logs2 = logAppender2.endCollectedStoneLog();
         Assert.assertFalse(logs2.contains("'networkTimeout' property check failed for driver"));
     }
 }

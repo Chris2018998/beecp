@@ -1,3 +1,12 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * Copyright(C) Chris2018998,All rights reserved.
+ *
+ * Project owner contact:Chris2018998@tom.com.
+ *
+ * Project Licensed under Apache License v2.0
+ */
 package org.stone.beecp.pool;
 
 import junit.framework.TestCase;
@@ -34,9 +43,7 @@ public class Tc0058PoolRecoveryTest extends TestCase {
 
         try {
             LockSupport.parkNanos(MILLISECONDS.toNanos(600));
-            factory.setErrorCode(0b010000);
-            factory.setErrorState("57P02");
-            factory.setCrashed(true);//<----db crash here,all pooled connections dead
+            factory.dbCrash(); //<----db crashed here,all pooled connections dead
             pool.getConnection();
         } catch (SQLException e) {
             Assert.assertEquals("Unlucky,your db has crashed", e.getMessage());//message from mock factory
@@ -47,9 +54,7 @@ public class Tc0058PoolRecoveryTest extends TestCase {
         }
 
         //2: db restore here
-        factory.setCrashed(false);
-        factory.setErrorCode(0);
-        factory.setErrorState(null);
+        factory.dbRestore();//<--db restored
         Connection con = pool.getConnection();
         Assert.assertNotNull(con);
         con.close();
