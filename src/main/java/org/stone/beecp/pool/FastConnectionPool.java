@@ -234,7 +234,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             if (syn) {//throws failure exception on syn mode
                 throw e;
             } else {
-                Log.warn("Failed to create initial connections", e);
+                Log.warn("Failed to create initial connections by async mode", e);
             }
         } finally {
             pooledArrayLock.unlock();

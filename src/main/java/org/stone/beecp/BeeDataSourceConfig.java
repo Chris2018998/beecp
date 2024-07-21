@@ -823,7 +823,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
         copyTo(checkedConfig);
         if (this.connectionFactory != null || connectionFactoryClass != null || isNotBlank(connectionFactoryClassName)) {
             if (isNotBlank(this.username) || isNotBlank(this.password) || isNotBlank(this.jdbcUrl) || isNotBlank(driverClassName)) {
-                CommonLog.info("BeeCP({})Configuration of connection factory,Jdbc link info abandoned", poolName);
+                CommonLog.info("BeeCP({})configured jdbc link info abandoned according that a connection factory has been existed", "...");
                 checkedConfig.username = null;
                 checkedConfig.password = null;
                 checkedConfig.jdbcUrl = null;
