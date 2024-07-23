@@ -530,8 +530,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             supportNetworkTimeoutInd = false;
             if (this.printRuntimeLog)
                 Log.warn("BeeCP({}) 'networkTimeout' property check failed for driver", this.poolName, e);
-        } finally {
-            if (!supportNetworkTimeoutInd && networkTimeoutExecutor != null) {
+            if (networkTimeoutExecutor != null) {
                 networkTimeoutExecutor.shutdown();
                 networkTimeoutExecutor = null;
             }
