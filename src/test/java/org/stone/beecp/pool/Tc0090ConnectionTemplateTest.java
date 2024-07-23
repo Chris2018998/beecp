@@ -314,7 +314,6 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         logs = logAppender.endCollectedStoneLog();
         Assert.assertFalse(logs.contains("'networkTimeout' property of connection not supported by driver"));
 
-
         //exception from  getNetworkTimeout
         connectionProperties.setNetworkTimeout(0);
         connectionProperties.enableExceptionOnMethod("getNetworkTimeout");
@@ -342,5 +341,22 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool2.close();
         logs2 = logAppender2.endCollectedStoneLog();
         Assert.assertFalse(logs2.contains("'networkTimeout' property check failed for driver"));
+
+        //exception from setNetworkTimeout
+        connectionProperties.setNetworkTimeout(10);
+        connectionProperties.disableExceptionOnMethod("getNetworkTimeout");
+        connectionProperties.enableExceptionOnMethod("setNetworkTimeout");
+        BeeDataSourceConfig config3 = createDefault();
+        config3.setInitialSize(1);
+        config3.setPrintRuntimeLog(true);
+        config3.setConnectionFactory(factory);
+
+        FastConnectionPool pool3 = new FastConnectionPool();
+        StoneLogAppender logAppender3 = getStoneLogAppender();
+        logAppender3.beginCollectStoneLog();
+        pool3.init(config3);
+        pool3.close();
+        String logs3 = logAppender2.endCollectedStoneLog();
+        Assert.assertTrue(logs3.contains("'networkTimeout' property check failed for driver"));
     }
 }
