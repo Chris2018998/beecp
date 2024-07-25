@@ -129,7 +129,7 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool2.close();
     }
 
-    public void testDefaultIsNul() throws Exception {
+    public void testNotSetDefaultValue() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(1);
         config.setPrintRuntimeLog(true);
@@ -181,7 +181,7 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         Assert.assertFalse(logs.contains("as read-only default value"));
     }
 
-    public void testSetDefault() throws Exception {
+    public void testSetDefaultValue() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(1);
         config.setPrintRuntimeLog(true);
@@ -232,7 +232,7 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         Assert.assertFalse(logs.contains("failed to set schema default"));
     }
 
-    public void testValidateFail() throws Exception {
+    public void testSupportOnIsValidMethod() throws Exception {
         //return false from isValid
         BeeDataSourceConfig config1 = createDefault();
         config1.setInitialSize(1);
@@ -287,7 +287,7 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         Assert.assertFalse(logs2.contains("'isValid' method check failed for driver"));
     }
 
-    public void testNetworkFail() throws Exception {
+    public void testSupportOnNetworkTimeoutMethod() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(1);
         config.setPrintRuntimeLog(true);

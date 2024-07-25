@@ -26,7 +26,7 @@ import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
 public class Tc0051PoolInitializeTest extends TestCase {
 
-    public void testNullConfigCheck() throws Exception {
+    public void testNullConfig() throws Exception {
         try {
             new FastConnectionPool().init(null);
             fail("Test failed to check null config");
@@ -36,21 +36,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
         }
     }
 
-    public void testInitializedCheck() throws Exception {
-        BeeDataSourceConfig config = createDefault();
-        FastConnectionPool pool = new FastConnectionPool();
-        pool.init(config);
-
-        try {
-            pool.init(config);
-            fail("Test failed to re-initialize on a completed pool");
-        } catch (PoolInitializeFailedException e) {
-            String message = e.getMessage();
-            Assert.assertTrue(message != null && message.contains("Pool has already been initialized or in initializing"));
-        }
-    }
-
-    public void testInvalidConfiguredItemsCheck() throws Exception {
+    public void testConfigurationCheckFail() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(10);
         config.setMaxActive(5);
@@ -61,6 +47,20 @@ public class Tc0051PoolInitializeTest extends TestCase {
         } catch (PoolInitializeFailedException e) {
             String message = e.getMessage();
             Assert.assertTrue(message != null && message.contains("initialSize must not be greater than maxActive"));
+        }
+    }
+
+    public void testInitializeFailOnReadyPool() throws Exception {
+        BeeDataSourceConfig config = createDefault();
+        FastConnectionPool pool = new FastConnectionPool();
+        pool.init(config);
+
+        try {
+            pool.init(config);
+            fail("Test failed to re-initialize on a completed pool");
+        } catch (PoolInitializeFailedException e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("Pool has already been initialized or in initializing"));
         }
     }
 
@@ -80,7 +80,8 @@ public class Tc0051PoolInitializeTest extends TestCase {
         pool2.close();
     }
 
-    public void testNullConnectionFromFactory() throws Exception {
+    public void testMockGetNullFromDriver() throws Exception {
+
         //1:fail to create connections(sync mode)
         try {
             BeeDataSourceConfig config = createDefault();
@@ -129,24 +130,24 @@ public class Tc0051PoolInitializeTest extends TestCase {
         //Assert.assertTrue(logs.contains("Failed to create initial connections by async mode"));
     }
 
-    public void testExceptionFromFactory() throws Exception {
+
+    public void testMockCatchSQLExceptionFromDriver() throws Exception {
         //1: mock communications exception
         try {
             BeeDataSourceConfig config1 = createDefault();
             config1.setInitialSize(1);
             MockCommonConnectionFactory factory = new MockCommonConnectionFactory();
-            factory.setCreateException1(new ConnectionCreateException("Communications link failure"));
+            factory.setCreateException1(new SQLException("Communications link failure"));
             config1.setConnectionFactory(factory);
             new FastConnectionPool().init(config1);
             fail("Failed to test exception from factory");
-        } catch (ConnectionCreateException e) {
+        } catch (SQLException e) {
             Assert.assertTrue(e.getMessage().contains("Communications link failure"));
         }
 
         //2: exception test(failure at second creation)
         MockCommonConnectionFactory factory = new MockCommonConnectionFactory();
         factory.setMaxCreationSize(1);
-
         FastConnectionPool pool2 = null;
         try {
             BeeDataSourceConfig config2 = createDefault();
@@ -177,5 +178,38 @@ public class Tc0051PoolInitializeTest extends TestCase {
         pool3.close();
         String logs = logAppender.endCollectedStoneLog();
         //Assert.assertTrue(logs.contains("Failed to create initial connections by async mode"));
+    }
+
+
+    public void testMockCatchRuntimeExceptionFromDriver() throws Exception {
+        //1: mock RuntimeException exception
+        try {
+            BeeDataSourceConfig config1 = createDefault();
+            config1.setInitialSize(1);
+            MockCommonConnectionFactory factory = new MockCommonConnectionFactory();
+            factory.setCreateException2(new RuntimeException("A runtime exception"));
+            config1.setConnectionFactory(factory);
+            new FastConnectionPool().init(config1);
+            fail("Failed to test exception from factory");
+        } catch (ConnectionCreateException e) {
+            Throwable cause = e.getCause();
+            Assert.assertTrue(cause instanceof RuntimeException);
+            Assert.assertTrue(cause.getMessage().contains("A runtime exception"));
+        }
+
+        //2: mock catch error
+        try {
+            BeeDataSourceConfig config1 = createDefault();
+            config1.setInitialSize(1);
+            MockCommonConnectionFactory factory = new MockCommonConnectionFactory();
+            factory.setCreateException3(new Error("Unknown error"));
+            config1.setConnectionFactory(factory);
+            new FastConnectionPool().init(config1);
+            fail("Failed to test exception from factory");
+        } catch (ConnectionCreateException e) {
+            Throwable cause = e.getCause();
+            Assert.assertTrue(cause instanceof Error);
+            Assert.assertTrue(cause.getMessage().contains("Unknown error"));
+        }
     }
 }
