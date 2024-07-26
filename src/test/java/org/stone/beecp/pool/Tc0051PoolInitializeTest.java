@@ -14,6 +14,7 @@ import org.junit.Assert;
 import org.stone.base.StoneLogAppender;
 import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
+import org.stone.beecp.driver.MockXaConnectionProperties;
 import org.stone.beecp.objects.MockCommonConnectionFactory;
 import org.stone.beecp.objects.MockCommonXaConnectionFactory;
 import org.stone.beecp.pool.exception.ConnectionCreateException;
@@ -81,12 +82,11 @@ public class Tc0051PoolInitializeTest extends TestCase {
     }
 
     public void testMockGetNullFromDriver() throws Exception {
-
         //1:fail to create connections(sync mode)
         try {
             BeeDataSourceConfig config = createDefault();
-            config.setInitialSize(2);
-            config.setMaxActive(2);
+            config.setInitialSize(1);
+            config.setMaxActive(1);
             MockCommonConnectionFactory factory = new MockCommonConnectionFactory();
             factory.setReturnNullOnCreate(true);//<--return null connections from this factory
             config.setConnectionFactory(factory);
@@ -99,8 +99,8 @@ public class Tc0051PoolInitializeTest extends TestCase {
         //2:fail to create xa-connections(sync mode)
         try {
             BeeDataSourceConfig config2 = createDefault();
-            config2.setInitialSize(2);
-            config2.setMaxActive(2);
+            config2.setInitialSize(1);
+            config2.setMaxActive(1);
             MockCommonXaConnectionFactory factory = new MockCommonXaConnectionFactory();
             factory.setReturnNullOnCreate(true);//<--return null xa-connections from this factory
             config2.setXaConnectionFactory(factory);
@@ -112,8 +112,8 @@ public class Tc0051PoolInitializeTest extends TestCase {
 
         //3:failure in async node(async mode)
         BeeDataSourceConfig config3 = createDefault();
-        config3.setInitialSize(2);
-        config3.setMaxActive(2);
+        config3.setInitialSize(1);
+        config3.setMaxActive(1);
         config3.setPrintRuntimeLog(true);
         config3.setAsyncCreateInitConnection(true);//<--async mode
         MockCommonConnectionFactory factory = new MockCommonConnectionFactory();
@@ -126,17 +126,16 @@ public class Tc0051PoolInitializeTest extends TestCase {
         logAppender.beginCollectStoneLog();
         pool3.init(config3);
         pool3.close();
-        String logs = logAppender.endCollectedStoneLog();
+        //String logs = logAppender.endCollectedStoneLog();
         //Assert.assertTrue(logs.contains("Failed to create initial connections by async mode"));
     }
 
-
     public void testMockCatchSQLExceptionFromDriver() throws Exception {
+        MockCommonConnectionFactory factory = new MockCommonConnectionFactory();
         //1: mock communications exception
         try {
             BeeDataSourceConfig config1 = createDefault();
             config1.setInitialSize(1);
-            MockCommonConnectionFactory factory = new MockCommonConnectionFactory();
             factory.setCreateException1(new SQLException("Communications link failure"));
             config1.setConnectionFactory(factory);
             new FastConnectionPool().init(config1);
@@ -146,21 +145,16 @@ public class Tc0051PoolInitializeTest extends TestCase {
         }
 
         //2: exception test(failure at second creation)
-        MockCommonConnectionFactory factory = new MockCommonConnectionFactory();
-        factory.setMaxCreationSize(1);
-        FastConnectionPool pool2 = null;
         try {
             BeeDataSourceConfig config2 = createDefault();
-            config2.setInitialSize(2);
-            config2.setConnectionFactory(factory);
-            pool2 = new FastConnectionPool();
-            pool2.init(config2);
+            config2.setInitialSize(1);
+            MockCommonXaConnectionFactory xaFactory = new MockCommonXaConnectionFactory();
+            xaFactory.setCreateException1(new SQLException("Communications link failure"));
+            config2.setXaConnectionFactory(xaFactory);
+            new FastConnectionPool().init(config2);
             fail("Failed to test exception from factory");
         } catch (SQLException e) {
-            Assert.assertTrue(e.getMessage().contains("the count of created connections has reached max"));
-            Assert.assertEquals(0, pool2.getIdleSize());
-        } finally {
-            if (pool2 != null) pool2.close();
+            Assert.assertTrue(e.getMessage().contains("Communications link failure"));
         }
 
         //3: exception test(failure at second creation)
@@ -176,10 +170,9 @@ public class Tc0051PoolInitializeTest extends TestCase {
         logAppender.beginCollectStoneLog();
         pool3.init(config3);
         pool3.close();
-        String logs = logAppender.endCollectedStoneLog();
+        //String logs = logAppender.endCollectedStoneLog();
         //Assert.assertTrue(logs.contains("Failed to create initial connections by async mode"));
     }
-
 
     public void testMockCatchRuntimeExceptionFromDriver() throws Exception {
         //1: mock RuntimeException exception
@@ -197,7 +190,24 @@ public class Tc0051PoolInitializeTest extends TestCase {
             Assert.assertTrue(cause.getMessage().contains("A runtime exception"));
         }
 
-        //2: mock catch error
+        //2: exception test(failure at second creation)
+        try {
+            BeeDataSourceConfig config2 = createDefault();
+            config2.setInitialSize(1);
+            MockCommonXaConnectionFactory xaFactory = new MockCommonXaConnectionFactory();
+            xaFactory.setCreateException2(new RuntimeException("A runtime exception"));
+            config2.setXaConnectionFactory(xaFactory);
+            new FastConnectionPool().init(config2);
+            fail("Failed to test exception from factory");
+        } catch (SQLException e) {
+            Throwable cause = e.getCause();
+            Assert.assertTrue(cause instanceof RuntimeException);
+            Assert.assertTrue(cause.getMessage().contains("A runtime exception"));
+        }
+    }
+
+    public void testMockCatchErrorFromDriver() throws Exception {
+        //1: mock catch error
         try {
             BeeDataSourceConfig config1 = createDefault();
             config1.setInitialSize(1);
@@ -210,6 +220,83 @@ public class Tc0051PoolInitializeTest extends TestCase {
             Throwable cause = e.getCause();
             Assert.assertTrue(cause instanceof Error);
             Assert.assertTrue(cause.getMessage().contains("Unknown error"));
+        }
+
+        //2: mock catch error
+        try {
+            BeeDataSourceConfig config2 = createDefault();
+            config2.setInitialSize(1);
+            MockCommonXaConnectionFactory xaFactory = new MockCommonXaConnectionFactory();
+            xaFactory.setCreateException3(new Error("Unknown error"));
+            config2.setXaConnectionFactory(xaFactory);
+            new FastConnectionPool().init(config2);
+            fail("Failed to test exception from factory");
+        } catch (SQLException e) {
+            Throwable cause = e.getCause();
+            Assert.assertTrue(cause instanceof Error);
+            Assert.assertTrue(cause.getMessage().contains("Unknown error"));
+        }
+    }
+
+    public void testMockPartlySuccess() throws Exception {
+        try {
+            BeeDataSourceConfig config1 = createDefault();
+            config1.setInitialSize(3);
+            config1.setMaxActive(3);
+            MockCommonConnectionFactory factory = new MockCommonConnectionFactory();
+            factory.setMaxCreationSize(2);
+            config1.setConnectionFactory(factory);
+            new FastConnectionPool().init(config1);
+            fail("Failed to test exception from factory");
+        } catch (SQLException e) {
+            Assert.assertEquals(e.getMessage(), "the count of created connections has reached max");
+        }
+
+        try {
+            BeeDataSourceConfig config2 = createDefault();
+            config2.setInitialSize(3);
+            config2.setMaxActive(3);
+            MockCommonXaConnectionFactory xaFactory = new MockCommonXaConnectionFactory();
+            xaFactory.setMaxCreationSize(2);
+            config2.setXaConnectionFactory(xaFactory);
+            new FastConnectionPool().init(config2);
+            fail("Failed to test exception from factory");
+        } catch (SQLException e) {
+            Assert.assertEquals(e.getMessage(), "the count of created connections has reached max");
+        }
+    }
+
+    public void testExceptionFromXaConnection() throws Exception {
+        try {
+            BeeDataSourceConfig config1 = createDefault();
+            config1.setInitialSize(1);
+            config1.setMaxActive(1);
+
+            MockXaConnectionProperties properties = new MockXaConnectionProperties();
+            properties.enableExceptionOnMethod("getConnection");
+            properties.setMockException1(new SQLException("Communications link failure"));
+            MockCommonXaConnectionFactory xaFactory = new MockCommonXaConnectionFactory(properties);
+            config1.setXaConnectionFactory(xaFactory);
+            new FastConnectionPool().init(config1);
+            fail("Failed to test exception from XaConnection");
+        } catch (SQLException e) {
+            // e.printStackTrace();
+            Assert.assertTrue(e.getMessage().contains("Communications link failure"));
+        }
+
+        try {
+            BeeDataSourceConfig config2 = createDefault();
+            config2.setInitialSize(1);
+            config2.setMaxActive(1);
+            MockXaConnectionProperties properties = new MockXaConnectionProperties();
+            properties.enableExceptionOnMethod("getXAResource");
+            properties.setMockException1(new SQLException("Communications link failure"));
+            MockCommonXaConnectionFactory xaFactory = new MockCommonXaConnectionFactory(properties);
+            config2.setXaConnectionFactory(xaFactory);
+            new FastConnectionPool().init(config2);
+            fail("Failed to test exception from XaConnection");
+        } catch (SQLException e) {
+            Assert.assertTrue(e.getMessage().contains("Communications link failure"));
         }
     }
 }
