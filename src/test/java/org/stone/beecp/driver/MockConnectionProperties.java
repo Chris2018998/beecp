@@ -15,7 +15,7 @@ import java.util.HashMap;
 /**
  * A properties holder in mock connection
  */
-public final class MockConnectionProperties {
+public class MockConnectionProperties {
     private final HashMap<String, Boolean> methodExceptionFlagMap;
 
     //connection properties
