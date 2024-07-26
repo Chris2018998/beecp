@@ -11,8 +11,8 @@ package org.stone.beecp.objects;
 
 import org.stone.beecp.BeeXaConnectionFactory;
 import org.stone.beecp.driver.MockConnection;
-import org.stone.beecp.driver.MockConnectionProperties;
 import org.stone.beecp.driver.MockXaConnection;
+import org.stone.beecp.driver.MockXaConnectionProperties;
 import org.stone.beecp.driver.MockXaResource;
 
 import javax.sql.XAConnection;
@@ -26,9 +26,10 @@ import java.sql.SQLException;
 public final class MockCommonXaConnectionFactory extends MockCommonBaseFactory implements BeeXaConnectionFactory {
 
     public MockCommonXaConnectionFactory() {
+        this(new MockXaConnectionProperties());
     }
 
-    public MockCommonXaConnectionFactory(MockConnectionProperties properties) {
+    public MockCommonXaConnectionFactory(MockXaConnectionProperties properties) {
         super(properties);
     }
 
@@ -37,7 +38,7 @@ public final class MockCommonXaConnectionFactory extends MockCommonBaseFactory i
         if (this.returnNullOnCreate) return null;
 
         this.checkCurCreatedCount();
-        MockXaConnection con = new MockXaConnection(new MockConnection(properties), new MockXaResource());
+        MockXaConnection con = new MockXaConnection((MockXaConnectionProperties) properties, new MockConnection(properties), new MockXaResource());
         this.increaseCurCreatedCount();
         return con;
     }

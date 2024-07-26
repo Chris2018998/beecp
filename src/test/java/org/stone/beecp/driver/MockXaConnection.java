@@ -25,21 +25,29 @@ import java.sql.SQLException;
 public final class MockXaConnection implements XAConnection {
     private final Connection con;
     private final MockXaResource res;
+    private final MockXaConnectionProperties properties;
 
     public MockXaConnection(Connection con, MockXaResource res) {
+        this(new MockXaConnectionProperties(), con, res);
+    }
+
+    public MockXaConnection(MockXaConnectionProperties properties, Connection con, MockXaResource res) {
         this.con = con;
         this.res = res;
+        this.properties = properties;
     }
 
     public void close() throws SQLException {
         con.close();
     }
 
-    public Connection getConnection() {
+    public Connection getConnection() throws SQLException {
+        properties.mockThrowExceptionOnMethod("getConnection");
         return con;
     }
 
-    public XAResource getXAResource() {
+    public XAResource getXAResource() throws SQLException {
+        properties.mockThrowExceptionOnMethod("getXAResource");
         return res;
     }
 
