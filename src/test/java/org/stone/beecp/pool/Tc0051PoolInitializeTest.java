@@ -61,7 +61,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
             fail("Test failed to re-initialize on a completed pool");
         } catch (PoolInitializeFailedException e) {
             String message = e.getMessage();
-            Assert.assertTrue(message != null && message.contains("Pool has already been initialized or in initializing"));
+            Assert.assertTrue(message != null && message.contains("Pool has already initialized or in initializing"));
         }
     }
 
@@ -93,7 +93,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
             new FastConnectionPool().init(config);
             fail("Failed to test null connection case1");
         } catch (ConnectionCreateException e) {
-            Assert.assertTrue(e.getMessage().contains("An internal error occurred in connection factory"));
+            Assert.assertTrue(e.getMessage().contains("A unknown error occurred when created a connection"));
         }
 
         //2:fail to create xa-connections(sync mode)
@@ -107,7 +107,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
             new FastConnectionPool().init(config2);
             fail("Failed to test null connection case2");
         } catch (ConnectionCreateException e) {
-            Assert.assertTrue(e.getMessage().contains("An internal error occurred in xa-Connection factory"));
+            Assert.assertTrue(e.getMessage().contains("A unknown error occurred when created an XA connection"));
         }
 
         //3:failure in async node(async mode)

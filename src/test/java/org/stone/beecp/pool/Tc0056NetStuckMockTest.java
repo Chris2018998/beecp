@@ -35,7 +35,7 @@ public class Tc0056NetStuckMockTest extends TestCase {
         try {
             pool.getConnection();
         } catch (ConnectionGetInterruptedException e) {
-            Assert.assertTrue(e.getMessage().contains("An interruption occurred in connection factory"));
+            Assert.assertTrue(e.getMessage().contains("An interruption occurred when created a connection"));
         }
         pool.close();
     }
@@ -52,7 +52,7 @@ public class Tc0056NetStuckMockTest extends TestCase {
         try {
             pool.getXAConnection();
         } catch (ConnectionGetInterruptedException e) {
-            Assert.assertTrue(e.getMessage().contains("An interruption occurred in xa-connection factory"));
+            Assert.assertTrue(e.getMessage().contains("An interruption occurred when created an XA connection"));
         }
         pool.close();
     }

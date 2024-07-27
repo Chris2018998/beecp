@@ -153,15 +153,15 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool.init(config);
         pool.close();
         String logs = logAppender.endCollectedStoneLog();
-        Assert.assertTrue(logs.contains("failed to get auto-commit on first connection"));
-        Assert.assertTrue(logs.contains("failed to get transaction isolation on first connection"));
-        Assert.assertTrue(logs.contains("failed to get read-only on first connection"));
-        Assert.assertTrue(logs.contains("failed to get catalog on first connection"));
-        Assert.assertTrue(logs.contains("failed to get schema on first connection"));
+        Assert.assertTrue(logs.contains("failed to get value of auto-commit property"));
+        Assert.assertTrue(logs.contains("failed to get value of transaction-isolation property "));
+        Assert.assertTrue(logs.contains("failed to get value of read-only property"));
+        Assert.assertTrue(logs.contains("failed to get value of catalog property"));
+        Assert.assertTrue(logs.contains("failed to get value of schema property"));
 
-        Assert.assertTrue(logs.contains("as auto-commit default value"));
-        Assert.assertTrue(logs.contains("as transaction-isolation default value"));
-        Assert.assertTrue(logs.contains("as read-only default value"));
+        Assert.assertTrue(logs.contains("as default value of auto-commit property"));
+        Assert.assertTrue(logs.contains("as default value of transaction-isolation property"));
+        Assert.assertTrue(logs.contains("as default value of read-only property"));
 
         //not print logs
         config.setPrintRuntimeLog(false);
@@ -171,14 +171,14 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool.init(config);
         pool.close();
         logs = logAppender.endCollectedStoneLog();
-        Assert.assertFalse(logs.contains("failed to get auto-commit on first connection"));
-        Assert.assertFalse(logs.contains("failed to get transaction isolation on first connection"));
-        Assert.assertFalse(logs.contains("failed to get read-only on first connection"));
-        Assert.assertFalse(logs.contains("failed to get catalog on first connection"));
-        Assert.assertFalse(logs.contains("failed to get schema on first connection"));
-        Assert.assertFalse(logs.contains("as auto-commit default value"));
-        Assert.assertFalse(logs.contains("as transaction-isolation default value"));
-        Assert.assertFalse(logs.contains("as read-only default value"));
+        Assert.assertFalse(logs.contains("failed to get value of auto-commit property"));
+        Assert.assertFalse(logs.contains("failed to get value of transaction-isolation property "));
+        Assert.assertFalse(logs.contains("failed to get value of read-only property"));
+        Assert.assertFalse(logs.contains("failed to get value of catalog property"));
+        Assert.assertFalse(logs.contains("failed to get value of schema property"));
+        Assert.assertFalse(logs.contains("as default value of auto-commit property"));
+        Assert.assertFalse(logs.contains("as default value of transaction-isolation property"));
+        Assert.assertFalse(logs.contains("as default value of read-only property"));
     }
 
     public void testSetDefaultValue() throws Exception {
@@ -211,11 +211,11 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool.init(config);
         pool.close();
         String logs = logAppender.endCollectedStoneLog();
-        Assert.assertTrue(logs.contains("failed to set auto-commit default"));
-        Assert.assertTrue(logs.contains("failed to set transaction-isolation default"));
-        Assert.assertTrue(logs.contains("failed to set read-only default"));
-        Assert.assertTrue(logs.contains("failed to set catalog default"));
-        Assert.assertTrue(logs.contains("failed to set schema default"));
+        Assert.assertTrue(logs.contains("of auto-commit property on first connection object"));
+        Assert.assertTrue(logs.contains("of transaction-isolation property on first connection object"));
+        Assert.assertTrue(logs.contains("of read-only property on first connection object"));
+        Assert.assertTrue(logs.contains("of catalog property on first connection object"));
+        Assert.assertTrue(logs.contains("of schema property on first connection object"));
 
         //not print logs
         config.setPrintRuntimeLog(false);
@@ -225,11 +225,11 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool.init(config);
         pool.close();
         logs = logAppender.endCollectedStoneLog();
-        Assert.assertFalse(logs.contains("failed to set auto-commit default"));
-        Assert.assertFalse(logs.contains("failed to set transaction-isolation default"));
-        Assert.assertFalse(logs.contains("failed to set read-only default"));
-        Assert.assertFalse(logs.contains("failed to set catalog default"));
-        Assert.assertFalse(logs.contains("failed to set schema default"));
+        Assert.assertFalse(logs.contains("of auto-commit property on first connection object"));
+        Assert.assertFalse(logs.contains("of transaction-isolation property on first connection object"));
+        Assert.assertFalse(logs.contains("of read-only property on first connection object"));
+        Assert.assertFalse(logs.contains("of catalog property on first connection object"));
+        Assert.assertFalse(logs.contains("of schema property on first connection object"));
     }
 
     public void testSupportOnIsValidMethod() throws Exception {
@@ -247,7 +247,7 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool.init(config1);
         pool.close();
         String logs = logAppender.endCollectedStoneLog();
-        Assert.assertTrue(logs.contains("'isValid' method of connection not supported by driver"));
+        Assert.assertTrue(logs.contains("get false from call of isValid method on first connection object"));
 
         //not print logs
         config1.setPrintRuntimeLog(false);
@@ -257,7 +257,7 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool.init(config1);
         pool.close();
         logs = logAppender.endCollectedStoneLog();
-        Assert.assertFalse(logs.contains("'isValid' method of connection not supported by driver"));
+        Assert.assertFalse(logs.contains("isValid method tested failed on first connection object"));
 
         //exception from isValid
         BeeDataSourceConfig config2 = createDefault();
@@ -274,7 +274,7 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool2.init(config2);
         pool2.close();
         String logs2 = logAppender2.endCollectedStoneLog();
-        Assert.assertTrue(logs2.contains("'isValid' method check failed for driver"));
+        Assert.assertTrue(logs2.contains("isValid method tested failed on first connection object"));
 
         //not print logs
         config2.setPrintRuntimeLog(false);
@@ -284,7 +284,7 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool2.init(config2);
         pool2.close();
         logs2 = logAppender2.endCollectedStoneLog();
-        Assert.assertFalse(logs2.contains("'isValid' method check failed for driver"));
+        Assert.assertFalse(logs2.contains("isValid method tested failed on first connection object"));
     }
 
     public void testSupportOnNetworkTimeoutMethod() throws Exception {
@@ -302,7 +302,7 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool.init(config);
         pool.close();
         String logs = logAppender.endCollectedStoneLog();
-        Assert.assertTrue(logs.contains("'networkTimeout' property of connection not supported by driver"));
+        Assert.assertTrue(logs.contains("networkTimeout property not supported by connections due to a negative number returned from first connection object"));
 
         //not print logs
         config.setPrintRuntimeLog(false);
@@ -312,7 +312,7 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool.init(config);
         pool.close();
         logs = logAppender.endCollectedStoneLog();
-        Assert.assertFalse(logs.contains("'networkTimeout' property of connection not supported by driver"));
+        Assert.assertFalse(logs.contains("networkTimeout property not supported by connections due to a negative number returned from first connection object"));
 
         //exception from  getNetworkTimeout
         connectionProperties.setNetworkTimeout(0);
@@ -330,7 +330,7 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool2.init(config2);
         pool2.close();
         String logs2 = logAppender2.endCollectedStoneLog();
-        Assert.assertTrue(logs2.contains("'networkTimeout' property check failed for driver"));
+        Assert.assertTrue(logs2.contains("networkTimeout property tested failed on first connection object"));
 
         //not print logs
         config2.setPrintRuntimeLog(false);
@@ -340,7 +340,7 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool2.init(config2);
         pool2.close();
         logs2 = logAppender2.endCollectedStoneLog();
-        Assert.assertFalse(logs2.contains("'networkTimeout' property check failed for driver"));
+        Assert.assertFalse(logs2.contains("networkTimeout property tested failed on first connection object"));
 
         //exception from setNetworkTimeout
         connectionProperties.setNetworkTimeout(10);
@@ -357,6 +357,6 @@ public class Tc0090ConnectionTemplateTest extends TestCase {
         pool3.init(config3);
         pool3.close();
         String logs3 = logAppender2.endCollectedStoneLog();
-        Assert.assertTrue(logs3.contains("'networkTimeout' property check failed for driver"));
+        Assert.assertTrue(logs3.contains("networkTimeout property tested failed on first connection object"));
     }
 }

@@ -41,7 +41,7 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
         try {
             pool.getConnection();
         } catch (ConnectionGetTimeoutException e) {
-            Assert.assertTrue(e.getMessage().contains("Wait timeout on pool semaphore acquisition"));
+            Assert.assertTrue(e.getMessage().contains("Waited timeout on pool semaphore"));
             first.interrupt();
         }
         pool.close();
@@ -64,7 +64,7 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
         try {
             pool.getConnection();
         } catch (ConnectionGetInterruptedException e) {
-            Assert.assertTrue(e.getMessage().contains("An interruption occurred on pool semaphore acquisition"));
+            Assert.assertTrue(e.getMessage().contains("An interruption occurred while waited on pool semaphore"));
             first.interrupt();
         }
         pool.close();

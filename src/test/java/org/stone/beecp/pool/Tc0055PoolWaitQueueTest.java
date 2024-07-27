@@ -43,7 +43,7 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
         try {
             pool.getConnection();
         } catch (ConnectionGetTimeoutException e) {
-            Assert.assertTrue(e.getMessage().contains("Wait timeout for a released connection"));
+            Assert.assertTrue(e.getMessage().contains("Waited timeout for a released connection"));
         }
 
         Method createMethod = FastConnectionPool.class.getDeclaredMethod("createPooledConn", Integer.TYPE);
@@ -70,7 +70,7 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
         try {
             pool3.getConnection();
         } catch (ConnectionGetInterruptedException e) {
-            Assert.assertTrue(e.getMessage().contains("An interruption occurred while waiting for a released connection"));
+            Assert.assertTrue(e.getMessage().contains("An interruption occurred while waited for a released connection"));
         }
     }
 }
