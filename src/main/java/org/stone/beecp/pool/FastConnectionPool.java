@@ -122,7 +122,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                 throw e instanceof SQLException ? (SQLException) e : new PoolInitializeFailedException(e);
             }
         } else {
-            throw new PoolInitializeFailedException("Pool has already been initialized or in initializing");
+            throw new PoolInitializeFailedException("Pool has already initialized or in initializing");
         }
     }
 
@@ -246,9 +246,9 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         //1:try to acquire lock
         try {
             if (!this.pooledArrayLock.tryLock(this.maxWaitNs, TimeUnit.NANOSECONDS))
-                throw new ConnectionCreateException("Wait timeout on pool lock acquisition");
+                throw new ConnectionCreateException("Waited timeout on pool lock");
         } catch (InterruptedException e) {
-            throw new ConnectionCreateException("An interruption occurred on pool lock acquisition");
+            throw new ConnectionCreateException("An interruption occurred while waited on pool lock");
         }
 
         //2:Creates a connection under acquired lock
@@ -267,8 +267,8 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                         rawXaConn = this.rawXaConnFactory.create();//Stuck here? try <method>BeeDataSource.interruptThreadsOnCreationLock()<method>?
                         if (rawXaConn == null) {
                             if (Thread.interrupted())//test interrupted flag and clear it
-                                throw new ConnectionGetInterruptedException("An interruption occurred in xa-connection factory");
-                            throw new ConnectionCreateException("An internal error occurred in xa-Connection factory");
+                                throw new ConnectionGetInterruptedException("An interruption occurred when created an XA connection");
+                            throw new ConnectionCreateException("A unknown error occurred when created an XA connection");
                         }
 
                         rawConn = rawXaConn.getConnection();
@@ -277,8 +277,8 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                         rawConn = this.rawConnFactory.create();
                         if (rawConn == null) {
                             if (Thread.interrupted())//test interrupted flag and clear it
-                                throw new ConnectionGetInterruptedException("An interruption occurred in connection factory");
-                            throw new ConnectionCreateException("An internal error occurred in connection factory");
+                                throw new ConnectionGetInterruptedException("An interruption occurred when created a connection");
+                            throw new ConnectionCreateException("A unknown error occurred when created a connection");
                         }
                     }
 
@@ -368,20 +368,20 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     defaultAutoCommit = rawCon.getAutoCommit();
                 } catch (Throwable e) {
                     if (this.printRuntimeLog)
-                        Log.warn("BeeCP({})failed to get auto-commit on first connection", this.poolName, e);
+                        Log.warn("BeeCP({})failed to get value of auto-commit property from first connection object", this.poolName, e);
                 }
             }
             if (defaultAutoCommit == null) {
                 defaultAutoCommit = Boolean.TRUE;
                 if (this.printRuntimeLog)
-                    Log.warn("BeeCP({})mark {} as auto-commit default value", this.poolName, true);
+                    Log.warn("BeeCP({})assign {} as default value of auto-commit property for connections", this.poolName, true);
             }
             try {
                 rawCon.setAutoCommit(defaultAutoCommit);//setting test with default value
             } catch (Throwable e) {
                 poolConfig.setEnableDefaultOnAutoCommit(false);
                 if (this.printRuntimeLog)
-                    Log.warn("BeeCP({})failed to set auto-commit default({}) on first connection", this.poolName, defaultAutoCommit, e);
+                    Log.warn("BeeCP({})failed to set default value({}) of auto-commit property on first connection object", this.poolName, defaultAutoCommit, e);
             }
         } else if (defaultAutoCommit == null) {
             defaultAutoCommit = Boolean.FALSE;
@@ -395,20 +395,20 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     defaultTransactionIsolation = rawCon.getTransactionIsolation();
                 } catch (Throwable e) {
                     if (this.printRuntimeLog)
-                        Log.warn("BeeCP({})failed to get transaction isolation on first connection", this.poolName, e);
+                        Log.warn("BeeCP({})failed to get value of transaction-isolation property from first connection object", this.poolName, e);
                 }
             }
             if (defaultTransactionIsolation == null) {
                 defaultTransactionIsolation = Connection.TRANSACTION_READ_COMMITTED;
                 if (this.printRuntimeLog)
-                    Log.warn("BeeCP({})mark {} as transaction-isolation default value", this.poolName, defaultTransactionIsolation);
+                    Log.warn("BeeCP({})assign {} as default value of transaction-isolation property for connections", this.poolName, defaultTransactionIsolation);
             }
             try {
                 rawCon.setTransactionIsolation(defaultTransactionIsolation);//default setting test
             } catch (Throwable e) {
                 poolConfig.setEnableDefaultOnTransactionIsolation(false);
                 if (this.printRuntimeLog)
-                    Log.warn("BeeCP({})failed to set transaction-isolation default({}) on first connection", this.poolName, defaultTransactionIsolation, e);
+                    Log.warn("BeeCP({})failed to set default value({}) of transaction-isolation property on first connection object", this.poolName, defaultTransactionIsolation, e);
             }
         } else if (defaultTransactionIsolation == null) {
             defaultTransactionIsolation = 0;
@@ -422,20 +422,20 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     defaultReadOnly = rawCon.isReadOnly();
                 } catch (Throwable e) {
                     if (this.printRuntimeLog)
-                        Log.warn("BeeCP({})failed to get read-only on first connection", this.poolName);
+                        Log.warn("BeeCP({})failed to get value of read-only property from first connection object", this.poolName);
                 }
             }
             if (defaultReadOnly == null) {
                 defaultReadOnly = Boolean.FALSE;
                 if (this.printRuntimeLog)
-                    Log.warn("BeeCP({})mark {} as read-only default value", this.poolName, false);
+                    Log.warn("BeeCP({})assign {} as default value of read-only property for connections", this.poolName, false);
             }
             try {
                 rawCon.setReadOnly(defaultReadOnly);//default setting test
             } catch (Throwable e) {
                 poolConfig.setEnableDefaultOnTransactionIsolation(false);
                 if (this.printRuntimeLog)
-                    Log.warn("BeeCP({})failed to set read-only default({}) on first connection", this.poolName, defaultTransactionIsolation, e);
+                    Log.warn("BeeCP({})failed to set default value({}) of read-only property on first connection object", this.poolName, defaultTransactionIsolation, e);
             }
         } else if (defaultReadOnly == null) {
             defaultReadOnly = Boolean.FALSE;
@@ -449,7 +449,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     defaultCatalog = rawCon.getCatalog();
                 } catch (Throwable e) {
                     if (this.printRuntimeLog)
-                        Log.warn("BeeCP({})failed to get catalog on first connection", this.poolName, e);
+                        Log.warn("BeeCP({})failed to get value of catalog property from first connection object", this.poolName, e);
                 }
             }
             if (isNotBlank(defaultCatalog)) {
@@ -458,7 +458,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                 } catch (Throwable e) {
                     poolConfig.setEnableDefaultOnCatalog(false);
                     if (this.printRuntimeLog)
-                        Log.warn("BeeCP({})failed to set catalog default({}) on first connection", this.poolName, defaultCatalog, e);
+                        Log.warn("BeeCP({})failed to set default value({}) of catalog property on first connection object", this.poolName, defaultCatalog, e);
                 }
             }
         }
@@ -471,7 +471,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     defaultSchema = rawCon.getSchema();
                 } catch (Throwable e) {
                     if (this.printRuntimeLog)
-                        Log.warn("BeeCP({})failed to get schema on first connection", this.poolName, e);
+                        Log.warn("BeeCP({})failed to get value of schema property from first connection object", this.poolName, e);
                 }
             }
             if (isNotBlank(defaultSchema)) {
@@ -480,7 +480,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                 } catch (Throwable e) {
                     poolConfig.setEnableDefaultOnSchema(false);
                     if (this.printRuntimeLog)
-                        Log.warn("BeeCP({})failed to set schema default({}) on first connection", this.poolName, defaultSchema, e);
+                        Log.warn("BeeCP({})failed to set default value({}) of schema property on first connection object", this.poolName, defaultSchema, e);
                 }
             }
         }
@@ -493,13 +493,13 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             } else {
                 supportIsValid = false;
                 if (this.printRuntimeLog) {
-                    Log.warn("BeeCP({})'isValid' method of connection not supported by driver", this.poolName);
+                    Log.warn("BeeCP({})get false from call of isValid method on first connection object", this.poolName);
                 }
             }
         } catch (Throwable e) {
             supportIsValid = false;
             if (this.printRuntimeLog)
-                Log.warn("BeeCP({}) 'isValid' method check failed for driver", this.poolName, e);
+                Log.warn("BeeCP({})isValid method tested failed on first connection object", this.poolName, e);
         }
 
         //step7:test driver whether support sql query timeout
@@ -517,7 +517,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             if (defaultNetworkTimeout < 0) {
                 supportNetworkTimeoutInd = false;
                 if (this.printRuntimeLog)
-                    Log.warn("BeeCP({})'networkTimeout' property of connection not supported by driver", this.poolName);
+                    Log.warn("BeeCP({})networkTimeout property not supported by connections due to a negative number returned from first connection object", this.poolName);
             } else {//driver support networkTimeout
                 if (this.networkTimeoutExecutor == null) {
                     this.networkTimeoutExecutor = new ThreadPoolExecutor(poolMaxSize, poolMaxSize, 10, SECONDS,
@@ -529,7 +529,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         } catch (Throwable e) {
             supportNetworkTimeoutInd = false;
             if (this.printRuntimeLog)
-                Log.warn("BeeCP({}) 'networkTimeout' property check failed for driver", this.poolName, e);
+                Log.warn("BeeCP({})networkTimeout property tested failed on first connection object", this.poolName, e);
             if (networkTimeoutExecutor != null) {
                 networkTimeoutExecutor.shutdown();
                 networkTimeoutExecutor = null;
@@ -610,9 +610,9 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         try {
             //1: Acquires a permit from pool semaphore
             if (!this.semaphore.tryAcquire(this.maxWaitNs, TimeUnit.NANOSECONDS))
-                throw new ConnectionGetTimeoutException("Wait timeout on pool semaphore acquisition");
+                throw new ConnectionGetTimeoutException("Waited timeout on pool semaphore");
         } catch (InterruptedException e) {
-            throw new ConnectionGetInterruptedException("An interruption occurred on pool semaphore acquisition");
+            throw new ConnectionGetInterruptedException("An interruption occurred while waited on pool semaphore");
         }
 
         //2: try to search idle one,if not get,then try to create new one when pool not full
@@ -661,9 +661,9 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
                     LockSupport.parkNanos(t);//park exit:1:get transfer 2:timeout 3:interrupted
                     if (Thread.interrupted())
-                        cause = new ConnectionGetInterruptedException("An interruption occurred while waiting for a released connection");
+                        cause = new ConnectionGetInterruptedException("An interruption occurred while waited for a released connection");
                 } else if (t <= 0L) {//timeout
-                    cause = new ConnectionGetTimeoutException("Wait timeout for a released connection");
+                    cause = new ConnectionGetTimeoutException("Waited timeout for a released connection");
                 }
             }//end
         } while (true);//while
