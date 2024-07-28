@@ -40,7 +40,7 @@ public class Tc0059PoolClearTest extends TestCase {
         pool.clear(false);
         String logs = logAppender.endCollectedStoneLog();
         Assert.assertTrue(logs.contains("begin to remove all connections"));
-        Assert.assertTrue(logs.contains("removed all connections"));
+        Assert.assertTrue(logs.contains("completed to remove all connections"));
         Assert.assertEquals(0, pool.getTotalSize());
         pool.close();
 

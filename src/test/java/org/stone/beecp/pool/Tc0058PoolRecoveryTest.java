@@ -13,7 +13,8 @@ import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.base.StoneLogAppender;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.objects.MockDbCrashConnectionFactory;
+import org.stone.beecp.driver.MockConnectionProperties;
+import org.stone.beecp.objects.MockCommonConnectionFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -26,7 +27,8 @@ import static org.stone.beecp.config.DsConfigFactory.createDefault;
 public class Tc0058PoolRecoveryTest extends TestCase {
 
     public void testRecoveryAfterDBRestoreTest() throws SQLException {
-        MockDbCrashConnectionFactory factory = new MockDbCrashConnectionFactory();
+        MockConnectionProperties connectionProperties = new MockConnectionProperties();
+        MockCommonConnectionFactory factory = new MockCommonConnectionFactory(connectionProperties);
 
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(3);
@@ -43,18 +45,23 @@ public class Tc0058PoolRecoveryTest extends TestCase {
 
         try {
             LockSupport.parkNanos(MILLISECONDS.toNanos(600));
-            factory.dbCrash(); //<----db crashed here,all pooled connections dead
-            pool.getConnection();
+            connectionProperties.enableExceptionOnMethod("isValid"); //<----db crashed here
+            connectionProperties.setMockException1(new SQLException("network communication failed"));
+            factory.setCreateException1(connectionProperties.getMockException1());
+
+            pool.getConnection();//all pooled connections dead
         } catch (SQLException e) {
-            Assert.assertEquals("Unlucky,your db has crashed", e.getMessage());//message from mock factory
+            Assert.assertEquals("network communication failed", e.getMessage());//message from mock factory
             Assert.assertEquals(0, pool.getTotalSize());//
+
             String logs = logAppender.endCollectedStoneLog();
-            Assert.assertTrue(logs.contains("failed to test connection with 'isAlive' method"));
-            Assert.assertTrue(logs.contains("for cause:bad"));
+            Assert.assertTrue(logs.contains("alive tested failure on a borrowed connection"));
         }
 
         //2: db restore here
-        factory.dbRestore();//<--db restored
+        factory.setCreateException1(null);
+        connectionProperties.disableExceptionOnMethod("isValid");//<--db restored
+
         Connection con = pool.getConnection();
         Assert.assertNotNull(con);
         con.close();
