@@ -42,7 +42,7 @@ import static org.stone.tools.CommonUtil.*;
  * @version 1.0
  */
 public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
-    //an int sequence generator for pool names,its value starts with 1
+    //an int sequence for pool names generation,its value starts with 1
     private static final AtomicInteger PoolNameIndex = new AtomicInteger(1);
     //a default list of configuration items skip INFO print on pool initialization(pool still print them under debug mode)
     private static final List<String> DefaultExclusionList = Arrays.asList("username", "password", "jdbcUrl", "user", "url");
@@ -691,7 +691,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
             throw new IllegalArgumentException("Configuration file name can't be null or empty");
         String fileLowerCaseName = filename.toLowerCase(Locale.US);
         if (!fileLowerCaseName.endsWith(".properties"))
-            throw new IllegalArgumentException("Configuration file name file must end with '.properties'");
+            throw new IllegalArgumentException("Configuration file name file must be end with '.properties'");
 
         if (fileLowerCaseName.startsWith("cp:")) {//1:'cp:' prefix
             String cpFileName = fileLowerCaseName.substring("cp:".length());
