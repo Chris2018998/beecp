@@ -64,7 +64,7 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
         try {
             pool.getConnection();
         } catch (ConnectionGetInterruptedException e) {
-            Assert.assertTrue(e.getMessage().contains("An interruption occurred while waited on pool semaphore"));
+            Assert.assertTrue(e.getMessage().contains("An interruption occurred while waiting on pool semaphore"));
             first.interrupt();
         }
         pool.close();

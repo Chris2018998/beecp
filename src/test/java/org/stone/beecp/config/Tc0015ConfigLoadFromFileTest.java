@@ -66,7 +66,7 @@ public class Tc0015ConfigLoadFromFileTest extends TestCase {
             config1.loadFromPropertiesFile("D:\\beecp\\ds.properties1");
         } catch (Exception e) {
             String message = e.getMessage();
-            Assert.assertTrue(message != null && message.contains("Configuration file name file must end with '.properties'"));
+            Assert.assertTrue(message != null && message.contains("Configuration file name file must be end with '.properties'"));
         }
 
         try {

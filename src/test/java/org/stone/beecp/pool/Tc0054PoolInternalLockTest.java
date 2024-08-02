@@ -65,7 +65,7 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         try {
             pool.getConnection();
         } catch (ConnectionCreateException e) {
-            Assert.assertTrue(e.getMessage().contains("An interruption occurred while waited on pool lock"));
+            Assert.assertTrue(e.getMessage().contains("An interruption occurred while waiting on pool lock"));
             first.interrupt();
         }
         pool.close();
@@ -93,7 +93,7 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         try {
             pool.getConnection();
         } catch (Exception e) {
-            Assert.assertTrue(e.getMessage().contains("An interruption occurred while waited on pool lock"));
+            Assert.assertTrue(e.getMessage().contains("An interruption occurred while waiting on pool lock"));
         }
         pool.close();
     }
