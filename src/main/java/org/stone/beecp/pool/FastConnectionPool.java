@@ -248,7 +248,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             if (!this.pooledArrayLock.tryLock(this.maxWaitNs, TimeUnit.NANOSECONDS))
                 throw new ConnectionCreateException("Waited timeout on pool lock");
         } catch (InterruptedException e) {
-            throw new ConnectionCreateException("An interruption occurred while waited on pool lock");
+            throw new ConnectionCreateException("An interruption occurred while waiting on pool lock");
         }
 
         //2:Creates a connection under acquired lock
@@ -511,7 +511,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
         //step8: check driver whether support networkTimeout
         int defaultNetworkTimeout = 0;
-        boolean supportNetworkTimeoutInd = true;//assume support
+        boolean supportNetworkTimeoutInd = true;//assume supportable
         try {
             defaultNetworkTimeout = rawCon.getNetworkTimeout();
             if (defaultNetworkTimeout < 0) {
@@ -588,9 +588,9 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         if (this.poolState != POOL_READY)
             throw new ConnectionGetForbiddenException("Pool was closed or in clearing");
 
-        //0: get the last used connection from threadLocal and try to hold it via cas
-        Borrower b;
-        if (this.enableThreadLocal) {//set false to support virtual threads
+        //1: try to reuse connection in thread local
+        Borrower b = null;
+        if (this.enableThreadLocal) {
             b = this.threadLocal.get().get();
             if (b != null) {
                 PooledConnection p = b.lastUsed;
@@ -598,54 +598,59 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     if (this.testOnBorrow(p)) return b.lastUsed = p;
                     b.lastUsed = null;
                 }
-            } else {
-                b = new Borrower();
-                this.threadLocal.set(new WeakReference<>(b));
             }
-        } else {
-            b = new Borrower();
         }
 
+        //2: try to acquire a permit of pool semaphore
         long deadline = System.nanoTime();
         try {
-            //1: Acquires a permit from pool semaphore
             if (!this.semaphore.tryAcquire(this.maxWaitNs, TimeUnit.NANOSECONDS))
                 throw new ConnectionGetTimeoutException("Waited timeout on pool semaphore");
         } catch (InterruptedException e) {
-            throw new ConnectionGetInterruptedException("An interruption occurred while waited on pool semaphore");
+            throw new ConnectionGetInterruptedException("An interruption occurred while waiting on pool semaphore");
         }
 
-        //2: try to search idle one,if not get,then try to create new one when pool not full
+        //3: create a borrower when local variable b is null
+        if (this.enableThreadLocal && b == null) {
+            b = new Borrower();
+            this.threadLocal.set(new WeakReference<>(b));
+        }
+
+        //4: try to search idle one or create new one
         PooledConnection p;
         try {
             p = this.searchOrCreate();
             if (p != null) {
                 semaphore.release();
-                return b.lastUsed = p;
+                if (b != null) b.lastUsed = p;
+                return p;
             }
         } catch (SQLException e) {
             semaphore.release();
             throw e;
         }
 
-        //3:try to get a transferred connection
-        b.state = null;
-        this.waitQueue.offer(b);//self in,self out
+        //5: wait in queue for released one
+        if (b == null)
+            b = new Borrower();
+        else
+            b.state = null;
+        this.waitQueue.offer(b);
         SQLException cause = null;
         deadline += this.maxWaitNs;
 
         do {
-            Object s = b.state;//PooledConnection,Throwable,null
+            Object s = b.state;//one of possible types: PooledConnection,Throwable,null
             if (s instanceof PooledConnection) {
                 p = (PooledConnection) s;
                 if (this.transferPolicy.tryCatch(p) && this.testOnBorrow(p)) {
-                    this.waitQueue.remove(b);
                     this.semaphore.release();
+                    this.waitQueue.remove(b);
                     return b.lastUsed = p;
                 }
             } else if (s instanceof Throwable) {
-                this.waitQueue.remove(b);
                 this.semaphore.release();
+                this.waitQueue.remove(b);
                 throw s instanceof SQLException ? (SQLException) s : new ConnectionGetException((Throwable) s);
             }
 
@@ -661,7 +666,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
                     LockSupport.parkNanos(t);//park exit:1:get transfer 2:timeout 3:interrupted
                     if (Thread.interrupted())
-                        cause = new ConnectionGetInterruptedException("An interruption occurred while waited for a released connection");
+                        cause = new ConnectionGetInterruptedException("An interruption occurred while waiting for a released connection");
                 } else if (t <= 0L) {//timeout
                     cause = new ConnectionGetTimeoutException("Waited timeout for a released connection");
                 }
