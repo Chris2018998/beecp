@@ -9,13 +9,15 @@
  */
 package org.stone.beecp;
 
+import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
+import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
+
 import javax.sql.XAConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * A container interface,whose implementation instance works under {@link BeeDataSource} to maintain a set of jdbc
- * connections.
+ * A Container maintains some borrowable connections for be reused
  *
  * @author Chris Liao
  * @version 1.0
@@ -23,80 +25,77 @@ import java.sql.SQLException;
 public interface BeeConnectionPool {
 
     /**
-     * Pool initializes with a configuration object contains some sub items.
+     * Pool initializes,if success,pool state become to be ready for working,then borrowers can get connections from it
      *
-     * @param config is a target configuration object for initialization
-     * @throws SQLException while initializing failed
+     * @param config is a configuration object,some items of it are used in initialization
+     * @throws SQLException when initializes failed
      */
     void init(BeeDataSourceConfig config) throws SQLException;
 
     /**
-     * Attempts to borrow a connection from pool;if pool is full and no idle connections,borrower then waits in pool
-     * util getting one success.
+     * Attempts to get a connection from pool
      *
      * @return a borrowed connection
-     * @throws SQLException while connection created failed if pool capacity is not reach maximum {@link BeeDataSourceConfig#getMaxActive()}
-     * @throws SQLException when timeout on wait
-     * @throws SQLException when interruption on wait
+     * @throws SQLException                      when pool creates a connection failed
+     * @throws ConnectionGetTimeoutException     when borrower wait time out in pool
+     * @throws ConnectionGetInterruptedException if interrupted while waiting in pool
      */
     Connection getConnection() throws SQLException;
 
     /**
-     * Attempts to borrow a connection from pool,if not get one,then wait in pool for a released one util timeout or
-     * interrupted.
+     * Attempts to get a XAConnection from pool
      *
-     * @return a borrowed connection
-     * @throws SQLException when failed to create a new connection
-     * @throws SQLException when timeout on wait
-     * @throws SQLException when interruption on wait
+     * @return a borrowed XAConnection
+     * @throws SQLException                      when pool creates a connection failed
+     * @throws ConnectionGetTimeoutException     when borrower wait time out in pool
+     * @throws ConnectionGetInterruptedException if interrupted while waiting in pool
      */
     XAConnection getXAConnection() throws SQLException;
 
     /**
-     * This invocation cause pool to stop work,close all connections and removes them,pool state marked as closed value
-     * when completion and all operations on pool are disabled.
+     * Closes all connections in pool and shutdown all work threads in pool,then pool state change to closed from working
      */
     void close();
 
     /**
-     * Gets pool status whether in closed.
+     * Query pool state whether is closed.
      *
-     * @return a boolean value of pool close status
+     * @return true that pool is closed
      */
     boolean isClosed();
 
     /**
-     * A switch method on runtime logs print.
+     * Changes switch of log print
      *
-     * @param indicator is true,pool prints runtime logs；false,not print
+     * @param indicator is true that prints logs of pool work,false that disable print
      */
     void setPrintRuntimeLog(boolean indicator);
 
     /**
-     * Gets pool monitor object contains pool runtime info,for example:pool state,idle count,using count
+     * Gets a monitor object of pool runtime info
      *
-     * @return monitor vo
+     * @return monitor object of pool
      */
     BeeConnectionPoolMonitorVo getPoolMonitorVo();
 
     /**
-     * Get start time in creating a connection in pool,timeunit:nanoseconds
+     * Get start time of connection creation,if return value is not equal to zero,means that some thread is creating a connection.
      *
-     * @return start time of creation
+     * @return a nanoseconds time;if not exists a creating thread,then return 0
      */
     long getCreatingTime();
 
     /**
-     * checks current creation timeout,refer to {@link #getCreatingTime()}
+     * Query elapsed time of connection creation whether is timeout
      *
-     * @return an indicator of timeout,true or false
+     * @return true that creation is timeout
      */
     boolean isCreatingTimeout();
 
     /**
-     * interrupt creation thread of connection and all waiters to create connections
+     * Interrupts a thread creating a connection and threads waiting to create connections
      *
-     * @return interrupted threads
+     * @return interrupted threads,if not exists creating thread and waiting threads,return an empty array
      */
     Thread[] interruptOnCreation();
 
