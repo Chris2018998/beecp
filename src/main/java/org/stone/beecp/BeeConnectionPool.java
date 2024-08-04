@@ -73,7 +73,7 @@ public interface BeeConnectionPool {
     void setPrintRuntimeLog(boolean indicator);
 
     /**
-     * Gets a monitor object of pool runtime info.
+     * Gets monitor object of pool runtime info.
      *
      * @return monitor object of pool
      */

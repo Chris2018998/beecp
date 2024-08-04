@@ -87,7 +87,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     private long timerCheckInterval = MINUTES.toMillis(3);
     //an indicator that close borrowed connections immediately,or that close them when them return to pool when clean pool and close pool,default is false.
     private boolean forceCloseUsingOnClear;
-    //milliseconds: a park time for wait borrowed connections return to pool when clean pool and close pool,default is 3000 milliseconds
+    //milliseconds: a park time for waiting borrowed connections return to pool when clean pool and close pool,default is 3000 milliseconds
     private long delayTimeForNextClear = 3000L;
     //a code list for eviction check on sql exceptions
     private List<Integer> sqlExceptionCodeList;
@@ -96,7 +96,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     //an initial value of catalog property on new connections,refer to {@code Connection.setCatalog(String)}
     private String defaultCatalog;
-    //an initial value of schema; property on new connections,refer to {@code Connection.setSchema(String)}
+    //an initial value of schema property on new connections,refer to {@code Connection.setSchema(String)}
     private String defaultSchema;
     //an initial value of readOnly property on new connections,refer to {@code Connection.setReadOnly(boolean)}
     private Boolean defaultReadOnly;
@@ -120,9 +120,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     //an indicator to set initial value to transactionIsolation property after connections are created
     private boolean enableDefaultOnTransactionIsolation = true;
 
-    //a force dirty on schema property to support recovery under transaction mode(set true if use PG driver)
+    //an indicator that set a dirty flag of schema property to connection and ignore change when call setSchema(String) method on connections
+    //this can be used to support some special drivers to recovery schema after transaction end (for example:PG driver)
     private boolean forceDirtyOnSchemaAfterSet;
-    //a force dirty on catalog property to support recovery under transaction mode(set true if use PG driver)
+    //an indicator that set a dirty flag of catalog property to connection and ignore change when call setCatalog(String) method on connections
+    //this can be used to support some special drivers to recovery catalog after transaction end (for example:PG driver)
     private boolean forceDirtyOnCatalogAfterSet;
 
     /**
