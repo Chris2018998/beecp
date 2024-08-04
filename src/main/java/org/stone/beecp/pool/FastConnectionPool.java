@@ -180,6 +180,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         //step6: creates pool semaphore and pool threadLocal
         this.enableThreadLocal = poolConfig.isEnableThreadLocal();
         this.semaphore = new InterruptionSemaphore(this.semaphoreSize, isFairMode);
+        if (this.threadLocal != null) this.threadLocal = null;//help gc when reinitialize
         if (enableThreadLocal) this.threadLocal = new BorrowerThreadLocal();//as a cache to store one used connection
 
         //step7: creates wait queue,scan thread and others
