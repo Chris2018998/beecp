@@ -120,10 +120,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     //an indicator to set initial value to transactionIsolation property after connections are created
     private boolean enableDefaultOnTransactionIsolation = true;
 
-    //an indicator that set a dirty flag of schema property to connection and ignore change when call setSchema(String) method on connections
+    //an indicator that set a dirty flag of schema property to connection and ignore change when call setSchema(String) method on connection
     //this can be used to support some special drivers to recovery schema after transaction end (for example:PG driver)
     private boolean forceDirtyOnSchemaAfterSet;
-    //an indicator that set a dirty flag of catalog property to connection and ignore change when call setCatalog(String) method on connections
+    //an indicator that set a dirty flag of catalog property to connection and ignore change when call setCatalog(String) method on connection
     //this can be used to support some special drivers to recovery catalog after transaction end (for example:PG driver)
     private boolean forceDirtyOnCatalogAfterSet;
 
@@ -803,11 +803,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     //****************************************************************************************************************//
 
     /**
-     * configuration items check
+     * Check on this configuration,return its copy if success
      *
-     * @return a check passed config object
-     * @throws RuntimeException if check failed on some configuration items
-     * @throws SQLException     if specified driver not accept jdbc url or failed to get a matched driver from driverManager
+     * @return a copy of current configuration
+     * @throws BeeDataSourceConfigException when check configuration failed
+     * @throws SQLException                 when failed to load a driver with a configured class name or other check on a driver
      */
     public BeeDataSourceConfig check() throws SQLException {
         if (initialSize > maxActive)
