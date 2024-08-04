@@ -44,10 +44,10 @@ import static org.stone.tools.CommonUtil.*;
 public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     //an int sequence for pool names generation,its value starts with 1
     private static final AtomicInteger PoolNameIndex = new AtomicInteger(1);
-    //a default list of configuration items skip INFO print on pool initialization(pool still print them under debug mode)
+    //a default name list of items to be skipped over log print when pool initializes
     private static final List<String> DefaultExclusionList = Arrays.asList("username", "password", "jdbcUrl", "user", "url");
 
-    //a properties map,whose entry values are injected to a connection factory or a datasource on pool initializes
+    //a map store value of putted items,which are injected to a connection factory or a datasource when pool initializes,default is empty
     private final Map<String, Object> connectProperties = new HashMap<>();
     //jdbc username link to a database,default is null
     private String username;
@@ -57,42 +57,41 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     private String jdbcUrl;
     //jdbc driver class name,default is null;if not set,pool try to search a matched driver with non {@code dbcUrl}
     private String driverClassName;
-    //pool name,default is null;if not set,a pool name generated with {@code PoolNameIndex} for it
+    //if not set,a generation name assigned to it,default is null
     private String poolName;
-    //a mechanism for borrowers to get connections from pool,default is false(unfair)
+    //an indicator of pool work mode,default is false(unfair)
     private boolean fairMode;
     //creation size of initial connections,default is zero
     private int initialSize;
-    //an indicator to create initial connections by an async thread,default is false(synchronization)
+    //an indicator of creation way of initial connections,default is false(synchronization)
     private boolean asyncCreateInitConnection;
     //maximum of connections in pool,its original value is calculated with an expression
     private int maxActive = Math.min(Math.max(10, NCPU), 50);
     //max permit size of pool semaphore,its original value is calculated with an expression
     private int borrowSemaphoreSize = Math.min(this.maxActive / 2, NCPU);
 
-    //milliseconds: max wait time for borrowers in pool for a released connection,default is 8000 milliseconds(8 seconds)
-    //pool supports four kind of timeout:semaphore timeout,lock timeout,waitQueue timeout,creation timeout
+    //milliseconds: max wait time to get a connection for a borrower in pool,default is 8000 milliseconds(8 seconds)
     private long maxWait = SECONDS.toMillis(8);
-    //milliseconds: max idle time on connections,if timeout,pool will close them and remove from pool,default is 18000 milliseconds(3 minutes)
+    //milliseconds: max idle time of un-borrowed connections,default is 18000 milliseconds(3 minutes)
     private long idleTimeout = MINUTES.toMillis(3);
-    //milliseconds: max inactive time on borrowed connections,if timeout,pool recycled them by force to avoid connections leak,default is zero
+    //milliseconds: max inactive time of borrowed connections,which can be recycled by force,default is zero
     private long holdTimeout;
 
-    //a test sql to check connection alive
+    //a test sql to validate connection whether alive
     private String aliveTestSql = "SELECT 1";
-    //seconds: max wait time to get alive test result on connections,default is 3 seconds.
+    //seconds: max wait time to get alive test result from connections,default is 3 seconds.
     private int aliveTestTimeout = 3;
-    //milliseconds: a period time assume connections alive from last activity,need not do test,default is 500 milliseconds
+    //milliseconds: a threshold time of alive test when borrowed success,if time gap value since last access is less than it,no test on connections,default is 500 milliseconds
     private long aliveAssumeTime = 500L;
-    //milliseconds: an interval time to scan timeout connections(idle timeout,hold timeout),default is 18000 milliseconds(3 minutes)
+    //milliseconds: an interval time that pool scans out timeout connections(idle timeout and hold timeout),default is 18000 milliseconds(3 minutes)
     private long timerCheckInterval = MINUTES.toMillis(3);
-    //an indicator to close connections in using while pool clears,default is false
+    //an indicator that close borrowed connections immediately,or that close them when them return to pool when clean pool and close pool,default is false.
     private boolean forceCloseUsingOnClear;
-    //milliseconds:a pause time to wait using connections return to pool and close them in a loop when {@code forceCloseUsingOnClear} is false,default is 3000 milliseconds
+    //milliseconds: a park time for wait borrowed connections return to pool when clean pool and close pool,default is 3000 milliseconds
     private long delayTimeForNextClear = 3000L;
-    //an error code list to check sql-exceptions thrown from connections,if true,source connections will be evicted from pool
+    //a code list for eviction check on sql exceptions
     private List<Integer> sqlExceptionCodeList;
-    //an error state list to check sql-exceptions thrown from connections,if true,source connections will be evicted from pool
+    //a state list for eviction check on sql exceptions
     private List<String> sqlExceptionStateList;
 
     //an initial value of catalog property on new connections,refer to {@code Connection.setCatalog(String)}

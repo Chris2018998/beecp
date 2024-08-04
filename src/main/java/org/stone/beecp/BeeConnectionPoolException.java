@@ -12,7 +12,7 @@ package org.stone.beecp;
 import java.sql.SQLException;
 
 /**
- * A base exception thrown from pool operation methods.
+ * Base pool exception
  *
  * @author Chris Liao
  * @version 1.0
