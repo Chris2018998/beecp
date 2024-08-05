@@ -17,6 +17,7 @@ import org.stone.beecp.objects.BorrowThread;
 import org.stone.beecp.objects.InterruptionAction;
 import org.stone.beecp.objects.MockNetBlockConnectionFactory;
 import org.stone.beecp.pool.exception.ConnectionCreateException;
+import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
 
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
@@ -64,7 +65,7 @@ public class Tc0054PoolInternalLockTest extends TestCase {
 
         try {
             pool.getConnection();
-        } catch (ConnectionCreateException e) {
+        } catch (ConnectionGetInterruptedException e) {
             Assert.assertTrue(e.getMessage().contains("An interruption occurred while waiting on pool lock"));
             first.interrupt();
         }
