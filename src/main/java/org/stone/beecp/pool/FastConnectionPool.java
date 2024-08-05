@@ -252,7 +252,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             if (!this.pooledArrayLock.tryLock(this.maxWaitNs, TimeUnit.NANOSECONDS))
                 throw new ConnectionCreateException("Waited timeout on pool lock");
         } catch (InterruptedException e) {
-            throw new ConnectionCreateException("An interruption occurred while waiting on pool lock");
+            throw new ConnectionGetInterruptedException("An interruption occurred while waiting on pool lock");
         }
 
         //2: try to create a connection with connection factory
@@ -723,7 +723,18 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     }
 
     /**
-     * Method-2.7: transfer an exception to a waiter
+     * Method-2.7: terminate a Pooled Connection
+     *
+     * @param p      to be closed and removed
+     * @param reason is a cause for be aborted
+     */
+    void abort(PooledConnection p, String reason) {
+        this.removePooledConn(p, reason);
+        this.tryWakeupServantThread();
+    }
+
+    /**
+     * Method-2.8: transfer an exception to a waiter
      *
      * @param e transferred exception
      */
@@ -736,16 +747,6 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
     }
 
-    /**
-     * Method-2.8: abandon a Pooled Connection
-     *
-     * @param p      to be closed and removed
-     * @param reason is a cause of abandon
-     */
-    void abandonOnReturn(PooledConnection p, String reason) {
-        this.removePooledConn(p, reason);
-        this.tryWakeupServantThread();
-    }
 
     /**
      * Method-2.9: alive test on a borrowed connection

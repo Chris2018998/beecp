@@ -169,8 +169,8 @@ final class PooledConnection implements Cloneable {
     /**
      * remove connection from pool,method called by {@link ProxyConnectionBase#abort}
      */
-    void removeSelf() {
-        pool.abandonOnReturn(this, DESC_RM_ABORT);
+    void abortSelf() {
+        pool.abort(this, DESC_RM_ABORT);
     }
 
     /**
@@ -184,7 +184,7 @@ final class PooledConnection implements Cloneable {
             this.resetRawConn();
             this.pool.recycle(this);
         } catch (Throwable e) {
-            this.pool.abandonOnReturn(this, DESC_RM_BAD);
+            this.pool.abort(this, DESC_RM_BAD);
             throw e instanceof SQLException ? (SQLException) e : new ConnectionRecycleException(e);
         }
     }

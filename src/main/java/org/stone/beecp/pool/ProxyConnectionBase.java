@@ -139,7 +139,7 @@ public abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Co
             this.raw = CLOSED_CON;
             if (this.p.openStmSize > 0) this.p.clearStatement();
         }
-        this.p.removeSelf();//close raw connection and remove from pool
+        this.p.abortSelf();//close raw connection and remove from pool
     }
     //for JDK1.7 end
 }
