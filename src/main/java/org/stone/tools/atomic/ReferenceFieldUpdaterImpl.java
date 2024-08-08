@@ -9,9 +9,9 @@
  */
 package org.stone.tools.atomic;
 
+import org.stone.tools.UnsafeHolder;
 import org.stone.tools.exception.ReflectionOperationException;
-import org.stone.tools.unsafe.UnsafeAdaptor;
-import org.stone.tools.unsafe.UnsafeAdaptorHolder;
+import sun.misc.Unsafe;
 
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
@@ -22,7 +22,8 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  * @version 1.0
  */
 public final class ReferenceFieldUpdaterImpl<T, V> extends AtomicReferenceFieldUpdater<T, V> {
-    private final static UnsafeAdaptor unsafe = UnsafeAdaptorHolder.U;
+    private final static Unsafe unsafe = UnsafeHolder.getUnsafe();
+
     private final long offset;
     private final Class<V> fieldType;
 

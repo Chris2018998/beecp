@@ -9,9 +9,9 @@
  */
 package org.stone.tools.atomic;
 
+import org.stone.tools.UnsafeHolder;
 import org.stone.tools.exception.ReflectionOperationException;
-import org.stone.tools.unsafe.UnsafeAdaptor;
-import org.stone.tools.unsafe.UnsafeAdaptorHolder;
+import sun.misc.Unsafe;
 
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
  * @version 1.0
  */
 public final class IntegerFieldUpdaterImpl<T> extends AtomicIntegerFieldUpdater<T> {
-    private final static UnsafeAdaptor UA = UnsafeAdaptorHolder.U;
+    private final static Unsafe UA = UnsafeHolder.getUnsafe();
     private final long offset;
 
     private IntegerFieldUpdaterImpl(long offset) {
