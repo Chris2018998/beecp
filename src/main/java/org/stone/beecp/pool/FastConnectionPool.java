@@ -858,41 +858,41 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     //***************************************************************************************************************//
     //                                  4: Pool clear/close methods(5)                                               //                                                                                  //
     //***************************************************************************************************************//
-    //Method-4.1: close all connections in pool and removes them from pool
-    public void clear(boolean forceCloseUsing) {
-        try {
-            clear(forceCloseUsing, null);
-        } catch (SQLException e) {
-            //do nothing
-        }
+    public void clear(boolean forceCloseUsing) throws SQLException {
+        clear(forceCloseUsing, false, null);
     }
 
     //Method-4.2: close all connections in pool and removes them from pool,then re-initializes pool with new configuration
     public void clear(boolean forceCloseUsing, BeeDataSourceConfig config) throws SQLException {
+        clear(forceCloseUsing, true, config);
+    }
+
+    //Method-4.3: close all connections in pool and removes them from pool,then re-initializes pool with new configuration
+    private void clear(boolean forceCloseUsing, boolean reinit, BeeDataSourceConfig config) throws SQLException {
+        if (reinit && config == null)
+            throw new BeeDataSourceConfigException("Configuration for pool reinitialization can' be null");
+
         if (PoolStateUpd.compareAndSet(this, POOL_READY, POOL_CLEARING)) {
-
-            Log.info("BeeCP({})begin to remove all connections", this.poolName);
-            this.removeAllConnections(forceCloseUsing, DESC_RM_CLEAR);
-            Log.info("BeeCP({})completed to remove all connections", this.poolName);
-
             try {
-                if (config != null) {
-                    Log.info("BeeCP({})begin to re-initialize pool with a new configuration", this.poolName);
-                    this.poolConfig = config.check();
+                BeeDataSourceConfig checkedConfig = null;
+                if (reinit) checkedConfig = config.check();
 
-                    /*
-                     * maybe pool re-initialized failed with error config,in order to let pool stable,
-                     * so still reset pool state to ready,but just do clear again with right configuration to fix it
-                     */
-                    startup(POOL_CLEARING);
-                    Log.info("BeeCP({})completed to re-initialize pool successful", this.poolName);
+                Log.info("BeeCP({})begin to remove all connections", this.poolName);
+                this.removeAllConnections(forceCloseUsing, DESC_RM_CLEAR);
+                Log.info("BeeCP({})completed to remove all connections", this.poolName);
+
+                if (reinit) {
+                    this.poolConfig = checkedConfig;
+                    Log.info("BeeCP({})start to reinitialize pool", this.poolName);
+                    startup(POOL_CLEARING);//throws SQLException only fail to create initial connections or fail to set default
+                    //note: if failed,this method may be recalled with correct configuration
+                    Log.info("BeeCP({})completed to reinitialize pool successful", this.poolName);
                 }
-            } catch (Throwable e) {
-                Log.error("BeeCP({})re-initialized pool failed", this.poolName, e);
-                throw e instanceof SQLException ? (SQLException) e : new PoolInitializeFailedException(e);
             } finally {
-                this.poolState = POOL_READY;//reset pool state to be ready once pool restart failed with the new config
+                this.poolState = POOL_READY;
             }
+        } else {
+            throw new PoolInClearingException("Pool was closed or in cleaning");
         }
     }
 
