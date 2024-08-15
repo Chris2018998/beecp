@@ -15,7 +15,7 @@ import org.stone.base.StoneLogAppender;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 import org.stone.beecp.objects.MockCommonConnectionFactory;
-import org.stone.beecp.pool.exception.PoolInitializeFailedException;
+import org.stone.beecp.pool.exception.PoolInClearingException;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -47,7 +47,13 @@ public class Tc0059PoolClearTest extends TestCase {
         //test clear on closed pool
         logAppender = getStoneLogAppender();
         logAppender.beginCollectStoneLog();
-        pool.clear(false);
+        try {
+            pool.clear(false);
+            fail("fail to test clear");
+        } catch (SQLException e) {
+            Assert.assertTrue(e instanceof PoolInClearingException);
+            Assert.assertEquals("Pool was closed or in cleaning", e.getMessage());
+        }
         logs = logAppender.endCollectedStoneLog();
         Assert.assertTrue(logs.isEmpty());
     }
@@ -127,11 +133,8 @@ public class Tc0059PoolClearTest extends TestCase {
         try {
             pool.clear(false, config2);
             fail("failed test clear");
-        } catch (PoolInitializeFailedException e) {
-            Throwable cause = e.getCause();
-            Assert.assertTrue(cause instanceof BeeDataSourceConfigException);
-            Assert.assertEquals("initialSize must not be greater than maxActive", cause.getMessage());
-
+        } catch (BeeDataSourceConfigException e) {
+            Assert.assertEquals("initialSize must not be greater than maxActive", e.getMessage());
             config2.setMaxActive(10);
             config2.setInitialSize(10);
             pool.clear(false, config2);

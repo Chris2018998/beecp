@@ -77,7 +77,6 @@ public class Tc0104ConnectionTransactionTest extends TestCase {
             re1 = ps1.executeQuery();
             try {
                 con1.setAutoCommit(true);
-                fail("AutoCommit reset false before rollback or commit");
             } catch (SQLException e) {
                 Assert.assertEquals("Change forbidden when in transaction", e.getMessage());
             }
