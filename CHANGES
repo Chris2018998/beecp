@@ -1,5 +1,11 @@
 beecp changes
 
+Changes in 4.0.7
+
+1: refactor clear method of pool
+2: remove dirty check from method setAutoCommit of proxy Connection
+
+
 Changes in 4.0.6
 
 1: fix nullpoint exception when set default to first connction
