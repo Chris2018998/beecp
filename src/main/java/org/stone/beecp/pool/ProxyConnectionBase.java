@@ -78,7 +78,7 @@ public abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Co
 
     public final void setAutoCommit(boolean autoCommit) throws SQLException {
         /*
-         * Note: Change value of auto-commit from false true during a transaction,which is committed to db,refer to
+         * Note: Change value of auto-commit from false to true during a transaction,which is committed to db,refer to
          * specification on method {@link Connection#setAutoCommit(boolean)}
          */
         this.raw.setAutoCommit(autoCommit);
