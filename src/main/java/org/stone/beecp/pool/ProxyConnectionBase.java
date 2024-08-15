@@ -77,10 +77,14 @@ public abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Co
     }
 
     public final void setAutoCommit(boolean autoCommit) throws SQLException {
-        if (p.commitDirtyInd) throw new SQLException("Change forbidden when in transaction");
+        /*
+         * Note: Change value of auto-commit from false true during a transaction,which is committed to db,refer to
+         * specification on method {@link Connection#setAutoCommit(boolean)}
+         */
         this.raw.setAutoCommit(autoCommit);
-        this.p.curAutoCommit = autoCommit;
         this.p.setResetInd(PS_AUTO, autoCommit != this.p.defaultAutoCommit);
+        if (!this.p.curAutoCommit && autoCommit) this.p.commitDirtyInd = false;
+        this.p.curAutoCommit = autoCommit;
     }
 
     public final void commit() throws SQLException {
