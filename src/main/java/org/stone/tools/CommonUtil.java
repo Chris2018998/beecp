@@ -34,6 +34,10 @@ public class CommonUtil {
         return Objects.equals(a, b);
     }
 
+    public static int getArrayIndex(int hash, int arrayLen){
+        return (arrayLen - 1) & (hash ^ (hash >>> 16));
+    }
+
     public static boolean isBlank(String str) {
         if (str == null) return true;
         for (int i = 0, l = str.length(); i < l; ++i) {
@@ -51,6 +55,8 @@ public class CommonUtil {
         }
         return false;
     }
+
+
 
     //xor
     public static int advanceProbe(final int probe) {
