@@ -55,7 +55,7 @@ public class Tc0058PoolRecoveryTest extends TestCase {
             Assert.assertEquals(0, pool.getTotalSize());//
 
             String logs = logAppender.endCollectedStoneLog();
-            Assert.assertTrue(logs.contains("alive tested failure on a borrowed connection"));
+            Assert.assertTrue(logs.contains("alive test failed on a borrowed connection"));
         }
 
         //2: db restore here

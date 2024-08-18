@@ -1081,7 +1081,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             }
         } catch (Throwable e) {
             if (this.printRuntimeLog)
-                Log.warn("BeeCP({})alive tested failure on a borrowed connection", this.poolName, e);
+                Log.warn("BeeCP({})alive test failed on a borrowed connection", this.poolName, e);
         }
         return false;
     }
