@@ -34,7 +34,7 @@ public class CommonUtil {
         return Objects.equals(a, b);
     }
 
-    public static int getArrayIndex(int hash, int arrayLen){
+    public static int getArrayIndex(int hash, int arrayLen) {
         return (arrayLen - 1) & (hash ^ (hash >>> 16));
     }
 
@@ -55,7 +55,6 @@ public class CommonUtil {
         }
         return false;
     }
-
 
 
     //xor
