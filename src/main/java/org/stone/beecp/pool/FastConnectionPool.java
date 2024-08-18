@@ -615,19 +615,16 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             throw new ConnectionGetInterruptedException("An interruption occurred while waiting on pool semaphore");
         }
 
-        //3: creates a borrower for next steps in this method store in thread local
-        if (this.enableThreadLocal && b == null) {
-            b = new Borrower();
-            this.threadLocal.set(new WeakReference<>(b));
-        }
-
-        //4: try to search idle one as possible,if not get one,then try to create one if pool not full
+        //3: try to search idle one or create new one
         PooledConnection p;
         try {
             p = this.searchOrCreate();
             if (p != null) {
                 semaphore.release();
-                if (b != null) b.lastUsed = p;
+
+                //put connection to thread local
+                if (this.enableThreadLocal)
+                    putToThreadLocal(p, b, b != null);
                 return p;
             }
         } catch (SQLException e) {
@@ -635,24 +632,31 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             throw e;
         }
 
-        //5: add the borrower to wait queue
-        if (b == null)
+        //4: add the borrower to wait queue
+        boolean hasCached;
+        if (b == null) {
+            hasCached = false;
             b = new Borrower();
-        else
+        } else {
             b.state = null;
+            hasCached = true;
+        }
         this.waitQueue.offer(b);
         SQLException cause = null;
         deadline += this.maxWaitNs;
 
-        //6: self-spin to get transferred object
+        //5: self-spin to get transferred connection
         do {
-            Object s = b.state;//one of possible types: PooledConnection,Throwable,null
+            Object s = b.state;//one of possible values: PooledConnection,Throwable,null
             if (s instanceof PooledConnection) {
                 p = (PooledConnection) s;
                 if (this.transferPolicy.tryCatch(p) && this.testOnBorrow(p)) {
                     this.semaphore.release();
                     this.waitQueue.remove(b);
-                    return b.lastUsed = p;
+
+                    if (this.enableThreadLocal)//put to thread local
+                        putToThreadLocal(p, b, hasCached);
+                    return p;
                 }
             } else if (s instanceof Throwable) {
                 this.semaphore.release();
@@ -680,7 +684,18 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         } while (true);//while
     }
 
-    //Method-2.4: Search one or create one
+    //Method-2.4: put borrowed pooled connection to thread local
+    private void putToThreadLocal(PooledConnection p, Borrower b, boolean hasCached) {
+        if (hasCached) {
+            b.lastUsed = p;
+        } else {
+            if (b == null) b = new Borrower();
+            b.lastUsed = p;
+            this.threadLocal.set(new WeakReference<>(b));
+        }
+    }
+
+    //Method-2.5: Search one or create one
     private PooledConnection searchOrCreate() throws SQLException {
         PooledConnection[] array = this.pooledArray;
         for (PooledConnection p : array) {
@@ -692,7 +707,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         return null;
     }
 
-    //Method-2.5: add count of retry and notify servant thread work if exists waiter
+    //Method-2.6: add count of retry and notify servant thread work if exists waiter
     private void tryWakeupServantThread() {
         int c;
         do {
@@ -704,7 +719,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     }
 
     /**
-     * Method-2.6: recycle a Pooled Connection,may transfer it to one waiter
+     * Method-2.7: recycle a Pooled Connection,may transfer it to one waiter
      *
      * @param p released connection
      */
@@ -723,7 +738,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     }
 
     /**
-     * Method-2.7: terminate a Pooled Connection
+     * Method-2.8: terminate a Pooled Connection
      *
      * @param p      to be closed and removed
      * @param reason is a cause for be aborted
@@ -734,7 +749,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     }
 
     /**
-     * Method-2.8: transfer an exception to a waiter
+     * Method-2.9: transfer an exception to a waiter
      *
      * @param e transferred exception
      */
@@ -747,9 +762,8 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
     }
 
-
     /**
-     * Method-2.9: alive test on a borrowed connection
+     * Method-2.10: alive test on a borrowed connection
      *
      * @return true that connection is alive,otherwise dead
      */
