@@ -4,6 +4,7 @@ Changes in 4.0.7
 
 1: refactor clear method of pool
 2: remove dirty check from method setAutoCommit of proxy Connection
+3: improve pool performance
 
 
 Changes in 4.0.6
