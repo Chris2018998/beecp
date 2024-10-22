@@ -58,13 +58,15 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
 
         BorrowThread first = new BorrowThread(pool);
         first.start();
+
+        Thread currrentThread = Thread.currentThread();
         TestUtil.joinUtilWaiting(first);
-        new InterruptionAction(Thread.currentThread()).start();
+        new InterruptionAction(currrentThread).start();
 
         try {
             pool.getConnection();
         } catch (ConnectionGetInterruptedException e) {
-            Assert.assertTrue(e.getMessage().contains("An interruption occurred while waiting on pool semaphore"));
+            Assert.assertTrue(e.getMessage().equals("An interruption occurred while waiting on pool semaphore"));
             first.interrupt();
         }
         pool.close();

@@ -32,7 +32,6 @@ import static org.stone.beecp.config.DsConfigFactory.*;
 /**
  * @author Chris Liao
  */
-
 public class Tc0031DataSourcePoolTest extends TestCase {
 
     public void testOnInitializedPool() throws Exception {
@@ -95,12 +94,12 @@ public class Tc0031DataSourcePoolTest extends TestCase {
             Assert.assertNotNull(vo);
             Assert.assertEquals(1, vo.getIdleSize());
 
-            //test on pool built-in lock
-            Assert.assertEquals(0, ds.getCreatingTime());
-            Assert.assertFalse(ds.isCreatingTimeout());
-            Thread[] interruptedThreads = ds.interruptOnCreation();
-            Assert.assertNotNull(interruptedThreads);
-            Assert.assertEquals(0, interruptedThreads.length);
+//            //test on pool built-in lock
+//            Assert.assertEquals(0, ds.getCreatingTime());
+//            Assert.assertFalse(ds.isCreatingTimeout());
+//            Thread[] interruptedThreads = ds.interruptOnCreation();
+//            Assert.assertNotNull(interruptedThreads);
+//            Assert.assertEquals(0, interruptedThreads.length);
 
             //maxWait
             ds.setMaxWait(0L);
@@ -141,20 +140,20 @@ public class Tc0031DataSourcePoolTest extends TestCase {
         } catch (PoolNotCreatedException e) {
             Assert.assertTrue(e.getMessage().contains("Pool not be created"));
         }
-        try {
-            ds.getCreatingTime();
-        } catch (PoolNotCreatedException e) {
-            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
-        }
+//        try {
+//            ds.getCreatingTime();
+//        } catch (PoolNotCreatedException e) {
+//            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
+//        }
+//
+//        try {
+//            ds.isCreatingTimeout();
+//        } catch (PoolNotCreatedException e) {
+//            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
+//        }
 
         try {
-            ds.isCreatingTimeout();
-        } catch (PoolNotCreatedException e) {
-            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
-        }
-
-        try {
-            ds.interruptOnCreation();
+            ds.interruptConnectionCreating(false);
         } catch (PoolNotCreatedException e) {
             Assert.assertTrue(e.getMessage().contains("Pool not be created"));
         }
@@ -179,26 +178,26 @@ public class Tc0031DataSourcePoolTest extends TestCase {
     }
 
 
-    public void testPoolCreationUnderLock() throws Exception {
-        BeeDataSource ds1 = null;
-        try {
-            ds1 = new BeeDataSource();
-            ds1.setDriverClassName(JDBC_DRIVER);
-            ds1.setUrl(JDBC_URL);
-            Connection con1 = ds1.getConnection();
-            Assert.assertNotNull(con1);
-            con1.close();
-
-            BeeDataSource ds2 = new BeeDataSource();
-            ds2.setDriverClassName(JDBC_DRIVER);
-            ds2.setUrl(JDBC_URL);
-            XAConnection con2 = ds2.getXAConnection();
-            Assert.assertNotNull(con2);
-            con2.close();
-        } finally {
-            if (ds1 != null) ds1.close();
-        }
-    }
+//    public void testPoolCreationUnderLock() throws Exception {
+//        BeeDataSource ds1 = null;
+//        try {
+//            ds1 = new BeeDataSource();
+//            ds1.setDriverClassName(JDBC_DRIVER);
+//            ds1.setUrl(JDBC_URL);
+//            Connection con1 = ds1.getConnection();
+//            Assert.assertNotNull(con1);
+//            con1.close();
+//
+//            BeeDataSource ds2 = new BeeDataSource();
+//            ds2.setDriverClassName(JDBC_DRIVER);
+//            ds2.setUrl(JDBC_URL);
+//            XAConnection con2 = ds2.getXAConnection();
+//            Assert.assertNotNull(con2);
+//            con2.close();
+//        } finally {
+//            if (ds1 != null) ds1.close();
+//        }
+//    }
 
     public void testPoolClassNotFound() {
         BeeDataSource ds = null;

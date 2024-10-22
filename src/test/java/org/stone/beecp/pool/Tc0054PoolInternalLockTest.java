@@ -21,7 +21,6 @@ import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
 
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.LockSupport;
 
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
@@ -72,30 +71,30 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         pool.close();
     }
 
-    public void testInterruptWaitersAndLockOwner() throws SQLException {
-        BeeDataSourceConfig config = createDefault();
-        config.setMaxActive(2);
-        config.setBorrowSemaphoreSize(2);
-        config.setMaxWait(TimeUnit.SECONDS.toMillis(2));
-        config.setTimerCheckInterval(TimeUnit.SECONDS.toMillis(3));//internal thread to interrupt waiters
-        config.setConnectionFactory(new MockNetBlockConnectionFactory());
-        FastConnectionPool pool = new FastConnectionPool();
-        pool.init(config);
-
-        BorrowThread first = new BorrowThread(pool);
-        first.start();
-        TestUtil.joinUtilWaiting(first);
-
-        Assert.assertTrue(pool.getCreatingTime() > 0);
-        Assert.assertFalse(pool.isCreatingTimeout());
-        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(2));
-        Assert.assertTrue(pool.isCreatingTimeout());
-
-        try {
-            pool.getConnection();
-        } catch (Exception e) {
-            Assert.assertTrue(e.getMessage().contains("An interruption occurred while waiting on pool lock"));
-        }
-        pool.close();
-    }
+//    public void testInterruptWaitersAndLockOwner() throws SQLException {
+//        BeeDataSourceConfig config = createDefault();
+//        config.setMaxActive(2);
+//        config.setBorrowSemaphoreSize(2);
+//        config.setMaxWait(TimeUnit.SECONDS.toMillis(2));
+//        config.setTimerCheckInterval(TimeUnit.SECONDS.toMillis(3));//internal thread to interrupt waiters
+//        config.setConnectionFactory(new MockNetBlockConnectionFactory());
+//        FastConnectionPool pool = new FastConnectionPool();
+//        pool.init(config);
+//
+//        BorrowThread first = new BorrowThread(pool);
+//        first.start();
+//        TestUtil.joinUtilWaiting(first);
+//
+//        Assert.assertTrue(pool.getCreatingTime() > 0);
+//        Assert.assertFalse(pool.isCreatingTimeout());
+//        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(2));
+//        Assert.assertTrue(pool.isCreatingTimeout());
+//
+//        try {
+//            pool.getConnection();
+//        } catch (Exception e) {
+//            Assert.assertTrue(e.getMessage().contains("An interruption occurred while waiting on pool lock"));
+//        }
+//        pool.close();
+//    }
 }

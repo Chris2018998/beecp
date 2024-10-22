@@ -35,7 +35,7 @@ public class Tc0052PoolThreadLocalTest extends TestCase {
         Connection con1Raw = (Connection) getFieldValue(con1, ProxyConnectionBase.class, "raw");
         con1.close();
 
-        setFieldValue(pool, "pooledArray", null);//clear pooledArray;
+        setFieldValue(pool, "connectionArray", null);//clear pooledArray;
         Connection con2 = pool.getConnection();
         Connection con2Raw = (Connection) getFieldValue(con2, ProxyConnectionBase.class, "raw");
         con2.close();
@@ -81,7 +81,7 @@ public class Tc0052PoolThreadLocalTest extends TestCase {
         Connection con1Raw = (Connection) getFieldValue(con1, ProxyConnectionBase.class, "raw");
         con1.close();
 
-        Object pooledArray = getFieldValue(pool, "pooledArray");
+        Object pooledArray = getFieldValue(pool, "connectionArray");
         Object first = Array.get(pooledArray, 0);
         Object second = Array.get(pooledArray, 1);
         Array.set(pooledArray, 0, second);

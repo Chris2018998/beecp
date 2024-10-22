@@ -18,13 +18,11 @@ import org.stone.beecp.objects.InterruptionAction;
 import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
 import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
 
-import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
-import static org.stone.tools.BeanUtil.setAccessible;
 
 public class Tc0055PoolWaitQueueTest extends TestCase {
 
@@ -46,9 +44,6 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
             Assert.assertTrue(e.getMessage().contains("Waited timeout for a released connection"));
         }
 
-        Method createMethod = FastConnectionPool.class.getDeclaredMethod("createPooledConn", Integer.TYPE);
-        setAccessible(createMethod);
-        Assert.assertNull(createMethod.invoke(pool, 1));
         oclose(first.getConnection());
         pool.close();
     }

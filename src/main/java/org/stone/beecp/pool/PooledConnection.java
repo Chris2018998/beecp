@@ -28,72 +28,93 @@ import static org.stone.tools.CommonUtil.isNotBlank;
  * @author Chris Liao
  * @version 1.0
  */
-final class PooledConnection implements Cloneable {
+final class PooledConnection {
     private static final boolean[] FALSE = new boolean[6];
-    final boolean defaultAutoCommit;
-    final int defaultTransactionIsolation;
-    final boolean defaultReadOnly;
-    final String defaultCatalog;
-    final String defaultSchema;
-    final int defaultNetworkTimeout;
-    final boolean forceDirtyOnSchemaAfterSet;
-    final boolean forceDirtyOnCatalogAfterSet;
-    private final boolean defaultCatalogIsNotBlank;
-    private final boolean defaultSchemaIsNotBlank;
-    private final boolean supportNetworkTimeoutInd;
-    private final ThreadPoolExecutor networkTimeoutExecutor;
+    final int pooledConnectionIndex;
     private final FastConnectionPool pool;
-    private final boolean enableDefaultOnCatalog;
-    private final boolean enableDefaultOnSchema;
-    private final boolean enableDefaultOnReadOnly;
-    private final boolean enableDefaultOnAutoCommit;
-    private final boolean enableDefaultOnTransactionIsolation;
-    private final List<Integer> sqlExceptionCodeList;
-    private final List<String> sqlExceptionStateList;
-    private final BeeConnectionPredicate predicate;
 
-    long creationTime;//milliseconds
+    //***************************************************************************************************************//
+    //                                      section-A: fields of default value                                       //                                                                                  //
+    //***************************************************************************************************************//
+    boolean defaultAutoCommit;
+    int defaultTransactionIsolation;
+    boolean defaultReadOnly;
+    String defaultCatalog;
+    String defaultSchema;
+    int defaultNetworkTimeout;
+    boolean forceDirtyOnSchemaAfterSet;
+    boolean forceDirtyOnCatalogAfterSet;
+    //***************************************************************************************************************//
+    //                                     section-B: runtime change fields                                          //                                                                                  //
+    //***************************************************************************************************************//
+    volatile ConnectionCreatingInfo creatingInfo;
+
     Connection rawConn;//maybe from XAConnection
     XAResource rawXaRes;//from XAConnection
     volatile int state;
     volatile long lastAccessTime;//milliseconds
+
     int openStmSize;
     boolean curAutoCommit;
     boolean commitDirtyInd;
     ProxyConnectionBase proxyInUsing;//default is null
-
     private int resetCnt;//reset count
     private boolean[] resetFlags;
     private ProxyStatementBase[] openStatements;
+    //***************************************************************************************************************//
+    //                                     section-C: some switch fields and others                                  //                                                                                  //
+    //***************************************************************************************************************//
+    private boolean enableDefaultOnCatalog;
+    private boolean enableDefaultOnSchema;
+    private boolean enableDefaultOnReadOnly;
+    private boolean enableDefaultOnAutoCommit;
+    private boolean enableDefaultOnTransactionIsolation;
+    private boolean defaultCatalogIsNotBlank;
+    private boolean defaultSchemaIsNotBlank;
+    private boolean supportNetworkTimeoutInd;
+    private ThreadPoolExecutor networkTimeoutExecutor;
+    private List<Integer> sqlExceptionCodeList;
+    private List<String> sqlExceptionStateList;
+    private BeeConnectionPredicate predicate;
 
-    //template pooled connection to create other pooled connections with clone way
-    PooledConnection(
-            FastConnectionPool pool,
-            //1:defaultAutoCommit
-            boolean enableDefaultOnAutoCommit,
-            boolean defaultAutoCommit,
-            //2:defaultTransactionIsolation
-            boolean enableDefaultOnTransactionIsolation,
-            int defaultTransactionIsolation,
-            //3:defaultReadOnly
-            boolean enableDefaultOnReadOnly,
-            boolean defaultReadOnly,
-            //4:defaultCatalog
-            boolean enableDefaultOnCatalog,
-            String defaultCatalog,
-            boolean forceDirtyOnCatalogAfterSet,
-            //5:defaultSchema
-            boolean enableDefaultOnSchema,
-            String defaultSchema,
-            boolean forceDirtyOnSchemaAfterSet,
-            //6:defaultNetworkTimeout
-            boolean supportNetworkTimeoutInd,
-            int defaultNetworkTimeout,
-            ThreadPoolExecutor networkTimeoutExecutor,
-            //7:others
-            List<Integer> sqlExceptionCodeList,
-            List<String> sqlExceptionStateList,
-            BeeConnectionPredicate predicate) {
+    //***************************************************************************************************************//
+    //                                      1: constructor                                                           //                                                                                  //
+    //***************************************************************************************************************//
+    PooledConnection(FastConnectionPool pool, int pooledConnectionIndex) {
+        this.pool = pool;
+        this.pooledConnectionIndex = pooledConnectionIndex;
+    }
+
+    //***************************************************************************************************************//
+    //                                      2: init method                                                           //                                                                                  //
+    //***************************************************************************************************************//
+    void init(//1:defaultAutoCommit
+              boolean enableDefaultOnAutoCommit,
+              boolean defaultAutoCommit,
+              //2:defaultTransactionIsolation
+              boolean enableDefaultOnTransactionIsolation,
+              int defaultTransactionIsolation,
+              //3:defaultReadOnly
+              boolean enableDefaultOnReadOnly,
+              boolean defaultReadOnly,
+              //4:defaultCatalog
+              boolean enableDefaultOnCatalog,
+              boolean defaultCatalogIsNotBlank,
+              String defaultCatalog,
+              boolean forceDirtyOnCatalogAfterSet,
+              //5:defaultSchema
+              boolean enableDefaultOnSchema,
+              boolean defaultSchemaIsNotBlank,
+              String defaultSchema,
+              boolean forceDirtyOnSchemaAfterSet,
+              //6:defaultNetworkTimeout
+              boolean supportNetworkTimeoutInd,
+              int defaultNetworkTimeout,
+              ThreadPoolExecutor networkTimeoutExecutor,
+              //7:others
+              List<Integer> sqlExceptionCodeList,
+              List<String> sqlExceptionStateList,
+              BeeConnectionPredicate predicate) {
 
         //1:defaultAutoCommit
         this.enableDefaultOnAutoCommit = enableDefaultOnAutoCommit;
@@ -107,12 +128,12 @@ final class PooledConnection implements Cloneable {
         //4:defaultCatalog
         this.enableDefaultOnCatalog = enableDefaultOnCatalog;
         this.defaultCatalog = defaultCatalog;
-        this.defaultCatalogIsNotBlank = isNotBlank(defaultCatalog);
+        this.defaultCatalogIsNotBlank = defaultCatalogIsNotBlank;
         this.forceDirtyOnCatalogAfterSet = forceDirtyOnCatalogAfterSet;
         //5:defaultSchema
         this.enableDefaultOnSchema = enableDefaultOnSchema;
         this.defaultSchema = defaultSchema;
-        this.defaultSchemaIsNotBlank = isNotBlank(defaultSchema);
+        this.defaultSchemaIsNotBlank = defaultSchemaIsNotBlank;
         this.forceDirtyOnSchemaAfterSet = forceDirtyOnSchemaAfterSet;
         //6:defaultNetworkTimeout
         this.supportNetworkTimeoutInd = supportNetworkTimeoutInd;
@@ -122,24 +143,12 @@ final class PooledConnection implements Cloneable {
         this.sqlExceptionCodeList = sqlExceptionCodeList;
         this.sqlExceptionStateList = sqlExceptionStateList;
         this.predicate = predicate;
-
-        this.pool = pool;
-        this.curAutoCommit = defaultAutoCommit;
     }
 
-    PooledConnection createFirstByClone(Connection rawConn, int state, XAResource rawXaRes) throws CloneNotSupportedException {
-        PooledConnection p = (PooledConnection) clone();
-        p.state = state;
-        p.rawConn = rawConn;
-        p.rawXaRes = rawXaRes;
-        p.resetFlags = FALSE.clone();
-        p.openStatements = new ProxyStatementBase[10];
-        p.creationTime = System.currentTimeMillis();
-        p.lastAccessTime = p.creationTime;
-        return p;
-    }
-
-    PooledConnection setDefaultAndCreateByClone(Connection rawConn, int state, XAResource rawXaRes) throws SQLException, CloneNotSupportedException {
+    //***************************************************************************************************************//
+    //                                      3: set a created connection and set default on it                        //                                                                                  //
+    //***************************************************************************************************************//
+    void setRawConnection(int state, Connection rawConn, XAResource rawXaRes) throws SQLException {
         if (enableDefaultOnAutoCommit && defaultAutoCommit != rawConn.getAutoCommit())
             rawConn.setAutoCommit(defaultAutoCommit);
         if (enableDefaultOnTransactionIsolation && defaultTransactionIsolation != rawConn.getTransactionIsolation())
@@ -151,19 +160,28 @@ final class PooledConnection implements Cloneable {
         if (enableDefaultOnSchema && defaultSchemaIsNotBlank && !defaultSchema.equals(rawConn.getSchema()))
             rawConn.setSchema(defaultSchema);
 
-        PooledConnection p = (PooledConnection) clone();
-        p.state = state;
-        p.rawConn = rawConn;
-        p.rawXaRes = rawXaRes;
-        p.resetFlags = FALSE.clone();
-        p.openStatements = new ProxyStatementBase[10];
-        p.creationTime = System.currentTimeMillis();
-        p.lastAccessTime = p.creationTime;
-        return p;
+        setRawConnection2(state, rawConn, rawXaRes);
     }
 
     //***************************************************************************************************************//
-    //                                      1:connection recycle(call by proxy connection)                           //                                                                                  //
+    //                                      4: set a created connection without setting default                      //                                                                                  //
+    //***************************************************************************************************************//
+    void setRawConnection2(int state, Connection rawConn, XAResource rawXaRes) {
+        this.rawConn = rawConn;
+        this.rawXaRes = rawXaRes;
+        this.resetFlags = FALSE.clone();
+        this.openStmSize = 0;
+        this.openStatements = new ProxyStatementBase[10];
+        this.lastAccessTime = System.currentTimeMillis();
+        this.commitDirtyInd = false;
+        this.curAutoCommit = defaultAutoCommit;
+
+        this.creatingInfo = null;
+        this.state = state;
+    }
+
+    //***************************************************************************************************************//
+    //                                     5: connection recycle(call by proxy connection)                           //                                                                                  //
     //***************************************************************************************************************//
 
     /**
@@ -190,13 +208,13 @@ final class PooledConnection implements Cloneable {
     }
 
     //***************************************************************************************************************//
-    //                                    2:call back method                                                         //                                                                                  //
+    //                                    6:call back method                                                         //                                                                                  //
     //***************************************************************************************************************//
 
     /**
      * call back while remove pooledConnection from pool
      */
-    void onBeforeRemove() {
+    void onRemove() {
         try {
             this.state = CON_CLOSED;
             this.resetRawConn();
@@ -204,12 +222,17 @@ final class PooledConnection implements Cloneable {
             if (pool.isPrintRuntimeLog()) CommonLog.warn("BeeCP({})Resetting connection failed", pool.getPoolName(), e);
         } finally {
             oclose(this.rawConn);
+
+            this.rawConn = null;
             this.rawXaRes = null;
+            this.proxyInUsing = null;
+            this.resetFlags = null;
+            this.openStatements = null;
         }
     }
 
     //***************************************************************************************************************//
-    //                                     3:statement cache maintenance                                             //                                                                                  //
+    //                                     7: statement cache maintenance                                            //                                                                                  //
     //***************************************************************************************************************//
     void registerStatement(ProxyStatementBase s) {
         if (this.openStmSize == this.openStatements.length) {//full
@@ -244,7 +267,7 @@ final class PooledConnection implements Cloneable {
     }
 
     //***************************************************************************************************************//
-    //                                     4:other methods                                                           //                                                                                  //
+    //                                     8: other methods                                                          //                                                                                  //
     //***************************************************************************************************************//
     void updateAccessTime() {//for update,insert.select,delete and so on DML
         this.commitDirtyInd = !this.curAutoCommit;
@@ -281,7 +304,7 @@ final class PooledConnection implements Cloneable {
     }
 
     //***************************************************************************************************************//
-    //                                     5:dirty record or reset                                                   //                                                                                  //
+    //                                     9: dirty record or reset                                                  //                                                                                  //
     //***************************************************************************************************************//
     boolean supportNetworkTimeoutSet() {
         return this.supportNetworkTimeoutInd;

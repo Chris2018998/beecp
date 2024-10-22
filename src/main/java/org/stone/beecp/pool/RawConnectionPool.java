@@ -159,16 +159,15 @@ public final class RawConnectionPool implements BeeConnectionPool {
         }
     }
 
-    public long getCreatingTime() {
+    public int getConnectionCreatingCount() {
         return 0;
     }
 
-    public boolean isCreatingTimeout() {
-        return false;
+    public int getConnectionCreatingTimeoutCount() {
+        return 0;
     }
 
-    public Thread[] interruptOnCreation() {
-        //do noting
+    public Thread[] interruptConnectionCreating(boolean interruptTimeout) {
         return null;
     }
 

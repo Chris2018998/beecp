@@ -43,8 +43,7 @@ public interface BeeConnectionPoolMonitorVo {
 
     int getTransferWaitingSize();
 
-    long getCreatingTime();
+    int getCreatingCount();
 
-    boolean isCreatingTimeout();
-
+    int getCreatingTimeoutCount();
 }

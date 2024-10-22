@@ -33,8 +33,8 @@ public class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonitorVo {
     private int usingSize;
     private int semaphoreWaitingSize;
     private int transferWaitingSize;
-    private long creatingTime;
-    private boolean isCreatingTimeout;
+    private int creatingCount;
+    private int creatingTimeoutCount;
 
     public String getDsId() {
         return dsId;
@@ -140,20 +140,19 @@ public class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonitorVo {
         this.transferWaitingSize = transferWaitingSize;
     }
 
-    public long getCreatingTime() {
-        return creatingTime;
+    public int getCreatingTimeoutCount() {
+        return creatingTimeoutCount;
     }
 
-    void setCreatingTime(long creatingTime) {
-        this.creatingTime = creatingTime;
+    void setCreatingTimeoutCount(int creatingTimeoutCount) {
+        this.creatingTimeoutCount = creatingTimeoutCount;
     }
 
-    public boolean isCreatingTimeout() {
-        return this.isCreatingTimeout;
+    public int getCreatingCount() {
+        return creatingCount;
     }
 
-    void setCreatingTimeout(boolean creatingTimeout) {
-        this.isCreatingTimeout = creatingTimeout;
+    void setCreatingCount(int creatingCount) {
+        this.creatingCount = creatingCount;
     }
-
 }

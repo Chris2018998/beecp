@@ -11,7 +11,10 @@ package org.stone.beecp.pool;
 
 import junit.framework.TestCase;
 import org.junit.Assert;
+import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
+import org.stone.beecp.objects.BorrowThread;
+import org.stone.beecp.objects.MockNetBlockConnectionFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -110,5 +113,39 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
             oclose(con);
             pool.close();
         }
+    }
+
+    public void testCreatingTimeout() throws Exception {
+        BeeDataSourceConfig config = createDefault();
+        config.setMaxActive(1);
+        config.setBorrowSemaphoreSize(1);
+
+        long maxWait = TimeUnit.SECONDS.toMillis(3L);
+        config.setMaxWait(maxWait);
+        config.setConnectionFactory(new MockNetBlockConnectionFactory());
+        FastConnectionPool pool = new FastConnectionPool();
+        pool.init(config);
+
+        BorrowThread first = new BorrowThread(pool);
+        first.start();
+        TestUtil.joinUtilWaiting(first);
+
+        Assert.assertEquals(1, pool.getConnectionCreatingCount());
+        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(maxWait));
+        Assert.assertEquals(1, pool.getConnectionCreatingTimeoutCount());
+
+        boolean found = false;
+        Thread[] threads = pool.interruptConnectionCreating(false);
+        if (threads != null) {
+            for (Thread thread : threads) {
+                if (first == thread) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        Assert.assertTrue(found);
+        pool.close();
     }
 }

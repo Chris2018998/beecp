@@ -74,10 +74,13 @@ public final class ConnectionPoolStatics {
     static final int POOL_CLOSING = 3;
     static final int POOL_CLOSED = 4;
     static final int POOL_CLEARING = 5;
+
     //connection state
-    static final int CON_IDLE = 0;
-    static final int CON_USING = 1;
-    static final int CON_CLOSED = 2;
+    static final int CON_CLOSED = 0;
+    static final int CON_CREATING = 1;
+    static final int CON_IDLE = 2;
+    static final int CON_USING = 3;
+
     //pool thread state
     static final int THREAD_WORKING = 0;
     static final int THREAD_WAITING = 1;
