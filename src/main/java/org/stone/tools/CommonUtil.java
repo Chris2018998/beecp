@@ -25,6 +25,7 @@ public class CommonUtil {
     public static final int NCPU = Runtime.getRuntime().availableProcessors();
     public static final long spinForTimeoutThreshold = 1023L;
     public static final int maxTimedSpins = (NCPU < 2) ? 0 : 32;
+    public static final int maxUntimedSpins = maxTimedSpins * 16;
 
     public static String trimString(String value) {
         return value == null ? null : value.trim();
@@ -34,7 +35,7 @@ public class CommonUtil {
         return Objects.equals(a, b);
     }
 
-    public static int getArrayIndex(int hash, int arrayLen){
+    public static int getArrayIndex(int hash, int arrayLen) {
         return (arrayLen - 1) & (hash ^ (hash >>> 16));
     }
 
@@ -55,7 +56,6 @@ public class CommonUtil {
         }
         return false;
     }
-
 
 
     //xor

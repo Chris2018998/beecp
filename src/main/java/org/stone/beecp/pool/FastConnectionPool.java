@@ -517,8 +517,8 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             } else {//driver support networkTimeout
                 if (this.networkTimeoutExecutor == null) {
                     int poolMaxSize = poolConfig.getMaxActive();
-                    this.networkTimeoutExecutor = new ThreadPoolExecutor(poolMaxSize, poolMaxSize, 10, SECONDS,
-                            new LinkedBlockingQueue<>(poolMaxSize), new PoolThreadThreadFactory("BeeCP(" + poolName + ")"));
+                    this.networkTimeoutExecutor = new ThreadPoolExecutor(poolMaxSize, poolMaxSize, 10L, SECONDS,
+                            new LinkedBlockingQueue<Runnable>(poolMaxSize), new PoolThreadThreadFactory("BeeCP(" + poolName + ")"));
                     this.networkTimeoutExecutor.allowCoreThreadTimeOut(true);
                 }
                 firstConn.setNetworkTimeout(networkTimeoutExecutor, defaultNetworkTimeout);
