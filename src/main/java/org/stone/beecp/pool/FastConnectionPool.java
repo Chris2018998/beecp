@@ -29,8 +29,9 @@ import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
@@ -798,8 +799,8 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
 
         //step2: interrupt current creation of a connection when this operation is timeout
-        Log.info("BeeCP({})A thread has been blocked timeout in creating connection,pool will interrupt it", this.poolName);
-        this.interruptConnectionCreating(false);
+        Log.info("BeeCP({})attempt to interrupt timeout creation", this.poolName);
+        this.interruptConnectionCreating(true);
 
         //step3: clean timeout connection in a loop
         for (PooledConnection p : this.connectionArray) {
@@ -883,7 +884,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             while (!this.waitQueue.isEmpty()) this.transferException(exception);
         }
 
-        //2:interrupt waiters on lock(maybe stuck on socket)
+        //2: interrupt all threads of connection creation
         this.interruptConnectionCreating(false);
 
         //3:clear all connections
@@ -1041,7 +1042,17 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
     //Method-5.12: interrupt some threads creating connections
     public Thread[] interruptConnectionCreating(boolean onlyInterruptTimeout) {
-        List<Thread> threads = new LinkedList<>();
+        Set<Thread> threads = new HashSet<>(this.semaphoreSize);
+
+        //1: maybe connection array is in initializing,so attempt to interrupt threads on lock
+        if (!connectionArrayInitialized) {
+            Thread holdThread = connectionArrayInitLock.interruptOwnerThread();
+            List<Thread> waitThreads = connectionArrayInitLock.interruptQueuedWaitThreads();
+            if (holdThread != null) threads.add(holdThread);
+            if (!waitThreads.isEmpty()) threads.addAll(waitThreads);
+        }
+
+        //2: attempt to interrupt creating of connections
         if (onlyInterruptTimeout) {
             for (PooledConnection p : connectionArray) {
                 ConnectionCreatingInfo creatingInfo = p.creatingInfo;
