@@ -23,13 +23,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public final class InterruptionReentrantLock extends ReentrantLock {
 
-    public InterruptionReentrantLock() {
-    }
-
-    public InterruptionReentrantLock(boolean fair) {
-        super(fair);
-    }
-
     public Thread interruptOwnerThread() {
         Thread owner = super.getOwner();
         if (owner != null) owner.interrupt();

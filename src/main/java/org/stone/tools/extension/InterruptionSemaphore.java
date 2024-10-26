@@ -22,10 +22,6 @@ import java.util.concurrent.Semaphore;
  */
 public final class InterruptionSemaphore extends Semaphore {
 
-    public InterruptionSemaphore(int permits) {
-        super(permits);
-    }
-
     public InterruptionSemaphore(int permits, boolean fair) {
         super(permits, fair);
     }
