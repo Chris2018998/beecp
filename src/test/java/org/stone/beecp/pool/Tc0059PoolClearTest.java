@@ -127,6 +127,13 @@ public class Tc0059PoolClearTest extends TestCase {
         pool.init(config1);
         Assert.assertEquals(2, pool.getTotalSize());
 
+        try {
+            pool.clear(false, null);
+            fail("failed test clear");
+        } catch (BeeDataSourceConfigException e) {
+            Assert.assertEquals("Configuration for pool reinitialization can' be null", e.getMessage());
+        }
+
         BeeDataSourceConfig config2 = createDefault();
         config2.setMaxActive(5);
         config2.setInitialSize(10);

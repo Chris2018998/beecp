@@ -14,10 +14,8 @@ import org.junit.Assert;
 import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.objects.BorrowThread;
-import org.stone.beecp.objects.InterruptionAction;
 import org.stone.beecp.objects.MockNetBlockConnectionFactory;
 import org.stone.beecp.pool.exception.ConnectionCreateException;
-import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
 
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +26,7 @@ public class Tc0054PoolInternalLockTest extends TestCase {
 
     public void testWaitTimeout() throws SQLException {
         BeeDataSourceConfig config = createDefault();
+        config.setInitialSize(0);
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(2);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(2));
@@ -48,53 +47,29 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         pool.close();
     }
 
+
     public void testInterruptWaiters() throws SQLException {
         BeeDataSourceConfig config = createDefault();
+        config.setInitialSize(0);
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(2);
-        config.setMaxWait(TimeUnit.SECONDS.toMillis(10));
+        config.setMaxWait(TimeUnit.SECONDS.toMillis(2));
         config.setConnectionFactory(new MockNetBlockConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
         BorrowThread first = new BorrowThread(pool);
         first.start();
-        TestUtil.joinUtilWaiting(first);
-        new InterruptionAction(Thread.currentThread()).start();//main thread will be blocked on pool lock
+        TestUtil.joinUtilWaiting(first);//<-- block on connection factory.create
 
-        try {
-            pool.getConnection();
-        } catch (ConnectionGetInterruptedException e) {
-            Assert.assertTrue(e.getMessage().contains("An interruption occurred while waiting on pool lock"));
-            first.interrupt();
-        }
+        BorrowThread second = new BorrowThread(pool);
+        second.start();
+        TestUtil.joinUtilWaiting(second);//<-- wait on pool initial lock
+
+        Assert.assertEquals(1, pool.getConnectionCreatingCount());
+        Thread[] threads = pool.interruptConnectionCreating(false);
+        Assert.assertEquals(2, threads.length);
+
         pool.close();
     }
-
-//    public void testInterruptWaitersAndLockOwner() throws SQLException {
-//        BeeDataSourceConfig config = createDefault();
-//        config.setMaxActive(2);
-//        config.setBorrowSemaphoreSize(2);
-//        config.setMaxWait(TimeUnit.SECONDS.toMillis(2));
-//        config.setTimerCheckInterval(TimeUnit.SECONDS.toMillis(3));//internal thread to interrupt waiters
-//        config.setConnectionFactory(new MockNetBlockConnectionFactory());
-//        FastConnectionPool pool = new FastConnectionPool();
-//        pool.init(config);
-//
-//        BorrowThread first = new BorrowThread(pool);
-//        first.start();
-//        TestUtil.joinUtilWaiting(first);
-//
-//        Assert.assertTrue(pool.getCreatingTime() > 0);
-//        Assert.assertFalse(pool.isCreatingTimeout());
-//        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(2));
-//        Assert.assertTrue(pool.isCreatingTimeout());
-//
-//        try {
-//            pool.getConnection();
-//        } catch (Exception e) {
-//            Assert.assertTrue(e.getMessage().contains("An interruption occurred while waiting on pool lock"));
-//        }
-//        pool.close();
-//    }
 }

@@ -20,6 +20,7 @@ import org.stone.beecp.pool.ConnectionPoolStatics;
 import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
 import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
 
+import javax.sql.XAConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
@@ -105,4 +106,33 @@ public class Tc0035DataSourceLockTest extends TestCase {
             }
         }
     }
+
+    public void testSuccessOnRLock2() throws SQLException {
+        BeeDataSource ds;
+        BorrowThread firstThread;
+
+        ds = new BeeDataSource();
+        ds.setJdbcUrl(JDBC_URL);
+        ds.setDriverClassName(JDBC_DRIVER);
+        ds.setUsername(JDBC_USER);
+        ds.setMaxWait(TimeUnit.SECONDS.toMillis(10));//timeout on wait
+        ds.setPoolImplementClassName(MockBlockPoolImplementation2.class.getName());
+
+        firstThread = new BorrowThread(ds);
+        firstThread.start();
+
+        if (joinUtilWaiting(firstThread)) {//block 1 second in pool instance creation
+            XAConnection con = null;
+            try {
+                con = ds.getXAConnection();
+            } catch (ConnectionGetTimeoutException e) {
+                fail("test failed on testSuccessOnRLock");
+            } finally {
+                if (con != null) ConnectionPoolStatics.oclose(con);
+                ds.close();
+            }
+        }
+    }
+
+
 }
