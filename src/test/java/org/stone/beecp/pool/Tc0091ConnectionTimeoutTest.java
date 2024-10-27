@@ -11,6 +11,7 @@ package org.stone.beecp.pool;
 
 import junit.framework.TestCase;
 import org.junit.Assert;
+import org.stone.base.StoneLogAppender;
 import org.stone.base.TestUtil;
 import org.stone.beecp.BeeConnectionPoolMonitorVo;
 import org.stone.beecp.BeeDataSourceConfig;
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
 import static org.stone.base.TestUtil.getFieldValue;
+import static org.stone.base.TestUtil.getStoneLogAppender;
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
 
@@ -155,6 +157,31 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         }
 
         Assert.assertTrue(found);
+        pool.close();
+    }
+
+    public void testIdleTimeoutClear() throws Exception {
+        BeeDataSourceConfig config = createDefault();
+        config.setMaxActive(1);
+        config.setInitialSize(1);
+        config.setIdleTimeout(1000L);
+        config.setPrintRuntimeLog(true);
+        config.setBorrowSemaphoreSize(1);
+        FastConnectionPool pool = new FastConnectionPool();
+        pool.init(config);
+
+        BeeConnectionPoolMonitorVo vo = pool.getPoolMonitorVo();
+        Assert.assertEquals(1, vo.getIdleSize());
+        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
+        StoneLogAppender logAppender = getStoneLogAppender();
+        logAppender.beginCollectStoneLog();
+        TestUtil.invokeMethod2(pool, "closeIdleTimeoutConnection");
+        vo = pool.getPoolMonitorVo();
+        Assert.assertEquals(0, vo.getIdleSize());
+
+        String logs = logAppender.endCollectedStoneLog();
+        Assert.assertTrue(logs.contains("before timed scan,idle:"));
+        Assert.assertTrue(logs.contains("after timed scan,idle:"));
         pool.close();
     }
 }
