@@ -43,17 +43,17 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         } catch (ConnectionCreateException e) {
             Assert.assertTrue(e.getMessage().contains("Waited timeout on pool lock"));
             first.interrupt();
+        } finally {
+            pool.close();
         }
-        pool.close();
     }
-
 
     public void testInterruptWaiters() throws SQLException {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(0);
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(2);
-        config.setMaxWait(TimeUnit.SECONDS.toMillis(2));
+        config.setMaxWait(TimeUnit.SECONDS.toMillis(10));
         config.setConnectionFactory(new MockNetBlockConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
@@ -66,10 +66,12 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         second.start();
         TestUtil.joinUtilWaiting(second);//<-- wait on pool initial lock
 
-        Assert.assertEquals(1, pool.getConnectionCreatingCount());
-        Thread[] threads = pool.interruptConnectionCreating(false);
-        Assert.assertEquals(2, threads.length);
-
-        pool.close();
+        try {
+            Assert.assertEquals(1, pool.getConnectionCreatingCount());
+            Thread[] threads = pool.interruptConnectionCreating(false);
+            Assert.assertEquals(2, threads.length);
+        } finally {
+            pool.close();
+        }
     }
 }

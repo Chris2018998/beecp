@@ -43,8 +43,9 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
         } catch (ConnectionGetTimeoutException e) {
             Assert.assertTrue(e.getMessage().contains("Waited timeout on pool semaphore"));
             first.interrupt();
+        } finally {
+            pool.close();
         }
-        pool.close();
     }
 
     public void testInterruptWaiters() throws SQLException {
@@ -58,9 +59,9 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
 
         BorrowThread first = new BorrowThread(pool);
         first.start();
+        TestUtil.joinUtilWaiting(first);
 
         Thread currrentThread = Thread.currentThread();
-        TestUtil.joinUtilWaiting(first);
         new InterruptionAction(currrentThread).start();
 
         try {
@@ -68,8 +69,9 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
         } catch (ConnectionGetInterruptedException e) {
             Assert.assertEquals("An interruption occurred while waiting on pool semaphore", e.getMessage());
             first.interrupt();
+        } finally {
+            pool.close();
         }
-        pool.close();
     }
 }
 
