@@ -813,12 +813,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             } else if (state == CON_USING && supportHoldTimeout) {
                 if (System.currentTimeMillis() - p.lastAccessTime - holdTimeoutMs >= 0L) {//hold timeout
                     ProxyConnectionBase proxyInUsing = p.proxyInUsing;
-                    if (proxyInUsing != null) {
-                        oclose(proxyInUsing);
-                    } else {
-                        this.removePooledConn(p, DESC_RM_BAD);
-                        this.tryWakeupServantThread();
-                    }
+                    if (proxyInUsing != null) oclose(proxyInUsing);
                 }
             } else if (state == CON_CLOSED) {
                 this.removePooledConn(p, DESC_RM_CLOSED);
@@ -900,15 +895,8 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                 } else if (state == CON_USING) {
                     ProxyConnectionBase proxyInUsing = p.proxyInUsing;
                     if (proxyInUsing != null) {
-                        if (force || (supportHoldTimeout && System.currentTimeMillis() - p.lastAccessTime >= holdTimeoutMs)) {//force close or hold timeout
+                        if (force || (supportHoldTimeout && System.currentTimeMillis() - p.lastAccessTime >= holdTimeoutMs)) //force close or hold timeout
                             oclose(proxyInUsing);
-                            if (ConStUpd.compareAndSet(p, CON_IDLE, CON_CLOSED)) {
-                                closedCount++;
-                                this.removePooledConn(p, source);
-                            }
-                        }
-                    } else {
-                        this.removePooledConn(p, source);
                     }
                 } else if (state == CON_CLOSED) {
                     closedCount++;
@@ -1042,7 +1030,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     //Method-5.12: interrupt some threads creating connections
     public Thread[] interruptConnectionCreating(boolean onlyInterruptTimeout) {
         if (this.printRuntimeLog)
-            Log.info("BeeCP({})attempt to interrupt connection creation,only interrupt create timeout:{}", this.poolName, onlyInterruptTimeout);
+            Log.info("BeeCP({})attempt to interrupt connection creation,only interrupt create timeout:{}", this.poolName);
 
         Set<Thread> threads = new HashSet<>(this.semaphoreSize);
         //1: maybe connection array is in initializing,so attempt to interrupt threads on lock
