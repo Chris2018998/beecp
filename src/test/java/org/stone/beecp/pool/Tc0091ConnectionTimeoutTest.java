@@ -12,6 +12,7 @@ package org.stone.beecp.pool;
 import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.base.TestUtil;
+import org.stone.beecp.BeeConnectionPoolMonitorVo;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.objects.BorrowThread;
 import org.stone.beecp.objects.MockNetBlockConnectionFactory;
@@ -115,7 +116,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         }
     }
 
-    public void testCreatingTimeout() throws Exception {
+    public void testCreatingNotTimeout() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(1);
         config.setBorrowSemaphoreSize(1);
@@ -131,17 +132,25 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         TestUtil.joinUtilWaiting(first);
 
         Assert.assertEquals(1, pool.getConnectionCreatingCount());
+        Assert.assertEquals(0, pool.getConnectionCreatingTimeoutCount());
+
+        BeeConnectionPoolMonitorVo vo = pool.getPoolMonitorVo();
+        Assert.assertEquals(1, vo.getCreatingCount());
+        Assert.assertEquals(0, vo.getCreatingTimeoutCount());
+
         LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(maxWait));
+        Assert.assertEquals(1, pool.getConnectionCreatingCount());
         Assert.assertEquals(1, pool.getConnectionCreatingTimeoutCount());
+        vo = pool.getPoolMonitorVo();
+        Assert.assertEquals(1, vo.getCreatingCount());
+        Assert.assertEquals(1, vo.getCreatingTimeoutCount());
 
         boolean found = false;
-        Thread[] threads = pool.interruptConnectionCreating(false);
-        if (threads != null) {
-            for (Thread thread : threads) {
-                if (first == thread) {
-                    found = true;
-                    break;
-                }
+        Thread[] threads = pool.interruptConnectionCreating(true);
+        for (Thread thread : threads) {
+            if (first == thread) {
+                found = true;
+                break;
             }
         }
 

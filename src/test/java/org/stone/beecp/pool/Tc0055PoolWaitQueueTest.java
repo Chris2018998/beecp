@@ -48,6 +48,30 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
         pool.close();
     }
 
+    public void testTimeoutOnThreadLocalDisabled() throws Exception {
+        BeeDataSourceConfig config = createDefault();
+        config.setMaxActive(1);
+        config.setEnableThreadLocal(false);
+        config.setForceCloseUsingOnClear(true);
+        config.setBorrowSemaphoreSize(2);
+        config.setMaxWait(TimeUnit.SECONDS.toMillis(2));
+        FastConnectionPool pool = new FastConnectionPool();
+        pool.init(config);
+        BorrowThread first = new BorrowThread(pool);
+        first.start();
+        first.join();
+
+        try {
+            pool.getConnection();
+        } catch (ConnectionGetTimeoutException e) {
+            Assert.assertTrue(e.getMessage().contains("Waited timeout for a released connection"));
+        }
+
+        oclose(first.getConnection());
+        pool.close();
+    }
+
+
     public void testInterruptWaiters() throws SQLException {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(1);

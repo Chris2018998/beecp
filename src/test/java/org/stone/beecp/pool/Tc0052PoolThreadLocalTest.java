@@ -92,4 +92,5 @@ public class Tc0052PoolThreadLocalTest extends TestCase {
         con2.close();
         Assert.assertNotEquals(con1Raw, con2Raw);
     }
+
 }
