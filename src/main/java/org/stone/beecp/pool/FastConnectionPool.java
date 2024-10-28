@@ -1030,7 +1030,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     //Method-5.12: interrupt some threads creating connections
     public Thread[] interruptConnectionCreating(boolean onlyInterruptTimeout) {
         if (this.printRuntimeLog)
-            Log.info("BeeCP({})attempt to interrupt connection creation,only interrupt create timeout:{}", this.poolName);
+            Log.info("BeeCP({})attempt to interrupt connection creation,only for timeout:{}", this.poolName, onlyInterruptTimeout);
 
         Set<Thread> threads = new HashSet<>(this.semaphoreSize);
         //1: maybe connection array is in initializing,so attempt to interrupt threads on lock
