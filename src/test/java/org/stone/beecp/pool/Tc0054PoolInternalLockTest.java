@@ -16,9 +16,11 @@ import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.objects.BorrowThread;
 import org.stone.beecp.objects.MockNetBlockConnectionFactory;
 import org.stone.beecp.pool.exception.ConnectionCreateException;
+import org.stone.tools.extension.InterruptionReentrantReadWriteLock;
 
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
@@ -29,14 +31,16 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         config.setInitialSize(0);
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(2);
-        config.setMaxWait(TimeUnit.SECONDS.toMillis(2));
-        config.setConnectionFactory(new MockNetBlockConnectionFactory());
+        config.setMaxWait(TimeUnit.SECONDS.toMillis(1));
+
+        MockNetBlockConnectionFactory factory = new MockNetBlockConnectionFactory();
+        config.setConnectionFactory(factory);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
         BorrowThread first = new BorrowThread(pool);//mock stuck in driver.getConnection()
         first.start();
-        TestUtil.joinUtilWaiting(first);
+        factory.waitForCount(1);
 
         try {
             pool.getConnection();
@@ -48,23 +52,32 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         }
     }
 
-    public void testInterruptWaiters() throws SQLException {
+    public void testInterruptWaiters() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(0);
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(2);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(10));
-        config.setConnectionFactory(new MockNetBlockConnectionFactory());
+        MockNetBlockConnectionFactory factory = new MockNetBlockConnectionFactory();
+        config.setConnectionFactory(factory);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
         BorrowThread first = new BorrowThread(pool);
         first.start();
-        TestUtil.joinUtilWaiting(first);//<-- block on connection factory.create
+        factory.waitForCount(1);//block in factory.create()
+        InterruptionReentrantReadWriteLock lock = (InterruptionReentrantReadWriteLock) TestUtil.getFieldValue(pool, "connectionArrayInitLock");
+        Assert.assertTrue(lock.isWriteLocked());
 
         BorrowThread second = new BorrowThread(pool);
-        second.start();
-        TestUtil.joinUtilWaiting(second);//<-- wait on pool initial lock
+        second.start();//block on lock
+        for (; ; ) {
+            if (lock.getQueueLength() == 1) {
+                break;
+            } else {
+                LockSupport.parkNanos(5L);
+            }
+        }
 
         try {
             Assert.assertEquals(1, pool.getConnectionCreatingCount());

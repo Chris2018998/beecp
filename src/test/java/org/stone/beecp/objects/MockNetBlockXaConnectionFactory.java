@@ -12,6 +12,7 @@ package org.stone.beecp.objects;
 import org.stone.beecp.BeeXaConnectionFactory;
 
 import javax.sql.XAConnection;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 
 /**
@@ -20,9 +21,25 @@ import java.util.concurrent.locks.LockSupport;
  * @author Chris Liao
  */
 public class MockNetBlockXaConnectionFactory implements BeeXaConnectionFactory {
+    private final AtomicInteger counter = new AtomicInteger();
 
     public XAConnection create() {
-        LockSupport.park();
-        return null;
+        try {
+            counter.incrementAndGet();
+            LockSupport.park();
+            return null;
+        } finally {
+            counter.decrementAndGet();
+        }
+    }
+
+    public void waitForCount(int expect) {
+        for (; ; ) {
+            if (counter.get() == expect) {
+                return;
+            } else {
+                LockSupport.parkNanos(5L);
+            }
+        }
     }
 }

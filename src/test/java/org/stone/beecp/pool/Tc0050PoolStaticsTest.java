@@ -17,7 +17,6 @@ import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 import org.stone.beecp.driver.MockDriver;
 import org.stone.beecp.driver.MockXaDataSource;
-import org.stone.beecp.objects.MockBlockPoolImplementation1;
 import org.stone.beecp.objects.MockBlockPoolImplementation2;
 import org.stone.beecp.objects.MockDriverConnectionFactory;
 import org.stone.beecp.objects.MockObjectForPropertiesSet;

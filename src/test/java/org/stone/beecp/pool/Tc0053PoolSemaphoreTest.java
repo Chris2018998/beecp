@@ -11,7 +11,6 @@ package org.stone.beecp.pool;
 
 import junit.framework.TestCase;
 import org.junit.Assert;
-import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.objects.BorrowThread;
 import org.stone.beecp.objects.InterruptionAction;
@@ -29,15 +28,19 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
     public void testWaitTimeout() throws SQLException {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(2);
-        config.setMaxWait(TimeUnit.SECONDS.toMillis(2));
-        config.setConnectionFactory(new MockNetBlockConnectionFactory());
+        config.setBorrowSemaphoreSize(1);
+        config.setMaxWait(TimeUnit.SECONDS.toMillis(1));
+        MockNetBlockConnectionFactory factory = new MockNetBlockConnectionFactory();
+        config.setConnectionFactory(factory);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
+
         BorrowThread first = new BorrowThread(pool);//mock stuck in driver.getConnection()
         first.start();
-        TestUtil.joinUtilWaiting(first);
 
+        factory.waitForCount(1);
         Assert.assertEquals(1, pool.getSemaphoreAcquiredSize());
+
         try {
             pool.getConnection();
         } catch (ConnectionGetTimeoutException e) {
@@ -53,13 +56,15 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(1);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(10));
-        config.setConnectionFactory(new MockNetBlockConnectionFactory());
+
+        MockNetBlockConnectionFactory factory = new MockNetBlockConnectionFactory();
+        config.setConnectionFactory(factory);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
         BorrowThread first = new BorrowThread(pool);
         first.start();
-        TestUtil.joinUtilWaiting(first);
+        factory.waitForCount(1);
 
         Thread currrentThread = Thread.currentThread();
         new InterruptionAction(currrentThread).start();
