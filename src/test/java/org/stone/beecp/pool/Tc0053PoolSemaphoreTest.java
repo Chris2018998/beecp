@@ -18,14 +18,13 @@ import org.stone.beecp.objects.MockNetBlockConnectionFactory;
 import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
 import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
 
-import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
 public class Tc0053PoolSemaphoreTest extends TestCase {
 
-    public void testWaitTimeout() throws SQLException {
+    public void testWaitTimeout() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(1);
@@ -37,10 +36,9 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
 
         BorrowThread first = new BorrowThread(pool);//mock stuck in driver.getConnection()
         first.start();
-
-        factory.waitForCount(1);
+        factory.waitOnLatch();
         Assert.assertEquals(1, pool.getSemaphoreAcquiredSize());
-
+        System.out.println("Tc0053PoolSemaphoreTest.testWaitTimeout: exit waitForCount");
         try {
             pool.getConnection();
         } catch (ConnectionGetTimeoutException e) {
@@ -51,7 +49,7 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
         }
     }
 
-    public void testInterruptWaiters() throws SQLException {
+    public void testInterruptWaiters() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(1);
@@ -64,7 +62,8 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
 
         BorrowThread first = new BorrowThread(pool);
         first.start();
-        factory.waitForCount(1);
+        factory.waitOnLatch();
+        System.out.println("Tc0053PoolSemaphoreTest.testInterruptWaiters: exit waitForCount");
 
         Thread currrentThread = Thread.currentThread();
         new InterruptionAction(currrentThread).start();

@@ -18,7 +18,6 @@ import org.stone.beecp.objects.MockNetBlockConnectionFactory;
 import org.stone.beecp.pool.exception.ConnectionCreateException;
 import org.stone.tools.extension.InterruptionReentrantReadWriteLock;
 
-import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
@@ -26,7 +25,7 @@ import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
 public class Tc0054PoolInternalLockTest extends TestCase {
 
-    public void testWaitTimeout() throws SQLException {
+    public void testWaitTimeout() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(0);
         config.setMaxActive(2);
@@ -40,7 +39,8 @@ public class Tc0054PoolInternalLockTest extends TestCase {
 
         BorrowThread first = new BorrowThread(pool);//mock stuck in driver.getConnection()
         first.start();
-        factory.waitForCount(1);
+        factory.waitOnLatch();
+        System.out.println("Tc0054PoolInternalLockTest.testWaitTimeout: exit waitForCount");
 
         try {
             pool.getConnection();
@@ -65,7 +65,9 @@ public class Tc0054PoolInternalLockTest extends TestCase {
 
         BorrowThread first = new BorrowThread(pool);
         first.start();
-        factory.waitForCount(1);//block in factory.create()
+        factory.waitOnLatch();
+        System.out.println("Tc0054PoolInternalLockTest.testInterruptWaiters: exit waitForCount");
+
         InterruptionReentrantReadWriteLock lock = (InterruptionReentrantReadWriteLock) TestUtil.getFieldValue(pool, "connectionArrayInitLock");
         Assert.assertTrue(lock.isWriteLocked());
 

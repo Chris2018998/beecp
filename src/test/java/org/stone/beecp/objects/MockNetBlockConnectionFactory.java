@@ -12,7 +12,7 @@ package org.stone.beecp.objects;
 import org.stone.beecp.BeeConnectionFactory;
 
 import java.sql.Connection;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.LockSupport;
 
 /**
@@ -21,25 +21,23 @@ import java.util.concurrent.locks.LockSupport;
  * @author Chris Liao
  */
 public class MockNetBlockConnectionFactory implements BeeConnectionFactory {
-    private final AtomicInteger counter = new AtomicInteger();
+    private final CountDownLatch latch;
 
-    public Connection create() {
-        try {
-            counter.incrementAndGet();
-            LockSupport.park();
-            return null;
-        } finally {
-            counter.decrementAndGet();
-        }
+    public MockNetBlockConnectionFactory() {
+        this(1);
     }
 
-    public void waitForCount(int expect) {
-        for (; ; ) {
-            if (counter.get() == expect) {
-                return;
-            } else {
-                LockSupport.parkNanos(5L);
-            }
-        }
+    public MockNetBlockConnectionFactory(int count) {
+        latch = new CountDownLatch(count);
+    }
+
+    public Connection create() {
+        latch.countDown();
+        LockSupport.park();
+        return null;
+    }
+
+    public void waitOnLatch() throws InterruptedException {
+        latch.await();
     }
 }
