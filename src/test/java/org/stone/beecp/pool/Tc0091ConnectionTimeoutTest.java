@@ -141,7 +141,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         Assert.assertEquals(1, vo.getCreatingCount());
         Assert.assertEquals(0, vo.getCreatingTimeoutCount());
 
-        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
+        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(2L));
         Assert.assertEquals(1, pool.getConnectionCreatingCount());
         Assert.assertEquals(1, pool.getConnectionCreatingTimeoutCount());
         vo = pool.getPoolMonitorVo();
