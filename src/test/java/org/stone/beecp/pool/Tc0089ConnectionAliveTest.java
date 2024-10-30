@@ -79,7 +79,7 @@ public class Tc0089ConnectionAliveTest extends TestCase {
             con.close();
             con = null;
 
-            LockSupport.parkNanos(500L);
+            LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(500L));
             propertiesSet.setMockException1(new SQLException());
             propertiesSet.enableExceptionOnMethod("isValid");
             StoneLogAppender logAppender = getStoneLogAppender();
