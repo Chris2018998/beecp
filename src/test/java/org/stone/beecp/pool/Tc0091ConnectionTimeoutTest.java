@@ -55,7 +55,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
     public void testHoldTimeout() throws Exception {//pool timer clear timeout connections
         BeeDataSourceConfig config = createDefault();
         config.setHoldTimeout(500L);// hold and not using connection;
-        config.setTimerCheckInterval(1000L);// two seconds interval
+        config.setTimerCheckInterval(500L);// two seconds interval
 
         Connection con = null;
         FastConnectionPool pool = new FastConnectionPool();
@@ -68,7 +68,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
             Assert.assertEquals(1, pool.getTotalSize());
             Assert.assertEquals(1, pool.getUsingSize());
 
-            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(2));
+            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
             Assert.assertEquals(0, pool.getUsingSize());
 
             try {
@@ -123,15 +123,16 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         config.setMaxActive(1);
         config.setBorrowSemaphoreSize(1);
 
-        long maxWait = TimeUnit.SECONDS.toMillis(3L);
+        long maxWait = TimeUnit.SECONDS.toMillis(1L);
         config.setMaxWait(maxWait);
-        config.setConnectionFactory(new MockNetBlockConnectionFactory());
+        MockNetBlockConnectionFactory factory = new MockNetBlockConnectionFactory();
+        config.setConnectionFactory(factory);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
         BorrowThread first = new BorrowThread(pool);
         first.start();
-        TestUtil.joinUtilWaiting(first);
+        factory.waitOnLatch();
 
         Assert.assertEquals(1, pool.getConnectionCreatingCount());
         Assert.assertEquals(0, pool.getConnectionCreatingTimeoutCount());
@@ -140,7 +141,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         Assert.assertEquals(1, vo.getCreatingCount());
         Assert.assertEquals(0, vo.getCreatingTimeoutCount());
 
-        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(maxWait));
+        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
         Assert.assertEquals(1, pool.getConnectionCreatingCount());
         Assert.assertEquals(1, pool.getConnectionCreatingTimeoutCount());
         vo = pool.getPoolMonitorVo();
