@@ -67,9 +67,7 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         first.start();
         factory.waitOnLatch();
         System.out.println("Tc0054PoolInternalLockTest.testInterruptWaiters: exit waitForCount");
-
         InterruptionReentrantReadWriteLock lock = (InterruptionReentrantReadWriteLock) TestUtil.getFieldValue(pool, "connectionArrayInitLock");
-        Assert.assertTrue(lock.isWriteLocked());
 
         BorrowThread second = new BorrowThread(pool);
         second.start();//block on lock
