@@ -736,7 +736,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
     //Method-2.9: alive test on a borrowed connection
     private boolean testOnBorrow(PooledConnection p) {
-        if (System.currentTimeMillis() - p.lastAccessTime > this.aliveAssumeTimeMs && !this.conValidTest.isAlive(p)) {
+        if (System.currentTimeMillis() - p.lastAccessTime >= this.aliveAssumeTimeMs && !this.conValidTest.isAlive(p)) {
             this.removePooledConn(p, DESC_RM_BAD);
             this.tryWakeupServantThread();
             return false;
