@@ -1,5 +1,11 @@
 beecp changes
 
+Changes in 4.1.1
+
+1: fix using-connection close issue
+2: change interruption log to runtime log
+3: add equal symbol to alive test expression
+
 Changes in 4.1.0
 
 1: change pool connection array to a fixed length array
