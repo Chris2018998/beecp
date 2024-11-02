@@ -14,6 +14,7 @@ import org.junit.Assert;
 import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.objects.BorrowThread;
+import org.stone.beecp.objects.InterruptionAction;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -40,7 +41,6 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
         //launch a borrow thread to get connection
         BorrowThread first = new BorrowThread(pool);
         first.start();
-        TestUtil.waitUtilAlive(first);
         first.join();
 
         try {
@@ -68,9 +68,8 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
         //launch a borrow thread to get connection
         BorrowThread first = new BorrowThread(pool);
         first.start();
-        TestUtil.waitUtilAlive(first);
-
         first.join();
+
         try {
             SQLException failure = first.getFailureCause();
             Assert.assertTrue(failure.getMessage().contains("Waited timeout for a released connection"));
@@ -105,8 +104,8 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
         }
 
         //3: interrupt the second thread and get its failure exception to check
-        first.interrupt();
-        TestUtil.waitUtilTerminated(first);
+        new InterruptionAction(first).start();
+        first.join();
         try {
             SQLException failure = first.getFailureCause();
             Assert.assertNotNull(failure);

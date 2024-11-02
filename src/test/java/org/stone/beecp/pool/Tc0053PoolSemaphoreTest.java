@@ -14,6 +14,7 @@ import org.junit.Assert;
 import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.objects.BorrowThread;
+import org.stone.beecp.objects.InterruptionAction;
 import org.stone.beecp.objects.MockNetBlockConnectionFactory;
 import org.stone.tools.extension.InterruptionSemaphore;
 
@@ -53,6 +54,7 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
             Assert.assertNotNull(failure);
             Assert.assertTrue(failure.getMessage().contains("Waited timeout on pool semaphore"));
         } finally {
+            first.interrupt();
             pool.close();
         }
     }
@@ -87,13 +89,15 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
         }
 
         //3: interrupt the second thread and get its failure exception to check
-        first2.interrupt();
-        TestUtil.waitUtilTerminated(first2);
+        new InterruptionAction(first2).start();
+        first2.join();
+
         try {
             SQLException failure = first2.getFailureCause();
             Assert.assertNotNull(failure);
             Assert.assertEquals("An interruption occurred while waiting on pool semaphore", failure.getMessage());
         } finally {
+            first.interrupt();
             pool.close();
         }
     }

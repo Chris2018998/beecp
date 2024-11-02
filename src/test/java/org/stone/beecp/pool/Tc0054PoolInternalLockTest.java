@@ -46,8 +46,7 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         //second thread wait on pool read-lock
         BorrowThread first2 = new BorrowThread(pool);
         first2.start();
-        TestUtil.waitUtilAlive(first2);
-        first2.join();
+        TestUtil.waitUtilTerminated(first2);
 
         //check failure exception
         try {
@@ -55,6 +54,7 @@ public class Tc0054PoolInternalLockTest extends TestCase {
             Assert.assertNotNull(failure);
             Assert.assertTrue(failure.getMessage().contains("Waited timeout on pool lock"));
         } finally {
+            first.interrupt();
             pool.close();
         }
     }
@@ -94,6 +94,7 @@ public class Tc0054PoolInternalLockTest extends TestCase {
             Thread[] threads = pool.interruptConnectionCreating(false);
             Assert.assertEquals(2, threads.length);
         } finally {
+            first.interrupt();
             pool.close();
         }
     }
