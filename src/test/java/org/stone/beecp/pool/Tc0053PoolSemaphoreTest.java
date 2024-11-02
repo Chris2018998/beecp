@@ -88,7 +88,7 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
 
         //3: interrupt the second thread and get its failure exception to check
         first2.interrupt();
-        first2.join();
+        TestUtil.waitUtilTerminated(first2);
         try {
             SQLException failure = first2.getFailureCause();
             Assert.assertNotNull(failure);

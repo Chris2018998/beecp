@@ -20,7 +20,7 @@ public final class InterruptionAction extends Thread {
     }
 
     public void run() {
-        if (TestUtil.joinUtilWaiting(blockingThread))
+        if (TestUtil.waitUtilWaiting(blockingThread))
             blockingThread.interrupt();
     }
 }

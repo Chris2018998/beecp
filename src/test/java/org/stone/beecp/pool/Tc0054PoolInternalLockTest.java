@@ -46,6 +46,7 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         //second thread wait on pool read-lock
         BorrowThread first2 = new BorrowThread(pool);
         first2.start();
+        TestUtil.waitUtilAlive(first2);
         first2.join();
 
         //check failure exception

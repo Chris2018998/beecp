@@ -40,7 +40,9 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
         //launch a borrow thread to get connection
         BorrowThread first = new BorrowThread(pool);
         first.start();
+        TestUtil.waitUtilAlive(first);
         first.join();
+
         try {
             SQLException failure = first.getFailureCause();
             Assert.assertTrue(failure.getMessage().contains("Waited timeout for a released connection"));
@@ -66,6 +68,8 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
         //launch a borrow thread to get connection
         BorrowThread first = new BorrowThread(pool);
         first.start();
+        TestUtil.waitUtilAlive(first);
+
         first.join();
         try {
             SQLException failure = first.getFailureCause();
@@ -102,7 +106,7 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
 
         //3: interrupt the second thread and get its failure exception to check
         first.interrupt();
-        first.join();
+        TestUtil.waitUtilTerminated(first);
         try {
             SQLException failure = first.getFailureCause();
             Assert.assertNotNull(failure);

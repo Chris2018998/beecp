@@ -158,7 +158,20 @@ public class TestUtil {
         }
     }
 
-    public static boolean joinUtilTerminated(Thread thread) {
+    public static boolean waitUtilAlive(Thread thread) {
+        for (; ; ) {
+            Thread.State curState = thread.getState();
+            if (curState == Thread.State.TERMINATED) {
+                return false;
+            } else if (curState != Thread.State.NEW) {
+                return true;
+            } else {
+                LockSupport.parkNanos(5L);
+            }
+        }
+    }
+
+    public static boolean waitUtilTerminated(Thread thread) {
         for (; ; ) {
             Thread.State curState = thread.getState();
             if (curState == Thread.State.TERMINATED) {
@@ -169,13 +182,13 @@ public class TestUtil {
         }
     }
 
-    public static boolean joinUtilWaiting(Thread thread) {
+    public static boolean waitUtilWaiting(Thread thread) {
         for (; ; ) {
             Thread.State curState = thread.getState();
-            if (curState == Thread.State.WAITING || curState == Thread.State.TIMED_WAITING) {
-                return true;
-            } else if (curState == Thread.State.TERMINATED) {
+            if (curState == Thread.State.TERMINATED) {
                 return false;
+            } else if (curState == Thread.State.WAITING || curState == Thread.State.TIMED_WAITING) {
+                return true;
             } else {
                 LockSupport.parkNanos(5L);
             }

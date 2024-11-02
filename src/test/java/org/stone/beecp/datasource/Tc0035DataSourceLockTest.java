@@ -25,7 +25,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
-import static org.stone.base.TestUtil.joinUtilWaiting;
+import static org.stone.base.TestUtil.waitUtilWaiting;
 import static org.stone.beecp.config.DsConfigFactory.*;
 
 /**
@@ -47,7 +47,7 @@ public class Tc0035DataSourceLockTest extends TestCase {
         firstThread = new BorrowThread(ds);//first thread create pool under write-lock
         firstThread.start();
 
-        if (joinUtilWaiting(firstThread)) {
+        if (waitUtilWaiting(firstThread)) {
             try {
                 ds.getConnection();//second thread will be locked on read-lock
                 Assert.fail("Ds Lock timeout test failed");
@@ -68,7 +68,7 @@ public class Tc0035DataSourceLockTest extends TestCase {
         BorrowThread firstThread = new BorrowThread(ds);
         firstThread.start();
 
-        if (joinUtilWaiting(firstThread)) {
+        if (waitUtilWaiting(firstThread)) {
             new InterruptionAction(Thread.currentThread()).start();
 
             try {
@@ -94,7 +94,7 @@ public class Tc0035DataSourceLockTest extends TestCase {
         firstThread = new BorrowThread(ds);
         firstThread.start();
 
-        if (joinUtilWaiting(firstThread)) {//block 1 second in pool instance creation
+        if (waitUtilWaiting(firstThread)) {//block 1 second in pool instance creation
             Connection con = null;
             try {
                 con = ds.getConnection();
@@ -121,7 +121,7 @@ public class Tc0035DataSourceLockTest extends TestCase {
         firstThread = new BorrowThread(ds);
         firstThread.start();
 
-        if (joinUtilWaiting(firstThread)) {//block 1 second in pool instance creation
+        if (waitUtilWaiting(firstThread)) {//block 1 second in pool instance creation
             XAConnection con = null;
             try {
                 con = ds.getXAConnection();
