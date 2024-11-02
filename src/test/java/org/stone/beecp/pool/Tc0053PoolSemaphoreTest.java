@@ -11,14 +11,15 @@ package org.stone.beecp.pool;
 
 import junit.framework.TestCase;
 import org.junit.Assert;
+import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.objects.BorrowThread;
-import org.stone.beecp.objects.InterruptionAction;
 import org.stone.beecp.objects.MockNetBlockConnectionFactory;
-import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
-import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
+import org.stone.tools.extension.InterruptionSemaphore;
 
+import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
@@ -28,22 +29,29 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(1);
+        config.setForceCloseUsingOnClear(true);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(1));
         MockNetBlockConnectionFactory factory = new MockNetBlockConnectionFactory();
         config.setConnectionFactory(factory);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
-        BorrowThread first = new BorrowThread(pool);//mock stuck in driver.getConnection()
+        //first mock thread stuck in driver.getConnection()
+        BorrowThread first = new BorrowThread(pool);
         first.start();
         factory.waitOnLatch();
         Assert.assertEquals(1, pool.getSemaphoreAcquiredSize());
-        System.out.println("Tc0053PoolSemaphoreTest.testWaitTimeout: exit waitForCount");
+
+        //second thread wait on pool semaphore
+        BorrowThread first2 = new BorrowThread(pool);
+        first2.start();
+        first2.join();
+
+        //check failure exception
         try {
-            pool.getConnection();
-        } catch (ConnectionGetTimeoutException e) {
-            Assert.assertTrue(e.getMessage().contains("Waited timeout on pool semaphore"));
-            first.interrupt();
+            SQLException failure = first2.getFailureCause();
+            Assert.assertNotNull(failure);
+            Assert.assertTrue(failure.getMessage().contains("Waited timeout on pool semaphore"));
         } finally {
             pool.close();
         }
@@ -53,26 +61,38 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(1);
-        config.setMaxWait(TimeUnit.SECONDS.toMillis(10));
+        config.setMaxWait(TimeUnit.SECONDS.toMillis(10L));
+        config.setForceCloseUsingOnClear(true);
 
         MockNetBlockConnectionFactory factory = new MockNetBlockConnectionFactory();
         config.setConnectionFactory(factory);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
+        //1: first mock thread stuck in driver.getConnection()
         BorrowThread first = new BorrowThread(pool);
         first.start();
         factory.waitOnLatch();
-        System.out.println("Tc0053PoolSemaphoreTest.testInterruptWaiters: exit waitForCount");
 
-        Thread currrentThread = Thread.currentThread();
-        new InterruptionAction(currrentThread).start();
+        //2: second thread wait on pool semaphore
+        InterruptionSemaphore semaphore = (InterruptionSemaphore) TestUtil.getFieldValue(pool, "semaphore");
+        BorrowThread first2 = new BorrowThread(pool);
+        first2.start();
+        for (; ; ) {
+            if (semaphore.getQueueLength() == 1) {//first2 in wait queue of semaphore
+                break;
+            } else {
+                LockSupport.parkNanos(5L);
+            }
+        }
 
+        //3: interrupt the second thread and get its failure exception to check
+        first2.interrupt();
+        first2.join();
         try {
-            pool.getConnection();
-        } catch (ConnectionGetInterruptedException e) {
-            Assert.assertEquals("An interruption occurred while waiting on pool semaphore", e.getMessage());
-            first.interrupt();
+            SQLException failure = first2.getFailureCause();
+            Assert.assertNotNull(failure);
+            Assert.assertEquals("An interruption occurred while waiting on pool semaphore", failure.getMessage());
         } finally {
             pool.close();
         }

@@ -9,6 +9,7 @@
  */
 package org.stone.beecp.objects;
 
+import org.stone.base.TestUtil;
 import org.stone.beecp.BeeConnectionPool;
 import org.stone.beecp.BeeDataSource;
 
@@ -39,14 +40,6 @@ public final class BorrowThread extends Thread {
         this.setDaemon(true);
     }
 
-    public Connection getConnection() {
-        return connection;
-    }
-
-    public XAConnection getXaConnection() {
-        return xaConnection;
-    }
-
     public SQLException getFailureCause() {
         return failureCause;
     }
@@ -68,6 +61,9 @@ public final class BorrowThread extends Thread {
             }
         } catch (SQLException e) {
             this.failureCause = e;
+        } finally {
+            if (connection != null) TestUtil.oclose(connection);
+            if (xaConnection != null) TestUtil.oclose(xaConnection);
         }
     }
 }
