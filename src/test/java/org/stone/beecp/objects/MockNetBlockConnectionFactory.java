@@ -13,7 +13,6 @@ import org.stone.beecp.BeeConnectionFactory;
 
 import java.sql.Connection;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.locks.LockSupport;
 
 /**
  * Mock Impl on ConnectionFactory
@@ -21,23 +20,29 @@ import java.util.concurrent.locks.LockSupport;
  * @author Chris Liao
  */
 public class MockNetBlockConnectionFactory implements BeeConnectionFactory {
-    private final CountDownLatch latch;
+    private final CountDownLatch arrivalLatch;
+    private final CountDownLatch blockingLatch;
 
     public MockNetBlockConnectionFactory() {
-        this(1);
+        this.arrivalLatch = new CountDownLatch(1);
+        this.blockingLatch = new CountDownLatch(1);
     }
 
-    public MockNetBlockConnectionFactory(int count) {
-        latch = new CountDownLatch(count);
+    public CountDownLatch getArrivalLatch() {
+        return arrivalLatch;
+    }
+
+    public CountDownLatch getBlockingLatch() {
+        return blockingLatch;
     }
 
     public Connection create() {
-        latch.countDown();
-        LockSupport.park();
+        arrivalLatch.countDown();
+        try {
+            blockingLatch.await();
+        } catch (InterruptedException e) {
+            //do nothing
+        }
         return null;
-    }
-
-    public void waitOnLatch() throws InterruptedException {
-        latch.await();
     }
 }

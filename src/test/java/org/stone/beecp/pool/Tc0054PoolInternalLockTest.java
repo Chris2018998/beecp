@@ -11,15 +11,14 @@ package org.stone.beecp.pool;
 
 import junit.framework.TestCase;
 import org.junit.Assert;
-import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.objects.BorrowThread;
+import org.stone.beecp.objects.InterruptionAction;
 import org.stone.beecp.objects.MockNetBlockConnectionFactory;
-import org.stone.tools.extension.InterruptionReentrantReadWriteLock;
+import org.stone.beecp.pool.exception.ConnectionCreateException;
+import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
 
-import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.LockSupport;
 
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
@@ -28,33 +27,27 @@ public class Tc0054PoolInternalLockTest extends TestCase {
     public void testWaitTimeout() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(0);
-        config.setMaxActive(2);
+        config.setMaxActive(1);
         config.setBorrowSemaphoreSize(2);
         config.setForceCloseUsingOnClear(true);
-        config.setMaxWait(TimeUnit.SECONDS.toMillis(1));
+        config.setMaxWait(TimeUnit.SECONDS.toMillis(1L));
 
         MockNetBlockConnectionFactory factory = new MockNetBlockConnectionFactory();
         config.setConnectionFactory(factory);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
-        //first mock thread stuck in driver.getConnection()
-        BorrowThread first = new BorrowThread(pool);
-        first.start();
-        factory.waitOnLatch();
+        //1: create first borrow thread to get connection
+        new BorrowThread(pool).start();
+        factory.getArrivalLatch().await();
 
-        //second thread wait on pool read-lock
-        BorrowThread first2 = new BorrowThread(pool);
-        first2.start();
-        TestUtil.waitUtilTerminated(first2);
-
-        //check failure exception
+        //2: attempt to get connection in current thread
         try {
-            SQLException failure = first2.getFailureCause();
-            Assert.assertNotNull(failure);
-            Assert.assertTrue(failure.getMessage().contains("Waited timeout on pool lock"));
+            pool.getConnection();
+        } catch (ConnectionCreateException e) {
+            Assert.assertTrue(e.getMessage().contains("Waited timeout on pool lock"));
         } finally {
-            first.interrupt();
+            factory.getBlockingLatch().countDown();
             pool.close();
         }
     }
@@ -66,35 +59,24 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         config.setBorrowSemaphoreSize(2);
         config.setForceCloseUsingOnClear(true);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(10L));
+
         MockNetBlockConnectionFactory factory = new MockNetBlockConnectionFactory();
         config.setConnectionFactory(factory);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
-        //1: first mock thread stuck in driver.getConnection()
-        BorrowThread first = new BorrowThread(pool);
-        first.start();
-        factory.waitOnLatch();
-        Assert.assertEquals(1, pool.getConnectionCreatingCount());
+        //1: create first borrow thread to get connection
+        new BorrowThread(pool).start();
+        factory.getArrivalLatch().await();
 
-        //2: second thread wait on pool lock
-        InterruptionReentrantReadWriteLock lock = (InterruptionReentrantReadWriteLock) TestUtil.getFieldValue(pool, "connectionArrayInitLock");
-        BorrowThread first2 = new BorrowThread(pool);
-        first2.start();
-        for (; ; ) {
-            if (lock.getQueueLength() == 1) {
-                break;
-            } else {
-                LockSupport.parkNanos(5L);
-            }
-        }
-
-        //3: interrupt connection creating thread and waiting thread on lock
+        //2: attempt to get connection in current thread
         try {
-            Thread[] threads = pool.interruptConnectionCreating(false);
-            Assert.assertEquals(2, threads.length);
+            new InterruptionAction(Thread.currentThread()).start();
+            pool.getConnection();
+        } catch (ConnectionGetInterruptedException e) {
+            Assert.assertTrue(e.getMessage().contains("An interruption occurred while waiting on pool lock"));
         } finally {
-            first.interrupt();
+            factory.getBlockingLatch().countDown();
             pool.close();
         }
     }
