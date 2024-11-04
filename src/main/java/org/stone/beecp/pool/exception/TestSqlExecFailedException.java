@@ -9,7 +9,7 @@
  */
 package org.stone.beecp.pool.exception;
 
-import java.sql.SQLException;
+import org.stone.beecp.BeeSQLException;
 
 /**
  * if test sql execute failed,then throws this exception
@@ -17,15 +17,7 @@ import java.sql.SQLException;
  * @author Chris Liao
  * @version 1.0
  */
-public class TestSqlExecFailedException extends SQLException {
-
-    public TestSqlExecFailedException(String s) {
-        super(s);
-    }
-
-    public TestSqlExecFailedException(Throwable cause) {
-        super(cause);
-    }
+public class TestSqlExecFailedException extends BeeSQLException {
 
     public TestSqlExecFailedException(String message, Throwable cause) {
         super(message, cause);

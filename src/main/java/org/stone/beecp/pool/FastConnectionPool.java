@@ -262,9 +262,9 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                 } else if (readLock.tryLock(this.maxWaitNs, TimeUnit.NANOSECONDS)) {
                     readLock.unlock();
                     if (!connectionArrayInitialized)
-                        throw new ConnectionCreateException("Pool initialized failed on first created connection or failed to create it");
+                        throw new ConnectionGetException("Waited failed on pool lock for initialization ready on first connection by another");
                 } else {
-                    throw new ConnectionCreateException("Waited timeout on pool lock");
+                    throw new ConnectionGetTimeoutException("Waited timeout on pool lock");
                 }
             } catch (InterruptedException e) {
                 throw new ConnectionGetInterruptedException("An interruption occurred while waiting on pool lock");
@@ -414,7 +414,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         if (poolConfig.isEnableDefaultOnReadOnly()) {
             if (defaultReadOnly == null) {
                 try {
-                    defaultReadOnly = Boolean.valueOf(firstConn.isReadOnly());
+                    defaultReadOnly = firstConn.isReadOnly();
                 } catch (Throwable e) {
                     if (this.printRuntimeLog)
                         Log.warn("BeeCP({})failed to get value of read-only property from first connection object", this.poolName);
@@ -704,7 +704,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     }
 
     //Method-2.6: recycle a Pooled Connection,may transfer it to one waiter
-    public void recycle(PooledConnection p) {
+    void recycle(PooledConnection p) {
         if (isCompeteMode) p.state = CON_IDLE;
         for (Borrower b : this.waitQueue) {
             if (p.state != stateCodeOnRelease) return;

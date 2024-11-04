@@ -9,7 +9,7 @@
  */
 package org.stone.beecp.pool.exception;
 
-import java.sql.SQLException;
+import org.stone.beecp.BeeSQLException;
 
 /**
  * connection exception
@@ -18,10 +18,9 @@ import java.sql.SQLException;
  * @version 1.0
  */
 
-public class ConnectionRecycleException extends SQLException {
+public class ConnectionRecycleException extends BeeSQLException {
 
     public ConnectionRecycleException(Throwable cause) {
         super(cause);
     }
-
 }

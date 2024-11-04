@@ -9,15 +9,13 @@
  */
 package org.stone.beecp;
 
-import java.sql.SQLException;
-
 /**
  * Base pool exception
  *
  * @author Chris Liao
  * @version 1.0
  */
-public class BeeConnectionPoolException extends SQLException {
+public class BeeConnectionPoolException extends BeeSQLException {
 
     public BeeConnectionPoolException(String s) {
         super(s);

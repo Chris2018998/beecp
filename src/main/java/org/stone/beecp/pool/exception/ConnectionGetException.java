@@ -9,7 +9,7 @@
  */
 package org.stone.beecp.pool.exception;
 
-import java.sql.SQLException;
+import org.stone.beecp.BeeSQLException;
 
 /**
  * exception on getting Connection
@@ -17,9 +17,9 @@ import java.sql.SQLException;
  * @author Chris Liao
  * @version 1.0
  */
-public class ConnectionGetException extends SQLException {
+public class ConnectionGetException extends BeeSQLException {
 
-    ConnectionGetException(String message) {
+    public ConnectionGetException(String message) {
         super(message);
     }
 
