@@ -15,10 +15,12 @@ import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.objects.BorrowThread;
 import org.stone.beecp.objects.InterruptionAction;
 import org.stone.beecp.objects.MockNetBlockConnectionFactory;
-import org.stone.beecp.pool.exception.ConnectionCreateException;
+import org.stone.beecp.pool.exception.ConnectionGetException;
 import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
+import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
@@ -40,11 +42,12 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         //1: create first borrow thread to get connection
         new BorrowThread(pool).start();
         factory.getArrivalLatch().await();
+        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1000L));
 
         //2: attempt to get connection in current thread
         try {
             pool.getConnection();
-        } catch (ConnectionCreateException e) {
+        } catch (ConnectionGetTimeoutException e) {
             Assert.assertTrue(e.getMessage().contains("Waited timeout on pool lock"));
         } finally {
             factory.getBlockingLatch().countDown();
@@ -68,6 +71,7 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         //1: create first borrow thread to get connection
         new BorrowThread(pool).start();
         factory.getArrivalLatch().await();
+        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1000L));
 
         //2: attempt to get connection in current thread
         try {
@@ -75,6 +79,38 @@ public class Tc0054PoolInternalLockTest extends TestCase {
             pool.getConnection();
         } catch (ConnectionGetInterruptedException e) {
             Assert.assertTrue(e.getMessage().contains("An interruption occurred while waiting on pool lock"));
+        } finally {
+            factory.getBlockingLatch().countDown();
+            pool.close();
+        }
+    }
+
+
+    public void testInterruptCreator() throws Exception {
+        BeeDataSourceConfig config = createDefault();
+        config.setInitialSize(0);
+        config.setMaxActive(2);
+        config.setBorrowSemaphoreSize(2);
+        config.setForceCloseUsingOnClear(true);
+        config.setMaxWait(TimeUnit.SECONDS.toMillis(10L));
+
+        MockNetBlockConnectionFactory factory = new MockNetBlockConnectionFactory();
+        config.setConnectionFactory(factory);
+        FastConnectionPool pool = new FastConnectionPool();
+        pool.init(config);
+
+        //1: create first borrow thread to get connection
+        BorrowThread first = new BorrowThread(pool);
+        first.start();
+        factory.getArrivalLatch().await();
+        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1000L));
+
+        //2: attempt to get connection in current thread
+        try {
+            new InterruptionAction(first).start();
+            pool.getConnection();
+        } catch (ConnectionGetException e) {
+            Assert.assertTrue(e.getMessage().contains("Waited failed on pool lock for initialization ready on first connection by another"));
         } finally {
             factory.getBlockingLatch().countDown();
             pool.close();

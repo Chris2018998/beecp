@@ -19,6 +19,7 @@ import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
 import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
@@ -38,6 +39,7 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
         //1: create first borrow thread to get connection
         new BorrowThread(pool).start();
         factory.getArrivalLatch().await();
+        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1000L));
 
         //2: attempt to get connection in current thread
         try {
@@ -64,6 +66,7 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
         //1: create first borrow thread to get connection
         new BorrowThread(pool).start();
         factory.getArrivalLatch().await();
+        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1000L));
 
         //2: attempt to get connection in current thread
         try {
