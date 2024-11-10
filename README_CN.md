@@ -33,7 +33,7 @@
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>4.1.1</version>
+   <version>4.1.2</version>
 </dependency>
 ```
 
