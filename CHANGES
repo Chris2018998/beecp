@@ -1,5 +1,11 @@
 beecp changes
 
+Changes in 4.1.2
+
+1: enhance exception
+2: change type declaration of some fields of pool
+3: improve pool self-loop
+
 Changes in 4.1.1
 
 1: fix using-connection close issue
