@@ -43,7 +43,7 @@ import static org.stone.tools.BeanUtil.createClassInstance;
 public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XADataSource {
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
-    private long maxWaitNanos = SECONDS.toNanos(8);//default vale same to config
+    private long maxWaitNanos = SECONDS.toNanos(8L);//default vale same to config
     private BeeConnectionPool pool;
     private CommonDataSource subDs;//used to set loginTimeout
     private boolean ready;//true,means that inner pool has created

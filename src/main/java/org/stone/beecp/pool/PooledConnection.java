@@ -170,13 +170,13 @@ final class PooledConnection {
         this.rawConn = rawConn;
         this.rawXaRes = rawXaRes;
         this.resetFlags = FALSE.clone();
+        this.commitDirtyInd = false;
+        this.curAutoCommit = defaultAutoCommit;
+        this.creatingInfo = null;
+
         this.openStmSize = 0;
         this.openStatements = new ProxyStatementBase[10];
         this.lastAccessTime = System.currentTimeMillis();
-        this.commitDirtyInd = false;
-        this.curAutoCommit = defaultAutoCommit;
-
-        this.creatingInfo = null;
         this.state = state;
     }
 
@@ -214,9 +214,11 @@ final class PooledConnection {
     /**
      * call back while remove pooledConnection from pool
      */
-    void onRemove() {
+    void onRemove(String msg) {
+        if (pool.isPrintRuntimeLog())
+            CommonLog.info("BeeCP({}))begin to remove a pooled connection:{} for cause:{}", pool.getPoolName(), this, msg);
+
         try {
-            this.state = CON_CLOSED;
             this.resetRawConn();
         } catch (Throwable e) {
             if (pool.isPrintRuntimeLog()) CommonLog.warn("BeeCP({})Resetting connection failed", pool.getPoolName(), e);
@@ -228,6 +230,7 @@ final class PooledConnection {
             this.proxyInUsing = null;
             this.resetFlags = null;
             this.openStatements = null;
+            this.state = CON_CLOSED;
         }
     }
 
