@@ -362,14 +362,14 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     Log.warn("BeeCP({})assign {} as default value of auto-commit property for connections", this.poolName, true);
             }
             try {
-                firstConn.setAutoCommit(defaultAutoCommit);//setting test with default value
+                firstConn.setAutoCommit(defaultAutoCommit);//default set test
             } catch (Throwable e) {
-                poolConfig.setEnableDefaultOnAutoCommit(false);
+                isEnableDefaultOnAutoCommit = false;
                 if (this.printRuntimeLog)
                     Log.warn("BeeCP({})failed to set default value({}) of auto-commit property on first connection object", this.poolName, defaultAutoCommit, e);
             }
         } else if (defaultAutoCommit == null) {
-            defaultAutoCommit = Boolean.FALSE;
+            defaultAutoCommit = Boolean.TRUE;
         }
 
         //step2:set default value of property transaction-isolation
@@ -390,14 +390,14 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     Log.warn("BeeCP({})assign {} as default value of transaction-isolation property for connections", this.poolName, defaultTransactionIsolation);
             }
             try {
-                firstConn.setTransactionIsolation(defaultTransactionIsolation);//default setting test
+                firstConn.setTransactionIsolation(defaultTransactionIsolation);//default set test
             } catch (Throwable e) {
-                poolConfig.setEnableDefaultOnTransactionIsolation(false);
+                isEnableDefaultOnTransactionIsolation = false;
                 if (this.printRuntimeLog)
                     Log.warn("BeeCP({})failed to set default value({}) of transaction-isolation property on first connection object", this.poolName, defaultTransactionIsolation, e);
             }
         } else if (defaultTransactionIsolation == null) {
-            defaultTransactionIsolation = Integer.valueOf(0);
+            defaultTransactionIsolation = Connection.TRANSACTION_READ_COMMITTED;
         }
 
         //step3:get default value of property read-only from config or from first connection
@@ -418,9 +418,9 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     Log.warn("BeeCP({})assign {} as default value of read-only property for connections", this.poolName, false);
             }
             try {
-                firstConn.setReadOnly(defaultReadOnly);//default setting test
+                firstConn.setReadOnly(defaultReadOnly);//default set test
             } catch (Throwable e) {
-                poolConfig.setEnableDefaultOnTransactionIsolation(false);
+                isEnableDefaultOnReadOnly = false;
                 if (this.printRuntimeLog)
                     Log.warn("BeeCP({})failed to set default value({}) of read-only property on first connection object", this.poolName, defaultTransactionIsolation, e);
             }
@@ -442,9 +442,9 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             }
             if (isNotBlank(defaultCatalog)) {
                 try {
-                    firstConn.setCatalog(defaultCatalog);//default setting test
+                    firstConn.setCatalog(defaultCatalog);//default set test
                 } catch (Throwable e) {
-                    poolConfig.setEnableDefaultOnCatalog(false);
+                    isEnableDefaultOnCatalog = false;
                     if (this.printRuntimeLog)
                         Log.warn("BeeCP({})failed to set default value({}) of catalog property on first connection object", this.poolName, defaultCatalog, e);
                 }
@@ -465,9 +465,9 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             }
             if (isNotBlank(defaultSchema)) {
                 try {
-                    firstConn.setSchema(defaultSchema);//default setting test
+                    firstConn.setSchema(defaultSchema);//default set test
                 } catch (Throwable e) {
-                    poolConfig.setEnableDefaultOnSchema(false);
+                    isEnableDefaultOnSchema = false;
                     if (this.printRuntimeLog)
                         Log.warn("BeeCP({})failed to set default value({}) of schema property on first connection object", this.poolName, defaultSchema, e);
                 }
@@ -609,27 +609,26 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         //3: try to search idle one or create new one
         try {
             p = this.searchOrCreate();
-            if (p != null) {
-                semaphore.release();
-                //put connection to thread local
-                if (this.enableThreadLocal)
-                    putToThreadLocal(p, b, b != null);
-                return p;
-            }
         } catch (SQLException e) {
             semaphore.release();
             throw e;
         }
+        //3.1: check searched result
+        final boolean hasCached = b != null;
+        if (p != null) {
+            semaphore.release();
+            //put connection to thread local
+            if (this.enableThreadLocal)
+                putToThreadLocal(p, b, hasCached);
+            return p;
+        }
 
         //4: add the borrower to wait queue
-        boolean hasCached;
-        if (b == null) {
-            hasCached = false;
-            b = new Borrower();
-        } else {
+        if (hasCached)
             b.state = null;
-            hasCached = true;
-        }
+        else
+            b = new Borrower();
+
         this.waitQueue.offer(b);
         SQLException cause = null;
         deadline += this.maxWaitNs;

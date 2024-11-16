@@ -745,9 +745,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
         //1:load configuration item values from outside properties
         Map<String, String> setValueMap;
         synchronized (configProperties) {/* synchronization mode */
-            setValueMap = new HashMap<>(configProperties.size());
-            for (String propertyName : configProperties.stringPropertyNames()) {
-                setValueMap.put(propertyName, configProperties.getProperty(propertyName));
+            Set<Map.Entry<Object, Object>> entrySet = configProperties.entrySet();
+            setValueMap = new HashMap<>(entrySet.size());
+            for (Map.Entry<Object, Object> entry : entrySet) {
+                setValueMap.put((String) entry.getKey(), (String) entry.getValue());
             }
         }
 

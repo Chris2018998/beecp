@@ -24,7 +24,7 @@ public class BeeSQLException extends SQLException {
     }
 
     public BeeSQLException(Throwable cause) {
-        super(null, cause);
+        super(cause);
     }
 
     public BeeSQLException(String reason, Throwable cause) {
