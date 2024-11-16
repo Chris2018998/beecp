@@ -1,5 +1,10 @@
 beecp changes
 
+Changes in 1.4.3
+
+1: simplify source code
+2: fix issue that disable default set when set fail on first connection
+
 Changes in 4.1.2
 
 1: enhance exception
