@@ -54,13 +54,13 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
 
     public void testHoldTimeout() throws Exception {//pool timer clear timeout connections
         BeeDataSourceConfig config = createDefault();
-        config.setHoldTimeout(500L);// hold and not using connection;
+        config.setHoldTimeout(100L);// hold and not using connection;
         config.setTimerCheckInterval(500L);// two seconds interval
 
         Connection con = null;
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
-        Assert.assertEquals(500L, getFieldValue(pool, "holdTimeoutMs"));
+        Assert.assertEquals(100L, getFieldValue(pool, "holdTimeoutMs"));
         Assert.assertTrue((Boolean) getFieldValue(pool, "supportHoldTimeout"));
 
         try {
