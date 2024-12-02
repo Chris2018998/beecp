@@ -1,6 +1,15 @@
 beecp changes
 
-Changes in 1.4.3
+Changes in 4.1.4
+
+1: fix some code inspection issues scanned by IDEA
+2: restore self-spin source code with history code
+3: rename a configuration item(delayTimeForNextClear --> parkTimeForRetry)
+4: use try-with-resources on configuration file load
+5: remove some unnecessary exception catch
+6: improve structure of source code
+
+Changes in 4.1.3
 
 1: simplify source code
 2: fix issue that disable default set when set fail on first connection
