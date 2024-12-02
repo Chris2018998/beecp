@@ -12,6 +12,7 @@ package org.stone.beecp.config;
 import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
+import org.stone.beecp.BeeDataSourceConfigException;
 
 import java.io.File;
 import java.net.URL;
@@ -127,6 +128,14 @@ public class Tc0015ConfigLoadFromFileTest extends TestCase {
             Assert.assertTrue(message != null && message.contains("Configuration properties can't be null or empty"));
         }
 
+        try {
+            Properties properties = new Properties();
+            properties.put("maxActive", "oooo");
+            config1.loadFromProperties(properties);
+        } catch (BeeDataSourceConfigException e) {
+            String message = e.getMessage();
+            Assert.assertTrue(message != null && message.contains("Failed to convert value[oooo]to property type(maxActive:int)"));
+        }
     }
 
     public void testOnLoadByFile() {
@@ -183,30 +192,30 @@ public class Tc0015ConfigLoadFromFileTest extends TestCase {
         final String ConfigUrl = "jdbc:beecp://localhost/testdb";
         final String ConfigDriver = "org.stone.beecp.mock.MockDriver";
 
-        Assert.assertEquals(config.getUsername(), "root");
-        Assert.assertEquals(config.getPassword(), "root");
-        Assert.assertEquals(config.getJdbcUrl(), ConfigUrl);
-        Assert.assertEquals(config.getDriverClassName(), ConfigDriver);
-        Assert.assertEquals(config.getDefaultCatalog(), "test1");
-        Assert.assertEquals(config.getDefaultSchema(), "test2");
+        Assert.assertEquals("root", config.getUsername());
+        Assert.assertEquals("root", config.getPassword());
+        Assert.assertEquals(ConfigUrl, config.getJdbcUrl());
+        Assert.assertEquals(ConfigDriver, config.getDriverClassName());
+        Assert.assertEquals("test1", config.getDefaultCatalog());
+        Assert.assertEquals("test2", config.getDefaultSchema());
         Assert.assertTrue(config.isDefaultReadOnly());
         Assert.assertTrue(config.isDefaultAutoCommit());
         Assert.assertEquals(config.getDefaultTransactionIsolationCode(), Integer.valueOf(1));
-        Assert.assertEquals(config.getDefaultTransactionIsolationName(), "READ_UNCOMMITTED");
-        Assert.assertEquals(config.getAliveTestSql(), "SELECT 1");
-        Assert.assertEquals(config.getPoolName(), "Pool1");
+        Assert.assertEquals("READ_UNCOMMITTED", config.getDefaultTransactionIsolationName());
+        Assert.assertEquals("SELECT 1", config.getAliveTestSql());
+        Assert.assertEquals("Pool1", config.getPoolName());
         Assert.assertTrue(config.isFairMode());
-        Assert.assertEquals(config.getInitialSize(), 1);
-        Assert.assertEquals(config.getMaxActive(), 10);
-        Assert.assertEquals(config.getMaxWait(), 8000L);
-        Assert.assertEquals(config.getIdleTimeout(), 18000L);
-        Assert.assertEquals(config.getHoldTimeout(), 30000L);
-        Assert.assertEquals(config.getAliveTestTimeout(), 3);
-        Assert.assertEquals(config.getAliveAssumeTime(), 500);
-        Assert.assertEquals(config.getTimerCheckInterval(), 30000);
+        Assert.assertEquals(1, config.getInitialSize());
+        Assert.assertEquals(10, config.getMaxActive());
+        Assert.assertEquals(8000L, config.getMaxWait());
+        Assert.assertEquals(18000L, config.getIdleTimeout());
+        Assert.assertEquals(30000L, config.getHoldTimeout());
+        Assert.assertEquals(3, config.getAliveTestTimeout());
+        Assert.assertEquals(500, config.getAliveAssumeTime());
+        Assert.assertEquals(30000, config.getTimerCheckInterval());
         Assert.assertTrue(config.isForceCloseUsingOnClear());
-        Assert.assertEquals(config.getDelayTimeForNextClear(), 3000);
-        Assert.assertEquals(config.getEvictPredicateClassName(), "com.myProject.TestPredication");
+        Assert.assertEquals(3000, config.getParkTimeForRetry());
+        Assert.assertEquals("com.myProject.TestPredication", config.getEvictPredicateClassName());
 
         List<Integer> sqlExceptionCodeList = config.getSqlExceptionCodeList();
         List<String> sqlExceptionStateList = config.getSqlExceptionStateList();
@@ -215,14 +224,14 @@ public class Tc0015ConfigLoadFromFileTest extends TestCase {
         for (String state : sqlExceptionStateList)
             Assert.assertTrue("0A000".equals(state) || "57P01".equals(state));
 
-        Assert.assertEquals(config.getConnectionFactoryClassName(), "org.stone.beecp.pool.ConnectionFactoryByDriver");
-        Assert.assertEquals(config.getPoolImplementClassName(), "org.stone.beecp.pool.RawConnectionPool");
+        Assert.assertEquals("org.stone.beecp.pool.ConnectionFactoryByDriver", config.getConnectionFactoryClassName());
+        Assert.assertEquals("org.stone.beecp.pool.RawConnectionPool", config.getPoolImplementClassName());
         Assert.assertTrue(config.isEnableJmx());
 
-        Assert.assertEquals(config.getConnectProperty("cachePrepStmts"), "true");
-        Assert.assertEquals(config.getConnectProperty("prepStmtCacheSize"), "50");
-        Assert.assertEquals(config.getConnectProperty("prepStmtCacheSqlLimit"), "2048");
-        Assert.assertEquals(config.getConnectProperty("useServerPrepStmts"), "true");
+        Assert.assertEquals("true", config.getConnectProperty("cachePrepStmts"));
+        Assert.assertEquals("50", config.getConnectProperty("prepStmtCacheSize"));
+        Assert.assertEquals("2048", config.getConnectProperty("prepStmtCacheSqlLimit"));
+        Assert.assertEquals("true", config.getConnectProperty("useServerPrepStmts"));
         return true;
     }
 }

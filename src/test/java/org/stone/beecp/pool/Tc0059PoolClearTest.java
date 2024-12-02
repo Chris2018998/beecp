@@ -77,7 +77,7 @@ public class Tc0059PoolClearTest extends TestCase {
         config.setInitialSize(1);
         config.setMaxActive(1);
         config.setHoldTimeout(500L);// hold and not using connection;
-        config.setDelayTimeForNextClear(500L);
+        config.setParkTimeForRetry(500L);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
@@ -92,7 +92,7 @@ public class Tc0059PoolClearTest extends TestCase {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(1);
         config.setMaxActive(1);
-        config.setDelayTimeForNextClear(500L);
+        config.setParkTimeForRetry(500L);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 

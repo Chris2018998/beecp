@@ -31,7 +31,7 @@ public class Tc0003PoolNameTest extends TestCase {
         Assert.assertNull(config.getPoolName());
 
         config.setPoolName("pool1");
-        Assert.assertEquals(config.getPoolName(), "pool1");
+        Assert.assertEquals("pool1", config.getPoolName());
     }
 
     public void testOnGeneration() throws Exception {
@@ -41,7 +41,7 @@ public class Tc0003PoolNameTest extends TestCase {
 
         config.setPoolName("pool1");
         checkConfig = config.check();
-        Assert.assertEquals(checkConfig.getPoolName(), "pool1");
+        Assert.assertEquals("pool1", checkConfig.getPoolName());
     }
 
     public void testInProperties() {
@@ -50,16 +50,16 @@ public class Tc0003PoolNameTest extends TestCase {
 
         prop.setProperty("poolName", "pool1");
         config.loadFromProperties(prop);
-        Assert.assertEquals(config.getPoolName(), "pool1");
+        Assert.assertEquals("pool1", config.getPoolName());
 
         prop.clear();
         prop.setProperty("pool-name", "pool2");
         config.loadFromProperties(prop);
-        Assert.assertEquals(config.getPoolName(), "pool2");
+        Assert.assertEquals("pool2", config.getPoolName());
 
         prop.clear();
         prop.setProperty("pool_name", "pool3");
         config.loadFromProperties(prop);
-        Assert.assertEquals(config.getPoolName(), "pool3");
+        Assert.assertEquals("pool3", config.getPoolName());
     }
 }

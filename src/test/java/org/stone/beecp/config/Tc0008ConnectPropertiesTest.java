@@ -37,8 +37,8 @@ public class Tc0008ConnectPropertiesTest extends TestCase {
     public void testOnRemoval() {
         BeeDataSourceConfig config = createEmpty();
         config.addConnectProperty("prop1", "value1");
-        Assert.assertEquals(config.getConnectProperty("prop1"), "value1");
-        Assert.assertEquals(config.removeConnectProperty("prop1"), "value1");
+        Assert.assertEquals("value1", config.getConnectProperty("prop1"));
+        Assert.assertEquals("value1", config.removeConnectProperty("prop1"));
         Assert.assertNull(config.getConnectProperty("prop1"));
     }
 

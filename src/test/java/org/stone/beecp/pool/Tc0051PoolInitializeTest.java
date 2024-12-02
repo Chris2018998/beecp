@@ -238,7 +238,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
         }
     }
 
-    public void testMockPartlySuccess() throws Exception {
+    public void testMockPartlySuccess() {
         try {
             BeeDataSourceConfig config1 = createDefault();
             config1.setInitialSize(3);
@@ -249,7 +249,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
             new FastConnectionPool().init(config1);
             fail("Failed to test exception from factory");
         } catch (SQLException e) {
-            Assert.assertEquals(e.getMessage(), "the count of created connections has reached max");
+            Assert.assertEquals("the count of created connections has reached max", e.getMessage());
         }
 
         try {
@@ -262,11 +262,11 @@ public class Tc0051PoolInitializeTest extends TestCase {
             new FastConnectionPool().init(config2);
             fail("Failed to test exception from factory");
         } catch (SQLException e) {
-            Assert.assertEquals(e.getMessage(), "the count of created connections has reached max");
+            Assert.assertEquals("the count of created connections has reached max", e.getMessage());
         }
     }
 
-    public void testExceptionFromXaConnection() throws Exception {
+    public void testExceptionFromXaConnection() {
         try {
             BeeDataSourceConfig config1 = createDefault();
             config1.setInitialSize(1);

@@ -33,7 +33,7 @@ public class Tc0011ConnectionFactoryTest extends TestCase {
         BeeDataSourceConfig config = createEmpty();
         Class<? extends BeeConnectionFactory> factClass = MockCommonConnectionFactory.class;
         config.setConnectionFactoryClass(factClass);
-        Assert.assertEquals(config.getConnectionFactoryClass(), factClass);
+        Assert.assertEquals(factClass, config.getConnectionFactoryClass());
 
         String factClassName = MockCommonConnectionFactory.class.getName();
         config.setConnectionFactoryClassName(factClassName);

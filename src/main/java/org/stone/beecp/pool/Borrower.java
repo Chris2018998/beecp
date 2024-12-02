@@ -19,4 +19,11 @@ final class Borrower {
     final Thread thread = Thread.currentThread();
     volatile Object state;
     PooledConnection lastUsed;
+
+    Borrower() {
+    }
+
+    Borrower(PooledConnection lastUsed) {
+        this.lastUsed = lastUsed;
+    }
 }

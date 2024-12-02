@@ -59,7 +59,7 @@ public interface BeeDataSourceConfigMBean {
 
     boolean isForceCloseUsingOnClear();
 
-    long getDelayTimeForNextClear();
+    long getParkTimeForRetry();
 
     long getTimerCheckInterval();
 

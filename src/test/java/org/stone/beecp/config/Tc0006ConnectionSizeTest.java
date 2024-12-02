@@ -29,24 +29,24 @@ public class Tc0006ConnectionSizeTest extends TestCase {
 
         config.setInitialSize(-1);
         config.setMaxActive(-1);
-        Assert.assertNotEquals(config.getInitialSize(), -1);
-        Assert.assertNotEquals(config.getMaxActive(), -1);
+        Assert.assertNotEquals(-1, config.getInitialSize());
+        Assert.assertNotEquals(-1, config.getMaxActive());
 
         config.setInitialSize(0);
         config.setMaxActive(0);
-        Assert.assertEquals(config.getInitialSize(), 0);
-        Assert.assertNotEquals(config.getMaxActive(), 0);
+        Assert.assertEquals(0, config.getInitialSize());
+        Assert.assertNotEquals(0, config.getMaxActive());
 
         config.setInitialSize(1);
         config.setMaxActive(1);
-        Assert.assertEquals(config.getInitialSize(), 1);
-        Assert.assertEquals(config.getMaxActive(), 1);
-        Assert.assertEquals(config.getBorrowSemaphoreSize(), 1);
+        Assert.assertEquals(1, config.getInitialSize());
+        Assert.assertEquals(1, config.getMaxActive());
+        Assert.assertEquals(1, config.getBorrowSemaphoreSize());
 
         config.setInitialSize(10);
         config.setMaxActive(20);
-        Assert.assertEquals(config.getInitialSize(), 10);
-        Assert.assertEquals(config.getMaxActive(), 20);
+        Assert.assertEquals(10, config.getInitialSize());
+        Assert.assertEquals(20, config.getMaxActive());
 
         int borrowSemaphoreExpectSize = Math.min(20 / 2, NCPU);
         Assert.assertEquals(config.getBorrowSemaphoreSize(), borrowSemaphoreExpectSize);

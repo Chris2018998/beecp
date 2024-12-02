@@ -43,7 +43,7 @@ public class Tc0010SQLExceptionConfigTest extends TestCase {
 
         config.addSqlExceptionCode(500152);
         config.addSqlExceptionCode(500152);//duplicated add
-        Assert.assertEquals(sqlExceptionCodeList.size(), 1);
+        Assert.assertEquals(1, sqlExceptionCodeList.size());
     }
 
     public void testOnExceptionStateAddRemove() {
@@ -62,7 +62,7 @@ public class Tc0010SQLExceptionConfigTest extends TestCase {
 
         config.addSqlExceptionState("57P01");
         config.addSqlExceptionState("57P01");//duplicated add
-        Assert.assertEquals(sqlExceptionStateList.size(), 1);
+        Assert.assertEquals(1, sqlExceptionStateList.size());
     }
 
     public void testOnPredicationSettingAndGetting() {
@@ -74,11 +74,11 @@ public class Tc0010SQLExceptionConfigTest extends TestCase {
 
         Class<? extends BeeConnectionPredicate> predicationClass = MockNotEvictConnectionPredicate1.class;
         config.setEvictPredicateClass(predicationClass);
-        Assert.assertEquals(config.getEvictPredicateClass(), predicationClass);
+        Assert.assertEquals(predicationClass, config.getEvictPredicateClass());
 
         String predicationClassName = "org.stone.beecp.config.customization.DummySqlExceptionPredication";
         config.setEvictPredicateClassName(predicationClassName);
-        Assert.assertEquals(config.getEvictPredicateClassName(), predicationClassName);
+        Assert.assertEquals(predicationClassName, config.getEvictPredicateClassName());
     }
 
     public void testOnPredicationCreation() throws Exception {
@@ -91,14 +91,14 @@ public class Tc0010SQLExceptionConfigTest extends TestCase {
         BeeDataSourceConfig config2 = createDefault();
         Class<? extends BeeConnectionPredicate> predicationClass = MockNotEvictConnectionPredicate1.class;
         config2.setEvictPredicateClass(predicationClass);
-        Assert.assertEquals(config2.getEvictPredicateClass(), predicationClass);
+        Assert.assertEquals(predicationClass, config2.getEvictPredicateClass());
         BeeDataSourceConfig checkConfig2 = config2.check();
         Assert.assertNotNull(checkConfig2.getEvictPredicate());
 
         BeeDataSourceConfig config3 = createDefault();
         String predicationClassName = "org.stone.beecp.objects.MockNotEvictConnectionPredicate1";
         config3.setEvictPredicateClassName(predicationClassName);
-        Assert.assertEquals(config3.getEvictPredicateClassName(), predicationClassName);
+        Assert.assertEquals(predicationClassName, config3.getEvictPredicateClassName());
         BeeDataSourceConfig checkConfig3 = config3.check();
         Assert.assertNotNull(checkConfig3.getEvictPredicate());
 

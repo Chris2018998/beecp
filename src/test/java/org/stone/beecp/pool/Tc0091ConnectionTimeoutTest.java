@@ -110,7 +110,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
             try {
                 con.getCatalog();
             } catch (SQLException e) {
-                Assert.assertEquals(e.getMessage(), "Connection has been recycled by force");
+                Assert.assertEquals("Connection has been recycled by force", e.getMessage());
             }
         } finally {
             oclose(con);

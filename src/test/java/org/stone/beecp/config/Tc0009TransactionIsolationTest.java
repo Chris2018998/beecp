@@ -29,7 +29,7 @@ public class Tc0009TransactionIsolationTest extends TestCase {
         Assert.assertEquals(config.getDefaultTransactionIsolationCode(), Integer.valueOf(123));
 
         config.setDefaultTransactionIsolationName(BeeTransactionIsolationLevels.LEVEL_READ_COMMITTED);
-        Assert.assertEquals(config.getDefaultTransactionIsolationName(), BeeTransactionIsolationLevels.LEVEL_READ_COMMITTED);
+        Assert.assertEquals(BeeTransactionIsolationLevels.LEVEL_READ_COMMITTED, config.getDefaultTransactionIsolationName());
     }
 
     public void testOnInvalidIsolationName() {

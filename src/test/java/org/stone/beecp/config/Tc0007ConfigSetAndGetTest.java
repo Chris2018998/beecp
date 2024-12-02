@@ -36,75 +36,75 @@ public class Tc0007ConfigSetAndGetTest extends TestCase {
 
         //borrowSemaphoreSize
         config.setBorrowSemaphoreSize(0);
-        Assert.assertNotEquals(config.getBorrowSemaphoreSize(), 0);
+        Assert.assertNotEquals(0, config.getBorrowSemaphoreSize());
         config.setBorrowSemaphoreSize(5);
-        Assert.assertEquals(config.getBorrowSemaphoreSize(), 5);
+        Assert.assertEquals(5, config.getBorrowSemaphoreSize());
 
         //maxWait
         config.setMaxWait(0L);
-        Assert.assertNotEquals(config.getMaxWait(), 0);
+        Assert.assertNotEquals(0, config.getMaxWait());
         config.setMaxWait(5000L);
-        Assert.assertEquals(config.getMaxWait(), 5000L);
+        Assert.assertEquals(5000L, config.getMaxWait());
 
         //idleTimeout
         config.setIdleTimeout(0);
-        Assert.assertNotEquals(config.getIdleTimeout(), 0);
+        Assert.assertNotEquals(0, config.getIdleTimeout());
         config.setIdleTimeout(3000);
-        Assert.assertEquals(config.getIdleTimeout(), 3000);
+        Assert.assertEquals(3000, config.getIdleTimeout());
 
         //holdTimeout
         config.setHoldTimeout(-1);
-        Assert.assertNotEquals(config.getHoldTimeout(), -1);
+        Assert.assertNotEquals(-1, config.getHoldTimeout());
         config.setHoldTimeout(0);
-        Assert.assertEquals(config.getHoldTimeout(), 0);
+        Assert.assertEquals(0, config.getHoldTimeout());
         config.setHoldTimeout(3000L);
-        Assert.assertEquals(config.getHoldTimeout(), 3000L);
+        Assert.assertEquals(3000L, config.getHoldTimeout());
 
         //aliveTestTimeout
         config.setAliveTestTimeout(-1);
-        Assert.assertNotEquals(config.getAliveTestTimeout(), -1);
+        Assert.assertNotEquals(-1, config.getAliveTestTimeout());
         config.setAliveTestTimeout(0);
-        Assert.assertEquals(config.getAliveTestTimeout(), 0);
+        Assert.assertEquals(0, config.getAliveTestTimeout());
         config.setAliveTestTimeout(3);
-        Assert.assertEquals(config.getAliveTestTimeout(), 3);
+        Assert.assertEquals(3, config.getAliveTestTimeout());
 
         //aliveAssumeTime
         config.setAliveAssumeTime(-1);
-        Assert.assertNotEquals(config.getAliveAssumeTime(), -1);
+        Assert.assertNotEquals(-1, config.getAliveAssumeTime());
         config.setAliveAssumeTime(0);
-        Assert.assertEquals(config.getAliveAssumeTime(), 0);
+        Assert.assertEquals(0, config.getAliveAssumeTime());
         config.setAliveAssumeTime(3000L);
-        Assert.assertEquals(config.getAliveAssumeTime(), 3000L);
+        Assert.assertEquals(3000L, config.getAliveAssumeTime());
 
         //timerCheckInterval
         config.setTimerCheckInterval(0);
-        Assert.assertNotEquals(config.getTimerCheckInterval(), 0);
+        Assert.assertNotEquals(0, config.getTimerCheckInterval());
         config.setTimerCheckInterval(3000);
-        Assert.assertEquals(config.getTimerCheckInterval(), 3000);
+        Assert.assertEquals(3000, config.getTimerCheckInterval());
 
         //forceCloseUsingOnClear
         config.setForceCloseUsingOnClear(true);
         Assert.assertTrue(config.isForceCloseUsingOnClear());
 
         //delayTimeForNextClear
-        config.setDelayTimeForNextClear(-1);
-        Assert.assertNotEquals(config.getDelayTimeForNextClear(), -1);
-        config.setDelayTimeForNextClear(0);
-        Assert.assertEquals(config.getDelayTimeForNextClear(), 0L);
-        config.setDelayTimeForNextClear(3000L);
-        Assert.assertEquals(config.getDelayTimeForNextClear(), 3000L);
+        config.setParkTimeForRetry(-1);
+        Assert.assertNotEquals(-1, config.getParkTimeForRetry());
+        config.setParkTimeForRetry(0);
+        Assert.assertEquals(0L, config.getParkTimeForRetry());
+        config.setParkTimeForRetry(3000L);
+        Assert.assertEquals(3000L, config.getParkTimeForRetry());
 
         //defaultCatalog
         config.setDefaultCatalog(null);
         Assert.assertNull(config.getDefaultCatalog());
         config.setDefaultCatalog("catalog");
-        Assert.assertEquals(config.getDefaultCatalog(), "catalog");
+        Assert.assertEquals("catalog", config.getDefaultCatalog());
 
         //defaultSchema
         config.setDefaultSchema(null);
         Assert.assertNull(config.getDefaultSchema());
         config.setDefaultSchema("schema");
-        Assert.assertEquals(config.getDefaultSchema(), "schema");
+        Assert.assertEquals("schema", config.getDefaultSchema());
 
         //defaultReadOnly
         config.setDefaultReadOnly(false);
@@ -168,6 +168,6 @@ public class Tc0007ConfigSetAndGetTest extends TestCase {
         config.setPoolImplementClassName(null);
         Assert.assertNotNull(config.getPoolImplementClassName());
         config.setPoolImplementClassName("org.stone.beecp.pool.FastConnectionPool");
-        Assert.assertEquals(config.getPoolImplementClassName(), "org.stone.beecp.pool.FastConnectionPool");
+        Assert.assertEquals("org.stone.beecp.pool.FastConnectionPool", config.getPoolImplementClassName());
     }
 }

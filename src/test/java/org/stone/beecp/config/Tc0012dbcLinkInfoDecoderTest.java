@@ -36,11 +36,11 @@ public class Tc0012dbcLinkInfoDecoderTest extends TestCase {
         BeeDataSourceConfig config = createEmpty();
         Class<? extends BeeJdbcLinkInfoDecoder> decodeClass = SampleMockJdbcLinkInfoDecoder.class;
         config.setJdbcLinkInfoDecoderClass(decodeClass);
-        Assert.assertEquals(config.getJdbcLinkInfoDecoderClass(), decodeClass);
+        Assert.assertEquals(decodeClass, config.getJdbcLinkInfoDecoderClass());
 
         String decodeClassName = "org.stone.beecp.objects.SampleJdbcLinkInfoDecoder";
         config.setJdbcLinkInfoDecoderClassName(decodeClassName);
-        Assert.assertEquals(config.getJdbcLinkInfoDecoderClassName(), decodeClassName);
+        Assert.assertEquals(decodeClassName, config.getJdbcLinkInfoDecoderClassName());
 
         SampleMockJdbcLinkInfoDecoder decoder = new SampleMockJdbcLinkInfoDecoder();
         config.setJdbcLinkInfoDecoder(decoder);

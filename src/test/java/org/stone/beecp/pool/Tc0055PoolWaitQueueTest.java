@@ -59,15 +59,13 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
         pool.init(config);
 
         //1: create first borrow thread to get connection
-        Connection con = pool.getConnection();
 
         //2: attempt to get connection in current thread
-        try {
+        try (Connection con = pool.getConnection()) {
             pool.getConnection();
         } catch (ConnectionGetTimeoutException e) {
             Assert.assertTrue(e.getMessage().contains("Waited timeout for a released connection"));
         } finally {
-            con.close();
             pool.close();
         }
     }

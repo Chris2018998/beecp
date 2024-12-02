@@ -30,7 +30,6 @@ import static org.stone.tools.CommonUtil.isNotBlank;
  */
 final class PooledConnection {
     private static final boolean[] FALSE = new boolean[6];
-    final int pooledConnectionIndex;
     private final FastConnectionPool pool;
 
     //***************************************************************************************************************//
@@ -80,9 +79,8 @@ final class PooledConnection {
     //***************************************************************************************************************//
     //                                      1: constructor                                                           //                                                                                  //
     //***************************************************************************************************************//
-    PooledConnection(FastConnectionPool pool, int pooledConnectionIndex) {
+    PooledConnection(FastConnectionPool pool) {
         this.pool = pool;
-        this.pooledConnectionIndex = pooledConnectionIndex;
     }
 
     //***************************************************************************************************************//
