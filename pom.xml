@@ -147,6 +147,7 @@
                     <excludes>
                         <exclude>org/stone/beecp/jta/*</exclude>
                         <exclude>org/stone/beecp/pool/Proxy*</exclude>
+    		        <exclude>org/stone/beecp/*Exception.*</exclude>
                         <exclude>org/stone/beecp/pool/exception/*</exclude>
                     </excludes>
                 </configuration>
