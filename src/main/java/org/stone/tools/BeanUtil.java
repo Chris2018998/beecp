@@ -258,7 +258,8 @@ public class BeanUtil {
             throw new BeanException("Bean class can't be abstract");
         //3:check class public modifier
         if (!Modifier.isPublic(modifiers))
-            throw new BeanException("Not defined public constructor in bean class");
+            throw new BeanException("Bean class must be public");
+
         //4:check extension
         if (parentClasses != null && parentClasses.length > 0) {
             int parentClassCount = 0;
