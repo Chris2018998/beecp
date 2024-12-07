@@ -15,9 +15,10 @@ import java.util.concurrent.locks.LockSupport;
 /**
  * @author Chris Liao
  */
-public class MockBlockPoolImplementation2 extends MockBlockPoolImplementation1 {
+public class MockBlockPoolImplementation2 extends MockBlockPoolImplementation {
 
     public MockBlockPoolImplementation2() {
         LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
     }
+
 }
