@@ -27,6 +27,7 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
     public void testTimeout() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(1);
+        config.setParkTimeForRetry(0L);
         config.setBorrowSemaphoreSize(2);
         config.setForceCloseUsingOnClear(true);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(1L));
@@ -51,6 +52,7 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(1);
         config.setBorrowSemaphoreSize(2);
+        config.setParkTimeForRetry(0L);
         config.setForceCloseUsingOnClear(true);
         config.setEnableThreadLocal(false);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(1L));
@@ -74,8 +76,9 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(1);
         config.setBorrowSemaphoreSize(2);
+        config.setParkTimeForRetry(0L);
         config.setForceCloseUsingOnClear(true);
-        config.setMaxWait(TimeUnit.SECONDS.toMillis(10L));
+        config.setMaxWait(TimeUnit.SECONDS.toMillis(1L));
         config.setConnectionFactory(new MockDriverConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);

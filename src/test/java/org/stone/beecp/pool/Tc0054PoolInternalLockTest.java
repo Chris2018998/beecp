@@ -15,10 +15,10 @@ import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.objects.BorrowThread;
 import org.stone.beecp.objects.InterruptionAction;
 import org.stone.beecp.objects.MockNetBlockConnectionFactory;
-import org.stone.beecp.pool.exception.ConnectionGetException;
 import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
 import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
 
+import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
@@ -31,6 +31,7 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         config.setInitialSize(0);
         config.setMaxActive(1);
         config.setBorrowSemaphoreSize(2);
+        config.setParkTimeForRetry(0L);
         config.setForceCloseUsingOnClear(true);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(1L));
 
@@ -42,7 +43,7 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         //1: create first borrow thread to get connection
         new BorrowThread(pool).start();
         factory.getArrivalLatch().await();
-        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1000L));
+        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(500L));
 
         //2: attempt to get connection in current thread
         try {
@@ -60,6 +61,7 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         config.setInitialSize(0);
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(2);
+        config.setParkTimeForRetry(0L);
         config.setForceCloseUsingOnClear(true);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(10L));
 
@@ -71,7 +73,7 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         //1: create first borrow thread to get connection
         new BorrowThread(pool).start();
         factory.getArrivalLatch().await();
-        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1000L));
+        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(500L));
 
         //2: attempt to get connection in current thread
         try {
@@ -85,12 +87,12 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         }
     }
 
-
     public void testInterruptCreator() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(0);
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(2);
+        config.setParkTimeForRetry(0L);
         config.setForceCloseUsingOnClear(true);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(10L));
 
@@ -103,14 +105,19 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         BorrowThread first = new BorrowThread(pool);
         first.start();
         factory.getArrivalLatch().await();
-        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1000L));
+        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(500L));
+
+        BorrowThread second = new BorrowThread(pool);
+        second.start();
+
+        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(500L));
+        new InterruptionAction(first).start();
+        second.join();
 
         //2: attempt to get connection in current thread
         try {
-            new InterruptionAction(first).start();
-            pool.getConnection();
-        } catch (ConnectionGetException e) {
-            Assert.assertTrue(e.getMessage().contains("Waited failed on pool lock for initialization ready on first connection by another"));
+            SQLException e = second.getFailureCause();
+            Assert.assertTrue(e != null && e.getMessage().contains("Waited failed on pool lock for initialization ready on first connection by another"));
         } finally {
             factory.getBlockingLatch().countDown();
             pool.close();

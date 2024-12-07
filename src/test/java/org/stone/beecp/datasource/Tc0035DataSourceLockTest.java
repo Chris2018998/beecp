@@ -34,17 +34,14 @@ import static org.stone.beecp.config.DsConfigFactory.*;
 public class Tc0035DataSourceLockTest extends TestCase {
 
     public void testWaitTimeoutOnDsRLock() throws SQLException {
-        BeeDataSource ds;
-        BorrowThread firstThread;
-
-        ds = new BeeDataSource();
+        BeeDataSource ds = new BeeDataSource();
         ds.setJdbcUrl(JDBC_URL);
         ds.setDriverClassName(JDBC_DRIVER);
         ds.setUsername(JDBC_USER);
-        ds.setMaxWait(TimeUnit.SECONDS.toMillis(1));//timeout on wait
+        ds.setMaxWait(TimeUnit.MILLISECONDS.toMillis(500L));//timeout on wait
         ds.setPoolImplementClassName(MockBlockPoolImplementation1.class.getName());
 
-        firstThread = new BorrowThread(ds);//first thread create pool under write-lock
+        BorrowThread firstThread = new BorrowThread(ds);//first thread create pool under write-lock
         firstThread.start();
 
         if (waitUtilWaiting(firstThread)) {
@@ -58,8 +55,7 @@ public class Tc0035DataSourceLockTest extends TestCase {
     }
 
     public void testInterruptionOnDsRLock() throws SQLException {
-        BeeDataSource ds;
-        ds = new BeeDataSource();
+        BeeDataSource ds = new BeeDataSource();
         ds.setJdbcUrl(JDBC_URL);
         ds.setDriverClassName(JDBC_DRIVER);
         ds.setUsername(JDBC_USER);
@@ -81,17 +77,14 @@ public class Tc0035DataSourceLockTest extends TestCase {
     }
 
     public void testSuccessOnRLock() throws SQLException {
-        BeeDataSource ds;
-        BorrowThread firstThread;
-
-        ds = new BeeDataSource();
+        BeeDataSource ds = new BeeDataSource();
         ds.setJdbcUrl(JDBC_URL);
         ds.setDriverClassName(JDBC_DRIVER);
         ds.setUsername(JDBC_USER);
-        ds.setMaxWait(TimeUnit.SECONDS.toMillis(10));//timeout on wait
+        ds.setMaxWait(TimeUnit.SECONDS.toMillis(10L));//timeout on wait
         ds.setPoolImplementClassName(MockBlockPoolImplementation2.class.getName());
 
-        firstThread = new BorrowThread(ds);
+        BorrowThread firstThread = new BorrowThread(ds);
         firstThread.start();
 
         if (waitUtilWaiting(firstThread)) {//block 1 second in pool instance creation
@@ -108,17 +101,14 @@ public class Tc0035DataSourceLockTest extends TestCase {
     }
 
     public void testSuccessOnRLock2() throws SQLException {
-        BeeDataSource ds;
-        BorrowThread firstThread;
-
-        ds = new BeeDataSource();
+        BeeDataSource ds = new BeeDataSource();
         ds.setJdbcUrl(JDBC_URL);
         ds.setDriverClassName(JDBC_DRIVER);
         ds.setUsername(JDBC_USER);
-        ds.setMaxWait(TimeUnit.SECONDS.toMillis(10));//timeout on wait
+        ds.setMaxWait(TimeUnit.SECONDS.toMillis(10L));//timeout on wait
         ds.setPoolImplementClassName(MockBlockPoolImplementation2.class.getName());
 
-        firstThread = new BorrowThread(ds);
+        BorrowThread firstThread = new BorrowThread(ds);
         firstThread.start();
 
         if (waitUtilWaiting(firstThread)) {//block 1 second in pool instance creation

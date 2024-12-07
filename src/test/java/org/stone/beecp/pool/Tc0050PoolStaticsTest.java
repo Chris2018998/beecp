@@ -167,7 +167,7 @@ public class Tc0050PoolStaticsTest extends TestCase {
     }
 
     public void testPropertyValueGet() {
-        Map<String, String> map1 = new HashMap<>(3);
+        Map<String, String> map1 = new HashMap<>(4);
         map1.put("maxActive", "5");
         map1.put("max-active", "10");
         map1.put("max_active", "20");
@@ -197,10 +197,10 @@ public class Tc0050PoolStaticsTest extends TestCase {
         }
 
         BeeDataSourceConfig bean = new BeeDataSourceConfig();
-        Map<String, Method> emptySetMethodMap = new HashMap<>();
-        Map<String, Object> emptySetValueMap = new HashMap<>();
-        Map<String, Method> nonEmptySetMethodMap = new HashMap<>();
-        Map<String, Object> nonEmptySetValueMap = new HashMap<>();
+        Map<String, Method> emptySetMethodMap = new HashMap<>(0);
+        Map<String, Object> emptySetValueMap = new HashMap<>(0);
+        Map<String, Method> nonEmptySetMethodMap = new HashMap<>(1);
+        Map<String, Object> nonEmptySetValueMap = new HashMap<>(1);
         nonEmptySetValueMap.put("maxActive", 10);
         nonEmptySetMethodMap.put("maxActive", BeeDataSourceConfig.class.getDeclaredMethod("setMaxActive", int.class));
         setPropertiesValue(bean, null, null);//null null
@@ -252,7 +252,7 @@ public class Tc0050PoolStaticsTest extends TestCase {
         try {
             createClassInstance(SetTestBean2.class, BeeConnectionPool.class, "pool");
         } catch (BeanException e) {
-            Assert.assertTrue(e.getMessage().contains("Not defined public constructor in bean class"));
+            Assert.assertTrue(e.getMessage().contains("Bean class must be public"));
         }
 
         createClassInstance(clazz, (Class<?>[]) null, "pool");

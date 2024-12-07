@@ -27,7 +27,7 @@ public class MockBlockPoolImplementation1 implements BeeConnectionPool {
     }
 
     public void init(BeeDataSourceConfig config) {
-        //do noting
+        //do nothing
     }
 
     public Connection getConnection() {
@@ -39,7 +39,7 @@ public class MockBlockPoolImplementation1 implements BeeConnectionPool {
     }
 
     public void close() {
-        //do noting
+        //do nothing
     }
 
     public boolean isClosed() {
@@ -47,7 +47,7 @@ public class MockBlockPoolImplementation1 implements BeeConnectionPool {
     }
 
     public void setPrintRuntimeLog(boolean indicator) {
-        //do noting
+        //do nothing
     }
 
     public BeeConnectionPoolMonitorVo getPoolMonitorVo() {
@@ -67,10 +67,10 @@ public class MockBlockPoolImplementation1 implements BeeConnectionPool {
     }
 
     public void clear(boolean forceCloseUsing) {
-        //do noting
+        //do nothing
     }
 
     public void clear(boolean forceCloseUsing, BeeDataSourceConfig config) {
-        //do noting
+        //do nothing
     }
 }

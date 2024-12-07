@@ -56,6 +56,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         BeeDataSourceConfig config = createDefault();
         config.setHoldTimeout(100L);// hold and not using connection;
         config.setTimerCheckInterval(500L);// two seconds interval
+        config.setParkTimeForRetry(0L);
 
         Connection con = null;
         FastConnectionPool pool = new FastConnectionPool();
@@ -88,7 +89,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
     public void testNotHoldTimeout() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setHoldTimeout(0);//default is zero,not timeout
-        config.setTimerCheckInterval(1000L);// two seconds interval
+        config.setTimerCheckInterval(500L);// 500 mill-seconds interval
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
         Assert.assertEquals(0L, getFieldValue(pool, "holdTimeoutMs"));
@@ -97,12 +98,12 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         Connection con = null;
         try {
             con = pool.getConnection();
-            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));//first sleeping
+            LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(600L));//first sleeping
 
             Assert.assertEquals(1, pool.getTotalSize());
             Assert.assertEquals(1, pool.getUsingSize());
 
-            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));//second sleeping
+            LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(600L));//second sleeping
 
             Assert.assertEquals(1, pool.getTotalSize());
             Assert.assertEquals(1, pool.getUsingSize());
@@ -166,6 +167,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         config.setMaxActive(1);
         config.setInitialSize(1);
         config.setIdleTimeout(1000L);
+        config.setParkTimeForRetry(0L);
         config.setPrintRuntimeLog(true);
         config.setBorrowSemaphoreSize(1);
         FastConnectionPool pool = new FastConnectionPool();
