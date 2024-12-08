@@ -37,8 +37,6 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         config.setMaxActive(initSize);
         config.setIdleTimeout(1000);
         config.setTimerCheckInterval(1000);
-        config.setForceCloseUsingOnClear(true);
-        config.setParkTimeForRetry(0L);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
@@ -80,6 +78,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
                 Assert.assertTrue(e.getMessage().contains("No operations allowed after connection closed"));
             }
 
+            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(2));
         } finally {
             oclose(con);
             pool.close();
@@ -89,7 +88,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
     public void testNotHoldTimeout() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setHoldTimeout(0);//default is zero,not timeout
-        config.setTimerCheckInterval(500L);// 500 mill-seconds interval
+        config.setTimerCheckInterval(1000L);// two seconds interval
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
         Assert.assertEquals(0L, getFieldValue(pool, "holdTimeoutMs"));
@@ -98,12 +97,12 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         Connection con = null;
         try {
             con = pool.getConnection();
-            LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(600L));//first sleeping
+            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));//first sleeping
 
             Assert.assertEquals(1, pool.getTotalSize());
             Assert.assertEquals(1, pool.getUsingSize());
 
-            LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(600L));//second sleeping
+            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));//second sleeping
 
             Assert.assertEquals(1, pool.getTotalSize());
             Assert.assertEquals(1, pool.getUsingSize());
@@ -111,7 +110,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
             try {
                 con.getCatalog();
             } catch (SQLException e) {
-                Assert.assertEquals("Connection has been recycled by force", e.getMessage());
+                Assert.assertEquals(e.getMessage(), "Connection has been recycled by force");
             }
         } finally {
             oclose(con);
@@ -123,6 +122,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(1);
         config.setBorrowSemaphoreSize(1);
+
         long maxWait = TimeUnit.SECONDS.toMillis(1L);
         config.setMaxWait(maxWait);
         MockNetBlockConnectionFactory factory = new MockNetBlockConnectionFactory();
@@ -132,7 +132,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
 
         BorrowThread first = new BorrowThread(pool);
         first.start();
-        factory.waitOnArrivalLatch();
+        factory.getArrivalLatch().await();
 
         Assert.assertEquals(1, pool.getConnectionCreatingCount());
         Assert.assertEquals(0, pool.getConnectionCreatingTimeoutCount());
@@ -166,7 +166,6 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         config.setMaxActive(1);
         config.setInitialSize(1);
         config.setIdleTimeout(1000L);
-        config.setParkTimeForRetry(0L);
         config.setPrintRuntimeLog(true);
         config.setBorrowSemaphoreSize(1);
         FastConnectionPool pool = new FastConnectionPool();
