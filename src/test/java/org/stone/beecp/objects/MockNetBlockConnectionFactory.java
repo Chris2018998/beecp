@@ -36,6 +36,13 @@ public class MockNetBlockConnectionFactory implements BeeConnectionFactory {
         return blockingLatch;
     }
 
+
+    public void waitOnArrivalLatch() throws InterruptedException {
+        Thread.interrupted();
+        arrivalLatch.await();
+    }
+
+
     public Connection create() {
         arrivalLatch.countDown();
         try {

@@ -37,6 +37,8 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         config.setMaxActive(initSize);
         config.setIdleTimeout(1000);
         config.setTimerCheckInterval(1000);
+        config.setForceCloseUsingOnClear(true);
+        config.setParkTimeForRetry(0L);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
@@ -56,6 +58,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         BeeDataSourceConfig config = createDefault();
         config.setHoldTimeout(100L);// hold and not using connection;
         config.setTimerCheckInterval(500L);// two seconds interval
+        config.setForceCloseUsingOnClear(true);
         config.setParkTimeForRetry(0L);
 
         Connection con = null;
@@ -79,7 +82,6 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
                 Assert.assertTrue(e.getMessage().contains("No operations allowed after connection closed"));
             }
 
-            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(2));
         } finally {
             oclose(con);
             pool.close();
@@ -90,6 +92,8 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         BeeDataSourceConfig config = createDefault();
         config.setHoldTimeout(0);//default is zero,not timeout
         config.setTimerCheckInterval(500L);// 500 mill-seconds interval
+        config.setForceCloseUsingOnClear(true);
+        config.setParkTimeForRetry(0L);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
         Assert.assertEquals(0L, getFieldValue(pool, "holdTimeoutMs"));
@@ -123,6 +127,8 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(1);
         config.setBorrowSemaphoreSize(1);
+        config.setForceCloseUsingOnClear(true);
+        config.setParkTimeForRetry(0L);
 
         long maxWait = TimeUnit.SECONDS.toMillis(1L);
         config.setMaxWait(maxWait);
@@ -133,7 +139,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
 
         BorrowThread first = new BorrowThread(pool);
         first.start();
-        factory.getArrivalLatch().await();
+        factory.waitOnArrivalLatch();
 
         Assert.assertEquals(1, pool.getConnectionCreatingCount());
         Assert.assertEquals(0, pool.getConnectionCreatingTimeoutCount());

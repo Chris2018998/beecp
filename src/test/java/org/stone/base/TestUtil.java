@@ -23,8 +23,12 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.stone.tools.BeanUtil.setAccessible;
 import static org.stone.tools.CommonUtil.objectEquals;
@@ -157,6 +161,78 @@ public class TestUtil {
             log.warn("Warning:Error at closing resultSet:", e);
         }
     }
+
+
+    public static void blockUtilWaiter(Semaphore semaphore) {
+        for (; ; ) {
+            if (semaphore.getQueueLength() == 0) {
+                LockSupport.parkNanos(5L);
+            } else {
+                break;
+            }
+        }
+    }
+
+    public static void blockUtilWaiter(ReentrantLock lock) {
+        for (; ; ) {
+            if (lock.getQueueLength() == 0) {
+                LockSupport.parkNanos(5L);
+            } else {
+                break;
+            }
+        }
+    }
+
+    public static void blockUtilWaiter(ReentrantReadWriteLock lock) {
+        for (; ; ) {
+            if (lock.getQueueLength() == 0) {
+                LockSupport.parkNanos(5L);
+            } else {
+                break;
+            }
+        }
+    }
+
+    public static void blockUtilWaiter(ConcurrentLinkedQueue<?> waitQueue) {
+        for (; ; ) {
+            if (waitQueue.isEmpty()) {
+                LockSupport.parkNanos(5L);
+            } else {
+                break;
+            }
+        }
+    }
+
+    public static void blockUtilLocked(ReentrantLock lock) {
+        for (; ; ) {
+            if (!lock.isLocked()) {
+                LockSupport.parkNanos(5L);
+            } else {
+                break;
+            }
+        }
+    }
+
+    public static void blockUtilWriteLocked(ReentrantReadWriteLock lock) {
+        for (; ; ) {
+            if (!lock.isWriteLocked()) {
+                LockSupport.parkNanos(5L);
+            } else {
+                break;
+            }
+        }
+    }
+
+    public static void blockUtilReadLocked(ReentrantReadWriteLock lock) {
+        for (; ; ) {
+            if (lock.getReadLockCount() == 0) {
+                LockSupport.parkNanos(5L);
+            } else {
+                break;
+            }
+        }
+    }
+
 
     public static boolean waitUtilAlive(Thread thread) {
         for (; ; ) {

@@ -62,12 +62,15 @@ public class Tc0059PoolClearTest extends TestCase {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(1);
         config.setMaxActive(1);
+        config.setParkTimeForRetry(0L);
+        config.setForceCloseUsingOnClear(true);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
         pool.getConnection();
         Assert.assertEquals(1, pool.getUsingSize());
         pool.clear(true);
+
         Assert.assertEquals(0, pool.getUsingSize());
         Assert.assertEquals(0, pool.getTotalSize());
     }
