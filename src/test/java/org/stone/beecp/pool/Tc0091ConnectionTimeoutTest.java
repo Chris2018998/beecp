@@ -58,8 +58,6 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         BeeDataSourceConfig config = createDefault();
         config.setHoldTimeout(100L);// hold and not using connection;
         config.setTimerCheckInterval(500L);// two seconds interval
-        config.setForceCloseUsingOnClear(true);
-        config.setParkTimeForRetry(0L);
 
         Connection con = null;
         FastConnectionPool pool = new FastConnectionPool();
@@ -92,8 +90,6 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         BeeDataSourceConfig config = createDefault();
         config.setHoldTimeout(0);//default is zero,not timeout
         config.setTimerCheckInterval(500L);// 500 mill-seconds interval
-        config.setForceCloseUsingOnClear(true);
-        config.setParkTimeForRetry(0L);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
         Assert.assertEquals(0L, getFieldValue(pool, "holdTimeoutMs"));
@@ -127,9 +123,6 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(1);
         config.setBorrowSemaphoreSize(1);
-        config.setForceCloseUsingOnClear(true);
-        config.setParkTimeForRetry(0L);
-
         long maxWait = TimeUnit.SECONDS.toMillis(1L);
         config.setMaxWait(maxWait);
         MockNetBlockConnectionFactory factory = new MockNetBlockConnectionFactory();
