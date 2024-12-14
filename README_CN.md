@@ -1,34 +1,16 @@
 <p align="left">
 <a><img src="https://img.shields.io/circleci/build/github/Chris2018998/beecp"></a>
-<a><img src="https://app.codacy.com/project/badge/Grade/574e512b3d48465cb9b85acb72b01c31"/></a>
+<a>
+<img src="https://app.codacy.com/project/badge/Grade/574e512b3d48465cb9b85acb72b01c31"/></a>
 <a><img src="https://codecov.io/gh/Chris2018998/beecp/graph/badge.svg?token=JLS7NFR3NP"/></a>
-<a><img src="https://maven-badges.herokuapp.com/maven-central/com.github.chris2018998/beecp/badge.svg"></a>
 <a><img src="https://img.shields.io/badge/Java-7+-green.svg"></a>
 <a><img src="https://img.shields.io/github/license/Chris2018998/BeeCP"></a>
 </p>
 
-![图片](https://user-images.githubusercontent.com/32663325/154847136-10e241ae-af4c-478a-a608-aaa685e0464b.png)
-&nbsp;<a href="https://github.com/Chris2018998/stone/blob/main/README.md">:house:</a>|
-<a href="https://github.com/Chris2018998/BeeCP/edit/master/README_cn.md">中文</a>|
-<a href="https://github.com/Chris2018998/BeeCP/edit/master/README.md">English</a>
+BeeCP，一款轻量级JDBC连接池，Jar包仅133kB，技术亮点：单点缓存，非移动等待，固定长度数组。
 
-## 一：简介
-
-小蜜蜂连接池（BeeCP），一款小型JDBC连接池组件，具有性能高，代码轻，稳定好的特点。
-
-* Java语言开发，具有跨平台的优点
-* 基于参数驱动，支持多种参数设置， 支持配置文件导入
-* 适用多种数据库驱动（截止当前，主流数据库均可适配）
-* 支持本地事务与分布式事务<br/>
-* 产品采用JUC技术开发，具有单点缓存，信号量控制，队列复用，非移动等待，自旋控制， 连接和异常的传递，异步候补，安全关闭等亮点
-* 提供日志输出和监控工具
-* 健壮性好，敏捷应对意外情况（如断网，数据库服务崩溃）
-* 良好的接口扩展性
-
-## 二：版本下载
-
-### Java7+
-
+## 
+Java7+
 ```xml
 <dependency>
    <groupId>com.github.chris2018998</groupId>
@@ -36,131 +18,41 @@
    <version>4.1.4</version>
 </dependency>
 ```
-
-### Java6
-
+Java6
 ```xml
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
    <version>1.6.10</version>
 </dependency>
-```                                 
+```                                
+## 
+**特色功能**
 
-## 三：参考例子
+* 连接池清理与重启
 
-### :point_right: 例子1(独立应用)
-
-```java
-BeeDataSourceConfig config = new BeeDataSourceConfig();
-config.setDriverClassName("com.mysql.jdbc.Driver");
-config.setJdbcUrl("jdbc:mysql://localhost/test");
-config.setUsername("root");
-config.setPassword("root");
-BeeDataSource ds=new BeeDataSource(config);
-Connection con=ds.getConnection();
-....
-
-```
-
-### :point_right: 例子2(Springbooot)
-
-*application.properties*
-
-```java
-spring.datasource.username=root
-spring.datasource.password=root
-spring.datasource.url=jdbc:mysql://localhost/test
-spring.datasource.driverClassName=com.mysql.jdbc.Driver
-``` 
-
-*DataSourceConfig.java*
-
-```java
-@Configuration
-public class DataSourceConfig {
-  @Value("${spring.datasource.username}")
-  private String user;
-  @Value("${spring.datasource.password}")
-  private String password;
-  @Value("${spring.datasource.url}")
-  private String url;
-  @Value("${spring.datasource.driverClassName}")
-  private String driver;
-
-  @Bean
-  @Primary
-  @ConfigurationProperties(prefix="spring.datasource")
-  public DataSource primaryDataSource() {
-    return DataSourceBuilder.create().type(cn.beecp.BeeDataSource.class).build();
-  }
+* 连接池阻塞中断
   
-  @Bean
-  public DataSource secondDataSource() {
-   return new BeeDataSource(new BeeDataSourceConfig(driver,url,user,password));
-  }
-}
-```
+* 支持连接工厂扩展
 
-:sunny: *如果项目为Springboot类型，推荐使用数据源管理工具：<a href="https://github.com/Chris2018998/BeeCP-Starter">
-BeeCP-Starter</a>（无需代码开发配置即可，且自带监控界面）*
+* 支持虚拟线程
 
-## 四：功能导向
-
-![图片](https://user-images.githubusercontent.com/32663325/153597592-c7d36f14-445a-454b-9db4-2289e1f92ed6.png)
-
-## 五：运行时监控
-
-为了更好的监控池内的运行情况（*闲置连接数，使用中连接数，等待数等*），产品内部提供了三种方式
-
-* 基于slf4j日志接口输出池内运行时信息
-* 提供Jmx方式监控
-* 提供方法级监控（可访问数据源的监控方法，得到一个可反映池内状态的Vo结果对象）
-
-除以上方式，我们额外准备一套具有监控界面的解决方案：<a href="https://github.com/Chris2018998/BeeCP-Starter">
-BeeCP-Starter</a>
-
+* [运行时监控Monitor](https://github.com/Chris2018998/beecp-starter)
 ![图片](https://user-images.githubusercontent.com/32663325/154832186-be2b2c34-8765-4be8-8435-b97c6c1771df.png)
-
 ![图片](https://user-images.githubusercontent.com/32663325/154832193-62b71ade-84cc-41db-894f-9b012995d619.png)
 
-## 六：技术点对比
+## 
+**JMH性能**
 
-| **比较项** | **BeeCP**                                                   | **HikariCP**                              |
-|---------|-------------------------------------------------------------|-------------------------------------------|
-| 关键技术    | ThreadLocal，信号量，ConcurrentLinkedQueue，Thread                | FastList，ConcurrentBag，ThreadPoolExecutor |
-| 相似点     | CAS使用，代理预生成，使用驱动自带Statement缓存                               |                                           |
-| 差异点     | 支持公平模式，支持XA分布事务，强制回收持有不用的连接，单点缓存，队列复用，非移动等待，独创自旋控制/连接传递程序片段 | 支持池暂停                                     |
-| 文件      | 37个源码文件，Jar包95KB                                            | 44个源码文件，Jar包158KB                         |
-| 性能      | 总体性能高40%以上（光连接池基准）                                          |                                           |
+![image](https://github.com/user-attachments/assets/65260ea7-a27a-412d-a3c4-62fc50d6070a)
 
-## 七：代码质量
+_Windows11，Intel (R) Core (TM) i7-14650HX,32G内存，Java-1.8.0_171，连接池配置：初始 32，最大 32_
 
-![图片](https://user-images.githubusercontent.com/32663325/163173015-2ce906f3-1b83-419d-82aa-a42b5c8d92b8.png)
+_测试源码：[HikariCP-benchmark-master.zip](https://github.com/Chris2018998/stone/blob/main/doc/temp/HikariCP-benchmark-master.zip)_
 
-## 八：扩展接口
 
-### 1：连接工厂接口
-
-产品内部提供两个工厂接口分别用来创建本地连接和Xa连接(**一般不建议自扩展**)
-
-![图片](https://user-images.githubusercontent.com/32663325/153597017-2f3ba479-8f3f-4a82-949b-275068c287cd.png)
-
-数据源配置类(BeeDataSourceConfig)中有一个工厂类名配置项，支持4种类型
-
-![图片](https://user-images.githubusercontent.com/32663325/153597130-a22c0d92-2899-46db-b982-35b998434eae.png)
-
-参考例子
-
-![图片](https://user-images.githubusercontent.com/32663325/153597143-3a8e45f8-4894-4e98-913d-63994d3486c6.png)
-
-### 2：连接密文解密
-
-如果连接数据库使用的是密文，产品内部提供一个可供扩展的解密类，使用时将实现类名注入配置中即可。
-
-![图片](https://user-images.githubusercontent.com/32663325/153597176-e48382b9-7395-4c6c-9f34-425072d7c510.png)
-
-## 九：配置项
+## 
+**配置项**
 
 | 项名                              | 描述                            | 默认值                 |
 |---------------------------------|-------------------------------|---------------------|

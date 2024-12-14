@@ -3,12 +3,12 @@ orbs:
   codecov: codecov/codecov@1
 
 jobs:
+  working_directory: src
   build-and-test:
     docker:
       - image: cimg/openjdk:11.0
-      
+
     steps:
-      # Checkout the code as the first step.
       - checkout
 
       # Use mvn clean and package as the standard maven build phase
@@ -16,11 +16,11 @@ jobs:
           name: test-package
           command: mvn clean package
       - codecov/upload
-
+      
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/workflows/ & https://circleci.com/docs/configuration-reference/#workflows
 workflows:
-  sample: # This is the name of the workflow, feel free to change it to better match your workflow.
-    # Inside the workflow, you define the jobs you want to run.
+  myflow:  
     jobs:
       - build-and-test
+       
