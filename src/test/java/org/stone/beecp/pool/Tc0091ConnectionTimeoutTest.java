@@ -54,8 +54,10 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
 
     public void testHoldTimeout() throws Exception {//pool timer clear timeout connections
         BeeDataSourceConfig config = createDefault();
+        config.setInitialSize(1);
+        config.setMaxActive(1);
         config.setHoldTimeout(100L);// hold and not using connection;
-        config.setTimerCheckInterval(500L);// two seconds interval
+        config.setTimerCheckInterval(500L);
 
         Connection con = null;
         FastConnectionPool pool = new FastConnectionPool();
@@ -68,7 +70,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
             Assert.assertEquals(1, pool.getTotalSize());
             Assert.assertEquals(1, pool.getUsingSize());
 
-            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
+            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1L));
             Assert.assertEquals(0, pool.getUsingSize());
 
             try {
@@ -77,8 +79,6 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
             } catch (SQLException e) {
                 Assert.assertTrue(e.getMessage().contains("No operations allowed after connection closed"));
             }
-
-            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(2));
         } finally {
             oclose(con);
             pool.close();
@@ -87,8 +87,10 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
 
     public void testNotHoldTimeout() throws Exception {
         BeeDataSourceConfig config = createDefault();
+        config.setInitialSize(1);
+        config.setMaxActive(1);
         config.setHoldTimeout(0);//default is zero,not timeout
-        config.setTimerCheckInterval(1000L);// two seconds interval
+        config.setTimerCheckInterval(500L);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
         Assert.assertEquals(0L, getFieldValue(pool, "holdTimeoutMs"));
@@ -97,12 +99,12 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         Connection con = null;
         try {
             con = pool.getConnection();
-            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));//first sleeping
+            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1L));//first sleeping
 
             Assert.assertEquals(1, pool.getTotalSize());
             Assert.assertEquals(1, pool.getUsingSize());
 
-            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));//second sleeping
+            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1L));//second sleeping
 
             Assert.assertEquals(1, pool.getTotalSize());
             Assert.assertEquals(1, pool.getUsingSize());
