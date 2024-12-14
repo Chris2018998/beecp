@@ -6,7 +6,10 @@ jobs:
   build-and-test:
     docker:
       - image: cimg/openjdk:11.0
-      
+    filters:
+         paths:
+            only:
+               - "src/**/*" 
     steps:
       # Checkout the code as the first step.
       - checkout
@@ -16,7 +19,7 @@ jobs:
           name: test-package
           command: mvn clean package
       - codecov/upload
-
+      
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/workflows/ & https://circleci.com/docs/configuration-reference/#workflows
 workflows:
