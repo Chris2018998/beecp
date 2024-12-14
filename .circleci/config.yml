@@ -6,12 +6,10 @@ jobs:
   build-and-test:
     docker:
       - image: cimg/openjdk:11.0
-    filters:
-         paths:
-            only:
-               - "src/**/*" 
+      
     steps:
-      # Checkout the code as the first step.
+      - check-changed-files-or-halt:
+          pattern: ^(src)|(.java)$ 
       - checkout
 
       # Use mvn clean and package as the standard maven build phase
