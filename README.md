@@ -8,7 +8,7 @@
 <a href="README_CN.md">中文</a>|<a href="README.md">English</a>
 </p>
 
-BeeCP,a lightweight JDBC connection pool with a Jar package of only 133kB,techology feature:single point caching, non moving waiting, fixed length arrays.
+BeeCP,a lightweight JDBC connection pool whose jar file only 133kB,techology highlights:caching single connection,non moving waiting,fixed length array.
 
 ---
 Java7+
@@ -32,7 +32,7 @@ Java6(deprecated)
 * Connection pool cleaning and restart
 * Support interruption when blocking
 * Support virtual thread applications
-* Support property file configuration
+* Support properties file configuration
 * Support connection factory customization
 * Support custom decryption on jdbc link information   
 * [Provide runtime monitor](https://github.com/Chris2018998/beecp-starter)
@@ -52,8 +52,7 @@ _performance source:[HikariCP-benchmark-master.zip](https://github.com/Chris2018
 --- 
 **How to use**
 
-At usage, it is generally similar to other connection pool products; If your project is built on springboot framework and you are interested in using beecp or already using it, then we recommend [beecp starter](https://github.com/Chris2018998/beecp-starter) to manage one or more beecp data sources in your project.
-
+At usage, it is generally similar to other connection pools;If your project is built on springboot framework and you are interested at beecp or already using it,we recommend [beecp starter](https://github.com/Chris2018998/beecp-starter) to you to manage beecp data source in your project.
 
 --- 
 **Configure properties**
@@ -104,7 +103,7 @@ At usage, it is generally similar to other connection pool products; If your pro
 --- 
 **Connection Eviction**
 
-Beecp provides connection eviction feature and supports three configurations (BeeDataSourceConfig)
+Beecp provides connection eviction feature and supports three kinds of configuration (BeeDataSourceConfig)
  
 * error codes configuration：``` addSqlExceptionCode(int code)；//add an code ```
 
