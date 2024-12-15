@@ -4,29 +4,14 @@
 <a><img src="https://codecov.io/gh/Chris2018998/beecp/graph/badge.svg?token=JLS7NFR3NP"/></a>
 <a><img src="https://maven-badges.herokuapp.com/maven-central/com.github.chris2018998/beecp/badge.svg"></a>
 <a><img src="https://img.shields.io/badge/Java-7+-green.svg"></a>
-<a><img src="https://img.shields.io/github/license/Chris2018998/BeeCP"></a>
+<a><img src="https://img.shields.io/github/license/Chris2018998/BeeCP"></a><br>
+<a href="README_CN.md">中文</a>|<a href="README.md">English</a>
 </p>
 
-![图片](https://user-images.githubusercontent.com/32663325/154847136-10e241ae-af4c-478a-a608-aaa685e0464b.png)
-&nbsp;<a href="https://github.com/Chris2018998/stone/blob/main/README.md">:house:</a>|
-<a href="https://github.com/Chris2018998/BeeCP/edit/master/README_cn.md">中文</a>|
-<a href="https://github.com/Chris2018998/BeeCP/edit/master/README.md">English</a>
+BeeCP,a lightweight JDBC connection pool with a Jar package of only 133kB,techology feature:single point caching, non moving waiting, fixed length arrays.
 
-## :coffee: Introduction
-
-BeeCP is a small JDBC connection pool: high performance, lightweight code and good stability.
-
-* Support main popular database drivers
-* Support XAConnection/JTA
-* Pool features:CAS,single connection cache, queue reuse, non move waiting self spin, asynchronous add , safe close,web
-  monitor and so on
-* Good robustness and quick response to unexpected situations (such as network disconnection and database service crash)
-* Good interface extensibility
-
-## :arrow_down: Download
-
+---
 Java7+
-
 ```xml
 <dependency>
    <groupId>com.github.chris2018998</groupId>
@@ -34,157 +19,202 @@ Java7+
    <version>4.1.4</version>
 </dependency>
 ```
-
-Java6
-
+Java6(deprecated)
 ```xml
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
    <version>1.6.10</version>
 </dependency>
-```
-
-## :tractor: Example
-
-### :point_right: Example-1(independent)
-
-```java
-BeeDataSourceConfig config = new BeeDataSourceConfig();
-config.setDriverClassName("com.mysql.jdbc.Driver");
-config.setJdbcUrl("jdbc:mysql://localhost/test");
-config.setUsername("root");
-config.setPassword("root");
-BeeDataSource ds=new BeeDataSource(config);
-Connection con=ds.getConnection();
-....
-
-```
-
-### :point_right: Example-2(Springbooot)
-
-*application.properties*
-
-```java
-spring.datasource.username=root
-spring.datasource.password=root
-spring.datasource.url=jdbc:mysql://localhost/test
-spring.datasource.driverClassName=com.mysql.jdbc.Driver
-``` 
-
-*DataSourceConfig.java*
-
-```java
-@Configuration
-public class DataSourceConfig {
-  @Value("${spring.datasource.username}")
-  private String user;
-  @Value("${spring.datasource.password}")
-  private String password;
-  @Value("${spring.datasource.url}")
-  private String url;
-  @Value("${spring.datasource.driverClassName}")
-  private String driver;
-
-  @Bean
-  @Primary
-  @ConfigurationProperties(prefix="spring.datasource")
-  public DataSource primaryDataSource() {
-    return DataSourceBuilder.create().type(cn.beecp.BeeDataSource.class).build();
-  }
+```                                
+---
+**Highlight Features**
+* Connection pool cleaning and restart
+* Support interruption when blocking
+* Support virtual thread applications
+* Support property file configuration
+* Support connection factory customization
+* Support custom decryption on jdbc link information   
+* [Provide runtime monitor](https://github.com/Chris2018998/beecp-starter)
   
-  @Bean
-  public DataSource secondDataSource() {
-   return new BeeDataSource(new BeeDataSourceConfig(driver,url,user,password));
-  }
+![图片](https://user-images.githubusercontent.com/32663325/154832186-be2b2c34-8765-4be8-8435-b97c6c1771df.png)
+![图片](https://user-images.githubusercontent.com/32663325/154832193-62b71ade-84cc-41db-894f-9b012995d619.png)
+
+
+**JMH Performance**
+
+![image](https://github.com/user-attachments/assets/65260ea7-a27a-412d-a3c4-62fc50d6070a)
+
+_Windows11，Intel (R) Core (TM) i7-14650HX,32G memory,Java-1.8.0_171,pool setup：init size:32，max size:32_
+
+_performance source:[HikariCP-benchmark-master.zip](https://github.com/Chris2018998/stone/blob/main/doc/temp/HikariCP-benchmark-master.zip)_
+
+--- 
+**How to use**
+
+At usage, it is generally similar to other connection pool products; If your project is built on springboot framework and you are interested in using beecp or already using it, then we recommend [beecp starter](https://github.com/Chris2018998/beecp-starter) to manage one or more beecp data sources in your project.
+
+
+--- 
+**Configure properties**
+
+| property name                   | description                                                | default value                           |
+|---------------------------------|------------------------------------------------------------|---------------------------------------- |
+| username                        | jdbc user name                                             | blank                                   |
+| password                        | jdbc password of user                                      | blank                                   |
+| jdbcUrl                         | jdbc url link to db                                        | blank                                   |
+| driverClassName                 | jdbc driver class name                                     | blank                                   |
+| poolName	                  | pool name                                                  | blank                                   |
+| fairMode                        | an indictor of pool working                                | false（compete mode）                    | 
+| initialSize                     | creation size of connecitons at pool initialize            | 0                                        |
+| maxActive                       | max size of connections in pool semaphore                  | 10                                       | 
+| borrowSemaphoreSize             | max permit size of pool seg                                | min(maxActive/2,CPU size）               |
+| defaultAutoCommit               | default value of autoComit propety                         | blank                                    |
+| defaultTransactionIsolationCode | default value of transactionIsolation propety              | blank                                    |
+| defaultCatalog                  | default value of catalog propety                           | blank                                    |
+| defaultSchema                   | default value of schema propety                            | blank                                    |
+| defaultReadOnly                 | default value of read-only propety                         | blank                                    |
+| maxWait                         | max wait time in pool to get connection(ms)                | 8000                                     |
+| idleTimeout                     | max idle time of connecitons in pool (ms)                  | 18000                                    |  
+| holdTimeout                     | max inactive time on brorowed connections(ms)              | 0                                        |  
+| aliveTestSql                    | alive test sql                                             | SELECT 1                                 |  
+| aliveTestTimeout                | max wait time to get alive check result(seconds)           | 3                                        |  
+| aliveAssumeTime                 | a gap time between current point and last activation(ms)   | 500                                      |  
+| forceCloseUsingOnClear          | force reycle connecitions in using when pool cleaning      | false                                    |
+| parkTimeForRetry                | park time to wait borrowed conneciton return to pool when cleaning(ms)| 3000                          |             
+| timerCheckInterval              | a iterval time to scan idle-timeout conencitons (ms)                  | 18000                         |
+| forceDirtyOnSchemaAfterSet      | force set dirty flag on schema when set（transaction support）         | false                        |
+| forceDirtyOnCatalogAfterSet     | force set dirty flag on catlog when set（transaction support）         | false                        |
+| enableThreadLocal               | enable indicator to use threadlocal（false to support VT）             | true                         | 
+| enableJmx                       | enable indicator to support Jmx                                        | false                       | 
+| printConfigInfo                 | indicator to print config items when pool initialize                   | false                       | 
+| printRuntimeLog                 | indicator to print ruttime logs of pool                                | false                       | 
+| connectionFactory               | connection factory instance                                            | blank                       |
+| connectionFactoryClass          | connection factory class                                               | blank                       |
+| connectionFactoryClassName      | connection factory class name                                          | blank                       |
+| evictPredicate                  | predicate instance                                                     | blank                       |
+| evictPredicateClass             | predicate class                                                        | blank                       |
+| evictPredicateClassName         | predicate class name                                                   | blank                       |
+| jdbcLinkInfoDecoder             | decoder instance of jdbc link info                                     | blank                       |
+| jdbcLinkInfoDecoderClass        | decoder class of jdbc link info                                        | blank                       |
+| jdbcLinkInfoDecoderClassName    | decoder class name of jdbc link info                                   | blank                       |
+
+*_The above attributes can be filled by their set methods; The priority order of effective selection of object type properties: instance>class>class name_
+
+--- 
+**Connection Eviction**
+
+Beecp provides connection eviction feature and supports three configurations (BeeDataSourceConfig)
+ 
+* error codes configuration：``` addSqlExceptionCode(int code)；//add an code ```
+
+* error state configuration：``` addSqlExceptionState(String state)；//add state```
+
+* predicate configuration：``` setEvictPredicate(BeeConnectionPredicate p);setEvictPredicateClass(Clas c); setEvictPredicateClassName(String n);//set predicate,class,class name```
+
+_eviction check order:_
+_a, execute predicae to check sql exception if configured,evict connecitons if result is not null or not empty._ 
+_b, if no predicae,error code check is priority;if matched in configured list,then evict them._
+
+_force eviction：call abaort method of conneciton instance._
+
+
+--- 
+**Factory customization**
+
+Beecp provides factory interfaces (BeeConnectFactory, BeeXaConnectFactory) for custom implementation of connection creation, and there are four methods on the BeeDataSourceConfig object (setConnectFactory, setXaConnectFactory, setConnectFactoryClass, setConnectFactoryClassName) to set the factory object, factory class, and factory class name respectively. The order of effective selection is: factory object>factory class>factory class name,below is a reference example
+
+```java
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.SQLException;
+import java.util.Properties;
+import org.stone.beecp.BeeConnectionFactory;
+
+public class MyConnectionFactory implements BeeConnectionFactory {
+    private final String url;
+    private final Driver myDriver;
+    private final Properties connectInfo;
+
+    public MyConnectionFactory(String url, Properties connectInfo, Driver driver) {
+        this.url = url;
+        this.myDriver = driver;
+        this.connectInfo = connectInfo;
+    }
+
+    public Connection create() throws SQLException {
+        return myDriver.connect(url, connectInfo);
+    }
 }
+
+
+public class MyConnectionDemo {
+    public static void main(String[] args) throws SQLException {
+        final String url = "jdbc:mysql://localhost:3306/test";
+        final Driver myDriver = DriverManager.getDriver(url);
+        final Properties connectInfo = new Properties();
+        connectInfo.put("user","root");
+        connectInfo.put("password","root");
+
+        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        config.setConnectionFactory(new MyConnectionFactory(url, connectInfo, myDriver));
+        BeeDataSource ds = new BeeDataSource(config);
+
+        try (Connection con = ds.getConnection()) {
+            //put your code here
+        }
+    }
+}
+
+```
+_Reminder: If both the connection factory and four basic parameters (driver, URL, user, password) are set simultaneously, the connection factory will be prioritized for use._
+
+--- 
+**Driver parameters**
+
+Database drivers generally work internally based on parameters and can be adjusted according to specific situations during use;two methods are provided in BeeDataSourceConfig object (addConnectProperty (String, Object), addConnectProperty (String)) to add,these parameters can be injected into the connection factory during pool initialization, as shown in the following reference
+
+```java
+ BeeDataSourceConfig config = new BeeDataSourceConfig();
+ config.addConnectProperty("cachePrepStmts", "true");
+ config.addConnectProperty("prepStmtCacheSize", "250");
+ config.addConnectProperty("prepStmtCacheSqlLimit", "2048");
+
+ //or
+ config.addConnectProperty("cachePrepStmts=true&prepStmtCacheSize=250&prepStmtCacheSqlLimit=2048");
+
+ //or 
+ config.addConnectProperty("cachePrepStmts:true&prepStmtCacheSize:250&prepStmtCacheSqlLimit:2048");
 ```
 
-## :book: Function map
+--- 
+**File configuration**
 
-![图片](https://user-images.githubusercontent.com/32663325/153597592-c7d36f14-445a-454b-9db4-2289e1f92ed6.png)
+Beecp supports loading configuration information from properties files,below is a reference example
 
-## :computer: Runtime monitor
+```java
+String configFileName = "d:\beecp\config.properties";
+BeeDataSourceConfig config = new BeeDataSourceConfig();
+config.loadFromPropertiesFile(configFileName);
+```
 
-Two ways are provided in pool
+config.properties
+```properties
 
-* Jmx mbean
-* Pool Vo(get it by call datasource method:getPoolMonitorVo)
+username=root
+password=root
+jdbcUrl=jdbc:mysql://localhost/test
+driverClassName=com.mysql.cj.jdbc.Driver
 
-:sunny: *If your project is using beecp and base on springboot, we recommend our datasource management
-tool:<a href="https://github.com/Chris2018998/BeeCP-Starter">BeeCP-Starter</a> (web ui, no code development ,just some
-configuration)*
+initial-size=1
+max-active=10
 
-![图片](https://user-images.githubusercontent.com/32663325/178511569-8f6e16f4-92fc-41ee-ba6b-960e54bf364b.png)
+connectProperties=cachePrepStmts=true
+connectProperties.size=2
+connectProperties.1=prepStmtCacheSize=50
+connectProperties.2=prepStmtCacheSqlLimit=2048&useServerPrepStmts=true
 
-## :cherries: Compare to HikariCP
+connectionFactoryClassName=org.stone.beecp.factory.MyConnectionFactory
+evictPredicateClassName=org.stone.beecp.factory.MyEvictPredicate
 
-| **Compare Item** | **BeeCP**                                                                                                     | **HikariCP**                              |
-|------------------|---------------------------------------------------------------------------------------------------------------|-------------------------------------------|
-| key technology   | ThreadLocal，Semaphore，ConcurrentLinkedQueue，Thread                                                            | FastList，ConcurrentBag，ThreadPoolExecutor |
-| Similarities     | CAS，pre-generate proxy，driver statement cache                                                                 |                                           |
-| Difference       | fair mode，supprt XA，recycle hold-timeout connection，single connection cache，queue reuse，non move waiting spin | pool pause                                |
-| Files            | 37 files，95KB Jar                                                                                             | 44 files，158KB Jar                        |
-| Performance      | 40 percent faster （HikariCP bench）                                                                            |
-
-## :green_apple: Code quality
-
-![图片](https://user-images.githubusercontent.com/32663325/163173015-2ce906f3-1b83-419d-82aa-a42b5c8d92b8.png)
-
-## :factory: User Extend
-
-### 1：Connection factory interfaces
-
-Two interfaces,which are using to create raw connection or raw XAConnection for self-implement and its subclass name
-need set to 'connectionFactoryClassName' in Bee DataSourceConfig object.
-
-![图片](https://user-images.githubusercontent.com/32663325/153597017-2f3ba479-8f3f-4a82-949b-275068c287cd.png)
-
-![图片](https://user-images.githubusercontent.com/32663325/153597130-a22c0d92-2899-46db-b982-35b998434eae.png)
-
-Example
-
-![图片](https://user-images.githubusercontent.com/32663325/183244013-e2b32f8b-40d7-45d4-add2-e5394bddae3a.png)
-
-### 2：Jdbc password ciphertext decrypt class
-
-![图片](https://user-images.githubusercontent.com/32663325/153597176-e48382b9-7395-4c6c-9f34-425072d7c510.png)
-
-## :blue_book: Configuration
-
-| **Item Name**                   | **Desc**                                                                                                | **Default**                                                                       |
-|---------------------------------|---------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
-| username                        | a username link to db                                                                                   | null                                                                              |
-| password                        | password of a db user                                                                                   | null                                                                              |
-| jdbcUrl                         | url link to db                                                                                          | null                                                                              |
-| driverClassName                 | jdbc driver class name                                                                                  | null                                                                              |
-| poolName	                       | a generation name assgin to it if not set                                                               | null                                                                              |
-| fairMode                        | pool work mode                                                                                          | false                                                                             | 
-| initialSize                     | connection number of creation on pool initizization                                                     | 0                                                                                 |
-| asyncCreateInitConnection       | creation mode for initial connections                                                                   | false(synchronization mode)                                                       |   
-| maxActive                       | max reachable count of connections in pool                                                              | 10                                                                                | 
-| borrowSemaphoreSize             | max permit size of pool semaphore                                                                       | min(maxActive/2，CPU size）                                                         |
-| defaultAutoCommit               | initial value of autoCommit prop on created connections                                                 | null,read prop value from first connection as initial value for other connections |
-| defaultTransactionIsolationCode | initial value of transactionIsolation prop on created connections                                       | null,read prop value from first connection as initial value for other connections |
-| enableThreadLocal               | thread local cache enable indicator                                                                     | true,set false to support virtual threads                                         |
-| defaultCatalog                  | initial value of catalog prop on created connections                                                    | null,read prop value from first connection as initial value for other connections |
-| defaultSchema                   | initial value of schema  prop on created connections                                                    | null,read prop value from first connection as initial value for other connections |
-| defaultReadOnly                 | initial value of readOnly prop on created connections                                                   | null,read prop value from first connection as initial value for other connections |
-| maxWait                         | max wait time in pool for borrowers to get connection,time unit：milliseconds                            | 8000                                                                              |
-| idleTimeout                     | idle time out for connections in pool,time unit：milliseconds                                            | 18000                                                                             |                             
-| holdTimeout                     | max inactive time of borrowed connections,time unit：milliseconds                                        | 0(never timeout)                                                                  |  
-| aliveTestSql                    | alive test sql on borrowed connections,pool remove dead connections                                     | SELECT 1                                                                          |  
-| aliveTestTimeout                | max wait time to get validation result on test connectionstime unit：seconds                             | 3                                                                                 |  
-| aliveAssumeTime                 | a gap time value from last activity time to borrowed time point,if less,not test,time unit：milliseconds | 500                                                                               |  
-| forceCloseUsingOnClear          | indicator on direct closing borrowed connections while pool clears                                      | false                                                                             |
-| timerCheckInterval              | an interval time to scan idle connections,time unit：milliseconds                                        | 18000                                                                             |
-| connectionFactoryClassName      | connection factory class name                                                                           | null                                                                              |
-| sqlExceptionCodeList            | store sql exception codes for connection eviction check                                                 | null,related methods:addSqlExceptionCode,removeSqlExceptionCode                   |
-| sqlExceptionStateList           | store sql exception state for connection eviction check                                                 | null,related methods:addSqlExceptionCode,removeSqlExceptionCode                   |
-| evictPredicateClassName         | eviction predicate class name                                                                           | null,pool only it to check exception if set                                       |
-| jdbcLinkInfoDecoderClassName    | short lifecycle object and used to decode jdbc link info                                                | null                                                                              |
-| forceDirtyOnSchemaAfterSet      | dirty force indicator on schema property under PG driver                                                | false                                                                             |
-| forceDirtyOnCatalogAfterSet     | dirty force indicator on schema property under PG driver                                                | false                                                                             |
-| enableJmx                       | enable indicator to register configuration and pool to Jmx                                              | false                                                                             | 
-| printConfigInfo                 | boolean indicator,true:print config item info on pool starting                                          | false                                                                             | 
-| printRuntimeLog                 | boolean indicator,true:print runtime log                                                                | false                                                                             | 
+```

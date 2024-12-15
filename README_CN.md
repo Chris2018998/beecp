@@ -4,7 +4,8 @@
 <a><img src="https://codecov.io/gh/Chris2018998/beecp/graph/badge.svg?token=JLS7NFR3NP"/></a>
 <a><img src="https://maven-badges.herokuapp.com/maven-central/com.github.chris2018998/beecp/badge.svg"></a>
 <a><img src="https://img.shields.io/badge/Java-7+-green.svg"></a>
-<a><img src="https://img.shields.io/github/license/Chris2018998/BeeCP"></a>
+<a><img src="https://img.shields.io/github/license/Chris2018998/BeeCP"></a><br>
+<a href="README_CN.md">中文</a>|<a href="README.md">English</a>
 </p>
 
 BeeCP，一款轻量级JDBC连接池，Jar包仅133kB，技术亮点：单点缓存，非移动等待，固定长度数组。
@@ -27,7 +28,7 @@ Java6(deprecated)
 </dependency>
 ```                                
 ---
-**亮点功能**
+**亮点feature**
 * 连接池清理与重启
 * 连接池内阻塞与中断
 * 支持虚拟线程应用
