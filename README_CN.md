@@ -8,7 +8,7 @@
 <a href="README_CN.md">中文</a>|<a href="README.md">English</a>
 </p>
 
-BeeCP，一款轻量级JDBC连接池，Jar包仅133kB，技术亮点：单点缓存，非移动等待，固定长度数组。
+BeeCP是一款轻量级JDBC连接池，其Jar包仅133kB，技术亮点：单连接缓存，非移动等待，固定长度数组。
 
 ---
 Java7+
@@ -27,7 +27,7 @@ Java6(deprecated)
    <version>1.6.10</version>
 </dependency>
 ```                                
----
+------
 **亮点feature**
 * 连接池清理与重启
 * 连接池内阻塞与中断
@@ -40,24 +40,38 @@ Java6(deprecated)
 ![图片](https://user-images.githubusercontent.com/32663325/154832186-be2b2c34-8765-4be8-8435-b97c6c1771df.png)
 ![图片](https://user-images.githubusercontent.com/32663325/154832193-62b71ade-84cc-41db-894f-9b012995d619.png)
 
-
-**JMH性能**
-
+------
+***性能对比***
+ 
 ![image](https://github.com/user-attachments/assets/65260ea7-a27a-412d-a3c4-62fc50d6070a)
 
-_Windows11，Intel (R) Core (TM) i7-14650HX,32G内存，Java-1.8.0_171，连接池配置：初始 32，最大 32_
+***PC**:Windows11,Intel-i7-14650HX,32G内存  **Java**:1.8.0_171  **Pool**:初始32,最大32  **Source code**:[HikariCP-benchmark-master.zip](https://github.com/Chris2018998/stone/blob/main/doc/temp/HikariCP-benchmark-master.zip)*
 
-_测试源码：[HikariCP-benchmark-master.zip](https://github.com/Chris2018998/stone/blob/main/doc/temp/HikariCP-benchmark-master.zip)_
 
+***技术对比***
+
+| 对比项  |     HikariCP                                   | BeeCP                         |
+|--------|------------------------------------------------|-------------------------------|
+|连接缓存 |多个                                            |单个                           |
+|连接存储 |CopyOnWriteArrayList                           |固定长度数组                    |
+|等待队列 |SynchronousQueue                               |ConcurrentLinkedQueue          |
+|连接补充 |线程池                                          |单线程                         |
+|同步创建 |不支持                                          |支持                           |
+|清理重启 |不支持                                          |支持                           |
+|提供中断方法|未提供                                        |提供                           |
+|连接工厂扩展|未提供                                       |提供                           |
+|可禁用ThreadLocal|不可                                   |可                             |
 --- 
 **如何使用**
 
-在使用方式上，与其他连接池产品大体相似；如果您的项目是基于springboot技术构建，且有意愿应用beecp或已在使用它，那么推荐[beecp-starter](https://github.com/Chris2018998/beecp-starter),它可以帮您管理一个或多个beecp数据源。
+在使用方式上与其他连接池产品大体相似。
+
+_如果您的项目是基于springboot框架构建，且有意愿应用beecp或已在使用它，那么推荐[beecp-starter](https://github.com/Chris2018998/beecp-starter),它可以帮您管理一个或多个beecp数据源_
 
 --- 
 **配置属性**
 
-| 属性                            | 描述                                             | 默认值                                   |
+| 属性                            | 描述                                              | 默认值                                   |
 |---------------------------------|--------------------------------------------------|---------------------------------------- |
 | username                        | 连接数据库的用户名                                 | 空                                      |
 | password                        | 连接数据库的密码                                   | 空                                      |
@@ -67,13 +81,13 @@ _测试源码：[HikariCP-benchmark-master.zip](https://github.com/Chris2018998/
 | fairMode                        | 是否使用公平模式                                    | false（竞争模式）                         | 
 | initialSize                     | 连接池初始化时创建连接个数                           | 0                                        |
 | maxActive                       | 池内最大连接数                                      | 10                                       | 
-| borrowSemaphoreSize             | 池内并发性号量许可数                                 | min(最大连接数/2,CPU核心数）               |
+| borrowSemaphoreSize             | 池内信号量许可数                                    | min(最大连接数/2,CPU核心数）               |
 | defaultAutoCommit               | AutoComit属性的默认值,未配置则从第一个连接上读取       | 空                                        |
 | defaultTransactionIsolationCode | 事物隔离代码属性的默认值，未设置时则从第一个连接上读取  | 空                                        |
 | defaultCatalog                  | Catalog属性的默认值 ,未配置则从第一个连接上读取        | 空                                        |
 | defaultSchema                   | Schema属性的默认值,未配置则从第一个连接上读取          | 空                                        |
 | defaultReadOnly                 | ReadOnly属性的默认值 ,未配置则从第一个连接上读取       | 空                                        |
-| maxWait                         | 最大等待时间(毫秒)                                   | 8000                                     |
+| maxWait                         | 借用时最大等待时间(毫秒)                              | 8000                                     |
 | idleTimeout                     | 连接闲置最大时间(毫秒)                                | 18000                                    |  
 | holdTimeout                     | 已借连持但未使用的时间(毫秒)，超过强制回收              | 0                                        |  
 | aliveTestSql                    | 连接存活检查sql                                      | SELECT 1                                 |  
@@ -100,19 +114,21 @@ _测试源码：[HikariCP-benchmark-master.zip](https://github.com/Chris2018998/
 
 *_以上属性可通过set方法进行设置；对象类属性的生效选择次序：实例 > 类 > 类名_
 
+*_五个defaultxxx属性(defaultAutoCommit,defaultTransactionIsolationCode,defaultCatalog,defaultSchema,defaultReadOnly)若无设置,则从第一个成功创建的连接读取_
+
  
 --- 
 **异常驱逐**
 
-beecp提供异常的连接驱逐功能，支持三种配置(BeeDataSourceConfig)
+beecp提供SQL异常的连接驱逐功能，支持三种配置(BeeDataSourceConfig)
  
-* 错误代码配置：``` addSqlExceptionCode(int code)；//增加代码方法 ```
+* 异常代码配置：``` addSqlExceptionCode(int code)；//增加代码 ```
 
-* 错误状态配置：``` addSqlExceptionState(String state)；//增加状态方法 ```
+* 异常状态配置：``` addSqlExceptionState(String state)；//增加状态 ```
 
 * 异常断言配置：``` setEvictPredicate(BeeConnectionPredicate p);setEvictPredicateClass(Clas c); setEvictPredicateClassName(String n);//设置异常断言对象或类 ```
 
-_验证次序：a,若已配置断言，异常时则只执行断言验证,结果非空则驱逐 b,若无配置断言，错误代码（vendorCode）检查优先于状态（SQLState）检查，若存在于配置清单中，则驱逐_
+_验证次序：a,若已配置断言，异常时则只执行断言验证,结果非空则驱逐 b,若无配置断言，异常代码（vendorCode）检查优先于异常状态（SQLState）检查，若存在于配置清单中，则驱逐_
  
 _强制驱逐：调用连接上的abort方法(connecton.abort(null))即可_
 
@@ -120,7 +136,7 @@ _强制驱逐：调用连接上的abort方法(connecton.abort(null))即可_
 --- 
 **连接工厂**
 
-beecp提供工厂接口（BeeConnectionFactory，BeeXaConnectionFactory）供自定义实现连接的创建，并且在BeeDataSourceConfig对象上有四个方法（setConnectionFactory，setXaConnectionFactory，setConnectionFactoryClass，setConnectionFactoryClassName）分别设置 _工厂对象，工厂类，工厂类名_，生效选择次序：_工厂对象 > 工厂类 > 工厂类名_，下面给一个参考例子
+beecp提供工厂接口（BeeConnectionFactory，BeeXaConnectionFactory）供自定义实现连接的创建，并且在配置BeeDataSourceConfig对象上有四个方法（setConnectionFactory，setXaConnectionFactory，setConnectionFactoryClass，setConnectionFactoryClassName）分别设置 _工厂对象，工厂类，工厂类名_，生效选择次序：_工厂对象 > 工厂类 > 工厂类名_，下面给一个参考例子
 
 ```java
 import java.sql.Connection;
@@ -165,7 +181,7 @@ public class MyConnectionDemo {
 }
 
 ```
-_温馨提示：若同时设置连接工厂和4个基本参数（driver,url,user，password),那么连接工厂被优先使用。_
+_温馨提示：若同时设置连接工厂和驱动类参数（driver,url,user,password)，那么连接工厂被优先使用。_
 
 --- 
 **驱动参数**
@@ -187,7 +203,7 @@ _温馨提示：若同时设置连接工厂和4个基本参数（driver,url,user
 ```
 
 --- 
-**文件配置**
+**属性文件**
 
 beecp支持从properties文件中加载配置信息，参考如下
 
