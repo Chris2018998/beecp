@@ -35,7 +35,7 @@ Java6(deprecated)
 * 支持属性文件配置
 * 支持连接工厂自定义
 * 支持连接信息解密自定义
-* [提供运行时监控](https://github.com/Chris2018998/beecp-starter)
+* [提供Web监控页面](https://github.com/Chris2018998/beecp-starter)
   
 ![图片](https://user-images.githubusercontent.com/32663325/154832186-be2b2c34-8765-4be8-8435-b97c6c1771df.png)
 ![图片](https://user-images.githubusercontent.com/32663325/154832193-62b71ade-84cc-41db-894f-9b012995d619.png)
@@ -47,6 +47,7 @@ Java6(deprecated)
 
 ***PC**:Windows11,Intel-i7-14650HX,32G内存  **Java**:1.8.0_171  **Pool**:初始32,最大32  **Source code**:[HikariCP-benchmark-master.zip](https://github.com/Chris2018998/stone/blob/main/doc/temp/HikariCP-benchmark-master.zip)*
 
+*_[HikariCP](https://github.com/brettwooldridge/HikariCP)是一款非常优秀的开源作品，在Java领域广泛使用，它由美国资深专家brettwooldridge开发_
 
 ***技术对比***
 
@@ -66,7 +67,7 @@ Java6(deprecated)
 
 在使用方式上与其他连接池产品大体相似。
 
-_如果您的项目是基于springboot框架构建，且有意愿应用beecp或已在使用它，那么推荐[beecp-starter](https://github.com/Chris2018998/beecp-starter),它可以帮您管理一个或多个beecp数据源_
+_*如果您的项目是基于springboot框架构建，且有意愿应用beecp或已在使用它，那么推荐[beecp-starter](https://github.com/Chris2018998/beecp-starter),它可以帮您管理一个或多个beecp数据源_
 
 --- 
 **配置属性**
@@ -112,82 +113,14 @@ _如果您的项目是基于springboot框架构建，且有意愿应用beecp或�
 | jdbcLinkInfoDecoderClass        | 连接信息解码器类                                        | 空                                        |
 | jdbcLinkInfoDecoderClassName    | 连接信息解码器类名                                      | 空                                        |
 
-*_以上属性可通过set方法进行设置；对象类属性的生效选择次序：实例 > 类 > 类名_
+*_以上属性可通过set方法进行设置；对象级属性的生效选择次序：实例 > 类 > 类名_
 
 *_五个defaultxxx属性(defaultAutoCommit,defaultTransactionIsolationCode,defaultCatalog,defaultSchema,defaultReadOnly)若无设置,则从第一个成功创建的连接读取_
-
- 
---- 
-**异常驱逐**
-
-beecp提供SQL异常的连接驱逐功能，支持三种配置(BeeDataSourceConfig)
- 
-* 异常代码配置：``` addSqlExceptionCode(int code)；//增加代码 ```
-
-* 异常状态配置：``` addSqlExceptionState(String state)；//增加状态 ```
-
-* 异常断言配置：``` setEvictPredicate(BeeConnectionPredicate p);setEvictPredicateClass(Clas c); setEvictPredicateClassName(String n);//设置异常断言对象或类 ```
-
-_验证次序：a,若已配置断言，异常时则只执行断言验证,结果非空则驱逐 b,若无配置断言，异常代码（vendorCode）检查优先于异常状态（SQLState）检查，若存在于配置清单中，则驱逐_
- 
-_强制驱逐：调用连接上的abort方法(connecton.abort(null))即可_
-
-
---- 
-**连接工厂**
-
-beecp提供工厂接口（BeeConnectionFactory，BeeXaConnectionFactory）供自定义实现连接的创建，并且在配置BeeDataSourceConfig对象上有四个方法（setConnectionFactory，setXaConnectionFactory，setConnectionFactoryClass，setConnectionFactoryClassName）分别设置 _工厂对象，工厂类，工厂类名_，生效选择次序：_工厂对象 > 工厂类 > 工厂类名_，下面给一个参考例子
-
-```java
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.SQLException;
-import java.util.Properties;
-import org.stone.beecp.BeeConnectionFactory;
-
-public class MyConnectionFactory implements BeeConnectionFactory {
-    private final String url;
-    private final Driver myDriver;
-    private final Properties connectInfo;
-
-    public MyConnectionFactory(String url, Properties connectInfo, Driver driver) {
-        this.url = url;
-        this.myDriver = driver;
-        this.connectInfo = connectInfo;
-    }
-
-    public Connection create() throws SQLException {
-        return myDriver.connect(url, connectInfo);
-    }
-}
-
-
-public class MyConnectionDemo {
-    public static void main(String[] args) throws SQLException {
-        final String url = "jdbc:mysql://localhost:3306/test";
-        final Driver myDriver = DriverManager.getDriver(url);
-        final Properties connectInfo = new Properties();
-        connectInfo.put("user","root");
-        connectInfo.put("password","root");
-
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setConnectionFactory(new MyConnectionFactory(url, connectInfo, myDriver));
-        BeeDataSource ds = new BeeDataSource(config);
-
-        try (Connection con = ds.getConnection()) {
-            //put your code here
-        }
-    }
-}
-
-```
-_温馨提示：若同时设置连接工厂和驱动类参数（driver,url,user,password)，那么连接工厂被优先使用。_
 
 --- 
 **驱动参数**
 
-数据库驱动内部一般是基于参数的方式进行工作，在使用的时候可根据具体情况进行调整；在BeeDataSourceConfig对象上提供两个方法（addConnectProperty(String,Object）,addConnectProperty(String））用于增加
-这方面的参数，在初始化的时候，连接池可将这些参数注入到连接工厂内部，使用参考如下
+数据库驱动内部一般是基于参数的方式进行工作，在使用的时候可根据具体情况进行调整；在BeeDataSourceConfig对象上提供两个方法（addConnectProperty(String,Object）,addConnectProperty(String））用于追加这方面的参数，在初始化的时候，连接池可将这些参数注入到连接工厂内部，使用参考如下
 
 ```java
  BeeDataSourceConfig config = new BeeDataSourceConfig();
@@ -205,7 +138,7 @@ _温馨提示：若同时设置连接工厂和驱动类参数（driver,url,user,
 --- 
 **属性文件**
 
-beecp支持从properties文件中加载配置信息，参考如下
+beecp支持从properties文件中加载配置信息，如下参考
 
 ```java
 String configFileName = "d:\beecp\config.properties";
@@ -224,12 +157,119 @@ driverClassName=com.mysql.cj.jdbc.Driver
 initial-size=1
 max-active=10
 
-connectProperties=cachePrepStmts=true
+sqlExceptionCodeList=500150,2399,1105
+sqlExceptionStateList=0A000,57P01,57P02,57P03,01002,JZ0C0,JZ0C1
+
+connectProperties=cachePrepStmts=true&prepStmtCacheSize=50
+
+evictPredicateClassName=org.stone.beecp.objects.MockEvictConnectionPredicate
+connectionFactoryClassName=org.stone.beecp.objects.MockCommonConnectionFactory
+jdbcLinkInfoDecoderClassName=org.stone.beecp.objects.SampleMockJdbcLinkInfoDecoder
+
+```
+
+_如果connectProperties上信息比较多，也可参照下面方式_ 
+
+```properties
 connectProperties.size=2
 connectProperties.1=prepStmtCacheSize=50
 connectProperties.2=prepStmtCacheSqlLimit=2048&useServerPrepStmts=true
 
-connectionFactoryClassName=org.stone.beecp.factory.MyConnectionFactory
-evictPredicateClassName=org.stone.beecp.factory.MyEvictPredicate
+```
+
+---
+**阻塞与中断**
+
+由于网络或服务器等原因，连接池在创建连接的时候可能出现阻塞现象，从而影响到连接池的使用，针对这个问题，在beecp的数据源对象上（BeeDataSource）提供了两个方法
+
+* ``` getPoolMonitorVo();//方法可查询到连接池的运行时的一些信息，如闲置数，使用数，创建数，创建超时数 ```
+
+* ``` interruptConnectionCreating(boolean);//手工调用该方法用来中断执行中的创建，如果参数是true时则只中断超时的创建 ```
+
+
+*_beecp的监控界面上也可查看到创建信息，并提供中断按钮_
+
+*_maxWait属性值为超时时间，对于已经超时的创建，连接池内的定时扫描线程也会中断它们_
+
+
+--- 
+**清理与重启**
+
+beecp在数据源上提供两个clear方法可让连接池恢复到初始状态，清理过程中不接受外部请求
+
+
+* ```clear(boolean forceCloseUsing);//forceCloseUsing为true时，强制关闭使用中的连接 ```
+
+* ```clear(boolean forceCloseUsing, BeeDataSourceConfig config);//forceCloseUsing为true时，强制关闭使用中的连接；清理后使用新配置初始化连接池 ```
+
+
+*_清理时若存在创建，则进行中断处理_
+
+
+--- 
+**异常驱逐**
+
+beecp提供SQL异常的连接驱逐功能，支持三种配置(BeeDataSourceConfig)
+ 
+* 异常代码配置：``` addSqlExceptionCode(int code)；//增加代码 ```
+
+* 异常状态配置：``` addSqlExceptionState(String state)；//增加状态 ```
+
+* 异常断言配置：``` setEvictPredicate(BeeConnectionPredicate p);setEvictPredicateClass(Clas c); setEvictPredicateClassName(String n);//设置异常断言对象或类 ```
+
+_验证次序：a,若已配置断言，异常时则只执行断言验证,结果非空则驱逐 b,若无配置断言，异常代码（vendorCode）检查优先于异常状态（SQLState）检查，若存在于配置清单中，则驱逐_
+ 
+_强制驱逐：调用连接上的abort方法(connecton.abort(null))即可_
+
+
+
+--- 
+**连接工厂**
+
+beecp提供工厂接口（BeeConnectionFactory，BeeXaConnectionFactory）供自定义实现连接的创建，并且在配置BeeDataSourceConfig对象上有四个方法（setConnectionFactory，setXaConnectionFactory，setConnectionFactoryClass，setConnectionFactoryClassName）分别设置 _工厂对象，工厂类，工厂类名_，下面给一个参考例子
+
+```java
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.SQLException;
+import java.util.Properties;
+import org.stone.beecp.BeeConnectionFactory;
+
+public class MyConnectionFactory implements BeeConnectionFactory {
+    private final String url;
+    private final Driver driver;
+    private final Properties connectInfo;
+
+    public MyConnectionFactory(String url, Properties connectInfo, Driver driver) {
+        this.url = url;
+        this.driver= driver;
+        this.connectInfo = connectInfo;
+    }
+
+    public Connection create() throws SQLException {
+        return driver.connect(url, connectInfo);
+    }
+}
+
+
+public class MyConnectionDemo {
+    public static void main(String[] args) throws SQLException {
+        final String url = "jdbc:mysql://localhost:3306/test";
+        final Driver driver = DriverManager.getDriver(url);
+        final Properties connectInfo = new Properties();
+        connectInfo.put("user","root");
+        connectInfo.put("password","root");
+
+        BeeDataSourceConfig config = new BeeDataSourceConfig();
+        config.setConnectionFactory(new MyConnectionFactory(url, connectInfo, driver));
+        BeeDataSource ds = new BeeDataSource(config);
+
+        try (Connection con = ds.getConnection()) {
+            //put your code here
+        }
+    }
+}
 
 ```
+_温馨提示：若同时设置连接工厂和驱动类参数（driver,url,user,password)，那么连接工厂被优先使用。_
+
