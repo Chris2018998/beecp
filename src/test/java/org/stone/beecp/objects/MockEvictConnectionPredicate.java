@@ -10,6 +10,10 @@ public class MockEvictConnectionPredicate implements BeeConnectionPredicate {
     private final int errorCode;
     private final String errorState;
 
+    public MockEvictConnectionPredicate() {
+        this(0, null);
+    }
+
     public MockEvictConnectionPredicate(int errorCode, String errorState) {
         this.errorCode = errorCode;
         this.errorState = errorState;

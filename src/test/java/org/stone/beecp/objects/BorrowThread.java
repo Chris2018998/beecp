@@ -43,9 +43,11 @@ public final class BorrowThread extends Thread {
     public SQLException getFailureCause() {
         return failureCause;
     }
+
     public Connection getConnection() {
         return connection;
     }
+
     public XAConnection getXAConnection() {
         return xaConnection;
     }
