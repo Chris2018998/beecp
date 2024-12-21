@@ -1,5 +1,9 @@
 beecp changes
 
+Changes in 4.1.5
+
+1: fix null point exception when idle timeout scan
+
 Changes in 4.1.4
 
 1: fix some code inspection issues scanned by IDEA

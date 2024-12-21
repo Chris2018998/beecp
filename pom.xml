@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.chris2018998</groupId>
     <artifactId>beecp</artifactId>
-    <version>4.1.4</version>
+    <version>4.1.5</version>
     <name>beecp</name>
     <url>https://github.com/Chris2018998/BeeCP</url>
     <description>JDBC Connection Pool Implementation</description>
@@ -124,7 +124,7 @@
                     <skipTests>false</skipTests>
                     <runOrder>alphabetical</runOrder>
                     <testFailureIgnore>true</testFailureIgnore>
-                    <skipAfterFailureCount>1</skipAfterFailureCount>
+                    <skipAfterFailureCount>0</skipAfterFailureCount>
                     <includes>
                         <include>org/stone/beecp/config/*Test.java</include>
                         <include>org/stone/beecp/datasource/*Test.java</include>
@@ -147,7 +147,7 @@
                     <excludes>
                         <exclude>org/stone/beecp/jta/*</exclude>
                         <exclude>org/stone/beecp/pool/Proxy*</exclude>
-    		        <exclude>org/stone/beecp/*Exception.*</exclude>
+                        <exclude>org/stone/beecp/*Exception.*</exclude>
                         <exclude>org/stone/beecp/pool/exception/*</exclude>
                     </excludes>
                 </configuration>
