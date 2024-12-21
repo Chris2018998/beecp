@@ -801,9 +801,6 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     ProxyConnectionBase proxyInUsing = p.proxyInUsing;
                     if (proxyInUsing != null) oclose(proxyInUsing);
                 }
-            } else if (state == CON_CLOSED) {
-                p.onRemove(DESC_RM_CLOSED);
-                this.tryWakeupServantThread();
             }
         }
 
@@ -886,7 +883,6 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     }
                 } else if (state == CON_CLOSED) {
                     closedCount++;
-                    p.onRemove(source);
                 }
             }
 
