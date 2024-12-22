@@ -33,12 +33,11 @@ Java6(deprecated)
 ------
 **亮点feature**
 
-* 连接池清理与重启
 * 连接池内阻塞与中断
+* 连接池清理与配置重载
+* 连接池配置从文件载入
+* 提供扩展性接口
 * 支持虚拟线程应用
-* 支持属性文件配置
-* 支持连接工厂自定义
-* 支持连接信息解密自定义
 * [提供Web监控页面](https://github.com/Chris2018998/beecp-starter)
 
 ![图片](https://user-images.githubusercontent.com/32663325/154832186-be2b2c34-8765-4be8-8435-b97c6c1771df.png)
@@ -49,95 +48,93 @@ Java6(deprecated)
 
 ![image](https://github.com/user-attachments/assets/65260ea7-a27a-412d-a3c4-62fc50d6070a)
 
-***PC**:Windows11,Intel-i7-14650HX,32G内存  **Java**:1.8.0_171  **Pool**:初始32,最大32  **Source code
-**:[HikariCP-benchmark-master.zip](https://github.com/Chris2018998/stone/blob/main/doc/temp/HikariCP-benchmark-master.zip)*
+<sup>**PC:** Windows11,Intel-i7-14650HX,32G Memory **Java:** 1.8.0_171  **Pool:** init size 32,max size 32 **Source code:** [HikariCP-benchmark-master.zip](https://github.com/Chris2018998/stone/blob/main/doc/temp/HikariCP-benchmark-master.zip)
+</sup>
+
 
 ***对比HikariCP***
 
-| 对比项            | HikariCP             | BeeCP                 |
-|----------------|----------------------|-----------------------|
-| 连接缓存           | 多个                   | 单个                    |
-| 连接存储           | CopyOnWriteArrayList | 固定长度数组                |
-| 等待队列           | SynchronousQueue     | ConcurrentLinkedQueue |
-| 连接补充           | 线程池                  | 单线程                   |
-| 并发创建           | 不支持                  | 支持                    |
-| 清理重启           | 不支持                  | 支持                    |
+| 对比项               | HikariCP                | BeeCP                   |
+|---------------------|-------------------------|-------------------------|
+| 连接缓存             | 多个                    | 单个                    |
+| 连接存储             | CopyOnWriteArrayList   | 固定长度数组              |
+| 等待队列             | SynchronousQueue       | ConcurrentLinkedQueue   |
+| 连接补充             | 线程池                  | 单线程                   |
+| 并发创建             | 不支持                  | 支持                    |
+| 清理重启             | 不支持                  | 支持                    |
 | 提供中断方法         | 未提供                  | 提供                    |
 | 连接工厂扩展         | 未提供                  | 提供                    |
-| 可禁用ThreadLocal | 不可                   | 可                     |
+| 可禁用ThreadLocal   | 不可                    | 可                     |
 
-*_[HikariCP](https://github.com/brettwooldridge/HikariCP)
-是一款非常优秀的开源作品，在Java领域广泛使用，它由美国资深专家brettwooldridge开发_
+<sup>_[**HikariCP**](https://github.com/brettwooldridge/HikariCP)是一款非常优秀的开源作品，在Java领域广泛使用，它由美国资深专家brettwooldridge开发_<sup>
 
 --- 
 **如何使用**
 
-在使用方式上与其他连接池产品大体相似。
+在使用方式上与其他连接池产品大体相似，可参照随后一些代码片段
 
-_
-*如果您的项目是基于springboot框架构建，且有兴趣应用beecp或已在使用它，那么推荐[beecp-starter](https://github.com/Chris2018998/beecp-starter)
-，它可以帮您管理一个或多个beecp数据源_
+_温馨提示：如果您的项目是基于springboot框架构建，且有兴趣应用BeeCP或已在使用它，那么推荐[beecp-starter](https://github.com/Chris2018998/beecp-starter)帮您管理BeeCP数据源_
 
 --- 
-**工作参数**
+**属性参数**
 
-beecp的工作模式是基于参数驱动，可通过其配置对象（BeeDataSourceConfig）的方法设置工作参数，下面为参数列表
+BeeCP是基于参数驱动的，使用前可在其数据源配置对象（BeeDataSourceConfig）上设置一些参数值（如url，username之类的）
 
-| 属性                               | 描述                                                                  | 默认值                 |
-|----------------------------------|---------------------------------------------------------------------|---------------------|
-| username                         | 连接数据库的用户名                                                           | 空                   |
-| password                         | 连接数据库的密码                                                            | 空                   |
-| jdbcUrl                          | 连接数据库的url                                                           | 空                   |
-| driverClassName                  | 数据库的Jdbc驱动类名                                                        | 空                   |
-| poolName	                        | 连接池名                                                                | 空                   |
-| fairMode                         | 是否使用公平模式                                                            | false（竞争模式）         | 
-| initialSize                      | 连接池初始化时创建连接的数量                                                      | 0                   |
-| maxActive                        | 池内最大连接数                                                             | 10                  | 
-| borrowSemaphoreSize              | 池内信号量最大许可数(借用线程最大并发数）                                               | min(最大连接数/2,CPU核心数） |
-| defaultAutoCommit                | Connection.setAutoComit(defaultAutoCommit)                          | 空                   |
-| defaultTransactionIsolationCode  | Connection.setTransactionIsolation(defaultTransactionIsolationCode) | 空                   |
-| defaultCatalog                   | Connection.setCatalog(defaultCatalog)                               | 空                   |
-| defaultSchema                    | Connection.setSchema(defaultSchema)                                 | 空                   |
-| defaultReadOnly                  | Connection.setReadOnly(defaultReadOnly)                             | 空                   |
-| maxWait                          | 借用连接时的最大等待时间(毫秒)                                                    | 8000                |
-| idleTimeout                      | 未借连接闲置超时时间(毫秒)，不可大于数据库最大闲置时间                                        | 18000               |  
-| holdTimeout                      | 已借连接闲置超时时间(毫秒)，不可大于数据库最大闲置时间                                        | 0                   |  
-| aliveTestSql                     | 连接存活检查sql                                                           | SELECT 1            |  
-| aliveTestTimeout                 | 连接存活检测结果的等待最大时间(秒)                                                  | 3                   |  
-| aliveAssumeTime                  | 存活检测阈值时间差，小于则假定为活动连接，大于则检测                                          | 500                 |  
-| forceCloseUsingOnClear           | 清理时，是否强制回收已借连接                                                      | false               |
-| parkTimeForRetry                 | 清理时，等待已借连接返回池中的时间(毫秒)                                               | 3000                |             
-| timerCheckInterval               | 池内定时线程工作隔时间(毫秒)                                                     | 18000               |
-| forceDirtyOnSchemaAfterSet       | 是否在schema上设置脏标记，而忽略属性是否改变（PG时可设置）                                   | false               |
-| forceDirtyOnCatalogAfterSet      | 是否在catalog上设置脏标记，而忽略属性是否改变（PG时可设置）                                  | false               |
-| enableThreadLocal                | ThreadLocal是否启用（false时可支持虚拟线程）                                      | true                | 
-| enableJmx                        | JMX监控支持开关                                                           | false               | 
-| printConfigInfo                  | 是否打印配置信息                                                            | false               | 
-| printRuntimeLog                  | 是否打印运行时日志                                                           | false               | 
-| **connectionFactory**            | 连接工厂实例                                                              | 空                   |
-| **connectionFactoryClass**       | 连接工厂类                                                               | 空                   |
-| **connectionFactoryClassName**   | 连接工厂类名                                                              | 空                   |
-| **evictPredicate**               | 异常断言实例                                                              | 空                   |
-| **evictPredicateClass**          | 异常断言类                                                               | 空                   |
-| **evictPredicateClassName**      | 异常断言类名                                                              | 空                   |
-| **jdbcLinkInfoDecoder**          | 连接信息解码器                                                             | 空                   |
-| **jdbcLinkInfoDecoderClass**     | 连接信息解码器类                                                            | 空                   |
-| **jdbcLinkInfoDecoderClassName** | 连接信息解码器类名                                                           | 空                   |
+| 属性                             | 描述                                                                  | 默认值                    |
+|----------------------------------|----------------------------------------------------------------------|--------------------------|
+| username                         | 连接数据库的用户名                                                     |空                         |
+| password                         | 连接数据库的密码                                                       |空                        |
+| jdbcUrl                          | 连接数据库的url                                                        |空                        |
+| driverClassName                  | 数据库的Jdbc驱动类名                                                    |空                       |
+| poolName	                   | 连接池名                                                               |空                      |
+| fairMode                         | 是否使用公平模式                                                        |false（非公平模式）        | 
+| initialSize                      | 连接池初始化时创建连接的数量                                             |0                       |
+| maxActive                        | 池内最大连接数                                                          |10                     | 
+| borrowSemaphoreSize              | 池内信号量最大许可数(借用线程最大并发数）                                  |min(最大连接数/2,CPU核心数） |
+| defaultAutoCommit                | Connection.setAutoComit(defaultAutoCommit)                          |空                   |
+| defaultTransactionIsolationCode  | Connection.setTransactionIsolation(defaultTransactionIsolationCode) |空                   |
+| defaultCatalog                   | Connection.setCatalog(defaultCatalog)                               |空                   |
+| defaultSchema                    | Connection.setSchema(defaultSchema)                                 |空                   |
+| defaultReadOnly                  | Connection.setReadOnly(defaultReadOnly)                             |空                   |
+| maxWait                          | 借用连接时的最大等待时间(毫秒)                                         |8000                |
+| idleTimeout                      | 未借连接闲置超时时间(毫秒)，不可大于数据库最大闲置时间                    |18000               |  
+| holdTimeout                      | 已借连接闲置超时时间(毫秒)，不可大于数据库最大闲置时间                    |0                   |  
+| aliveTestSql                     | 连接存活检查sql                                                      |SELECT 1            |  
+| aliveTestTimeout                 | 连接存活检测结果的等待最大时间(秒)                                      |3                   |  
+| aliveAssumeTime                  | 存活检测阈值时间差，小于则假定为活动连接，大于则检测                       |500                 |  
+| forceCloseUsingOnClear           | 清理时，是否强制回收已借连接                                            |false               |
+| parkTimeForRetry                 | 清理时，等待已借连接返回池中的时间(毫秒)                                 |3000                |             
+| timerCheckInterval               | 池内定时线程工作隔时间(毫秒)                                            |18000               |
+| forceDirtyOnSchemaAfterSet       | 是否在schema上设置脏标记，而忽略属性是否改变（PG时可设置）                 |false               |
+| forceDirtyOnCatalogAfterSet      | 是否在catalog上设置脏标记，而忽略属性是否改变（PG时可设置）                |false               |
+| enableThreadLocal                | ThreadLocal是否启用（false时可支持虚拟线程）                             |true                | 
+| enableJmx                        | JMX监控支持开关                                                           |false            | 
+| printConfigInfo                  | 是否打印配置信息                                                           |false               | 
+| printRuntimeLog                  | 是否打印运行时日志                                                         |false               | 
+| **connectionFactory**            | 连接工厂实例                                                              |空                   |
+| **connectionFactoryClass**       | 连接工厂类                                                               |空                   |
+| **connectionFactoryClassName**   | 连接工厂类名                                                              |空                   |
+| **evictPredicate**               | 异常断言实例                                                              |空                   |
+| **evictPredicateClass**          | 异常断言类                                                                |空                   |
+| **evictPredicateClassName**      | 异常断言类名                                                              |空                   |
+| **jdbcLinkInfoDecoder**          | 连接信息解码器                                                             |空                   |
+| **jdbcLinkInfoDecoderClass**     | 连接信息解码器类                                                            |空                   |
+| **jdbcLinkInfoDecoderClassName** | 连接信息解码器类名                                                           |空                   |
 
 *_以上属性可通过set方法进行设置； **对象级**属性的生效选择次序：实例 > 类 > 类名_
 
 *_五个defaultxxx属性(defaultAutoCommit,defaultTransactionIsolationCode,defaultCatalog,defaultSchema,defaultReadOnly)
-若无设置,则从第一个成功创建的连接上读取_
+若未设置,则从第一个成功创建的连接上读取_
 
 --- 
-**参数文件**
+**属性文件**
 
-beecp工作所需要的参数来自其配置对象（BeeDataSourceConfig）,它支持从Properties文件中一次性载入多个配置项，参考代码
+BeeCP支持从属性文件(*.properities)中装载配置信息，例子代码如下
 
 ```java
 String configFileName = "d:\beecp\config.properties";
 BeeDataSourceConfig config = new BeeDataSourceConfig();
-config.loadFromPropertiesFile(configFileName);
+config.loadFromPropertiesFile(configFileName);//将配置信息映射到到BeeDataSourceConfig属性上
 ```
 
 config.properties
@@ -175,13 +172,13 @@ connectProperties.2=prepStmtCacheSqlLimit=2048&useServerPrepStmts=true
 ---
 **驱动参数**
 
-连接池使用JDBC驱动或连接工厂去创建连接对象，在驱动或连接工厂内部可能需要一些工作参数，beecp配置对象（BeeDataSourceConfig）提供了两个方法用来支持它们参数的设置。
+在BeeCP内部，是使用JDBC驱动或连接工厂去创建连接对象（Connection)，它们通常也是基于参数模式工作的，所以在BeeCP数据源配置对象（BeeDataSourceConfig）上提供了两个方法用来添加它们的参数，在BeeCP初始化的时候，参数会被注入进驱动或工厂内部。
 
-* ```addConnectProperty(String,Object);//设置单个参数 ```
+* ```addConnectProperty(String,Object);//添加单个参数 ```
 
-* ```addConnectProperty(String);//设置多个参数```
+* ```addConnectProperty(String);//添加多个参数，字符格式参考：cachePrepStmts=true&prepStmtCacheSize=250```
 
-参考代码
+例子代码
 
 ```java
  BeeDataSourceConfig config = new BeeDataSourceConfig();
@@ -199,20 +196,22 @@ connectProperties.2=prepStmtCacheSqlLimit=2048&useServerPrepStmts=true
 ---
 **阻塞与中断**
 
-由于网络或服务器等其它原因，客户端无法建立与数据库之间的正常连接，导致创建者线程处于阻塞状态，从而影响到连接池的使用，beecp在数据源对象（BeeDataSource）上提供了两个方法
+由于网络或服务器或其它原因，客户端无法与数据库之间的建立连接，导致客户端的Connection创建者线程处于阻塞状态，从而影响到连接池的使用，BeeCP在数据源对象（BeeDataSource）上提供了两个方法
 
-* ``` getPoolMonitorVo();//运行时状态查询，返回结果对象中包括连接的闲置数，已借数，正在创建数，创建已超时数等 ```
+* ``` getPoolMonitorVo();//查询方法，结果对象中包括池中的连接闲置数，已借数，正在创建数，创建超时数等 ```
 
-* ``` interruptConnectionCreating(boolean);//中断连接创建过程，如果参数是true时则只中断已超时的创建 ```
+* ``` interruptConnectionCreating(boolean);//连接创建时若被阻塞，调用此方法可用于结束阻塞；若参数是true时则只中断超时的创建 ```
 
-*_一次创建耗时超过maxWait值，则视为创建超时，beecp池内定时扫描线程会自动终止它_
 
-*_beecp监控界面上也可查看到运行时信息，若创建超时则出现中断按钮_
+<sup>**补充说明**</sup></br>
+1：创建超时的时间与maxWait一致，比如设置8秒的maxWait，那么驱动或连接工厂8秒内没有返回连接对象，则判定为连接创建超时</br>
+2：创建超时发生后未被中断，BeeCP定时线程也会它们识别并中断</br>
+3：BeeCP监控页面上也可查看创建信息和超时情况，并提供中断按钮
 
 --- 
 **清理与重启**
 
-beecp在数据源（BeeDataSource）上提供了两个clear方法可清理池内已创建的连接，让池恢复到初始状态，清理过程中不接受外部请求
+BeeCP在数据源（BeeDataSource）上提供了两个clear方法可清理池内已创建的连接，让池恢复到初始状态，清理过程中不接受外部请求
 
 * ```clear(boolean forceCloseUsing);//forceCloseUsing为true时，强制回收已借连接 ```
 
@@ -224,27 +223,24 @@ beecp在数据源（BeeDataSource）上提供了两个clear方法可清理池内
 --- 
 **异常驱逐**
 
-beecp支持SQL级异常连接的驱逐，提供三种驱逐参数配置（BeeDataSourceConfig）
+连接在使用过程中可能会发生SQL异常（SQLException），有些则是普通异常，有些是比较严重问题，需要从池中移除（驱逐）它们的连接；如何识别需要驱逐的异常，BeeCP提供三种配置方式
 
-* 异常代码配置：``` addSqlExceptionCode(int code)；//增加代码 ```
+* A. 异常代码配置：``` addSqlExceptionCode(int code)；//对应SQLException.vendorCode ```
 
-* 异常状态配置：``` addSqlExceptionState(String state)；//增加状态 ```
+* B. 异常状态配置：``` addSqlExceptionState(String state)；/对应SQLException.SQLState```
 
-* 异常断言配置：
-  ``` setEvictPredicate(BeeConnectionPredicate p);setEvictPredicateClass(Clas c); setEvictPredicateClassName(String n);//设置异常断言对象或类 ```
-
-_生效规则
-a：若存在断言配置，则忽略其他两项配置，断言检查结果非空则驱逐异常连接
-b：若无配置断言，异常代码（vendorCode）优先于异常状态（SQLState）检查，若code或state存在于配置清单中，则驱逐_
-
-_强制驱逐：调用连接上的abort方法(connecton.abort(null))即可_
-
-
+* C. 异常断言配置：``` setEvictPredicate(BeeConnectionPredicate p);setEvictPredicateClass(Clas c); setEvictPredicateClassName(String n);//通过自定义的方式识别异常 ```
+    
+<sup>**补充说明**</sup></br>
+1：若存在断言配置，则忽略其他两项配置，断言检查结果非空则驱逐异常连接（_灵活性驱逐，比如需要同时满足某个异常代码和某个异常状态_）</br>
+2：若未配置断言，异常代码优先于异常状态检查，若SQLException.vendorCode或SQLException.SQLState存在于配置清单中，则驱逐_</br>
+3：强制驱逐，调用连接上的abort方法(connecton.abort(null))即可
+4：驱逐时若存在等待者则候补一个连接，并传递给等待者</br>
 
 --- 
 **连接工厂**
 
-beecp提供工厂接口（BeeConnectionFactory，BeeXaConnectionFactory）供自定义实现连接的创建，并且在配置BeeDataSourceConfig对象上有四个方法（setConnectionFactory，setXaConnectionFactory，setConnectionFactoryClass，setConnectionFactoryClassName）分别设置
+BeeCP提供工厂接口（BeeConnectionFactory，BeeXaConnectionFactory）供自定义实现连接的创建，并且在配置BeeDataSourceConfig对象上有四个方法（setConnectionFactory，setXaConnectionFactory，setConnectionFactoryClass，setConnectionFactoryClassName）分别设置
 _工厂对象，工厂类，工厂类名_，下面给一个参考例子
 
 ```java
