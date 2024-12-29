@@ -7,7 +7,7 @@
 ![](https://img.shields.io/badge/Java-7+-green.svg)
 ![](https://img.shields.io/github/license/Chris2018998/BeeCP)
 
-BeeCP is a lightweight JDBC connection pool,its Jar file only 133KB and its techology highlights:caching single connection,non moving waiting,fixed length array.
+BeeCP is a lightweight JDBC connection pool,its Jar file only 133KB and its techology highlights: caching single connection, non moving waiting, fixed length array
 
 ---
 Java7+
@@ -33,15 +33,18 @@ Java6(deprecated)
 ---
 **Highlight Features**
 
-* Connection pool blocking and interruption
-* Connection pool clean and reinitialization
-* Support loanding configuration from properties files
+* Provide interruption mehods for blocking
+* Support Pool clean and pool reinitalization
+* Support properties file configuration
 * Provide interfaces for customization
 * Support virtual thread applications
 * [Provide web monitor](https://github.com/Chris2018998/beecp-starter)
 
 ![图片](https://user-images.githubusercontent.com/32663325/154832186-be2b2c34-8765-4be8-8435-b97c6c1771df.png)
 ![图片](https://user-images.githubusercontent.com/32663325/154832193-62b71ade-84cc-41db-894f-9b012995d619.png)
+
+_Reminder: If your project is built on springboot framework and also you are interested at beecp or already using it,we recommend [beecp starter](https://github.com/Chris2018998/beecp-starter) to
+you._
 
 **JMH Performance**
 
@@ -50,34 +53,33 @@ Java6(deprecated)
 <sup>**PC:** Windows11,Intel-i7-14650HX,32G Memory **Java:** 1.8.0_171  **Pool:** init size 32,max size 32 **Source code:** [HikariCP-benchmark-master.zip](https://github.com/Chris2018998/stone/blob/main/doc/temp/HikariCP-benchmark-master.zip)
 </sup>
 
+
 ***Compare to HikariCP***
 
 | item                                           | HikariCP             | BeeCP                 |
 |------------------------------------------------|----------------------|-----------------------|
-| Number of connections in threadlocal           | multiple             | single                |
-| Store structre of pool connections             | CopyOnWriteArrayList | a fixed length array  |
-| Transfer queue between waiters and releasers   | SynchronousQueue     | ConcurrentLinkedQueue |
-| Connection addition way                        | Thread pool          | single thread         |
-| Conneciton Concurrency creation                | Not Support          | Support               |
-| Pool Clean and Restartup                       | Not Support          | Support               |
-| Interruption method to end blocking            | Not Provide          | Provide               |
-| Connection factory interface for customization | Not Support          | Not Support           |
-| Disable ThreadLocal to support VT              | Not Support          | Support               |
+| Connection caching size in threadlocal         | Multiple             | Single                |
+| Container type to store pooled connections     | CopyOnWriteArrayList | A fixed length array  |
+| Transfer queue/wait queue                      | SynchronousQueue     | ConcurrentLinkedQueue |
+| Way to add connection to pool                  | Thread pool          | Single thread         |
+| Connection creation by concurrency             | Not Support          | Support               |
+| Pool clean and pool reinitialize               | Not Support          | Support               |
+| Provide interruption methods for blocking      | Not Provide          | Provide               |
+| Provide connection factory interface           | Not Support          | Support               |
+| Disable threadLocal to support virtual thread  | Not Support          | Support               |
+| Support XADataSource                           | Not Support          | Support               |
 
-<sup>_[**HikariCP**](https://github.com/brettwooldridge/HikariCP) is a very excellent open source work widely used in the Java world, it developed by Brettwooldridge, a senior JDBC expert of United States_<sup>
+_[**HikariCP**](https://github.com/brettwooldridge/HikariCP) is an excellent open source project and widely used in the Java world,it is developed by Brettwooldridge,a senior JDBC expert of United States_
 
 --- 
 **How to use it**
 
-At usage,it is generally similar to other connection pools.
-
-_Reminder: If your project is built on springboot framework and you are interested at beecp or already using it,we recommend [beecp starter](https://github.com/Chris2018998/beecp-starter) to
-you to manage beecp data source in your project._
+Its usage is generally similar to popular connection pools,and some reference source codes in followed chapters 
 
 --- 
 **Configuration properties**
 
-BeeCP is driven by parameters,before startup,its parameters can be set to data source configuration object (BeeDataSourceConfig).
+BeeCP woring parameters are from its configuration object(BeeDataSourceConfig),below is a list of properites,which can be confiured by their set methods
 
 | property name                   | description                                                            | default value             |
 |---------------------------------|------------------------------------------------------------------------|---------------------------|
@@ -85,9 +87,9 @@ BeeCP is driven by parameters,before startup,its parameters can be set to data s
 | password                        | user password of db                                                    | blank                     |
 | jdbcUrl                         | link url to db                                                         | blank                     |
 | driverClassName                 | jdbc driver class name                                                 | blank                     |
-| poolName	                  | pool name                                                              | blank                     |
-| fairMode                        | an indictor to use fair mode for connection getting                    | false（unfair）            | 
-| initialSize                     | creation size of connecitons at pool initialize                        | 0                         |
+| poolName	                  | pool name,if not set,a generated name will be assigned to it           | blank                     |
+| fairMode                        | a mode to get connections from pool                                    | false（unfair mode）       | 
+| initialSize                     | creation size of connecitons during pool initialization                | 0                         |
 | maxActive                       | max size of connections in pool                                        | 10                        | 
 | borrowSemaphoreSize             | max permit size of semaphore for conneciton getting                    | min(maxActive/2,CPU size） |
 | defaultAutoCommit               | Connection.setAutoComit(defaultAutoCommit)                             | blank                     |
@@ -102,11 +104,11 @@ BeeCP is driven by parameters,before startup,its parameters can be set to data s
 | aliveTestTimeout                | max wait time to get alive check result(seconds)                       | 3                         |  
 | aliveAssumeTime                 | a hreshold time to do alive check on borrowed connections,assume alive if less,otherwise check(ms)| 500                       |  
 | forceCloseUsingOnClear          | indicator to recyle borrowed connecton by force when pool clean       | false                     |
-| parkTimeForRetry                | timed wait for borrowed connections to return to pool and close them(ms) | 3000                      |             
-| timerCheckInterval              | a iterval time for pool to scan idle-timeout conencitons (ms)            | 18000                     |
-| forceDirtyOnSchemaAfterSet      | set dirty flag on schema by force,ignore whether change(supports transcation)     | false                     |
-| forceDirtyOnCatalogAfterSet     | set dirty flag on catlog by force,ignore whether change(supports transcation)     | false                     |
-| enableThreadLocal               | an indicator to disable/enable threadlocal in pool（false to support VT          |  true                      | 
+| parkTimeForRetry                | timed wait for borrowed connections to return to pool and close them(ms)   | 3000                      |             
+| timerCheckInterval              | a iterval time for pool to scan idle-timeout conencitons (ms)              | 18000                     |
+| forceDirtyOnSchemaAfterSet      | force reset flag for schema property when conneciton close(can used in app of PG) | false                     |
+| forceDirtyOnCatalogAfterSet     | force reset flag for catlog property when conneciton close(can used in app of PG) | false                     |
+| enableThreadLocal               | an indicator to enable/disable threadlocal in pool（false to support VT)    |  true                      | 
 | enableJmx                       | enable indicator to support Jmx                                        | false                     | 
 | printConfigInfo                 | indicator to print configuration items by log when pool initialize     | false                     | 
 | printRuntimeLog                 | indicator to print runtime logs of pool                                | false                     | 
@@ -120,19 +122,20 @@ BeeCP is driven by parameters,before startup,its parameters can be set to data s
 | **jdbcLinkInfoDecoderClass**        | decoder class of jdbc link info                                        | blank                     |
 | **jdbcLinkInfoDecoderClassName**    | decoder class name of jdbc link info                                   | blank                     |
 
-<sup>*The above attributes can be filled by their set methods; The priority order of effective selection of object type
-properties: instance>class>class name<br/>
-*Five defaultxxx properties(defaultAutoCommit,defaultTransactionIsolationCode,defaultCatalog,defaultSchema,defaultReadOnly), if them not be set,then read value as default from first success creation connection</sup>
+***Object type properties**，choosed priority order：instance > class > class name
+
+***Object type properties**，property class must be not abstract and a constructor without parameters exist in class
+
+***Five defaultxxx properties**(defaultAutoCommit,defaultTransactionIsolationCode,defaultCatalog,defaultSchema,defaultReadOnly), if them not be set,then read value as default from first success creation connection
 
 --- 
 **Properties file of configuration**
 
-BeeCP supports loading configuration information from properties files,referrence example is blow
+BeeCP supports loading configuration from properties type files and properties objects(java.util.Properties),a referrence example is blow
 
 ```java
-String configFileName = "d:\beecp\config.properties";
 BeeDataSourceConfig config = new BeeDataSourceConfig();
-config.loadFromPropertiesFile(configFileName);
+config.loadFromPropertiesFile("d:\beecp\config.properties");
 ```
 
 config.properties
@@ -147,45 +150,25 @@ driverClassName=com.mysql.cj.jdbc.Driver
 initial-size=1
 max-active=10
 
-username=root
-password=root
-jdbcUrl=jdbc:mysql://localhost/test
-driverClassName=com.mysql.cj.jdbc.Driver
-
-initial-size=1
-max-active=10
-
-sqlExceptionCodeList=500150,2399,1105
-sqlExceptionStateList=0A000,57P01,57P02,57P03,01002,JZ0C0,JZ0C1
-
-connectProperties=cachePrepStmts=true&prepStmtCacheSize=50
-
-evictPredicateClassName=org.stone.beecp.objects.MockEvictConnectionPredicate
+#implemention class name of connection factory 
 connectionFactoryClassName=org.stone.beecp.objects.MockCommonConnectionFactory
+#implemention class name of link info decoder
 jdbcLinkInfoDecoderClassName=org.stone.beecp.objects.SampleMockJdbcLinkInfoDecoder
 
 ```
-
-_The configuration method of connectProperties can also refer to the following way_
-
-```properties
-connectProperties.size=2
-connectProperties.1=prepStmtCacheSize=50
-connectProperties.2=prepStmtCacheSqlLimit=2048&useServerPrepStmts=true
-
-```
+Reminder: The configuration format of properties name currently supports camel hump, middle line, underline
 
 --- 
 **Driver parameters**
 
-Within BeeCP, JDBC drivers or connection factories are used to create connection objects (Connections), which typically work based on parameter patterns. Therefore, two methods are provided on the BeeCP Data Source Configuration object (BeeDataSourceConfig) to add their parameters, which are injected into the driver or factory during BeeCP initialization.
+BeeCP internally uses drivers or connection factories to create connection objects, and factories may depend on some parameters. Two methods are provided in the configuration object (BeeDataSourceConfig) to for it
 
-* ``` addConnectProperty(String,Object);// Add a single parameter ```
+* ``` addConnectProperty(String,Object);// Add a parameter ```
 
-* ``` addConnectProperty(String);// Add multiple parameters, character format reference: cachePrepStmts=true&prepStmtCacheSize=250  ```
+* ``` addConnectProperty(String);// Add multiple parameters,for example: cachePrepStmts=true&prepStmtCacheSize=250  ```
 
 
-Example for this
+An example
 
 ```java
  BeeDataSourceConfig config = new BeeDataSourceConfig();
@@ -200,20 +183,72 @@ Example for this
  config.addConnectProperty("cachePrepStmts:true&prepStmtCacheSize:250&prepStmtCacheSqlLimit:2048");
 ```
 
+* _Refrence poperites file1_
+```properties
+
+connectProperties=cachePrepStmts=true&prepStmtCacheSize=50
+
+```
+
+* _Refrence Poperites file2(recommended it when multiple parameters)_
+
+```properties
+connectProperties.size=2
+connectProperties.1=prepStmtCacheSize=50
+connectProperties.2=prepStmtCacheSqlLimit=2048&useServerPrepStmts=true
+```
+
+--- 
+**Connection Eviction**
+
+ BeeCP provides two ways
+
+1. Manual eviction, call the abort method of connections (connect. abort (null)), pool immediately physically closes them and removes them
+
+2. Eviction by configuration，which is used to help pool identify connections thrown SQLException, there are three configuration way for it
+
+ * A. configuration of exception code：``` addSqlExceptionCode(int code)；//related to SQLException.vendorCode ```
+ * B. configuration of exception state：``` addSqlExceptionState(String state)；/related to SQLException.SQLState```
+ * C. configuration of predicate：``` setEvictPredicate(BeeConnectionPredicate p);setEvictPredicateClass(Clas c); setEvictPredicateClassName(String n);```
+ 
+<br/>
+
+_**Properties File(example)**_
+```properties
+
+sqlExceptionCodeList=500150,2399,1105
+sqlExceptionStateList=0A000,57P01,57P02,57P03,01002,JZ0C0,JZ0C1
+
+//or
+evictPredicateClassName=org.stone.beecp.objects.MockEvictConnectionPredicate
+
+```
+
+_**Additional info**_
+
+1：If predicate set, then ignore the other two configurations;evict connection from pool where check reuslt of sql exception is not null/empty</br>
+2：If predicate not configured,exception code check is priority to exception state check, if matched,then evict connections</br>
+3：Force eviction,call abort method of connection(connect.abort (null))</br>
+4：After eviction,if exist waiter for connection transfer,then create a new conenction and transfer it to waiter 
+
+
 ---
-**Blocking and interruption**
+**Interruption when blocking**
 
-Due to network, server, or other reasons, the client is unable to establish a connection with the database, resulting in the connection creator thread of the client being blocked, which affects the use of the connection pool. BeeCP provides two methods on the data source object (BeeDataSource)
-
-* ``` getPoolMonitorVo();//Query method, the result object constains that number of idle connections, borrowed connections, creating connections, creating timeouts, etc ```
-
-* ``` interruptConnectionCreating(boolean);//If thread is blocked during creation a connection,calling this method can be used to end the blocking;If method parameter is true,only interrupt timeout creation ```
+Connection creation is an important activity in pool, but due to server, network, or other reasons, the creation process may be blocked. To address this issue, BeeCP provides two ways to solve it
 
 
-<sup>**additional description**</sup></br>
-1：The creation timeout is same to maxWait.For example:if this value is 8 seconds,and no connection returned from driver or connection factory,this called as creation timeout</br>
-2：After creation timeout and not be interrupted, BeeCP timed thread will scan out them and interrupted them</br>
-3：Connecton Creation info of pool also display on BeeCP monitor page and provide interruption button on page
+1. External approach, providing two methods,query method： **BeeDataSource.getPoolMonitorVo()** ；Interruption method： **BeeDataSource.interruptConnectionCreating(boolean)** ；
+
+2. Internal approach，internal worker thread scan and find out all blocking and interrupt them
+
+<br/>
+
+_**Additional info**_
+
+* 1：If elapsed time of conneciton creation is greater than maxwait value,pool regards it as blocking 
+* 2: If borrower thread is interrupted,then an interrupt exception will be thrown from  **getConnection ** method
+* 3: Creation info and blocking info is also display on monitor page
 
 
 --- 
@@ -227,22 +262,7 @@ BeeCP provides two clear methods on the data source (BeeDataSource) to clean up 
 
 *_Interrupt them if connection creation exist druing clean process;let waiters to exit waiting for ending request of connection getting_
 
---- 
-**Connection Eviction**
-
-During the use of connections, SQL exceptions may occur, some of which are normal exceptions, while others are more serious issues that need to be removed (evicted) from the pool; How to identify exceptions that need to be expelled, BeeCP provides three configuration methods
-
-* A. configuration of exception code：``` addSqlExceptionCode(int code)；//related to SQLException.vendorCode ```
-
-* B. configuration of exception state：``` addSqlExceptionState(String state)；/related to SQLException.SQLState```
-
-* C. configuration of predicate：``` setEvictPredicate(BeeConnectionPredicate p);setEvictPredicateClass(Clas c); setEvictPredicateClassName(String n);```
-    
-<sup>**additional description**</sup></br>
-1：If predicate set, then ignore the other two configurations;evict connection from pool where check reuslt of sql exception is not null/empty</br>
-2：If predicate not configured,exception code check is priority to exception state check, if matched,then evict connections</br>
-3：Force eviction,call abort method of connection(connect.abort (null))</br>
-4：After eviction,if exist waiter for connection transfer,then create a new conenction and transfer it to waiter  
+ 
 
 --- 
 **Factory customization**
