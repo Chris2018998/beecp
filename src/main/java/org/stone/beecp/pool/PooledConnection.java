@@ -170,7 +170,6 @@ final class PooledConnection {
         this.resetFlags = FALSE.clone();
         this.commitDirtyInd = false;
         this.curAutoCommit = defaultAutoCommit;
-        this.creatingInfo = null;
 
         this.openStmSize = 0;
         this.openStatements = new ProxyStatementBase[10];
