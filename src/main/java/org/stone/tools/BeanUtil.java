@@ -15,10 +15,7 @@ import org.stone.tools.exception.BeanException;
 import org.stone.tools.exception.PropertyValueConvertException;
 import org.stone.tools.exception.PropertyValueSetFailedException;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.AccessController;
@@ -26,6 +23,8 @@ import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static org.stone.tools.CommonUtil.isBlank;
 
 /**
  * A bean util(Not recommend use it other projects)
@@ -315,33 +314,40 @@ public class BeanUtil {
         }
 
         String text = propValue.toString();
+        if (isBlank(text)) return null;
         text = text.trim();
-        if (text.isEmpty()) return null;
 
         if (type == char.class || type == Character.class) {
-            return text.toCharArray()[0];
+            return Character.valueOf(text.charAt(0));
         } else if (type == boolean.class || type == Boolean.class) {
-            return Boolean.parseBoolean(text);
+            return Boolean.valueOf(text);
         } else if (type == byte.class || type == Byte.class) {
-            return Byte.parseByte(text);
+            return Byte.valueOf(text);
         } else if (type == short.class || type == Short.class) {
-            return Short.parseShort(text);
+            return Short.valueOf(text);
         } else if (type == int.class || type == Integer.class) {
-            return Integer.parseInt(text);
+            return Integer.valueOf(text);
         } else if (type == long.class || type == Long.class) {
-            return Long.parseLong(text);
+            return Long.valueOf(text);
         } else if (type == float.class || type == Float.class) {
-            return Float.parseFloat(text);
+            return Float.valueOf(text);
         } else if (type == double.class || type == Double.class) {
-            return Double.parseDouble(text);
+            return Double.valueOf(text);
         } else if (type == BigInteger.class) {
             return new BigInteger(text);
         } else if (type == BigDecimal.class) {
             return new BigDecimal(text);
         } else if (type == Class.class) {
             return Class.forName(text);
-        } else if (type.isArray()) {//do nothing
-            return null;
+        } else if (type.isArray()) {
+            String[] textArray = text.split(",");
+            int elementSize = textArray.length;
+            Class<?> elementType = type.getComponentType();
+            Object elementArray = Array.newInstance(elementType, elementSize);
+            for (int i = 0; i < elementSize; i++) {
+                Array.set(elementArray, i, convert(textArray[i], elementType));
+            }
+            return elementArray;
         } else {
             Object objInstance = Class.forName(text).newInstance();
             if (type.isInstance(objInstance)) return objInstance;
