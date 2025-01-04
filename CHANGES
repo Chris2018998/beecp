@@ -1,5 +1,10 @@
 beecp changes
 
+Changes in 4.1.6
+
+1: remove final keyword from datasource
+2: support array properties injection in util
+
 Changes in 4.1.5
 
 1: fix null point exception when idle timeout scan
