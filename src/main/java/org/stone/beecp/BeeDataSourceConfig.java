@@ -49,7 +49,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     private static final List<String> DefaultExclusionList = Arrays.asList("username", "password", "jdbcUrl", "user", "url");
 
     //a map store value of putted items,which are injected to a connection factory or a datasource when pool initializes,default is empty
-    private final Map<String, Object> connectProperties = new HashMap<>();
+    private final Map<String, Object> connectProperties = new HashMap<>(0);
     //a skip list on configuration info-print,original items are copied from default skip list,refer to {@code DefaultExclusionList}
     private final List<String> configPrintExclusionList = new ArrayList<>(DefaultExclusionList);
     //jdbc username link to a database,default is null
