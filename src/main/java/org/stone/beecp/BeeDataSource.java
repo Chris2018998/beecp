@@ -93,12 +93,12 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     //***************************************************************************************************************//
     //                                          2: below are override methods(11)                                    //
     //***************************************************************************************************************//
-    public final Connection getConnection() throws SQLException {
+    public Connection getConnection() throws SQLException {
         if (this.ready) return pool.getConnection();
         return createPoolByLock().getConnection();
     }
 
-    public final XAConnection getXAConnection() throws SQLException {
+    public XAConnection getXAConnection() throws SQLException {
         if (this.ready) return pool.getXAConnection();
         return createPoolByLock().getXAConnection();
     }
