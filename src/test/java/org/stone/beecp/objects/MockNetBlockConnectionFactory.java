@@ -23,6 +23,7 @@ import java.util.concurrent.locks.LockSupport;
 public class MockNetBlockConnectionFactory implements BeeConnectionFactory {
     private final ConcurrentLinkedQueue<Thread> waitQueue = new ConcurrentLinkedQueue<>();
     private volatile int state = 0;
+    private volatile Thread waitThread = null;
 
     public void interruptAll() {
         this.state = 1;
@@ -41,6 +42,7 @@ public class MockNetBlockConnectionFactory implements BeeConnectionFactory {
     }
 
     public void waitUtilCreationArrival() {
+        this.waitThread = Thread.currentThread();
         Thread.interrupted();//just clean interruption flag
         do {
             if (waitQueue.isEmpty())
@@ -56,9 +58,12 @@ public class MockNetBlockConnectionFactory implements BeeConnectionFactory {
         try {
             if (state == 0) {
                 waitQueue.add(currentThread);
+                if (waitThread != null) LockSupport.unpark(waitThread);
                 do {
                     LockSupport.park();
-                    if (Thread.interrupted()) break;
+                    if (Thread.interrupted()) {
+                        break;
+                    }
                 } while (state == 0);
             }
         } finally {

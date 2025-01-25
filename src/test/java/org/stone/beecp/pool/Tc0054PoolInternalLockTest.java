@@ -127,12 +127,12 @@ public class Tc0054PoolInternalLockTest extends TestCase {
         Thread.interrupted();//just clean interruption flag
         InterruptionReentrantReadWriteLock lock = (InterruptionReentrantReadWriteLock) TestUtil.getFieldValue(pool, "connectionArrayInitLock");
         do {
-            if (lock.getQueueLength()==0)
+            if (firstBorrower.isAlive() && secondBorrower.isAlive() && lock.getQueueLength() == 0) {
                 LockSupport.parkNanos(50L);
-            else
+            } else {
                 break;
+            }
         } while (true);
-
         System.out.println("block the current thread on InterruptionReentrantReadWriteLock");
 
         try {
@@ -140,22 +140,20 @@ public class Tc0054PoolInternalLockTest extends TestCase {
             Thread ownerThread = lock.getOwnerThread();
             if (ownerThread != null) {
                 factory.interrupt(ownerThread);
+            }
 
-                firstBorrower.join();
-                secondBorrower.join();
-                if (ownerThread == firstBorrower) {
-                    Assert.assertTrue(firstBorrower.getFailureCause().getMessage().contains("A unknown error occurred when created a connection"));
-                } else {
-                    Assert.assertTrue(firstBorrower.getFailureCause().getMessage().contains("Pool first connection created fail or first connection initialized fail"));
-                }
-
-                if (ownerThread == secondBorrower) {
-                    Assert.assertTrue(secondBorrower.getFailureCause().getMessage().contains("A unknown error occurred when created a connection"));
-                } else {
-                    Assert.assertTrue(secondBorrower.getFailureCause().getMessage().contains("Pool first connection created fail or first connection initialized fail"));
-                }
+            firstBorrower.join();
+            secondBorrower.join();
+            if (ownerThread == firstBorrower) {
+                Assert.assertTrue(firstBorrower.getFailureCause().getMessage().contains("A unknown error occurred when created a connection"));
             } else {
-                System.out.println("lock owner thread is null");
+                Assert.assertTrue(firstBorrower.getFailureCause().getMessage().contains("Pool first connection created fail or first connection initialized fail"));
+            }
+
+            if (ownerThread == secondBorrower) {
+                Assert.assertTrue(secondBorrower.getFailureCause().getMessage().contains("A unknown error occurred when created a connection"));
+            } else {
+                Assert.assertTrue(secondBorrower.getFailureCause().getMessage().contains("Pool first connection created fail or first connection initialized fail"));
             }
         } finally {
             factory.interruptAll();
