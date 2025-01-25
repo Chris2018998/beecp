@@ -14,7 +14,6 @@ import org.junit.Assert;
 import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.objects.BorrowThread;
-import org.stone.beecp.objects.MockDriverConnectionFactory;
 import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -33,7 +32,6 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
         config.setEnableThreadLocal(true);
         config.setForceRecycleBorrowedOnClose(true);
         config.setMaxWait(1L);
-        config.setConnectionFactory(new MockDriverConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
@@ -56,7 +54,6 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
         config.setBorrowSemaphoreSize(2);
         config.setForceRecycleBorrowedOnClose(true);
         config.setMaxWait(1L);
-        config.setConnectionFactory(new MockDriverConnectionFactory());
         pool = new FastConnectionPool();
         pool.init(config);
 
