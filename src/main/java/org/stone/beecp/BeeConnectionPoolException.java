@@ -10,7 +10,7 @@
 package org.stone.beecp;
 
 /**
- * Base pool exception
+ * Pool base exception.
  *
  * @author Chris Liao
  * @version 1.0

@@ -95,15 +95,15 @@ public class Tc0092ConnectionEvictTest extends TestCase {
         pool.init(config);
 
         BeeConnectionPoolMonitorVo vo = pool.getPoolMonitorVo();
-        Assert.assertEquals(0, vo.getUsingSize());
+        Assert.assertEquals(0, vo.getBorrowedSize());
         Assert.assertEquals(4, vo.getIdleSize());
         Connection con = pool.getConnection();
         vo = pool.getPoolMonitorVo();
-        Assert.assertEquals(1, vo.getUsingSize());
+        Assert.assertEquals(1, vo.getBorrowedSize());
         con.abort(null);
 
         vo = pool.getPoolMonitorVo();
-        Assert.assertEquals(0, vo.getUsingSize());
+        Assert.assertEquals(0, vo.getBorrowedSize());
         Assert.assertEquals(3, vo.getIdleSize());
         pool.close();
     }

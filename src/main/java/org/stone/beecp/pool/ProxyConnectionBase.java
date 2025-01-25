@@ -34,11 +34,6 @@ public abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Co
     //***************************************************************************************************************//
     //                                             self-define methods(5)                                            //
     //***************************************************************************************************************//
-
-    public final long getLassAccessTime() {
-        return p.lastAccessTime;
-    }
-
     public String toString() {
         return raw.toString();
     }

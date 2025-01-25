@@ -95,8 +95,9 @@ public class Tc0031DataSourcePoolTest extends TestCase {
             Assert.assertEquals(1, vo.getIdleSize());
 
             //test on pool built-in lock
-            Assert.assertEquals(0, ds.getConnectionCreatingCount());
-            Assert.assertEquals(0, ds.getConnectionCreatingTimeoutCount());
+            vo = ds.getPoolMonitorVo();
+            Assert.assertEquals(0, vo.getCreatingCount());
+            Assert.assertEquals(0, vo.getCreatingTimeoutCount());
             Thread[] interruptedThreads = ds.interruptConnectionCreating(false);
             Assert.assertNotNull(interruptedThreads);
             Assert.assertEquals(0, interruptedThreads.length);
@@ -140,17 +141,6 @@ public class Tc0031DataSourcePoolTest extends TestCase {
         } catch (PoolNotCreatedException e) {
             Assert.assertTrue(e.getMessage().contains("Pool not be created"));
         }
-        try {
-            ds.getConnectionCreatingCount();
-        } catch (PoolNotCreatedException e) {
-            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
-        }
-
-        try {
-            ds.getConnectionCreatingTimeoutCount();
-        } catch (PoolNotCreatedException e) {
-            Assert.assertTrue(e.getMessage().contains("Pool not be created"));
-        }
 
         try {
             ds.interruptConnectionCreating(false);
@@ -165,7 +155,7 @@ public class Tc0031DataSourcePoolTest extends TestCase {
         }
 
         try {
-            ds.clear(true, null);
+            ds.clear(true, new BeeDataSourceConfig());
         } catch (PoolNotCreatedException e) {
             Assert.assertTrue(e.getMessage().contains("Pool not be created"));
         }

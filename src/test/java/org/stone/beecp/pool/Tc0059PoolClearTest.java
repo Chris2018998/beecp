@@ -63,15 +63,15 @@ public class Tc0059PoolClearTest extends TestCase {
         config.setInitialSize(1);
         config.setMaxActive(1);
         config.setParkTimeForRetry(0L);
-        config.setForceCloseUsingOnClear(true);
+        config.setForceRecycleBorrowedOnClose(true);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
         pool.getConnection();
-        Assert.assertEquals(1, pool.getUsingSize());
+        Assert.assertEquals(1, pool.getBorrowedSize());
         pool.clear(true);
 
-        Assert.assertEquals(0, pool.getUsingSize());
+        Assert.assertEquals(0, pool.getBorrowedSize());
         Assert.assertEquals(0, pool.getTotalSize());
     }
 
@@ -85,9 +85,9 @@ public class Tc0059PoolClearTest extends TestCase {
         pool.init(config);
 
         pool.getConnection();
-        Assert.assertEquals(1, pool.getUsingSize());
+        Assert.assertEquals(1, pool.getBorrowedSize());
         pool.clear(false);
-        Assert.assertEquals(0, pool.getUsingSize());
+        Assert.assertEquals(0, pool.getBorrowedSize());
         Assert.assertEquals(0, pool.getTotalSize());
     }
 
@@ -103,7 +103,7 @@ public class Tc0059PoolClearTest extends TestCase {
         borrowThread.start();
         borrowThread.join();
         pool.clear(false);
-        Assert.assertEquals(0, pool.getUsingSize());
+        Assert.assertEquals(0, pool.getBorrowedSize());
         Assert.assertEquals(0, pool.getTotalSize());
     }
 
@@ -134,7 +134,7 @@ public class Tc0059PoolClearTest extends TestCase {
             pool.clear(false, null);
             fail("failed test clear");
         } catch (BeeDataSourceConfigException e) {
-            Assert.assertEquals("Configuration for pool reinitialization can' be null", e.getMessage());
+            Assert.assertEquals("Pool reinitialization configuration can't be null", e.getMessage());
         }
 
         BeeDataSourceConfig config2 = createDefault();

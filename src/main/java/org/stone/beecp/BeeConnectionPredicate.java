@@ -12,7 +12,7 @@ package org.stone.beecp;
 import java.sql.SQLException;
 
 /**
- * Predicate interface
+ * Connection predicate interface.
  *
  * @author Chris Liao
  * @version 1.0
@@ -21,10 +21,10 @@ import java.sql.SQLException;
 public interface BeeConnectionPredicate {
 
     /**
-     * Does a test on a sql exception for connection eviction.
+     * Test a SQLException thrown from a connection,test result determine connection whether evicted from pool.
      *
-     * @param e is a sql exception
-     * @return a string as eviction cause,if null or empty,not be evicted
+     * @param e thrown from a working connection
+     * @return a string as eviction reason,but it is null or empty,not evict target connection
      */
     String evictTest(SQLException e);
 }

@@ -14,18 +14,16 @@ import org.junit.Assert;
 import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.objects.BorrowThread;
-import org.stone.beecp.objects.InterruptionAction;
 import org.stone.beecp.objects.MockDriverConnectionFactory;
 import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
 
-import java.sql.SQLException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
 public class Tc0055PoolWaitQueueTest extends TestCase {
-
     public void testTimeout() throws Exception {
         //enable ThreadLocal
         BeeDataSourceConfig config = createDefault();
@@ -33,7 +31,7 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
         config.setParkTimeForRetry(0L);
         config.setBorrowSemaphoreSize(2);
         config.setEnableThreadLocal(true);
-        config.setForceCloseUsingOnClear(true);
+        config.setForceRecycleBorrowedOnClose(true);
         config.setMaxWait(1L);
         config.setConnectionFactory(new MockDriverConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
@@ -56,7 +54,7 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
         config.setParkTimeForRetry(0L);
         config.setEnableThreadLocal(false);
         config.setBorrowSemaphoreSize(2);
-        config.setForceCloseUsingOnClear(true);
+        config.setForceRecycleBorrowedOnClose(true);
         config.setMaxWait(1L);
         config.setConnectionFactory(new MockDriverConnectionFactory());
         pool = new FastConnectionPool();
@@ -79,33 +77,34 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
         config.setMaxActive(1);
         config.setBorrowSemaphoreSize(2);
         config.setParkTimeForRetry(0L);
-        config.setForceCloseUsingOnClear(true);
+        config.setForceRecycleBorrowedOnClose(true);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(10L));
-        config.setConnectionFactory(new MockDriverConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
-        //1: create first borrow thread to get connection
+        //1: create two borrower thread
         pool.getConnection();
 
-        //2: create a thread to get connection
-        BorrowThread second = new BorrowThread(pool);
-        second.start();
+        //2: launch a borrow thread
+        BorrowThread firstBorrower = new BorrowThread(pool);
+        firstBorrower.start();
 
-        //3: attempt to get connection in current thread
-        TestUtil.blockUtilWaiter((ConcurrentLinkedQueue) TestUtil.getFieldValue(pool, "waitQueue"));
-
-        //4: create a mock thread to interrupt first thread in blocking
-        new InterruptionAction(second).start();
-        //5: attempt to get connection in current thread
-        second.join();
-
-        //6: get failure exception from second
+        //3: block the current thread
+        ConcurrentLinkedQueue<?> waitQueue = (ConcurrentLinkedQueue) TestUtil.getFieldValue(pool, "waitQueue");
+        while (true) {
+            if (!waitQueue.isEmpty()) {
+                break;
+            } else {
+                LockSupport.parkNanos(50L);
+            }
+        }
+        //4: interrupt borrower in wait queue
         try {
-            SQLException e = second.getFailureCause();
-            Assert.assertTrue(e != null && e.getMessage().contains("An interruption occurred while waiting for a released connection"));
+            firstBorrower.interrupt();
+            firstBorrower.join();
+            Assert.assertTrue(firstBorrower.getFailureCause().getMessage().contains("An interruption occurred while waiting for a released connection"));
         } finally {
-            pool.close();
+            pool.interruptConnectionCreating(false);
         }
     }
 }

@@ -26,8 +26,8 @@ public interface FastConnectionPoolMBean {
     //return idle connection size
     int getIdleSize();
 
-    //return using connection size
-    int getUsingSize();
+    //return borrowed connection size
+    int getBorrowedSize();
 
     //return semaphore acquired successful size of pool
     int getSemaphoreAcquiredSize();

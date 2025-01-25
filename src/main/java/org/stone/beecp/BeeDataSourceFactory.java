@@ -29,7 +29,7 @@ import static org.stone.tools.CommonUtil.isBlank;
 import static org.stone.tools.CommonUtil.isNotBlank;
 
 /**
- * BeeDataSource factory
+ * Bee implementation of object factory interface.
  *
  * @author Chris Liao
  * @version 1.0

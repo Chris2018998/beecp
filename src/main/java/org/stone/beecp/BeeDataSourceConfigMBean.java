@@ -10,7 +10,7 @@
 package org.stone.beecp;
 
 /**
- * BeeDatasource jmx bean interface.
+ * Jmx bean interface of data source.
  *
  * @author Chris Liao
  * @version 1.0
@@ -57,7 +57,7 @@ public interface BeeDataSourceConfigMBean {
 
     long getAliveAssumeTime();
 
-    boolean isForceCloseUsingOnClear();
+    boolean isForceRecycleBorrowedOnClose();
 
     long getParkTimeForRetry();
 

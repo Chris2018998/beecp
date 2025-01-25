@@ -36,7 +36,7 @@ public class Tc0061PoolTransferTest extends TestCase {
         config.setMaxActive(1);
         config.setBorrowSemaphoreSize(2);
         config.setParkTimeForRetry(0L);
-        config.setForceCloseUsingOnClear(true);
+        config.setForceRecycleBorrowedOnClose(true);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(3L));
         config.setConnectionFactory(new MockDriverConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
@@ -95,7 +95,7 @@ public class Tc0061PoolTransferTest extends TestCase {
         config.setMaxActive(1);
         config.setBorrowSemaphoreSize(2);
         config.setParkTimeForRetry(0L);
-        config.setForceCloseUsingOnClear(true);
+        config.setForceRecycleBorrowedOnClose(true);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(10L));
         config.setConnectionFactory(new MockDriverConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
@@ -133,7 +133,7 @@ public class Tc0061PoolTransferTest extends TestCase {
         config.setFairMode(true);
         config.setBorrowSemaphoreSize(2);
         config.setParkTimeForRetry(0L);
-        config.setForceCloseUsingOnClear(true);
+        config.setForceRecycleBorrowedOnClose(true);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(1L));
         config.setConnectionFactory(new MockDriverConnectionFactory());
         FastConnectionPool pool = new FastConnectionPool();
@@ -175,7 +175,7 @@ public class Tc0061PoolTransferTest extends TestCase {
         config.setBorrowSemaphoreSize(2);
         config.setParkTimeForRetry(0L);
         config.setAliveAssumeTime(0L);
-        config.setForceCloseUsingOnClear(true);
+        config.setForceRecycleBorrowedOnClose(true);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(1L));
 
         MockConnectionProperties properties = new MockConnectionProperties();
@@ -219,7 +219,7 @@ public class Tc0061PoolTransferTest extends TestCase {
         config.setBorrowSemaphoreSize(2);
         config.setParkTimeForRetry(0L);
         config.setAliveAssumeTime(0L);
-        config.setForceCloseUsingOnClear(true);
+        config.setForceRecycleBorrowedOnClose(true);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(1L));
 
         properties = new MockConnectionProperties();

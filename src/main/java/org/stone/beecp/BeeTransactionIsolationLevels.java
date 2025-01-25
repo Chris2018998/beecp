@@ -16,7 +16,7 @@ import java.util.Map;
 import static java.sql.Connection.*;
 
 /**
- * Transaction Isolation Level
+ * Transaction Isolation Level.
  *
  * @author Chris Liao
  */

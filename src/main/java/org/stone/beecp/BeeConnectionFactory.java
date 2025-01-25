@@ -13,7 +13,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * Connection factory interface
+ * Connection factory interface.
  *
  * @author Chris Liao
  * @version 1.0
@@ -21,7 +21,7 @@ import java.sql.SQLException;
 public interface BeeConnectionFactory {
 
     /**
-     * Creates a connection object to be pooled
+     * Creates a connection.
      *
      * @return created connection
      * @throws SQLException when creates failed.

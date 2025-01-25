@@ -22,6 +22,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class InterruptionReentrantReadWriteLock extends ReentrantReadWriteLock {
 
+    public Thread getOwnerThread() {
+        return super.getOwner();
+    }
+
+    public List<Thread> getQueuedThreads() {
+        return new ArrayList<>(super.getQueuedThreads());
+    }
+
     public Thread interruptOwnerThread() {
         Thread owner = super.getOwner();
         if (owner != null) owner.interrupt();

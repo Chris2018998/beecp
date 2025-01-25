@@ -10,7 +10,7 @@
 package org.stone.beecp;
 
 /**
- * If check failed on dataSource configuration items,throws this exception.
+ * A runtime exception thrown when {@link BeeDataSourceConfig} check failed.
  *
  * @author Chris Liao
  * @version 1.0

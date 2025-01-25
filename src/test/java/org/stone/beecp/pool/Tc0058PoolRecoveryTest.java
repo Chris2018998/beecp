@@ -44,7 +44,7 @@ public class Tc0058PoolRecoveryTest extends TestCase {
         logAppender.beginCollectStoneLog();
 
         try {
-            LockSupport.parkNanos(MILLISECONDS.toNanos(600));
+            LockSupport.parkNanos(MILLISECONDS.toNanos(600L));
             connectionProperties.enableExceptionOnMethod("isValid"); //<----db crashed here
             connectionProperties.setMockException1(new SQLException("network communication failed"));
             factory.setCreateException1(connectionProperties.getMockException1());

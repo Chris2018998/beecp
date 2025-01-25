@@ -79,7 +79,7 @@ public final class ConnectionPoolStatics {
     static final int CON_CLOSED = 0;
     static final int CON_IDLE = 1;
     static final int CON_CREATING = 2;
-    static final int CON_USING = 3;
+    static final int CON_BORROWED = 3;
 
     //pool thread state
     static final int THREAD_WORKING = 0;

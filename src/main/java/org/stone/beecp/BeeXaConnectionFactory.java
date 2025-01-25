@@ -13,7 +13,7 @@ import javax.sql.XAConnection;
 import java.sql.SQLException;
 
 /**
- * A XAConnection factory interface,whose implementation are used to create XAConnections for pool
+ * A XAConnection factory interface.
  *
  * @author Chris Liao
  * @version 1.0
@@ -21,10 +21,10 @@ import java.sql.SQLException;
 public interface BeeXaConnectionFactory {
 
     /**
-     * Creates a jdbc xa connection.
+     * Creates a xa connection.
      *
-     * @return a xa connection
-     * @throws SQLException when creates failed(maybe invalid url,error username and password and so on)
+     * @return a created xa-connection
+     * @throws SQLException when creates fail
      */
     XAConnection create() throws SQLException;
 }

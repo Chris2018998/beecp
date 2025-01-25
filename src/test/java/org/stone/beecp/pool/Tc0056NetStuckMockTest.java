@@ -37,7 +37,7 @@ public class Tc0056NetStuckMockTest extends TestCase {
         } catch (ConnectionCreateException e) {
             Assert.assertTrue(e.getMessage().contains("A unknown error occurred when created a connection"));
         } finally {
-            factory.getBlockingLatch().countDown();
+            factory.interruptAll();
             pool.close();
         }
 

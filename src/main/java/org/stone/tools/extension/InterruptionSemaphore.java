@@ -26,6 +26,10 @@ public final class InterruptionSemaphore extends Semaphore {
         super(permits, fair);
     }
 
+    public List<Thread> getQueuedThreads() {
+        return new ArrayList<>(super.getQueuedThreads());
+    }
+
     public List<Thread> interruptQueuedWaitThreads() {
         Collection<Thread> waitThreads = super.getQueuedThreads();
         for (Thread thread : waitThreads)

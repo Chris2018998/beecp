@@ -255,14 +255,14 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     try {
                         PooledConnection p = connectionArray[0];
                         p.state = CON_CREATING;
-                        return this.fillRawConnection(p, CON_USING);
+                        return this.fillRawConnection(p, CON_BORROWED);
                     } finally {
                         writeLock.unlock();
                     }
                 } else if (readLock.tryLock(this.maxWaitNs, TimeUnit.NANOSECONDS)) {
                     readLock.unlock();
                     if (!connectionArrayInitialized)
-                        throw new ConnectionGetException("Waited failed on pool lock for initialization ready on first connection by another");
+                        throw new ConnectionGetException("Pool first connection created fail or first connection initialized fail");
                 } else {
                     throw new ConnectionGetTimeoutException("Waited timeout on pool lock");
                 }
@@ -275,13 +275,13 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         for (PooledConnection p : connectionArray) {
             int state = p.state;
             if (state == CON_IDLE) {
-                if (ConStUpd.compareAndSet(p, CON_IDLE, CON_USING)) {
+                if (ConStUpd.compareAndSet(p, CON_IDLE, CON_BORROWED)) {
                     if (this.testOnBorrow(p)) return p;
                 } else if (p.state == CON_CLOSED && ConStUpd.compareAndSet(p, CON_CLOSED, CON_CREATING)) {
-                    return this.fillRawConnection(p, CON_USING);
+                    return this.fillRawConnection(p, CON_BORROWED);
                 }
             } else if (state == CON_CLOSED && ConStUpd.compareAndSet(p, CON_CLOSED, CON_CREATING)) {
-                return this.fillRawConnection(p, CON_USING);
+                return this.fillRawConnection(p, CON_BORROWED);
             }
         }
         return null;
@@ -591,7 +591,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             b = this.threadLocal.get().get();
             if (b != null) {
                 p = b.lastUsed;
-                if (p != null && p.state == CON_IDLE && ConStUpd.compareAndSet(p, CON_IDLE, CON_USING)) {
+                if (p != null && p.state == CON_IDLE && ConStUpd.compareAndSet(p, CON_IDLE, CON_BORROWED)) {
                     if (this.testOnBorrow(p)) return b.lastUsed = p;
                     b.lastUsed = null;
                 }
@@ -736,7 +736,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     }
 
     public boolean tryCatch(PooledConnection p) {
-        return p.state == CON_IDLE && ConStUpd.compareAndSet(p, CON_IDLE, CON_USING);
+        return p.state == CON_IDLE && ConStUpd.compareAndSet(p, CON_IDLE, CON_BORROWED);
     }
 
     //***************************************************************************************************************//
@@ -781,7 +781,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         //step1:print pool info before clean
         if (printRuntimeLog) {
             BeeConnectionPoolMonitorVo vo = getPoolMonitorVo();
-            Log.info("BeeCP({})before timed scan,idle:{},using:{},semaphore-waiting:{},transfer-waiting:{}", this.poolName, vo.getIdleSize(), vo.getUsingSize(), vo.getSemaphoreWaitingSize(), vo.getTransferWaitingSize());
+            Log.info("BeeCP({})before timed scan,idle:{},borrowed:{},semaphore-waiting:{},transfer-waiting:{}", this.poolName, vo.getIdleSize(), vo.getBorrowedSize(), vo.getSemaphoreWaitingSize(), vo.getTransferWaitingSize());
         }
 
         //step2: interrupt current creation of a connection when this operation is timeout
@@ -796,7 +796,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     p.onRemove(DESC_RM_IDLE);
                     this.tryWakeupServantThread();
                 }
-            } else if (state == CON_USING && supportHoldTimeout) {
+            } else if (state == CON_BORROWED && supportHoldTimeout) {
                 if (System.currentTimeMillis() - p.lastAccessTime - holdTimeoutMs >= 0L) {//hold timeout
                     ProxyConnectionBase proxyInUsing = p.proxyInUsing;
                     if (proxyInUsing != null) oclose(proxyInUsing);
@@ -807,26 +807,26 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         //step4: print pool info after clean
         if (printRuntimeLog) {
             BeeConnectionPoolMonitorVo vo = getPoolMonitorVo();
-            Log.info("BeeCP({})after timed scan,idle:{},using:{},semaphore-waiting:{},transfer-waiting:{}", this.poolName, vo.getIdleSize(), vo.getUsingSize(), vo.getSemaphoreWaitingSize(), vo.getTransferWaitingSize());
+            Log.info("BeeCP({})after timed scan,idle:{},borrowed:{},semaphore-waiting:{},transfer-waiting:{}", this.poolName, vo.getIdleSize(), vo.getBorrowedSize(), vo.getSemaphoreWaitingSize(), vo.getTransferWaitingSize());
         }
     }
 
     //***************************************************************************************************************//
     //                                  4: pool clean and pool close  (6)                                            //                                                                                  //
     //***************************************************************************************************************//
-    public void clear(boolean forceCloseUsing) throws SQLException {
-        clear(forceCloseUsing, false, null);
+    public void clear(boolean forceRecycleBorrowed) throws SQLException {
+        clear(forceRecycleBorrowed, false, null);
     }
 
     //Method-4.2: close all connections in pool and removes them from pool,then re-initializes pool with new configuration
-    public void clear(boolean forceCloseUsing, BeeDataSourceConfig config) throws SQLException {
-        clear(forceCloseUsing, true, config);
+    public void clear(boolean forceRecycleBorrowed, BeeDataSourceConfig config) throws SQLException {
+        clear(forceRecycleBorrowed, true, config);
     }
 
     //Method-4.3: close all connections in pool and removes them from pool,then re-initializes pool with new configuration
-    private void clear(boolean forceCloseUsing, boolean reinit, BeeDataSourceConfig config) throws SQLException {
+    private void clear(boolean forceRecycleBorrowed, boolean reinit, BeeDataSourceConfig config) throws SQLException {
         if (reinit && config == null)
-            throw new BeeDataSourceConfigException("Configuration for pool reinitialization can' be null");
+            throw new BeeDataSourceConfigException("Pool reinitialization configuration can't be null");
 
         if (PoolStateUpd.compareAndSet(this, POOL_READY, POOL_CLEARING)) {
             try {
@@ -834,7 +834,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                 if (reinit) checkedConfig = config.check();
 
                 Log.info("BeeCP({})begin to remove all connections", this.poolName);
-                this.removeAllConnections(forceCloseUsing, DESC_RM_CLEAR);
+                this.removeAllConnections(forceRecycleBorrowed, DESC_RM_CLEAR);
                 Log.info("BeeCP({})completed to remove all connections", this.poolName);
 
                 if (reinit) {
@@ -854,20 +854,19 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
     //Method-4.4: remove all connections from pool
     private void removeAllConnections(boolean force, String source) {
-        //1:interrupt waiters on semaphore
+        //1: interrupt waiters on semaphore
         this.semaphore.interruptQueuedWaitThreads();
+        //2: interrupt all threads waits on lock or blocking in factory.create method call
+        this.interruptConnectionCreating(false);
+        //3: transfer exception to waiter in queue
         if (!this.waitQueue.isEmpty()) {
-            PoolInClearingException exception = new PoolInClearingException("Force exit due to pool in clearing");
+            PoolInClearingException exception = new PoolInClearingException("Pool was closed or in cleaning");
             while (!this.waitQueue.isEmpty()) this.transferException(exception);
         }
 
-        //2: interrupt all threads of connection creation
-        this.interruptConnectionCreating(false);
-
-        //3:clear all connections
-        int closedCount;
+        //4:clear all connections
+        int closedCount = 0;
         while (true) {
-            closedCount = 0;
             for (PooledConnection p : this.connectionArray) {
                 final int state = p.state;
                 if (state == CON_IDLE) {
@@ -875,7 +874,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                         closedCount++;
                         p.onRemove(source);
                     }
-                } else if (state == CON_USING) {
+                } else if (state == CON_BORROWED) {
                     ProxyConnectionBase proxyInUsing = p.proxyInUsing;
                     if (proxyInUsing != null) {
                         if (force || (supportHoldTimeout && System.currentTimeMillis() - p.lastAccessTime >= holdTimeoutMs)) //force close or hold timeout
@@ -888,11 +887,12 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
             if (closedCount == this.connectionArrayLen) break;
             LockSupport.parkNanos(this.parkTimeForRetryNs);//delay to clear remained pooled connections
+            closedCount = 0;
         } // while
 
         if (printRuntimeLog) {
             BeeConnectionPoolMonitorVo vo = getPoolMonitorVo();
-            Log.info("BeeCP({})after clean,idle:{},using:{},semaphore-waiting:{},transfer-waiting:{}", this.poolName, vo.getIdleSize(), vo.getUsingSize(), vo.getSemaphoreWaitingSize(), vo.getTransferWaitingSize());
+            Log.info("BeeCP({})after clear,idle:{},borrowed:{},semaphore-waiting:{},transfer-waiting:{}", this.poolName, vo.getIdleSize(), vo.getBorrowedSize(), vo.getSemaphoreWaitingSize(), vo.getTransferWaitingSize());
         }
     }
 
@@ -913,7 +913,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                 Log.info("BeeCP({})begin to shutdown pool", this.poolName);
                 this.unregisterJmx();
                 this.shutdownPoolThreads();
-                this.removeAllConnections(this.poolConfig.isForceCloseUsingOnClear(), DESC_RM_DESTROY);
+                this.removeAllConnections(this.poolConfig.isForceRecycleBorrowedOnClose(), DESC_RM_DESTROY);
                 if (networkTimeoutExecutor != null) this.networkTimeoutExecutor.shutdownNow();
 
                 try {
@@ -944,7 +944,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
     //Method-5.3: the length of array stores pooled connections
     public int getTotalSize() {
-        return getIdleSize() + getUsingSize();
+        return getIdleSize() + getBorrowedSize();
     }
 
     //Method-5.4: size of idle pooled connections
@@ -957,10 +957,10 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     }
 
     //Method-5.5: size of using pooled connections
-    public int getUsingSize() {
+    public int getBorrowedSize() {
         int usingSize = 0;
         for (PooledConnection p : connectionArray) {
-            if (p.state == CON_USING) usingSize++;
+            if (p.state == CON_BORROWED) usingSize++;
         }
         return usingSize;
     }
@@ -986,27 +986,6 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         for (Borrower borrower : this.waitQueue)
             if (borrower.state == null) size++;
         return size;
-    }
-
-    //Method-5.10: Get connection count in creating
-    public int getConnectionCreatingCount() {
-        int count = 0;
-        for (PooledConnection p : connectionArray) {
-            ConnectionCreatingInfo creatingInfo = p.creatingInfo;
-            if (creatingInfo != null) count++;
-        }
-        return count;
-    }
-
-    //Method-5.11: Get connection count in creating
-    public int getConnectionCreatingTimeoutCount() {
-        int count = 0;
-        for (PooledConnection p : connectionArray) {
-            ConnectionCreatingInfo creatingInfo = p.creatingInfo;
-            if (creatingInfo != null && System.nanoTime() - creatingInfo.creatingStartTime >= maxWaitNs)
-                count++;
-        }
-        return count;
     }
 
     //Method-5.12: interrupt some threads creating connections
@@ -1117,11 +1096,11 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
     //Method-5.19: pool monitor vo
     public BeeConnectionPoolMonitorVo getPoolMonitorVo() {
-        int usingSize = 0, idleSize = 0;
+        int borrowedSize = 0, idleSize = 0;
         int creatingCount = 0, creatingTimeoutCount = 0;
         for (PooledConnection p : connectionArray) {
             int state = p.state;
-            if (state == CON_USING) usingSize++;
+            if (state == CON_BORROWED) borrowedSize++;
             if (state == CON_IDLE) idleSize++;
 
             ConnectionCreatingInfo creatingInfo = p.creatingInfo;
@@ -1141,7 +1120,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         monitorVo.setPoolState(poolState);
 
         monitorVo.setIdleSize(idleSize);
-        monitorVo.setUsingSize(usingSize);
+        monitorVo.setBorrowedSize(borrowedSize);
         monitorVo.setCreatingCount(creatingCount);
         monitorVo.setCreatingTimeoutCount(creatingTimeoutCount);
         monitorVo.setSemaphoreWaitingSize(this.getSemaphoreWaitingSize());
@@ -1234,11 +1213,11 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         }
 
         public int getStateCodeOnRelease() {
-            return CON_USING;
+            return CON_BORROWED;
         }
 
         public boolean tryCatch(PooledConnection p) {
-            return p.state == CON_USING;
+            return p.state == CON_BORROWED;
         }
     }
 

@@ -10,12 +10,7 @@
 package org.stone.beecp;
 
 /**
- * In order to safety policy,users maybe set encrypted jdbc link items(url,username,password) to {@link BeeDataSourceConfig},
- * so an overridable decoder is provided to decode them when pool initialization.A decoder need be set to a {@link BeeDataSourceConfig}
- * before it works,three related methods are below
- * 1: decoder instance set:{@link BeeDataSourceConfig#setJdbcLinkInfoDecoder}
- * 2: decoder class set:{@link BeeDataSourceConfig#setJdbcLinkInfoDecoderClass}
- * 3: decoder class name set:{@link BeeDataSourceConfig#setJdbcLinkInfoDecoderClassName}
+ * An overridable class to decode JDBC info(username,password,url).
  *
  * @author Chris Liao
  * @version 1.0
@@ -23,7 +18,7 @@ package org.stone.beecp;
 public class BeeJdbcLinkInfoDecoder {
 
     /**
-     * Decodes a jdbc url.
+     * Decodes jdbc url.
      *
      * @param url is from {@link BeeDataSourceConfig#getJdbcUrl()}
      * @return a decoded url
@@ -33,7 +28,7 @@ public class BeeJdbcLinkInfoDecoder {
     }
 
     /**
-     * Decodes a jdbc username.
+     * Decodes jdbc username.
      *
      * @param username is from {@link BeeDataSourceConfig#getUsername()}
      * @return a decoded username
@@ -43,7 +38,7 @@ public class BeeJdbcLinkInfoDecoder {
     }
 
     /**
-     * Decodes a jdbc password.
+     * Decodes jdbc password.
      *
      * @param password is from {@link BeeDataSourceConfig#getPassword()}
      * @return a decoded password
