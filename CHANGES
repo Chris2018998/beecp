@@ -1,7 +1,11 @@
 beecp changes
 
-Changes in 4.1.6
+Changes in 4.1.7
+1: remove two monitoring methods[getConnectionCreatingCount(),getConnectionCreatingTimeoutCount()]
+2: change name of a configuration item[forceCloseUsingOnClear --> forceRecycleBorrowedOnClose]
+3: change a method name of MonitorVo[getUsingSize() --> getBorrowedSize()]
 
+Changes in 4.1.6
 1: remove final keyword from datasource
 2: support array properties injection in util
 
