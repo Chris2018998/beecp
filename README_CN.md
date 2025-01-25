@@ -16,7 +16,7 @@ Java7+
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>4.1.6</version>
+   <version>4.1.7</version>
 </dependency>
 ```
 
@@ -356,3 +356,4 @@ public class MyConnectionDemo {
 ```
 
 _温馨提示：若同时设置连接工厂和驱动类参数（driver,url,user,password)，那么连接工厂被优先使用。_
+
