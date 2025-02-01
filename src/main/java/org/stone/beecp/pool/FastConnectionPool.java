@@ -634,6 +634,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
             b = new Borrower();
         this.waitQueue.offer(b);
         SQLException cause = null;
+        Thread borrowThread = b.thread;
         deadline += this.maxWaitNs;
 
         //5: spin in a loop
@@ -669,7 +670,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                         LockSupport.unpark(this);
 
                     LockSupport.parkNanos(t);//park over,a transferred connection maybe arrived or an exception,or an interruption occurred while waiting
-                    if (Thread.interrupted())
+                    if (borrowThread.isInterrupted() && Thread.interrupted())
                         cause = new ConnectionGetInterruptedException("An interruption occurred while waiting for a released connection");
                 } else {//throw a timeout exception
                     cause = new ConnectionGetTimeoutException("Waited timeout for a released connection");
