@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
+import java.security.InvalidParameterException;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -255,7 +256,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     }
 
     public void setInitialSize(int initialSize) {
-        if (initialSize >= 0) this.initialSize = initialSize;
+        if (initialSize < 0) throw new InvalidParameterException("Initialization size can't be less than zero");
+        this.initialSize = initialSize;
     }
 
     public boolean isAsyncCreateInitConnection() {
@@ -271,12 +273,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     }
 
     public void setMaxActive(int maxActive) {
-        if (maxActive > 0) {
-            this.maxActive = maxActive;
-            //fix issue:#19 Chris-2020-08-16 begin
-            this.borrowSemaphoreSize = maxActive > 1 ? Math.min(maxActive / 2, NCPU) : 1;
-            //fix issue:#19 Chris-2020-08-16 end
-        }
+        if (maxActive <= 0) throw new InvalidParameterException("Max active size must be greater than zero");
+
+        this.maxActive = maxActive;
+        //fix issue:#19 Chris-2020-08-16 begin
+        this.borrowSemaphoreSize = maxActive > 1 ? Math.min(maxActive / 2, NCPU) : 1;
+        //fix issue:#19 Chris-2020-08-16 end
     }
 
     public int getBorrowSemaphoreSize() {
@@ -284,7 +286,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     }
 
     public void setBorrowSemaphoreSize(int borrowSemaphoreSize) {
-        if (borrowSemaphoreSize > 0) this.borrowSemaphoreSize = borrowSemaphoreSize;
+        if (borrowSemaphoreSize <= 0)
+            throw new InvalidParameterException("Max permit size of semaphore must be greater than zero");
+        this.borrowSemaphoreSize = borrowSemaphoreSize;
     }
 
     public long getMaxWait() {
@@ -292,7 +296,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     }
 
     public void setMaxWait(long maxWait) {
-        if (maxWait > 0L) this.maxWait = maxWait;
+        if (maxWait <= 0L)
+            throw new InvalidParameterException("Max wait time must be greater than zero");
+        this.maxWait = maxWait;
     }
 
     public long getIdleTimeout() {
@@ -300,7 +306,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     }
 
     public void setIdleTimeout(long idleTimeout) {
-        if (idleTimeout > 0L) this.idleTimeout = idleTimeout;
+        if (idleTimeout <= 0L)
+            throw new InvalidParameterException("Idle timeout must be greater than zero");
+        this.idleTimeout = idleTimeout;
     }
 
     public long getHoldTimeout() {
@@ -308,7 +316,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     }
 
     public void setHoldTimeout(long holdTimeout) {
-        if (holdTimeout >= 0L) this.holdTimeout = holdTimeout;
+        if (holdTimeout < 0L)
+            throw new InvalidParameterException("Max hold time can't be less than zero");
+        this.holdTimeout = holdTimeout;
     }
 
     public String getAliveTestSql() {
@@ -324,7 +334,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     }
 
     public void setAliveTestTimeout(int aliveTestTimeout) {
-        if (aliveTestTimeout >= 0) this.aliveTestTimeout = aliveTestTimeout;
+        if (aliveTestTimeout < 0L)
+            throw new InvalidParameterException("Timeout of alive test can't be less than zero");
+        this.aliveTestTimeout = aliveTestTimeout;
     }
 
     public long getAliveAssumeTime() {
@@ -332,7 +344,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     }
 
     public void setAliveAssumeTime(long aliveAssumeTime) {
-        if (aliveAssumeTime >= 0L) this.aliveAssumeTime = aliveAssumeTime;
+        if (aliveAssumeTime < 0L)
+            throw new InvalidParameterException("Alive assume time can't be less than zero");
+        this.aliveAssumeTime = aliveAssumeTime;
     }
 
     public long getTimerCheckInterval() {
@@ -340,7 +354,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     }
 
     public void setTimerCheckInterval(long timerCheckInterval) {
-        if (timerCheckInterval > 0L) this.timerCheckInterval = timerCheckInterval;
+        if (timerCheckInterval <= 0L)
+            throw new InvalidParameterException("Interval Time of pool worker must be greater than zero");
+        this.timerCheckInterval = timerCheckInterval;
     }
 
     public boolean isForceRecycleBorrowedOnClose() {
@@ -356,7 +372,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     }
 
     public void setParkTimeForRetry(long parkTimeForRetry) {
-        if (parkTimeForRetry >= 0L) this.parkTimeForRetry = parkTimeForRetry;
+        if (parkTimeForRetry < 0L) throw new InvalidParameterException("Park time can't be less than zero");
+        this.parkTimeForRetry = parkTimeForRetry;
     }
 
     public List<Integer> getSqlExceptionCodeList() {

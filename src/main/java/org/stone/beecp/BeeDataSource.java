@@ -19,6 +19,7 @@ import javax.sql.DataSource;
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 import java.io.PrintWriter;
+import java.security.InvalidParameterException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -190,10 +191,8 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
 
     //override method
     public void setMaxWait(long maxWait) {
-        if (maxWait > 0L) {
-            super.setMaxWait(maxWait);
-            this.maxWaitNanos = MILLISECONDS.toNanos(maxWait);
-        }
+        super.setMaxWait(maxWait);
+        this.maxWaitNanos = MILLISECONDS.toNanos(maxWait);
     }
 
     public void setPrintRuntimeLog(boolean printRuntimeLog) {
