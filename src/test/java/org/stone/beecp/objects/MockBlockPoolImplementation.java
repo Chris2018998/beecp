@@ -12,6 +12,8 @@ package org.stone.beecp.objects;
 import org.stone.beecp.BeeConnectionPool;
 import org.stone.beecp.BeeConnectionPoolMonitorVo;
 import org.stone.beecp.BeeDataSourceConfig;
+import org.stone.beecp.driver.MockConnection;
+import org.stone.beecp.driver.MockXaConnection;
 
 import javax.sql.XAConnection;
 import java.sql.Connection;
@@ -23,11 +25,11 @@ public class MockBlockPoolImplementation implements BeeConnectionPool {
     }
 
     public Connection getConnection() {
-        return null;
+        return new MockConnection();
     }
 
     public XAConnection getXAConnection() {
-        return null;
+        return new MockXaConnection(new MockConnection(), null);
     }
 
     public void close() {

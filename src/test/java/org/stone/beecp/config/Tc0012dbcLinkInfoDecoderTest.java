@@ -26,10 +26,10 @@ import static org.stone.beecp.config.DsConfigFactory.*;
  * @author Chris Liao
  */
 public class Tc0012dbcLinkInfoDecoderTest extends TestCase {
-    private final String username = "user";
-    private final String password = "password";
-    private final String url = MOCK_URL;
-    private final String driver = MOCK_DRIVER;
+    private static final String username = "user";
+    private static final String password = "password";
+    private static final String url = MOCK_URL;
+    private static final String driver = MOCK_DRIVER;
 
 
     public void testOnSetGet() {
@@ -179,9 +179,9 @@ public class Tc0012dbcLinkInfoDecoderTest extends TestCase {
         Assert.assertNull(factory2.getPassword());
 
         BeeDataSourceConfig config3 = new BeeDataSourceConfig();
-        config3.setUrl(this.url);
-        config3.setUsername(this.username);
-        config3.setPassword(this.password);
+        config3.setUrl(url);
+        config3.setUsername(username);
+        config3.setPassword(password);
         config3.setConnectionFactoryClass(MockCommonConnectionFactory.class);
         config3.setJdbcLinkInfoDecoderClass(SampleMockJdbcLinkInfoDecoder.class);
         BeeDataSourceConfig checkedConfig3 = config3.check();
@@ -192,8 +192,8 @@ public class Tc0012dbcLinkInfoDecoderTest extends TestCase {
 
         BeeDataSourceConfig config4 = new BeeDataSourceConfig();
         config4.addConnectProperty("url", url);
-        config4.addConnectProperty("user", this.username);
-        config4.addConnectProperty("password", this.password);
+        config4.addConnectProperty("user", username);
+        config4.addConnectProperty("password", password);
         config4.setConnectionFactoryClass(MockCommonConnectionFactory.class);
         config4.setJdbcLinkInfoDecoderClass(SampleMockJdbcLinkInfoDecoder.class);
         BeeDataSourceConfig checkedConfig4 = config4.check();
@@ -205,8 +205,8 @@ public class Tc0012dbcLinkInfoDecoderTest extends TestCase {
         BeeDataSourceConfig config5 = new BeeDataSourceConfig();
         clearBeeCPInfoFromSystemProperties();
         System.setProperty("beecp.url", url);
-        System.setProperty("beecp.user", this.username);
-        System.setProperty("beecp.password", this.password);
+        System.setProperty("beecp.user", username);
+        System.setProperty("beecp.password", password);
         config5.setConnectionFactoryClass(MockCommonConnectionFactory.class);
         config5.setJdbcLinkInfoDecoderClass(SampleMockJdbcLinkInfoDecoder.class);
         BeeDataSourceConfig checkedConfig5 = config5.check();

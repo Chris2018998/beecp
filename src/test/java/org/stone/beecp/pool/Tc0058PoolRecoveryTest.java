@@ -34,6 +34,7 @@ public class Tc0058PoolRecoveryTest extends TestCase {
         config.setInitialSize(3);
         config.setMaxActive(3);
         config.setPrintRuntimeLog(true);
+        config.setAliveAssumeTime(0L);
         config.setConnectionFactory(factory);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
@@ -43,25 +44,29 @@ public class Tc0058PoolRecoveryTest extends TestCase {
         StoneLogAppender logAppender = getStoneLogAppender();
         logAppender.beginCollectStoneLog();
 
+        SQLException failException = null;
         try {
             LockSupport.parkNanos(MILLISECONDS.toNanos(600L));
             connectionProperties.enableExceptionOnMethod("isValid"); //<----db crashed here
             connectionProperties.setMockException1(new SQLException("network communication failed"));
             factory.setCreateException1(connectionProperties.getMockException1());
-
             pool.getConnection();//all pooled connections dead
         } catch (SQLException e) {
-            Assert.assertEquals("network communication failed", e.getMessage());//message from mock factory
-            Assert.assertEquals(0, pool.getTotalSize());//
-
-            String logs = logAppender.endCollectedStoneLog();
-            Assert.assertTrue(logs.contains("alive test failed on a borrowed connection"));
+            failException = e;
         }
+
+        //1:check exception
+        Assert.assertNotNull(failException);
+        Assert.assertEquals("network communication failed", failException.getMessage());//message from mock factory
+        Assert.assertEquals(0, pool.getTotalSize());
+        String logs = logAppender.endCollectedStoneLog();
+        Assert.assertTrue(logs.contains("alive test failed on a borrowed connection"));
 
         //2: db restore here
         factory.setCreateException1(null);
         connectionProperties.disableExceptionOnMethod("isValid");//<--db restored
 
+        //3: get connection after restore
         Connection con = pool.getConnection();
         Assert.assertNotNull(con);
         con.close();

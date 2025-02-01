@@ -93,6 +93,7 @@ public class DsConfigFactory {
             try {
                 REQUEST_TIMEOUT = Integer.parseInt(prop.getProperty("REQUEST_TIMEOUT"));
             } catch (Exception e) {
+                //noting
             }
 
             if (isBlank(JDBC_USER))
@@ -117,6 +118,7 @@ public class DsConfigFactory {
                 try {
                     fileStream.close();
                 } catch (Exception e) {
+                    //nothing
                 }
             }
         }

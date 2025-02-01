@@ -33,7 +33,7 @@ public final class BorrowThread extends Thread {
         this(null, pool, false);
     }
 
-    private BorrowThread(BeeDataSource ds, BeeConnectionPool pool, boolean xa) {
+    public BorrowThread(BeeDataSource ds, BeeConnectionPool pool, boolean xa) {
         this.xa = xa;
         this.ds = ds;
         this.pool = pool;

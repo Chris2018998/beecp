@@ -21,11 +21,11 @@ import org.stone.beecp.pool.FastConnectionPool;
 import java.util.Properties;
 
 public class Tc0037XaDataSourcePropertyTest extends TestCase {
-    private final String url = "jdbc:runnable:test";
-    private final String user = "runnable";
-    private final String password = "root";
-    private final String property_Key = "key1";
-    private final String property_Value = "value1";
+    private static final String url = "jdbc:runnable:test";
+    private static final String user = "runnable";
+    private static final String password = "root";
+    private static final String property_Key = "key1";
+    private static final String property_Value = "value1";
     private BeeDataSource ds;
 
     public void setUp() {

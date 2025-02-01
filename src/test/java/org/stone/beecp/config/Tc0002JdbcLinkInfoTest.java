@@ -24,10 +24,10 @@ import static org.stone.beecp.config.DsConfigFactory.*;
  * @author Chris Liao
  */
 public class Tc0002JdbcLinkInfoTest extends TestCase {
-    private final String user = "root";
-    private final String password = "test";
-    private final String url = MOCK_URL;
-    private final String driver = MOCK_DRIVER;
+    private static final String user = "root";
+    private static final String password = "test";
+    private static final String url = MOCK_URL;
+    private static final String driver = MOCK_DRIVER;
 
     public void testOnSetAndGet() {
         //situation1: check null setting
@@ -50,22 +50,22 @@ public class Tc0002JdbcLinkInfoTest extends TestCase {
         config2.setPassword(password);
         config2.setUrl(url);
         config2.setDriverClassName(driver);
-        Assert.assertEquals(config2.getUsername(), user);
-        Assert.assertEquals(config2.getPassword(), password);
-        Assert.assertEquals(config2.getUrl(), url);
-        Assert.assertEquals(config2.getDriverClassName(), driver);
+        Assert.assertEquals(user, config2.getUsername());
+        Assert.assertEquals(password, config2.getPassword());
+        Assert.assertEquals(url, config2.getUrl());
+        Assert.assertEquals(driver, config2.getDriverClassName());
         config2.setJdbcUrl(url);
-        Assert.assertEquals(config2.getUrl(), url);
-        Assert.assertEquals(config2.getJdbcUrl(), url);
+        Assert.assertEquals(url, config2.getUrl());
+        Assert.assertEquals(url, config2.getJdbcUrl());
     }
 
     public void testOnConstructor() {
         //situation1: check jdbc link info in constructor
         BeeDataSourceConfig config = new BeeDataSourceConfig(driver, url, user, password);
-        Assert.assertEquals(config.getUsername(), user);
-        Assert.assertEquals(config.getPassword(), password);
-        Assert.assertEquals(config.getUrl(), url);
-        Assert.assertEquals(config.getDriverClassName(), driver);
+        Assert.assertEquals(user, config.getUsername());
+        Assert.assertEquals(password, config.getPassword());
+        Assert.assertEquals(url, config.getUrl());
+        Assert.assertEquals(driver, config.getDriverClassName());
 
         //situation2: check properties in constructor
         Properties prop = new Properties();
@@ -74,10 +74,10 @@ public class Tc0002JdbcLinkInfoTest extends TestCase {
         prop.setProperty("url", url);
         prop.setProperty("driverClassName", driver);
         BeeDataSourceConfig config2 = new BeeDataSourceConfig(prop);
-        Assert.assertEquals(config2.getUsername(), user);
-        Assert.assertEquals(config2.getPassword(), password);
-        Assert.assertEquals(config2.getUrl(), url);
-        Assert.assertEquals(config2.getDriverClassName(), driver);
+        Assert.assertEquals(user, config2.getUsername());
+        Assert.assertEquals(password, config2.getPassword());
+        Assert.assertEquals(url, config2.getUrl());
+        Assert.assertEquals(driver, config2.getDriverClassName());
     }
 
     public void testLoadFromProperties() {
@@ -89,10 +89,10 @@ public class Tc0002JdbcLinkInfoTest extends TestCase {
         prop.setProperty("url", url);
         prop.setProperty("driverClassName", driver);
         config.loadFromProperties(prop);
-        Assert.assertEquals(config.getUsername(), user);
-        Assert.assertEquals(config.getPassword(), password);
-        Assert.assertEquals(config.getUrl(), url);
-        Assert.assertEquals(config.getDriverClassName(), driver);
+        Assert.assertEquals(user, config.getUsername());
+        Assert.assertEquals(password, config.getPassword());
+        Assert.assertEquals(url, config.getUrl());
+        Assert.assertEquals(driver, config.getDriverClassName());
 
         //situation2: config item name(contains middle line)
         prop.clear();
@@ -100,9 +100,9 @@ public class Tc0002JdbcLinkInfoTest extends TestCase {
         prop.setProperty("driver-class-name", driver);
         config = createEmpty();
         config.loadFromProperties(prop);
-        Assert.assertEquals(config.getUrl(), url);
-        Assert.assertEquals(config.getJdbcUrl(), url);
-        Assert.assertEquals(config.getDriverClassName(), driver);
+        Assert.assertEquals(url, config.getUrl());
+        Assert.assertEquals(url, config.getJdbcUrl());
+        Assert.assertEquals(driver, config.getDriverClassName());
 
         //situation3: config item name(contains under line)
         prop.clear();
@@ -110,9 +110,9 @@ public class Tc0002JdbcLinkInfoTest extends TestCase {
         prop.setProperty("driver_class_name", driver);
         config = createEmpty();
         config.loadFromProperties(prop);
-        Assert.assertEquals(config.getUrl(), url);
-        Assert.assertEquals(config.getJdbcUrl(), url);
-        Assert.assertEquals(config.getDriverClassName(), driver);
+        Assert.assertEquals(url, config.getUrl());
+        Assert.assertEquals(url, config.getJdbcUrl());
+        Assert.assertEquals(driver, config.getDriverClassName());
     }
 
     public void testOnJdbcUrl() throws Exception {
@@ -138,8 +138,8 @@ public class Tc0002JdbcLinkInfoTest extends TestCase {
         Object connectionFactory = checkConfig.getConnectionFactory();
         Assert.assertEquals(url, TestUtil.getFieldValue(connectionFactory, "url"));
         Properties configProperties = (Properties) TestUtil.getFieldValue(connectionFactory, "properties");
-        Assert.assertEquals(configProperties.getProperty("user"), user);
-        Assert.assertEquals(configProperties.getProperty("password"), password);
+        Assert.assertEquals(user, configProperties.getProperty("user"));
+        Assert.assertEquals(password, configProperties.getProperty("password"));
 
         //situation3: load 'beecp.jdbcUrl' from system.properties
         clearBeeCPInfoFromSystemProperties();
@@ -162,8 +162,8 @@ public class Tc0002JdbcLinkInfoTest extends TestCase {
         String fact_url = (String) TestUtil.getFieldValue(connectionFactory, "url");
         Properties configProperties = (Properties) TestUtil.getFieldValue(connectionFactory, "properties");
 
-        Assert.assertEquals(configProperties.getProperty("user"), user);
-        Assert.assertEquals(configProperties.getProperty("password"), password);
-        Assert.assertEquals(fact_url, url);
+        Assert.assertEquals(user, configProperties.getProperty("user"));
+        Assert.assertEquals(password, configProperties.getProperty("password"));
+        Assert.assertEquals(url, fact_url);
     }
 }

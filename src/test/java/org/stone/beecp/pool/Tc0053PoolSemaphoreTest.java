@@ -15,12 +15,12 @@ import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.objects.BorrowThread;
 import org.stone.beecp.objects.MockNetBlockConnectionFactory;
-import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
 import org.stone.tools.extension.InterruptionSemaphore;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
+import static org.stone.base.TestUtil.waitUtilWaiting;
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
 public class Tc0053PoolSemaphoreTest extends TestCase {
@@ -38,17 +38,18 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
         pool.init(config);
 
         //1: create first borrow thread to get connection
-        new BorrowThread(pool).start();
-        factory.waitUtilCreationArrival();
+        BorrowThread firstBorrower = new BorrowThread(pool);
+        firstBorrower.start();
 
         //2: attempt to get connection in current thread
-        try {
-            pool.getConnection();
-        } catch (ConnectionGetTimeoutException e) {
-            Assert.assertTrue(e.getMessage().contains("Waited timeout on pool semaphore"));
-        } finally {
-            factory.interruptAll();
-            pool.close();
+        if (waitUtilWaiting(firstBorrower)) {//block 1 second in pool instance creation
+            Assert.assertEquals(1, pool.getSemaphoreAcquiredSize());
+
+            BorrowThread secondBorrower = new BorrowThread(pool);
+            secondBorrower.start();
+            secondBorrower.join();
+            Assert.assertTrue(secondBorrower.getFailureCause().getMessage().contains("Waited timeout on pool semaphore"));
+            firstBorrower.interrupt();
         }
     }
 
@@ -66,30 +67,20 @@ public class Tc0053PoolSemaphoreTest extends TestCase {
 
         //1: create two borrower thread
         BorrowThread firstBorrower = new BorrowThread(pool);
-        BorrowThread secondBorrower = new BorrowThread(pool);
         firstBorrower.start();
-        secondBorrower.start();
 
-        //2: block the current thread
-        factory.waitUtilCreationArrival();
-
-        //3: interrupt waiter thread on semaphore
-        InterruptionSemaphore semaphore = (InterruptionSemaphore) TestUtil.getFieldValue(pool, "semaphore");
-        try {
-            List<Thread> interruptedThreads = semaphore.interruptQueuedWaitThreads();
-            for (Thread thread : interruptedThreads)
-                thread.join();
-            for (Thread thread : interruptedThreads) {
-                if (thread == firstBorrower) {
-                    Assert.assertTrue(firstBorrower.getFailureCause().getMessage().contains("An interruption occurred while waiting on pool semaphore"));
-                }
-                if (thread == secondBorrower) {
-                    Assert.assertTrue(secondBorrower.getFailureCause().getMessage().contains("An interruption occurred while waiting on pool semaphore"));
-                }
+        if (waitUtilWaiting(firstBorrower)) {//block 1 second in pool instance creation
+            Assert.assertEquals(1, pool.getSemaphoreAcquiredSize());
+            InterruptionSemaphore semaphore = (InterruptionSemaphore) TestUtil.getFieldValue(pool, "semaphore");
+            BorrowThread secondBorrower = new BorrowThread(pool);
+            secondBorrower.start();
+            while (semaphore.getQueueLength() == 0) {
+                LockSupport.parkNanos(50L);
             }
-        } finally {
-            factory.interruptAll();
-            pool.interruptConnectionCreating(false);
+            secondBorrower.interrupt();
+            secondBorrower.join();
+            Assert.assertTrue(secondBorrower.getFailureCause().getMessage().contains("An interruption occurred while waiting on pool semaphore"));
+            firstBorrower.interrupt();
         }
     }
 }

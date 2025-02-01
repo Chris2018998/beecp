@@ -14,6 +14,8 @@ import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 
+import java.security.InvalidParameterException;
+
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 import static org.stone.beecp.config.DsConfigFactory.createEmpty;
 import static org.stone.tools.CommonUtil.NCPU;
@@ -26,20 +28,31 @@ public class Tc0006ConnectionSizeTest extends TestCase {
 
     public void testOnSetAndGet() {
         BeeDataSourceConfig config = createEmpty();
-
-        config.setInitialSize(-1);
-        config.setMaxActive(-1);
-        Assert.assertNotEquals(-1, config.getInitialSize());
-        Assert.assertNotEquals(-1, config.getMaxActive());
+        try {
+            config.setInitialSize(-1);
+            fail("setInitialSize test failed");
+        } catch (InvalidParameterException e) {
+            Assert.assertEquals("Initialization size can't be less than zero", e.getMessage());
+        }
+        try {
+            config.setMaxActive(-1);
+            fail("setInitialSize test failed");
+        } catch (InvalidParameterException e) {
+            Assert.assertEquals("Max active size must be greater than zero", e.getMessage());
+        }
+        try {
+            config.setMaxActive(0);
+            fail("setInitialSize test failed");
+        } catch (InvalidParameterException e) {
+            Assert.assertEquals("Max active size must be greater than zero", e.getMessage());
+        }
 
         config.setInitialSize(0);
-        config.setMaxActive(0);
         Assert.assertEquals(0, config.getInitialSize());
-        Assert.assertNotEquals(0, config.getMaxActive());
-
         config.setInitialSize(1);
-        config.setMaxActive(1);
         Assert.assertEquals(1, config.getInitialSize());
+
+        config.setMaxActive(1);
         Assert.assertEquals(1, config.getMaxActive());
         Assert.assertEquals(1, config.getBorrowSemaphoreSize());
 

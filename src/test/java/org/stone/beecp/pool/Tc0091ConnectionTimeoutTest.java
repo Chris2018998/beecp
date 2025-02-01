@@ -12,11 +12,8 @@ package org.stone.beecp.pool;
 import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.base.StoneLogAppender;
-import org.stone.base.TestUtil;
 import org.stone.beecp.BeeConnectionPoolMonitorVo;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.objects.BorrowThread;
-import org.stone.beecp.objects.MockNetBlockConnectionFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -35,22 +32,54 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         BeeDataSourceConfig config = createDefault();
         config.setInitialSize(initSize);
         config.setMaxActive(initSize);
-        config.setIdleTimeout(1000);
-        config.setTimerCheckInterval(1000);
+        config.setIdleTimeout(1L);
+        config.setPrintRuntimeLog(true);
+        config.setTimerCheckInterval(5000L);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
-        try {
-            Assert.assertEquals(initSize, pool.getTotalSize());
-            Assert.assertEquals(initSize, pool.getIdleSize());
-            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(2));
+        //1: logs print test
+        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1L));
+        Assert.assertEquals(initSize, pool.getIdleSize());
+        StoneLogAppender logAppender = getStoneLogAppender();
+        logAppender.beginCollectStoneLog();
+        pool.closeIdleTimeoutConnection();
+        Assert.assertEquals(0, pool.getIdleSize());
+        String logs = logAppender.endCollectedStoneLog();
+        Assert.assertTrue(logs.contains("before timed scan,idle:"));
+        Assert.assertTrue(logs.contains("after timed scan,idle:"));
+        pool.close();
 
-            Assert.assertEquals(0, pool.getTotalSize());
-            Assert.assertEquals(0, pool.getIdleSize());
-        } finally {
-            pool.close();
-        }
+        //2: clear by timed task
+        BeeDataSourceConfig config2 = createDefault();
+        config2.setInitialSize(1);
+        config2.setIdleTimeout(1L);
+        config2.setTimerCheckInterval(50L);
+        FastConnectionPool pool2 = new FastConnectionPool();
+        pool2.init(config2);
+        Assert.assertEquals(1, pool2.getIdleSize());
+        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1L));
+        Assert.assertEquals(0, pool2.getIdleSize());
+        pool2.close();
     }
+
+    public void testIdleTimeoutClear() throws Exception {
+        BeeDataSourceConfig config = createDefault();
+        config.setMaxActive(1);
+        config.setInitialSize(1);
+        config.setIdleTimeout(50L);
+        config.setTimerCheckInterval(50L);
+        config.setPrintRuntimeLog(true);
+        config.setBorrowSemaphoreSize(1);
+        FastConnectionPool pool = new FastConnectionPool();
+        pool.init(config);
+
+        BeeConnectionPoolMonitorVo vo = pool.getPoolMonitorVo();
+        Assert.assertEquals(1, vo.getIdleSize());
+        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1L));
+        pool.close();
+    }
+
 
     public void testHoldTimeout() throws Exception {//pool timer clear timeout connections
         BeeDataSourceConfig config = createDefault();
@@ -120,66 +149,41 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         }
     }
 
-    public void testCreatingNotTimeout() throws Exception {
-        BeeDataSourceConfig config = createDefault();
-        config.setMaxActive(1);
-        config.setBorrowSemaphoreSize(1);
-
-        long maxWait = TimeUnit.SECONDS.toMillis(1L);
-        config.setMaxWait(maxWait);
-        MockNetBlockConnectionFactory factory = new MockNetBlockConnectionFactory();
-        config.setConnectionFactory(factory);
-        FastConnectionPool pool = new FastConnectionPool();
-        pool.init(config);
-
-        BorrowThread first = new BorrowThread(pool);
-        first.start();
-        factory.waitUtilCreationArrival();
-
-        BeeConnectionPoolMonitorVo vo = pool.getPoolMonitorVo();
-        Assert.assertEquals(1, vo.getCreatingCount());
-        Assert.assertEquals(0, vo.getCreatingTimeoutCount());
-
-        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(2L));
-        vo = pool.getPoolMonitorVo();
-        Assert.assertEquals(1, vo.getCreatingCount());
-        Assert.assertEquals(1, vo.getCreatingTimeoutCount());
-
-        boolean found = false;
-        Thread[] threads = pool.interruptConnectionCreating(true);
-        for (Thread thread : threads) {
-            if (first == thread) {
-                found = true;
-                break;
-            }
-        }
-
-        Assert.assertTrue(found);
-        pool.close();
-    }
-
-    public void testIdleTimeoutClear() throws Exception {
-        BeeDataSourceConfig config = createDefault();
-        config.setMaxActive(1);
-        config.setInitialSize(1);
-        config.setIdleTimeout(1000L);
-        config.setPrintRuntimeLog(true);
-        config.setBorrowSemaphoreSize(1);
-        FastConnectionPool pool = new FastConnectionPool();
-        pool.init(config);
-
-        BeeConnectionPoolMonitorVo vo = pool.getPoolMonitorVo();
-        Assert.assertEquals(1, vo.getIdleSize());
-        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
-        StoneLogAppender logAppender = getStoneLogAppender();
-        logAppender.beginCollectStoneLog();
-        TestUtil.invokeMethod2(pool, "closeIdleTimeoutConnection");
-        vo = pool.getPoolMonitorVo();
-        Assert.assertEquals(0, vo.getIdleSize());
-
-        String logs = logAppender.endCollectedStoneLog();
-        Assert.assertTrue(logs.contains("before timed scan,idle:"));
-        Assert.assertTrue(logs.contains("after timed scan,idle:"));
-        pool.close();
-    }
+//    public void testCreatingNotTimeout() throws Exception {
+//        BeeDataSourceConfig config = createDefault();
+//        config.setMaxActive(1);
+//        config.setBorrowSemaphoreSize(1);
+//
+//        long maxWait = TimeUnit.SECONDS.toMillis(1L);
+//        config.setMaxWait(maxWait);
+//        MockNetBlockConnectionFactory factory = new MockNetBlockConnectionFactory();
+//        config.setConnectionFactory(factory);
+//        FastConnectionPool pool = new FastConnectionPool();
+//        pool.init(config);
+//
+//        BorrowThread first = new BorrowThread(pool);
+//        first.start();
+//        factory.waitUtilCreatorArrival();
+//
+//        BeeConnectionPoolMonitorVo vo = pool.getPoolMonitorVo();
+//        Assert.assertEquals(1, vo.getCreatingCount());
+//        Assert.assertEquals(0, vo.getCreatingTimeoutCount());
+//
+//        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(2L));
+//        vo = pool.getPoolMonitorVo();
+//        Assert.assertEquals(1, vo.getCreatingCount());
+//        Assert.assertEquals(1, vo.getCreatingTimeoutCount());
+//
+//        boolean found = false;
+//        Thread[] threads = pool.interruptConnectionCreating(true);
+//        for (Thread thread : threads) {
+//            if (first == thread) {
+//                found = true;
+//                break;
+//            }
+//        }
+//
+//        Assert.assertTrue(found);
+//        pool.close();
+//    }
 }

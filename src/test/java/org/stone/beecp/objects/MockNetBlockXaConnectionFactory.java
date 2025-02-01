@@ -10,40 +10,34 @@
 package org.stone.beecp.objects;
 
 import org.stone.beecp.BeeXaConnectionFactory;
+import org.stone.beecp.driver.MockConnection;
+import org.stone.beecp.driver.MockXaConnection;
 
 import javax.sql.XAConnection;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * Mock Impl on ConnectionFactory
  *
  * @author Chris Liao
  */
-public class MockNetBlockXaConnectionFactory implements BeeXaConnectionFactory {
-
-    private final CountDownLatch arrivalLatch;
-    private final CountDownLatch blockingLatch;
-
-    public MockNetBlockXaConnectionFactory() {
-        this.arrivalLatch = new CountDownLatch(1);
-        this.blockingLatch = new CountDownLatch(1);
-    }
-
-    public CountDownLatch getArrivalLatch() {
-        return arrivalLatch;
-    }
-
-    public CountDownLatch getBlockingLatch() {
-        return blockingLatch;
-    }
+public class MockNetBlockXaConnectionFactory extends MockNetBlockBaseFactory implements BeeXaConnectionFactory {
 
     public XAConnection create() {
-        arrivalLatch.countDown();
+        Thread creationThread = Thread.currentThread();
         try {
-            blockingLatch.await();
-        } catch (InterruptedException e) {
-            //do nothing
+            BlockingState state = new BlockingState();
+            blockingMap.put(creationThread, state);
+
+            while (state.getState() == 0) {
+                LockSupport.park();
+                if (creationThread.isInterrupted()) {
+                    return null;
+                }
+            }
+            return state.getState() == 1 ? new MockXaConnection(new MockConnection(), null) : null;
+        } finally {
+            blockingMap.remove(creationThread);
         }
-        return null;
     }
 }

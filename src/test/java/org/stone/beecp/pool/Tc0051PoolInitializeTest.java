@@ -54,15 +54,18 @@ public class Tc0051PoolInitializeTest extends TestCase {
     public void testInitializeFailOnReadyPool() throws Exception {
         BeeDataSourceConfig config = createDefault();
         FastConnectionPool pool = new FastConnectionPool();
-        pool.init(config);
 
-        try {
-            pool.init(config);
-            fail("Test failed to re-initialize on a completed pool");
-        } catch (PoolInitializeFailedException e) {
-            String message = e.getMessage();
-            Assert.assertTrue(message != null && message.contains("Pool has already initialized or in initializing"));
-        }
+        InitializeThread thread1 = new InitializeThread(pool, config);
+        InitializeThread thread2 = new InitializeThread(pool, config);
+        thread1.start();
+        thread2.start();
+        thread1.join();
+        thread2.join();
+
+        if (thread1.getFailureException() != null)
+            Assert.assertEquals("Pool has already initialized or in initializing", thread1.getFailureException().getMessage());
+        if (thread2.getFailureException() != null)
+            Assert.assertEquals("Pool has already initialized or in initializing", thread2.getFailureException().getMessage());
     }
 
     public void testPoolWorkMode() throws Exception {
@@ -297,6 +300,30 @@ public class Tc0051PoolInitializeTest extends TestCase {
             fail("Failed to test exception from XaConnection");
         } catch (SQLException e) {
             Assert.assertTrue(e.getMessage().contains("Communications link failure"));
+        }
+    }
+
+
+    private static class InitializeThread extends Thread {
+        private final FastConnectionPool pool;
+        private final BeeDataSourceConfig config;
+        private Exception failureException;
+
+        public InitializeThread(FastConnectionPool pool, BeeDataSourceConfig config) {
+            this.pool = pool;
+            this.config = config;
+        }
+
+        public void run() {
+            try {
+                pool.init(config);
+            } catch (Exception e) {
+                this.failureException = e;
+            }
+        }
+
+        public Exception getFailureException() {
+            return failureException;
         }
     }
 }

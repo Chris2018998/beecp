@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
+import static org.stone.base.TestUtil.waitUtilWaiting;
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 import static org.stone.beecp.pool.ConnectionPoolStatics.CON_IDLE;
 
@@ -101,29 +102,27 @@ public class Tc0061PoolTransferTest extends TestCase {
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
-        //1: create first borrow thread to get connection
-        pool.getConnection();
-        //2: create a thread to get connection
-        BorrowThread second = new BorrowThread(pool);
-        second.start();
+        try (Connection con = pool.getConnection()) {
+            Method transferExceptionMethod = FastConnectionPool.class.getDeclaredMethod("transferException", Throwable.class);
+            transferExceptionMethod.setAccessible(true);
 
-        //3: attempt to get connection in current thread
-        TestUtil.blockUtilWaiter((ConcurrentLinkedQueue) TestUtil.getFieldValue(pool, "waitQueue"));
+            BorrowThread firstBorrower = new BorrowThread(pool);
+            firstBorrower.start();
+            if (waitUtilWaiting(firstBorrower)) {//block 1 second in pool instance creation
+                transferExceptionMethod.invoke(pool, new SQLException("Net Error"));
+                firstBorrower.join();
+                SQLException e = firstBorrower.getFailureCause();
+                Assert.assertTrue(e != null && e.getMessage().contains("Net Error"));
+            }
 
-        //4: get method by reflection
-        Method transferExceptionMethod = FastConnectionPool.class.getDeclaredMethod("transferException", Throwable.class);
-        transferExceptionMethod.setAccessible(true);
-
-        //5: invoke method to transfer an exception
-        transferExceptionMethod.invoke(pool, new SQLException("Net Error"));
-
-        //6: get failure exception from second
-        second.join();
-        try {
-            SQLException e = second.getFailureCause();
-            Assert.assertTrue(e != null && e.getMessage().contains("Net Error"));
-        } finally {
-            pool.close();
+            BorrowThread secondBorrower = new BorrowThread(pool);
+            secondBorrower.start();
+            if (waitUtilWaiting(secondBorrower)) {//block 1 second in pool instance creation
+                transferExceptionMethod.invoke(pool, new Exception("Create fail"));
+                secondBorrower.join();
+                SQLException e = secondBorrower.getFailureCause();
+                Assert.assertTrue(e != null && e.getMessage().contains("Create fail"));
+            }
         }
     }
 

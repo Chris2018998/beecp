@@ -29,7 +29,7 @@ import static org.stone.tools.CommonUtil.loadPropertiesFromClassPathFile;
  * @version 1.0
  */
 public class Tc0015ConfigLoadFromFileTest extends TestCase {
-    private final String filename = "beecp/config2.properties";
+    private static final String filename = "beecp/config2.properties";
 
     /********************************************Constructor**************************************************/
 

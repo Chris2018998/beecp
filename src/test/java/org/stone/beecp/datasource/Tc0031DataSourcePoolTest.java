@@ -22,6 +22,7 @@ import org.stone.beecp.pool.exception.PoolNotCreatedException;
 
 import javax.sql.XAConnection;
 import java.io.PrintWriter;
+import java.security.InvalidParameterException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -103,9 +104,19 @@ public class Tc0031DataSourcePoolTest extends TestCase {
             Assert.assertEquals(0, interruptedThreads.length);
 
             //maxWait
-            ds.setMaxWait(0L);
-            Assert.assertNotEquals(0L, ds.getMaxWait());//not changed
-            long newMaxWaitMillis2 = TimeUnit.SECONDS.toMillis(20);
+            try {
+                ds.setMaxWait(-1L);
+                fail("Max wait time test failed");
+            } catch (InvalidParameterException e) {
+                Assert.assertEquals("Max wait time must be greater than zero", e.getMessage());
+            }
+            try {
+                ds.setMaxWait(0L);
+                fail("Max wait time test failed");
+            } catch (InvalidParameterException e) {
+                Assert.assertEquals("Max wait time must be greater than zero", e.getMessage());
+            }
+            long newMaxWaitMillis2 = TimeUnit.SECONDS.toMillis(20L);
             ds.setMaxWait(newMaxWaitMillis2);
             Assert.assertEquals(newMaxWaitMillis2, ds.getMaxWait());//changed
 

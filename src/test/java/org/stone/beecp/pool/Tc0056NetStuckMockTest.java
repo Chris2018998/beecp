@@ -12,17 +12,16 @@ package org.stone.beecp.pool;
 import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.objects.*;
-import org.stone.beecp.pool.exception.ConnectionCreateException;
-import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
+import org.stone.beecp.objects.BorrowThread;
+import org.stone.beecp.objects.MockNetBlockConnectionFactory;
+import org.stone.beecp.objects.MockNetBlockXaConnectionFactory;
 
-import java.sql.SQLException;
-
+import static org.stone.base.TestUtil.waitUtilWaiting;
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
 public class Tc0056NetStuckMockTest extends TestCase {
 
-    public void testStuckInConnectionFactory() throws SQLException {
+    public void testStuckInConnectionFactory() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(2);
@@ -30,37 +29,33 @@ public class Tc0056NetStuckMockTest extends TestCase {
         config.setConnectionFactory(factory);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
-        new InterruptionAction(Thread.currentThread()).start();//mock main thread
-
-        try {
-            pool.getConnection();
-        } catch (ConnectionCreateException e) {
-            Assert.assertTrue(e.getMessage().contains("A unknown error occurred when created a connection"));
-        } finally {
-            factory.interruptAll();
-            pool.close();
+        BorrowThread firstBorrower = new BorrowThread(pool);
+        firstBorrower.start();
+        if (waitUtilWaiting(firstBorrower)) {
+            factory.unparkToExit(firstBorrower);
+            firstBorrower.join();
+            Assert.assertTrue(firstBorrower.getFailureCause().getMessage().contains("A unknown error occurred when created a connection"));
         }
 
 
         BeeDataSourceConfig config2 = createDefault();
         config2.setMaxActive(2);
         config2.setBorrowSemaphoreSize(2);
-        MockNetBlockConnectionFactory2 factory2 = new MockNetBlockConnectionFactory2();
-        config.setConnectionFactory(factory2);
+        MockNetBlockConnectionFactory factory2 = new MockNetBlockConnectionFactory();
+        config2.setConnectionFactory(factory2);
         FastConnectionPool pool2 = new FastConnectionPool();
-        pool2.init(config);
-        new InterruptionAction(Thread.currentThread()).start();//mock main thread
+        pool2.init(config2);
+        BorrowThread secondBorrower = new BorrowThread(pool2);
+        secondBorrower.start();
+        if (waitUtilWaiting(secondBorrower)) {
+            secondBorrower.interrupt();
 
-        try {
-            pool2.getConnection();
-        } catch (ConnectionGetInterruptedException e) {
-            Assert.assertTrue(e.getMessage().contains("An interruption occurred when created a connection"));
-        } finally {
-            pool.close();
+            secondBorrower.join();
+            Assert.assertTrue(secondBorrower.getFailureCause().getMessage().contains("An interruption occurred when created a connection"));
         }
     }
 
-    public void testStuckInXaConnectionFactory() throws SQLException {
+    public void testStuckInXaConnectionFactory() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(2);
         config.setBorrowSemaphoreSize(2);
@@ -68,32 +63,29 @@ public class Tc0056NetStuckMockTest extends TestCase {
         config.setXaConnectionFactory(factory);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
-        new InterruptionAction(Thread.currentThread()).start();
-
-        try {
-            pool.getXAConnection();
-        } catch (ConnectionCreateException e) {
-            Assert.assertTrue(e.getMessage().contains("A unknown error occurred when created an XA connection"));
-        } finally {
-            factory.getBlockingLatch().countDown();
-            pool.close();
+        BorrowThread firstBorrower = new BorrowThread(null, pool, true);
+        firstBorrower.start();
+        if (waitUtilWaiting(firstBorrower)) {
+            factory.unparkToExit(firstBorrower);
+            firstBorrower.join();
+            Assert.assertTrue(firstBorrower.getFailureCause().getMessage().contains("A unknown error occurred when created an XA connection"));
         }
+
 
         BeeDataSourceConfig config2 = createDefault();
         config2.setMaxActive(2);
         config2.setBorrowSemaphoreSize(2);
-        MockNetBlockXaConnectionFactory2 factory2 = new MockNetBlockXaConnectionFactory2();
-        config.setXaConnectionFactory(factory2);
+        MockNetBlockXaConnectionFactory factory2 = new MockNetBlockXaConnectionFactory();
+        config2.setXaConnectionFactory(factory2);
         FastConnectionPool pool2 = new FastConnectionPool();
-        pool2.init(config);
-        new InterruptionAction(Thread.currentThread()).start();
+        pool2.init(config2);
+        BorrowThread secondBorrower = new BorrowThread(null, pool2, true);
+        secondBorrower.start();
+        if (waitUtilWaiting(secondBorrower)) {
+            secondBorrower.interrupt();
 
-        try {
-            pool2.getXAConnection();
-        } catch (ConnectionGetInterruptedException e) {
-            Assert.assertTrue(e.getMessage().contains("An interruption occurred when created an XA connection"));
-        } finally {
-            pool.close();
+            secondBorrower.join();
+            Assert.assertTrue(secondBorrower.getFailureCause().getMessage().contains("An interruption occurred when created an XA connection"));
         }
     }
 }
