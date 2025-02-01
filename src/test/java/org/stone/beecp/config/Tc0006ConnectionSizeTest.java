@@ -30,21 +30,21 @@ public class Tc0006ConnectionSizeTest extends TestCase {
         BeeDataSourceConfig config = createEmpty();
         try {
             config.setInitialSize(-1);
-            fail("setInitialSize test failed");
+            fail("Setting test failed on configuration item[initial-size]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("Initialization size can't be less than zero", e.getMessage());
+            Assert.assertEquals("The given value to configuration item[initial-size] can't be less than zero", e.getMessage());
         }
         try {
             config.setMaxActive(-1);
-            fail("setInitialSize test failed");
+            fail("Setting test failed on configuration item[initial-size]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("Max active size must be greater than zero", e.getMessage());
+            Assert.assertEquals("The given value to configuration item[max-active] must be greater than zero", e.getMessage());
         }
         try {
             config.setMaxActive(0);
-            fail("setInitialSize test failed");
+            fail("Setting test failed on configuration item[initial-size]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("Max active size must be greater than zero", e.getMessage());
+            Assert.assertEquals("The given value to configuration item[max-active] must be greater than zero", e.getMessage());
         }
 
         config.setInitialSize(0);
@@ -74,7 +74,7 @@ public class Tc0006ConnectionSizeTest extends TestCase {
             config.check();
         } catch (BeeDataSourceConfigException e) {
             String message = e.getMessage();
-            Assert.assertTrue(message != null && message.contains("initialSize must not be greater than maxActive"));
+            Assert.assertTrue(message != null && message.contains("The configured value of item[initial-size] can't be greater than the configured value of item[max-active]"));
         }
     }
 }

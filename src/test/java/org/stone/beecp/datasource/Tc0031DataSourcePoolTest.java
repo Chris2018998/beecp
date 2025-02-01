@@ -108,13 +108,13 @@ public class Tc0031DataSourcePoolTest extends TestCase {
                 ds.setMaxWait(-1L);
                 fail("Max wait time test failed");
             } catch (InvalidParameterException e) {
-                Assert.assertEquals("Max wait time must be greater than zero", e.getMessage());
+                Assert.assertEquals("The given value to configuration item[max-wait] must be greater than zero", e.getMessage());
             }
             try {
                 ds.setMaxWait(0L);
                 fail("Max wait time test failed");
             } catch (InvalidParameterException e) {
-                Assert.assertEquals("Max wait time must be greater than zero", e.getMessage());
+                Assert.assertEquals("The given value to configuration item[max-wait] must be greater than zero", e.getMessage());
             }
             long newMaxWaitMillis2 = TimeUnit.SECONDS.toMillis(20L);
             ds.setMaxWait(newMaxWaitMillis2);
@@ -222,7 +222,7 @@ public class Tc0031DataSourcePoolTest extends TestCase {
             PoolInitializeFailedException poolInitializeException = (PoolInitializeFailedException) cause;
             Assert.assertTrue(poolInitializeException.getCause() instanceof BeeDataSourceConfigException);
             Throwable bottomException = poolInitializeException.getCause();
-            Assert.assertTrue(bottomException.getMessage().contains("initialSize must not be greater than maxActive"));
+            Assert.assertTrue(bottomException.getMessage().contains("The configured value of item[initial-size] can't be greater than the configured value of item[max-active]"));
         } finally {
             if (ds != null) ds.close();
         }

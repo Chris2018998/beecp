@@ -11,7 +11,6 @@ package org.stone.beecp.pool;
 
 import junit.framework.TestCase;
 import org.junit.Assert;
-import org.stone.base.TestUtil;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.driver.MockConnectionProperties;
 import org.stone.beecp.objects.BorrowThread;
@@ -23,7 +22,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
 import static org.stone.base.TestUtil.waitUtilWaiting;
@@ -33,6 +31,7 @@ import static org.stone.beecp.pool.ConnectionPoolStatics.CON_IDLE;
 public class Tc0061PoolTransferTest extends TestCase {
 
     public void testTransferConnection() throws Exception {
+        //1: enable thread local
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(1);
         config.setBorrowSemaphoreSize(2);
@@ -43,55 +42,48 @@ public class Tc0061PoolTransferTest extends TestCase {
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
-        //1: get method by reflection
         Method recycleMethod = FastConnectionPool.class.getDeclaredMethod("recycle", PooledConnection.class);
         recycleMethod.setAccessible(true);
         Field pField = ProxyBaseWrapper.class.getDeclaredField("p");
         pField.setAccessible(true);
+        try (Connection con = pool.getConnection()) {
+            BorrowThread secondBorrowThread = new BorrowThread(pool);
+            secondBorrowThread.start();
+            if (waitUtilWaiting(secondBorrowThread)) {
+                PooledConnection p = (PooledConnection) pField.get(con);
+                recycleMethod.invoke(pool, p);//<-- a using connection
 
-        //2: create first borrow thread to get connection
-        Connection con = pool.getConnection();
-        //3: create a thread to get connection
-        BorrowThread second = new BorrowThread(pool);
-        second.start();
-        //4: attempt to get connection in current thread
-        TestUtil.blockUtilWaiter((ConcurrentLinkedQueue) TestUtil.getFieldValue(pool, "waitQueue"));
-
-        //5: get PooledConnection from Connection
-        PooledConnection p = (PooledConnection) pField.get(con);
-        recycleMethod.invoke(pool, p);//<-- a using connection
-
-        //6: transfer a using connection to second thread(cas failed)
-        second.join();
-        try {
-            SQLException e = second.getFailureCause();
-            Assert.assertNull(e);
-            Assert.assertNotNull(second.getConnection());
-        } finally {
-            pool.close();
+                secondBorrowThread.join();
+                Assert.assertNotNull(secondBorrowThread.getConnection());
+            }
         }
 
-        //disable thread local
+        //2: disable thread local
+        BeeDataSourceConfig config2 = createDefault();
+        config2.setMaxActive(1);
+        config2.setBorrowSemaphoreSize(2);
+        config2.setParkTimeForRetry(0L);
         config.setEnableThreadLocal(false);
-        pool = new FastConnectionPool();
-        pool.init(config);
-        con = pool.getConnection();
-        second = new BorrowThread(pool);
-        second.start();
-        TestUtil.blockUtilWaiter((ConcurrentLinkedQueue) TestUtil.getFieldValue(pool, "waitQueue"));
-        p = (PooledConnection) pField.get(con);
-        recycleMethod.invoke(pool, p);//<-- a using connection
-        second.join();
-        try {
-            SQLException e = second.getFailureCause();
-            Assert.assertNull(e);
-            Assert.assertNotNull(second.getConnection());
-        } finally {
-            pool.close();
+        config2.setForceRecycleBorrowedOnClose(true);
+        config2.setMaxWait(TimeUnit.SECONDS.toMillis(3L));
+        config2.setConnectionFactory(new MockDriverConnectionFactory());
+        FastConnectionPool pool2 = new FastConnectionPool();
+        pool2.init(config2);
+
+        try (Connection con = pool2.getConnection()) {
+            BorrowThread secondBorrowThread = new BorrowThread(pool2);
+            secondBorrowThread.start();
+            if (waitUtilWaiting(secondBorrowThread)) {
+                PooledConnection p = (PooledConnection) pField.get(con);
+                recycleMethod.invoke(pool2, p);//<-- a using connection
+
+                secondBorrowThread.join();
+                Assert.assertNotNull(secondBorrowThread.getConnection());
+            }
         }
     }
 
-    public void testTransferSQLException() throws Exception {
+    public void testTransferException() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(1);
         config.setBorrowSemaphoreSize(2);
@@ -106,68 +98,27 @@ public class Tc0061PoolTransferTest extends TestCase {
             Method transferExceptionMethod = FastConnectionPool.class.getDeclaredMethod("transferException", Throwable.class);
             transferExceptionMethod.setAccessible(true);
 
-            BorrowThread firstBorrower = new BorrowThread(pool);
-            firstBorrower.start();
-            if (waitUtilWaiting(firstBorrower)) {//block 1 second in pool instance creation
-                transferExceptionMethod.invoke(pool, new SQLException("Net Error"));
-                firstBorrower.join();
-                SQLException e = firstBorrower.getFailureCause();
-                Assert.assertTrue(e != null && e.getMessage().contains("Net Error"));
-            }
-
             BorrowThread secondBorrower = new BorrowThread(pool);
             secondBorrower.start();
             if (waitUtilWaiting(secondBorrower)) {//block 1 second in pool instance creation
-                transferExceptionMethod.invoke(pool, new Exception("Create fail"));
+                transferExceptionMethod.invoke(pool, new SQLException("Net Error"));
                 secondBorrower.join();
                 SQLException e = secondBorrower.getFailureCause();
-                Assert.assertTrue(e != null && e.getMessage().contains("Create fail"));
+                Assert.assertTrue(e != null && e.getMessage().contains("Net Error"));
+            }
+
+            BorrowThread thirdBorrower = new BorrowThread(pool);
+            thirdBorrower.start();
+            if (waitUtilWaiting(thirdBorrower)) {//block 1 second in pool instance creation
+                transferExceptionMethod.invoke(pool, new Exception("Connection created fail"));
+                thirdBorrower.join();
+                SQLException e = thirdBorrower.getFailureCause();
+                Assert.assertTrue(e != null && e.getMessage().contains("Connection created fail"));
             }
         }
     }
 
-    public void testCatchFailAfterTransfer() throws Exception {
-        BeeDataSourceConfig config = createDefault();
-        config.setMaxActive(1);
-        config.setFairMode(true);
-        config.setBorrowSemaphoreSize(2);
-        config.setParkTimeForRetry(0L);
-        config.setForceRecycleBorrowedOnClose(true);
-        config.setMaxWait(TimeUnit.SECONDS.toMillis(1L));
-        config.setConnectionFactory(new MockDriverConnectionFactory());
-        FastConnectionPool pool = new FastConnectionPool();
-        pool.init(config);
-
-        //1: get method by reflection
-        Method recycleMethod = FastConnectionPool.class.getDeclaredMethod("recycle", PooledConnection.class);
-        recycleMethod.setAccessible(true);
-        Field pField = ProxyBaseWrapper.class.getDeclaredField("p");
-        pField.setAccessible(true);
-
-        //2: create first borrow thread to get connection
-        Connection con = pool.getConnection();
-        //3: create a thread to get connection
-        BorrowThread second = new BorrowThread(pool);
-        second.start();
-        //4: attempt to get connection in current thread
-        TestUtil.blockUtilWaiter((ConcurrentLinkedQueue) TestUtil.getFieldValue(pool, "waitQueue"));
-
-        //5: get PooledConnection from Connection
-        PooledConnection p = (PooledConnection) pField.get(con);
-        p.state = CON_IDLE;
-        recycleMethod.invoke(pool, p);//<-- a using connection
-
-        //6: transfer a using connection to second thread(cas failed)
-        second.join();
-        try {
-            SQLException e = second.getFailureCause();
-            Assert.assertTrue(e instanceof ConnectionGetTimeoutException);
-        } finally {
-            pool.close();
-        }
-    }
-
-    public void testAliveTestAfterTransfer() throws Exception {
+    public void testAliveTestSuccess() throws Exception {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(1);
         config.setFairMode(true);
@@ -189,30 +140,55 @@ public class Tc0061PoolTransferTest extends TestCase {
         Field pField = ProxyBaseWrapper.class.getDeclaredField("p");
         pField.setAccessible(true);
 
-        //2: create first borrow thread to get connection
         Connection con = pool.getConnection();
-        //3: create a thread to get connection
-        BorrowThread second = new BorrowThread(pool);
-        second.start();
-        //4: attempt to get connection in current thread
-        TestUtil.blockUtilWaiter((ConcurrentLinkedQueue) TestUtil.getFieldValue(pool, "waitQueue"));
+        BorrowThread secondBorrowThread = new BorrowThread(pool);
+        secondBorrowThread.start();
+        if (waitUtilWaiting(secondBorrowThread)) {
+            PooledConnection p = (PooledConnection) pField.get(con);
 
-        //5: get PooledConnection from Connection
-        PooledConnection p = (PooledConnection) pField.get(con);
-        p.lastAccessTime = 0L;
-        properties.setValid(false);
-        recycleMethod.invoke(pool, p);//<-- a using connection
+            p.lastAccessTime = 0L;
+            properties.setValid(true);
+            recycleMethod.invoke(pool, p);
 
-        //6: transfer a using connection to second thread(cas failed)
-        second.join();
-        try {
-            SQLException e = second.getFailureCause();
-            Assert.assertTrue(e instanceof ConnectionGetTimeoutException);
-        } finally {
-            pool.close();
+            secondBorrowThread.join();
+            Assert.assertNotNull(secondBorrowThread.getConnection());
         }
+    }
 
-        config = createDefault();
+
+    public void testCatchFailAfterTransfer() throws Exception {
+        BeeDataSourceConfig config = createDefault();
+        config.setMaxActive(1);
+        config.setFairMode(true);
+        config.setBorrowSemaphoreSize(2);
+        config.setParkTimeForRetry(0L);
+        config.setForceRecycleBorrowedOnClose(true);
+        config.setMaxWait(TimeUnit.SECONDS.toMillis(1L));
+        config.setConnectionFactory(new MockDriverConnectionFactory());
+        FastConnectionPool pool = new FastConnectionPool();
+        pool.init(config);
+
+        Method recycleMethod = FastConnectionPool.class.getDeclaredMethod("recycle", PooledConnection.class);
+        recycleMethod.setAccessible(true);
+        Field pField = ProxyBaseWrapper.class.getDeclaredField("p");
+        pField.setAccessible(true);
+
+        Connection con = pool.getConnection();
+        BorrowThread secondBorrowThread = new BorrowThread(pool);
+        secondBorrowThread.start();
+        if (waitUtilWaiting(secondBorrowThread)) {
+            PooledConnection p = (PooledConnection) pField.get(con);
+            p.state = CON_IDLE;
+            recycleMethod.invoke(pool, p);
+
+            secondBorrowThread.join();
+            Assert.assertNull(secondBorrowThread.getConnection());
+            Assert.assertTrue(secondBorrowThread.getFailureCause() instanceof ConnectionGetTimeoutException);
+        }
+    }
+
+    public void testAliveTestFail() throws Exception {
+        BeeDataSourceConfig config = createDefault();
         config.setMaxActive(1);
         config.setFairMode(true);
         config.setBorrowSemaphoreSize(2);
@@ -221,29 +197,31 @@ public class Tc0061PoolTransferTest extends TestCase {
         config.setForceRecycleBorrowedOnClose(true);
         config.setMaxWait(TimeUnit.SECONDS.toMillis(1L));
 
-        properties = new MockConnectionProperties();
-        factory = new MockCommonConnectionFactory(properties);
+        MockConnectionProperties properties = new MockConnectionProperties();
+        MockCommonConnectionFactory factory = new MockCommonConnectionFactory(properties);
         config.setConnectionFactory(factory);
-        pool = new FastConnectionPool();
+        FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
 
-        con = pool.getConnection();
-        second = new BorrowThread(pool);
-        second.start();
-        TestUtil.blockUtilWaiter((ConcurrentLinkedQueue) TestUtil.getFieldValue(pool, "waitQueue"));
+        //1: get method by reflection
+        Method recycleMethod = FastConnectionPool.class.getDeclaredMethod("recycle", PooledConnection.class);
+        recycleMethod.setAccessible(true);
+        Field pField = ProxyBaseWrapper.class.getDeclaredField("p");
+        pField.setAccessible(true);
 
-        //5: get PooledConnection from Connection
-        p = (PooledConnection) pField.get(con);
-        p.lastAccessTime = 0L;
-        properties.setValid(true);
-        recycleMethod.invoke(pool, p);//<-- a using connection
+        Connection con = pool.getConnection();
+        BorrowThread secondBorrowThread = new BorrowThread(pool);
+        secondBorrowThread.start();
+        if (waitUtilWaiting(secondBorrowThread)) {
+            PooledConnection p = (PooledConnection) pField.get(con);
 
-        //6: transfer a using connection to second thread(cas failed)
-        second.join();
-        try {
-            Assert.assertNotNull(second.getConnection());
-        } finally {
-            pool.close();
+            p.lastAccessTime = 0L;
+            properties.setValid(false);
+            recycleMethod.invoke(pool, p);
+
+            secondBorrowThread.join();
+            Assert.assertNull(secondBorrowThread.getConnection());
+            Assert.assertTrue(secondBorrowThread.getFailureCause() instanceof ConnectionGetTimeoutException);
         }
     }
 }

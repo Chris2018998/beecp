@@ -13,6 +13,7 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.core.Appender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.stone.beeop.BeeObjectHandle;
 import org.stone.tools.CommonUtil;
 
 import javax.sql.XAConnection;
@@ -162,6 +163,13 @@ public class TestUtil {
         }
     }
 
+    public static void oclose(BeeObjectHandle h) {
+        try {
+            h.close();
+        } catch (Throwable e) {
+            log.warn("Warning:Error at closing object handle:", e);
+        }
+    }
 
     public static void blockUtilWaiter(Semaphore semaphore) {
         for (; ; ) {

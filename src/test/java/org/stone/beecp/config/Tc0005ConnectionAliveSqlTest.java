@@ -12,9 +12,9 @@ package org.stone.beecp.config;
 import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.BeeDataSourceConfigException;
 
-import static org.stone.beecp.config.DsConfigFactory.createDefault;
+import java.security.InvalidParameterException;
+
 import static org.stone.beecp.config.DsConfigFactory.createEmpty;
 
 /**
@@ -24,22 +24,33 @@ public class Tc0005ConnectionAliveSqlTest extends TestCase {
 
     public void testOnSetAndGet() {
         BeeDataSourceConfig config = createEmpty();
-        config.setAliveTestSql(null);
-        Assert.assertNotNull(config.getAliveTestSql());
 
-        config.setAliveTestSql("SELECT1");
-        Assert.assertEquals("SELECT1", config.getAliveTestSql());
-    }
-
-    public void testOnInvalidSql() throws Exception {
-        BeeDataSourceConfig config = createDefault();
-
-        config.setAliveTestSql("SELECT1");
         try {
-            config.check();
-        } catch (BeeDataSourceConfigException e) {
-            String message = e.getMessage();
-            Assert.assertTrue(message != null && message.contains("Alive test sql must be start with 'select '"));
+            config.setAliveTestSql(null);
+            fail("Setting test failed on configuration item[alive-test-sql]");
+        } catch (InvalidParameterException e) {
+            Assert.assertEquals("The given value to configuration item[alive-test-sql] can't be null or empty", e.getMessage());
+        }
+
+        try {
+            config.setAliveTestSql("");
+            fail("Setting test failed on configuration item[alive-test-sql]");
+        } catch (InvalidParameterException e) {
+            Assert.assertEquals("The given value to configuration item[alive-test-sql] can't be null or empty", e.getMessage());
+        }
+
+        try {
+            config.setAliveTestSql(" ");
+            fail("Setting test failed on configuration item[alive-test-sql]");
+        } catch (InvalidParameterException e) {
+            Assert.assertEquals("The given value to configuration item[alive-test-sql] can't be null or empty", e.getMessage());
+        }
+
+        try {
+            config.setAliveTestSql("SELECT1");
+            fail("Setting test failed on configuration item[alive-test-sql]");
+        } catch (InvalidParameterException e) {
+            Assert.assertEquals("The given value to configuration item[alive-test-sql] must be start with 'select '", e.getMessage());
         }
     }
 }

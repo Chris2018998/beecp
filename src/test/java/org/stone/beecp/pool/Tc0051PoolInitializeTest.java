@@ -47,7 +47,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
             fail("Test failed on invalid configured items");
         } catch (PoolInitializeFailedException e) {
             String message = e.getMessage();
-            Assert.assertTrue(message != null && message.contains("initialSize must not be greater than maxActive"));
+            Assert.assertTrue(message != null && message.contains("The configured value of item[initial-size] can't be greater than the configured value of item[max-active]"));
         }
     }
 

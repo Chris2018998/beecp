@@ -144,7 +144,7 @@ public class Tc0059PoolClearTest extends TestCase {
             pool.clear(false, config2);
             fail("failed test clear");
         } catch (BeeDataSourceConfigException e) {
-            Assert.assertEquals("initialSize must not be greater than maxActive", e.getMessage());
+            Assert.assertEquals("The configured value of item[initial-size] can't be greater than the configured value of item[max-active]", e.getMessage());
             config2.setMaxActive(10);
             config2.setInitialSize(10);
             pool.clear(false, config2);

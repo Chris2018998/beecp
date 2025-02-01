@@ -39,15 +39,15 @@ public class Tc0007ConfigSetAndGetTest extends TestCase {
         //borrowSemaphoreSize
         try {
             config.setBorrowSemaphoreSize(-1);
-            fail("Semaphore size test failed");
+            fail("Setting test failed on configuration item[borrow-semaphore-size]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("Max permit size of semaphore must be greater than zero", e.getMessage());
+            Assert.assertEquals("The given value to configuration item[borrow-semaphore-size] must be greater than zero", e.getMessage());
         }
         try {
             config.setBorrowSemaphoreSize(0);
-            fail("Semaphore size test failed");
+            fail("Setting test failed on configuration item[borrow-semaphore-size]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("Max permit size of semaphore must be greater than zero", e.getMessage());
+            Assert.assertEquals("The given value to configuration item[borrow-semaphore-size] must be greater than zero", e.getMessage());
         }
         config.setBorrowSemaphoreSize(1);
         Assert.assertEquals(1, config.getBorrowSemaphoreSize());
@@ -55,15 +55,15 @@ public class Tc0007ConfigSetAndGetTest extends TestCase {
         //maxWait
         try {
             config.setMaxWait(-1L);
-            fail("Max wait time test failed");
+            fail("Setting test failed on configuration item[max-wait]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("Max wait time must be greater than zero", e.getMessage());
+            Assert.assertEquals("The given value to configuration item[max-wait] must be greater than zero", e.getMessage());
         }
         try {
             config.setMaxWait(0L);
-            fail("Max wait time test failed");
+            fail("Setting test failed on configuration item[max-wait]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("Max wait time must be greater than zero", e.getMessage());
+            Assert.assertEquals("The given value to configuration item[max-wait] must be greater than zero", e.getMessage());
         }
         config.setMaxWait(5000L);
         Assert.assertEquals(5000L, config.getMaxWait());
@@ -71,15 +71,15 @@ public class Tc0007ConfigSetAndGetTest extends TestCase {
         //idleTimeout
         try {
             config.setIdleTimeout(-1L);
-            fail("Idle Timeout test failed");
+            fail("Setting test failed on configuration item[idle-timeout]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("Idle timeout must be greater than zero", e.getMessage());
+            Assert.assertEquals("The given value to configuration item[idle-timeout] must be greater than zero", e.getMessage());
         }
         try {
             config.setIdleTimeout(0L);
-            fail("Idle Timeout test failed");
+            fail("Setting test failed on configuration item[idle-timeout]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("Idle timeout must be greater than zero", e.getMessage());
+            Assert.assertEquals("The given value to configuration item[idle-timeout] must be greater than zero", e.getMessage());
         }
         config.setIdleTimeout(3000);
         Assert.assertEquals(3000, config.getIdleTimeout());
@@ -87,9 +87,9 @@ public class Tc0007ConfigSetAndGetTest extends TestCase {
         //holdTimeout
         try {
             config.setHoldTimeout(-1L);
-            fail("Max hold time test failed");
+            fail("Setting test failed on configuration item[hold-timeout]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("Max hold time can't be less than zero", e.getMessage());
+            Assert.assertEquals("The given value to configuration item[hold-timeout] can't be less than zero", e.getMessage());
         }
         config.setHoldTimeout(0L);
         Assert.assertEquals(0L, config.getHoldTimeout());
@@ -100,9 +100,9 @@ public class Tc0007ConfigSetAndGetTest extends TestCase {
         //aliveTestTimeout
         try {
             config.setAliveTestTimeout(-1);
-            fail("AliveTestTimeout test failed");
+            fail("Setting test failed on configuration item[alive-test-timeout]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("Timeout of alive test can't be less than zero", e.getMessage());
+            Assert.assertEquals("The given value to configuration item[alive-test-timeout] can't be less than zero", e.getMessage());
         }
         config.setAliveTestTimeout(0);
         Assert.assertEquals(0, config.getAliveTestTimeout());
@@ -112,9 +112,9 @@ public class Tc0007ConfigSetAndGetTest extends TestCase {
         //aliveAssumeTime
         try {
             config.setAliveAssumeTime(-1L);
-            fail("AliveTestTimeout test failed");
+            fail("Setting test failed on configuration item[alive-assume-time]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("Alive assume time can't be less than zero", e.getMessage());
+            Assert.assertEquals("The given value to configuration item[alive-assume-time] can't be less than zero", e.getMessage());
         }
         config.setAliveAssumeTime(0L);
         Assert.assertEquals(0L, config.getAliveAssumeTime());
@@ -124,15 +124,15 @@ public class Tc0007ConfigSetAndGetTest extends TestCase {
         //timerCheckInterval
         try {
             config.setTimerCheckInterval(-1L);
-            fail("AliveTestTimeout test failed");
+            fail("Setting test failed on configuration item[timer-check-interval]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("Interval Time of pool worker must be greater than zero", e.getMessage());
+            Assert.assertEquals("The given value to configuration item[timer-check-interval] must be greater than zero", e.getMessage());
         }
         try {
             config.setTimerCheckInterval(0L);
-            fail("AliveTestTimeout test failed");
+            fail("Setting test failed on configuration item[timer-check-interval]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("Interval Time of pool worker must be greater than zero", e.getMessage());
+            Assert.assertEquals("The given value to configuration item[timer-check-interval] must be greater than zero", e.getMessage());
         }
         config.setTimerCheckInterval(3000L);
         Assert.assertEquals(3000L, config.getTimerCheckInterval());
@@ -144,9 +144,9 @@ public class Tc0007ConfigSetAndGetTest extends TestCase {
         //delayTimeForNextClear
         try {
             config.setParkTimeForRetry(-1);
-            fail("ParkTimeForRetry test failed");
+            fail("Setting test failed on configuration item[park-time-for-retry]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("Park time can't be less than zero", e.getMessage());
+            Assert.assertEquals("The given value to configuration item[park-time-for-retry] can't be less than zero", e.getMessage());
         }
         config.setParkTimeForRetry(0);
         Assert.assertEquals(0L, config.getParkTimeForRetry());
