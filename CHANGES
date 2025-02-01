@@ -1,5 +1,9 @@
 beecp changes
 
+Changes in 4.1.8(pending)
+1: add interruption double check on borrower thread
+2: throw exceptions when check fail in configuration set methods
+
 Changes in 4.1.7
 1: remove two monitoring methods[getConnectionCreatingCount(),getConnectionCreatingTimeoutCount()]
 2: change name of a configuration item[forceCloseUsingOnClear --> forceRecycleBorrowedOnClose]
@@ -10,11 +14,9 @@ Changes in 4.1.6
 2: support array properties injection in util
 
 Changes in 4.1.5
-
 1: fix null point exception when idle timeout scan
 
 Changes in 4.1.4
-
 1: fix some code inspection issues scanned by IDEA
 2: restore self-spin source code with history code
 3: rename a configuration item(delayTimeForNextClear --> parkTimeForRetry)
@@ -23,43 +25,36 @@ Changes in 4.1.4
 6: improve structure of source code
 
 Changes in 4.1.3
-
 1: simplify source code
 2: fix issue that disable default set when set fail on first connection
 
 Changes in 4.1.2
-
 1: enhance exception
 2: change type declaration of some fields of pool
 3: improve pool self-loop
 
 Changes in 4.1.1
-
 1: fix using-connection close issue
 2: change interruption log to runtime log
 3: add equal symbol to alive test expression
 
 Changes in 4.1.0
-
 1: change pool connection array to a fixed length array
 2: re-implement interruption on connection creation
 3: not remove created connections when failed during async initialization
 
 Changes in 4.0.7
-
 1: refactor clear method of pool
 2: remove dirty check from method setAutoCommit of proxy Connection
 3: improve pool performance
 
 
 Changes in 4.0.6
-
 1: fix nullpoint exception when set default to first connction
 2: fix log not print issue when set default to first connction
-3: improve source code structure of a method to get pooled connection 
+3: improve source code structure of a method to get pooled connection
 
 Changes in 4.0.5
-
 1: add an indicator on threadlocal(set false to support virtual threads)
 2: fix a nullpoint exception when pool close in new state
 3: fix pool jmx register exception
@@ -71,20 +66,18 @@ Changes in 4.0.5
 
 
 Changes in 4.0.4
-
 1: add a new util method: CommonUtil.isNotBlank
-2:[beecp]rename two methods related with pool lock 
+2:[beecp]rename two methods related with pool lock
     getElapsedTimeSinceCreationLock() ---> getPoolLockHoldTime()
     interruptThreadsOnCreationLock()   ---> interruptOnPoolLock()
 3:[beecp] support returning a array of interrupted threads from pool lock
 4:[beecp]rename connection eviction predicate class.
      SQLExceptionPredication ---> BeeConnectionPredicate
-5:[beecp]some optimization on source code 
+5:[beecp]some optimization on source code
 6:[beecp]add toString() method to jdbc proxy objects
 
 
 Changes in 4.0.3
-
 * upgrade slf4j-api to 2.0.6
 * allow to assign 0 on connectTimeout
 * rename a config item(jdbcLinkInfDecoderClassName --> jdbcLinkInfoDecoderClassName)
@@ -94,7 +87,6 @@ Changes in 4.0.3
 
 
 Changes in 4.0.2
-
 * [beecp]support propeties config loading from class path
 * [beecp]remove some unnecessary check on number config items
 * [beecp]fix IndexOutOfBoundsException on remove error code
@@ -107,14 +99,12 @@ Changes in 4.0.2
     validAssumeTime  ----> aliveAssumeTime
 
 
-Changes in 4.0.1 
-
-* [beecp]enhance interruption handling on conneciton creation 
+Changes in 4.0.1
+* [beecp]enhance interruption handling on conneciton creation
 * [beecp]rename a pool inner fiel and add volatile type to this field[startTimeAtLockedSuccess ----> pooledArrayLockedTimePoint]
 * [beecp]fix a NullPointException in method BeeDataSource.getLogWriter
 
 Changes in 4.0.0
-
 * change project LICENSE from LGPL2.1 to Apache2.0
 * change top level folder from cn to org.stone
 * add connection eviction predication to support customization on SQLException check
