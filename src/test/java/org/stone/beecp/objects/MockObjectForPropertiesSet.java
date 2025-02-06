@@ -39,6 +39,7 @@ public class MockObjectForPropertiesSet {
     private double double1;
     private Double double2;
     private int[] intArray;
+    private Integer[] intArray2;
     private BigInteger bigInteger;
     private BigDecimal bigDecimal;
     private Class<?> clazz;
@@ -216,6 +217,14 @@ public class MockObjectForPropertiesSet {
 
     public void setIntArray(int[] intArray) {
         this.intArray = intArray;
+    }
+
+    public Integer[] getIntArray2() {
+        return intArray2;
+    }
+
+    public void setIntArray2(Integer[] intArray2) {
+        this.intArray2 = intArray2;
     }
 
     public BigInteger getBigInteger() {
