@@ -308,6 +308,9 @@ public class Tc0050PoolStaticsTest extends TestCase {
         localConnectProperties.put("ports", "80,90,100");
         localConnectProperties.put("passwordChars", "A,B,C");
 
+        localConnectProperties.put("intArray", new int[]{0, 1, 2});
+        localConnectProperties.put("intArray2", new Integer[]{0, 1, 2});
+
         MockObjectForPropertiesSet bean = new MockObjectForPropertiesSet();
         setPropertiesValue(bean, localConnectProperties);
 
@@ -326,7 +329,14 @@ public class Tc0050PoolStaticsTest extends TestCase {
         Assert.assertEquals('B', bean.getPasswordChars()[1]);
         Assert.assertEquals('C', bean.getPasswordChars()[2]);
 
+        Assert.assertEquals(0, bean.getIntArray()[0]);
+        Assert.assertEquals(1, bean.getIntArray()[1]);
+        Assert.assertEquals(2, bean.getIntArray()[2]);
+        Assert.assertEquals(new Integer(0), bean.getIntArray2()[0]);
+        Assert.assertEquals(new Integer(1), bean.getIntArray2()[1]);
+        Assert.assertEquals(new Integer(2), bean.getIntArray2()[2]);
     }
+
 
     private static class SetTestBean2 {
     }
