@@ -167,7 +167,7 @@ final class PooledConnection {
     void setRawConnection2(int state, Connection rawConn, XAResource rawXaRes) {
         this.rawConn = rawConn;
         this.rawXaRes = rawXaRes;
-        this.resetFlags = FALSE.clone();
+        this.resetFlags = new boolean[6];
         this.commitDirtyInd = false;
         this.curAutoCommit = defaultAutoCommit;
 
