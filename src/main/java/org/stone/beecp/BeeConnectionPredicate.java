@@ -21,10 +21,10 @@ import java.sql.SQLException;
 public interface BeeConnectionPredicate {
 
     /**
-     * Test a SQLException thrown from a connection,test result determine connection whether evicted from pool.
+     * Tests a SQLException thrown from a connection,test result determine connection whether evicted from pool.
      *
-     * @param e thrown from a working connection
-     * @return a string as eviction reason,but it is null or empty,not evict target connection
+     * @param e is thrown from a borrowed connection in working
+     * @return eviction reason;connection not be evicted if the test reason is null or empty
      */
     String evictTest(SQLException e);
 }

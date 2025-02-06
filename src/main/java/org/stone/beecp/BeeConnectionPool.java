@@ -27,8 +27,8 @@ public interface BeeConnectionPool {
     /**
      * Pool initializes with a configuration object.
      *
-     * @param config is a configuration object defines some items applied in pool
-     * @throws SQLException when initializes fail
+     * @param config is a configuration object defines some items can be applied in pool
+     * @throws SQLException when fail to initialize
      */
     void init(BeeDataSourceConfig config) throws SQLException;
 
@@ -37,8 +37,8 @@ public interface BeeConnectionPool {
      *
      * @return a borrowed connection
      * @throws SQLException                      when fail to create a connection
-     * @throws ConnectionGetTimeoutException     when wait time out in pool
-     * @throws ConnectionGetInterruptedException while waiting interrupted
+     * @throws ConnectionGetTimeoutException     when wait timeout in pool
+     * @throws ConnectionGetInterruptedException while waiting is interrupted
      */
     Connection getConnection() throws SQLException;
 
@@ -47,62 +47,66 @@ public interface BeeConnectionPool {
      *
      * @return a borrowed XAConnection
      * @throws SQLException                      when fail to create a xa connection
-     * @throws ConnectionGetTimeoutException     when wait time out in pool
-     * @throws ConnectionGetInterruptedException while waiting interrupted
+     * @throws ConnectionGetTimeoutException     when wait timeout in pool
+     * @throws ConnectionGetInterruptedException while waiting is interrupted
      */
     XAConnection getXAConnection() throws SQLException;
 
-
     /**
-     * Shutdown pool and make it to be in closed state,all pooled connections are physically closed and removed from pool.
+     * Shutdown pool to not work(closed state),closes all maintained connections and removes them from pool.
      */
     void close();
 
     /**
-     * Query pool state whether is closed.
+     * Queries pool whether is closed.
      *
      * @return true that pool is closed
      */
     boolean isClosed();
 
     /**
-     * Enable or disable log print in pool.
+     * A switch call to enable or disable logs print in pool.
      *
      * @param enable is true that print, false is not print
      */
     void setPrintRuntimeLog(boolean enable);
 
     /**
-     * Get monitoring object bring out some runtime info of pool,refer to {@link BeeConnectionPoolMonitorVo}
+     * Gets runtime monitoring object of pool,refer to {@link BeeConnectionPoolMonitorVo}.
      *
-     * @return monitor of pool
+     * @return monitoring object of pool
      */
     BeeConnectionPoolMonitorVo getPoolMonitorVo();
 
     /**
-     * Interrupts processing of connections creation.
+     * Interrupts connections creation in processing.
      *
-     * @param onlyInterruptTimeout is true that only interrupt timeout creation,false that interrupt all creation in processing
+     * @param onlyInterruptTimeout is true that only interrupts timeout creation,false that interrupts all creation in processing
      * @return interrupted threads
      */
     Thread[] interruptConnectionCreating(boolean onlyInterruptTimeout);
 
     /**
-     * Physically close all pooled connections and remove them from pool,not accept requests before completion of this operation call.
+     * Physically closes all connections and removes them from pool which not accepts borrow requests before completion.
+     * If exists borrowed connections,before close them,this method call to recycle them return to pool or wait them
+     * return to pool with configured time value,refer to {@link BeeDataSourceConfig#getParkTimeForRetry()}.
      *
-     * @param forceRecycleBorrowed is that recycle borrowed connections immediately,false that wait borrowed connections released by callers
-     * @throws SQLException when pool closed or in cleaning
+     * @param forceRecycleBorrowed is true that recycle borrowed connections immediately and roll back existing transactions
+     *                             associated with them;false that wait them return to pool
+     * @throws SQLException when pool is closed or in clearing
      */
     void clear(boolean forceRecycleBorrowed) throws SQLException;
 
     /**
-     * Physically close all pooled connections and remove them from pool,then pool reinitialize with new configuration,not accept
-     * requests before completion of this operation call.
+     * Physically closes all connections and removes them from pool, then pool reinitialize with a new configuration.
+     * If exists borrowed connections,before close them,this method call to recycle them return to pool or wait them
+     * return to pool with configured time value,refer to {@link BeeDataSourceConfig#getParkTimeForRetry()}.
      *
-     * @param forceRecycleBorrowed is that recycle borrowed connections immediately,false that wait borrowed connections released by callers
-     * @param config               is a new configuration object for pool reinitialization
+     * @param forceRecycleBorrowed is true that recycle borrowed connections immediately and roll back existing transactions
+     *                             associated with them;false that wait them return to pool
+     * @param config               is a new configuration object for reinitialization
      * @throws BeeDataSourceConfigException when configuration check fail
-     * @throws SQLException                 when pool is closed or in cleaning
+     * @throws SQLException                 when pool is closed or in clearing
      * @throws SQLException                 when pool reinitialize fail
      */
     void clear(boolean forceRecycleBorrowed, BeeDataSourceConfig config) throws SQLException;

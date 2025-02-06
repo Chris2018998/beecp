@@ -10,7 +10,7 @@
 package org.stone.beecp;
 
 /**
- * Jmx bean interface of data source.
+ * Jmx bean interface of data source configuration.
  *
  * @author Chris Liao
  * @version 1.0

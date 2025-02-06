@@ -75,21 +75,21 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     private int borrowSemaphoreSize = Math.min(this.maxActive / 2, NCPU);
     //Milliseconds: max wait time in pool to get a connection for borrower,default is 8000 milliseconds(8 seconds)
     private long maxWait = SECONDS.toMillis(8L);
-    //Milliseconds: max idle time on connections not borrowed, default is 18000 milliseconds(3 minutes)
+    //Milliseconds: max idle time of connections not borrowed out, default is 18000 milliseconds(3 minutes)
     private long idleTimeout = MINUTES.toMillis(3L);
-    //Milliseconds: max inactive time on borrowed connections,timeout connections are recycled to pool by force;default is zero,no timeout,no force recycle for it
+    //Milliseconds: max inactive time of borrowed connections,timeout connections are recycled to pool by force;default is zero,no timeout,no force recycle for it
     private long holdTimeout;
-    //An alive test sql executed on connections on them borrowed
+    //An alive test sql executed on connections when them borrowed
     private String aliveTestSql = "SELECT 1";
-    //Seconds: max wait time to get alive test result on borrowed connections,default is 3 seconds.
+    //Seconds: max wait time to get alive test result from borrowed connections,default is 3 seconds.
     private int aliveTestTimeout = 3;
-    //Milliseconds: a threshold time of alive test when borrowed success,if time gap value since last access is less than it,no test on connections,default is 500 milliseconds
+    //Milliseconds:A threshold time of alive test on borrowed connections,if gap time(Last active time **To** Borrowed time) is less than this value,connections need not be tested(ms),default is 500 milliseconds
     private long aliveAssumeTime = 500L;
-    //Milliseconds: an interval time that pool scans out timeout connections(idle timeout and hold timeout),default is 18000 milliseconds(3 minutes)
+    //Milliseconds: an interval time to scans out timeout connections(idle timeout and hold timeout),default is 18000 milliseconds(3 minutes)
     private long timerCheckInterval = MINUTES.toMillis(3L);
-    //A boolean control argument for borrowed connection on pool close,true is that force recycle them immediately,otherwise that wait them return to pool,then physical close them,default is false.
+    //An indicator to recycle borrowed connections and make them return to pool when pool shutdown,default is false.
     private boolean forceRecycleBorrowedOnClose;
-    //Milliseconds: park time for wait borrowed connections return to pool when pool close or pool clear,default is 3000 milliseconds
+    //Milliseconds: a park time to wait borrowed connections return to pool,default is 3000 milliseconds
     private long parkTimeForRetry = 3000L;
     //A {@code SQLException.vendorCode} list to check sql-exceptions thrown from connections, if code matched in list,then evicts connections from pool
     private List<Integer> sqlExceptionCodeList;
@@ -119,9 +119,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     private boolean enableDefaultOnAutoCommit = true;
     //An indicator to enable transactionIsolation default setting on new connections,default is true
     private boolean enableDefaultOnTransactionIsolation = true;
-    //An indicator of property force reset on recycling connections,if driver support transaction on schema,it should be set to true(for example:PG driver)
+    //An indicator of force dirty on schema property to support to be reset under transaction,for example:PG driver
     private boolean forceDirtyOnSchemaAfterSet;
-    //An indicator of property force reset on recycling connections,if driver support transaction on catalog,it should be set to true(for example:PG driver)
+    //An indicator of force dirty on catalog property to support to be reset under transaction,for example:PG driver
     private boolean forceDirtyOnCatalogAfterSet;
     /**
      * connection factory class,which must be implement one of the below four interfaces
