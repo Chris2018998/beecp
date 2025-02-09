@@ -1,6 +1,6 @@
 beecp changes
 
-Changes in 4.1.8(pending)
+Changes in 4.1.8
 1: add interruption double check on borrower thread
 2: throw exceptions when check fail in configuration set methods
 3: change message of check exceptions
