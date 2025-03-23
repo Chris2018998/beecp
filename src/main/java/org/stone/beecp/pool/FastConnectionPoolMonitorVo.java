@@ -19,11 +19,6 @@ import org.stone.beecp.BeeConnectionPoolMonitorVo;
  */
 
 public class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonitorVo {
-    private String dsId;
-    private String dsUUID;
-    private String hostIP;
-    private long threadId;
-    private String threadName;
     private String poolName;
     private String poolMode;
     private int poolMaxSize;
@@ -35,46 +30,6 @@ public class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonitorVo {
     private int transferWaitingSize;
     private int creatingCount;
     private int creatingTimeoutCount;
-
-    public String getDsId() {
-        return dsId;
-    }
-
-    void setDsId(String dsId) {
-        this.dsId = dsId;
-    }
-
-    public String getDsUUID() {
-        return dsUUID;
-    }
-
-    void setDsUUID(String dsUUID) {
-        this.dsUUID = dsUUID;
-    }
-
-    public String getHostIP() {
-        return hostIP;
-    }
-
-    void setHostIP(String hostIP) {
-        this.hostIP = hostIP;
-    }
-
-    public long getThreadId() {
-        return threadId;
-    }
-
-    void setThreadId(long threadId) {
-        this.threadId = threadId;
-    }
-
-    public String getThreadName() {
-        return threadName;
-    }
-
-    void setThreadName(String threadName) {
-        this.threadName = threadName;
-    }
 
     public String getPoolName() {
         return poolName;

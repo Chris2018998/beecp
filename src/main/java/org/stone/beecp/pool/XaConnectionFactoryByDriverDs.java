@@ -45,9 +45,12 @@ public class XaConnectionFactoryByDriverDs implements BeeXaConnectionFactory, Co
         useUsername = isNotBlank(username);
     }
 
-    //create one connection
     public final XAConnection create() throws SQLException {
         return this.useUsername ? this.dataSource.getXAConnection(this.username, this.password) : this.dataSource.getXAConnection();
+    }
+
+    public final XAConnection create(String username, String password) throws SQLException {
+        return this.dataSource.getXAConnection(username, password);
     }
 
     //***************************************************************************************************************//

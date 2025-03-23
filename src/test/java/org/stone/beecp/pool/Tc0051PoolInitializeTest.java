@@ -47,7 +47,7 @@ public class Tc0051PoolInitializeTest extends TestCase {
             fail("Test failed on invalid configured items");
         } catch (PoolInitializeFailedException e) {
             String message = e.getMessage();
-            Assert.assertTrue(message != null && message.contains("The configured value of item[initial-size] can't be greater than the configured value of item[max-active]"));
+            Assert.assertTrue(message != null && message.contains("The configured value of item 'initial-size' cannot be greater than the configured value of item 'max-active'"));
         }
     }
 
@@ -252,7 +252,8 @@ public class Tc0051PoolInitializeTest extends TestCase {
             new FastConnectionPool().init(config1);
             fail("Failed to test exception from factory");
         } catch (SQLException e) {
-            Assert.assertEquals("the count of created connections has reached max", e.getMessage());
+            Assert.assertTrue(e instanceof ConnectionCreateException);
+            Assert.assertEquals("java.sql.SQLException: the count of created connections has reached max", e.getMessage());
         }
 
         try {
@@ -265,7 +266,8 @@ public class Tc0051PoolInitializeTest extends TestCase {
             new FastConnectionPool().init(config2);
             fail("Failed to test exception from factory");
         } catch (SQLException e) {
-            Assert.assertEquals("the count of created connections has reached max", e.getMessage());
+            Assert.assertTrue(e instanceof ConnectionCreateException);
+            Assert.assertEquals("java.sql.SQLException: the count of created connections has reached max", e.getMessage());
         }
     }
 

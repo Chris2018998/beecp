@@ -57,7 +57,7 @@ public class Tc0058PoolRecoveryTest extends TestCase {
 
         //1:check exception
         Assert.assertNotNull(failException);
-        Assert.assertEquals("network communication failed", failException.getMessage());//message from mock factory
+        Assert.assertEquals("java.sql.SQLException: network communication failed", failException.getMessage());//message from mock factory
         Assert.assertEquals(0, pool.getTotalSize());
         String logs = logAppender.endCollectedStoneLog();
         Assert.assertTrue(logs.contains("alive test failed on a borrowed connection"));

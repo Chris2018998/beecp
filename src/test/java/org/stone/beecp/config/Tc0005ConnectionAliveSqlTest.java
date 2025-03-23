@@ -29,28 +29,28 @@ public class Tc0005ConnectionAliveSqlTest extends TestCase {
             config.setAliveTestSql(null);
             fail("Setting test failed on configuration item[alive-test-sql]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("The given value to configuration item[alive-test-sql] can't be null or empty", e.getMessage());
+            Assert.assertEquals("The given value for configuration item 'alive-test-sql' cannot be null or empty", e.getMessage());
         }
 
         try {
             config.setAliveTestSql("");
             fail("Setting test failed on configuration item[alive-test-sql]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("The given value to configuration item[alive-test-sql] can't be null or empty", e.getMessage());
+            Assert.assertEquals("The given value for configuration item 'alive-test-sql' cannot be null or empty", e.getMessage());
         }
 
         try {
             config.setAliveTestSql(" ");
             fail("Setting test failed on configuration item[alive-test-sql]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("The given value to configuration item[alive-test-sql] can't be null or empty", e.getMessage());
+            Assert.assertEquals("The given value for configuration item 'alive-test-sql' cannot be null or empty", e.getMessage());
         }
 
         try {
             config.setAliveTestSql("SELECT1");
             fail("Setting test failed on configuration item[alive-test-sql]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("The given value to configuration item[alive-test-sql] must be start with 'select '", e.getMessage());
+            Assert.assertEquals("The given value for configuration item 'alive-test-sql' must start with 'select '", e.getMessage());
         }
     }
 }

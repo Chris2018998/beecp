@@ -34,7 +34,7 @@ public class Tc0060PoolCloseTest extends TestCase {
         try {
             pool.getConnection();
         } catch (ConnectionGetForbiddenException e) {
-            assertEquals("Pool was closed or in cleaning", e.getMessage());
+            assertEquals("Pool has been closed or is being cleared", e.getMessage());
         }
     }
 }

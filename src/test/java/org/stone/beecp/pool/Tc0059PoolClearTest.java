@@ -52,7 +52,7 @@ public class Tc0059PoolClearTest extends TestCase {
             fail("fail to test clear");
         } catch (SQLException e) {
             Assert.assertTrue(e instanceof PoolInClearingException);
-            Assert.assertEquals("Pool was closed or in cleaning", e.getMessage());
+            Assert.assertEquals("Pool has been closed or is being cleared", e.getMessage());
         }
         logs = logAppender.endCollectedStoneLog();
         Assert.assertTrue(logs.isEmpty());
@@ -144,7 +144,7 @@ public class Tc0059PoolClearTest extends TestCase {
             pool.clear(false, config2);
             fail("failed test clear");
         } catch (BeeDataSourceConfigException e) {
-            Assert.assertEquals("The configured value of item[initial-size] can't be greater than the configured value of item[max-active]", e.getMessage());
+            Assert.assertEquals("The configured value of item 'initial-size' cannot be greater than the configured value of item 'max-active'", e.getMessage());
             config2.setMaxActive(10);
             config2.setInitialSize(10);
             pool.clear(false, config2);
@@ -160,7 +160,7 @@ public class Tc0059PoolClearTest extends TestCase {
             pool.clear(false, config3);
             fail("failed test clear");
         } catch (SQLException e) {
-            Assert.assertEquals("Network communications error", e.getMessage());
+            Assert.assertEquals("java.sql.SQLException: Network communications error", e.getMessage());
             config3.setConnectionFactory(null);
 
             pool.clear(false, config3);

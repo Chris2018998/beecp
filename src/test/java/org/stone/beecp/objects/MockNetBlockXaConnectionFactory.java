@@ -40,4 +40,8 @@ public class MockNetBlockXaConnectionFactory extends MockNetBlockBaseFactory imp
             blockingMap.remove(creationThread);
         }
     }
+
+    public XAConnection create(String username, String password) {
+        return create();
+    }
 }

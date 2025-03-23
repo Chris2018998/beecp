@@ -322,12 +322,12 @@ final class ProxyClassGenerator {
                 if (methodName.startsWith("execute")) methodBuffer.append("p.commitDirtyInd=!p.curAutoCommit;");
                 methodBuffer.append(rawName + methodName + "($$);");
                 if (methodName.startsWith("execute"))
-                    methodBuffer.append("p.lastAccessTime=System.currentTimeMillis();");
+                    methodBuffer.append("p.lastAccessTime=System.nanoTime();");
             } else {
                 if (methodName.startsWith("execute")) {
                     methodBuffer.append("p.commitDirtyInd=!p.curAutoCommit;");
                     methodBuffer.append(ctMethod.getReturnType().getName() + " r=" + rawName + methodName + "($$);");
-                    methodBuffer.append("p.lastAccessTime=System.currentTimeMillis();");
+                    methodBuffer.append("p.lastAccessTime=System.nanoTime();");
                     if (ctMethod.getReturnType() == ctResultSetClass) {
                         methodBuffer.append("return r==null?null:new ProxyResultSet(r,this,p);");
                     } else {

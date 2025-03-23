@@ -128,10 +128,6 @@ abstract class ProxyStatementBase extends ProxyBaseWrapper implements Statement 
         return createProxyResultSet(re, this, this.p);
     }
 
-    public void setPoolable(boolean var1) {
-        //do nothing
-    }
-
     public void closeOnCompletion() {
         //do nothing
     }

@@ -137,6 +137,13 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     //Class name of Connection factory,third priority to be chosen
     private String connectionFactoryClassName;
 
+    //Connection alive validator
+    private BeeConnectionValidator aliveValidator;
+    //Class of predicate,second priority to be chosen
+    private Class<? extends BeeConnectionValidator> aliveValidatorClass;
+    //Class name of predicate,third priority to be chosen
+    private String aliveValidatorClassName;
+
     //Connection Predicate to do eviction test,first priority to be chosen
     private BeeConnectionPredicate evictPredicate;
     //Class of predicate,second priority to be chosen
@@ -257,7 +264,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setInitialSize(int initialSize) {
         if (initialSize < 0)
-            throw new InvalidParameterException("The given value to configuration item[initial-size] can't be less than zero");
+            throw new InvalidParameterException("The given value for the configuration item 'initial-size' cannot be less than zero");
         this.initialSize = initialSize;
     }
 
@@ -275,7 +282,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setMaxActive(int maxActive) {
         if (maxActive <= 0)
-            throw new InvalidParameterException("The given value to configuration item[max-active] must be greater than zero");
+            throw new InvalidParameterException("The given value for configuration item 'max-active' must be greater than zero");
 
         this.maxActive = maxActive;
         //fix issue:#19 Chris-2020-08-16 begin
@@ -289,7 +296,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setBorrowSemaphoreSize(int borrowSemaphoreSize) {
         if (borrowSemaphoreSize <= 0)
-            throw new InvalidParameterException("The given value to configuration item[borrow-semaphore-size] must be greater than zero");
+            throw new InvalidParameterException("The given value for configuration item 'borrow-semaphore-size' must be greater than zero");
         this.borrowSemaphoreSize = borrowSemaphoreSize;
     }
 
@@ -299,7 +306,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setMaxWait(long maxWait) {
         if (maxWait <= 0L)
-            throw new InvalidParameterException("The given value to configuration item[max-wait] must be greater than zero");
+            throw new InvalidParameterException("The given value for configuration item 'max-wait' must be greater than zero");
         this.maxWait = maxWait;
     }
 
@@ -309,7 +316,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setIdleTimeout(long idleTimeout) {
         if (idleTimeout <= 0L)
-            throw new InvalidParameterException("The given value to configuration item[idle-timeout] must be greater than zero");
+            throw new InvalidParameterException("The given value for configuration item 'idle-timeout' must be greater than zero");
         this.idleTimeout = idleTimeout;
     }
 
@@ -319,7 +326,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setHoldTimeout(long holdTimeout) {
         if (holdTimeout < 0L)
-            throw new InvalidParameterException("The given value to configuration item[hold-timeout] can't be less than zero");
+            throw new InvalidParameterException("The given value for configuration item 'hold-timeout' cannot be less than zero");
         this.holdTimeout = holdTimeout;
     }
 
@@ -329,11 +336,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setAliveTestSql(String aliveTestSql) {
         if (isBlank(aliveTestSql))
-            throw new InvalidParameterException("The given value to configuration item[alive-test-sql] can't be null or empty");
+            throw new InvalidParameterException("The given value for configuration item 'alive-test-sql' cannot be null or empty");
 
         aliveTestSql = trimString(aliveTestSql);
         if (!aliveTestSql.toUpperCase(Locale.US).startsWith("SELECT "))
-            throw new InvalidParameterException("The given value to configuration item[alive-test-sql] must be start with 'select '");
+            throw new InvalidParameterException("The given value for configuration item 'alive-test-sql' must start with 'select '");
 
         this.aliveTestSql = aliveTestSql;
     }
@@ -344,7 +351,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setAliveTestTimeout(int aliveTestTimeout) {
         if (aliveTestTimeout < 0L)
-            throw new InvalidParameterException("The given value to configuration item[alive-test-timeout] can't be less than zero");
+            throw new InvalidParameterException("The given value for configuration item 'alive-test-timeout' cannot  be less than zero");
         this.aliveTestTimeout = aliveTestTimeout;
     }
 
@@ -354,7 +361,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setAliveAssumeTime(long aliveAssumeTime) {
         if (aliveAssumeTime < 0L)
-            throw new InvalidParameterException("The given value to configuration item[alive-assume-time] can't be less than zero");
+            throw new InvalidParameterException("The given value for configuration item 'alive-assume-time' cannot be less than zero");
         this.aliveAssumeTime = aliveAssumeTime;
     }
 
@@ -364,7 +371,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setTimerCheckInterval(long timerCheckInterval) {
         if (timerCheckInterval <= 0L)
-            throw new InvalidParameterException("The given value to configuration item[timer-check-interval] must be greater than zero");
+            throw new InvalidParameterException("The given value for configuration item 'timer-check-interval' must be greater than zero");
         this.timerCheckInterval = timerCheckInterval;
     }
 
@@ -382,7 +389,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setParkTimeForRetry(long parkTimeForRetry) {
         if (parkTimeForRetry < 0L)
-            throw new InvalidParameterException("The given value to configuration item[park-time-for-retry] can't be less than zero");
+            throw new InvalidParameterException("The given value for configuration item 'park-time-for-retry' cannot be less than zero");
         this.parkTimeForRetry = parkTimeForRetry;
     }
 
@@ -618,6 +625,30 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
         this.connectionFactoryClassName = trimString(connectionFactoryClassName);
     }
 
+    public String getAliveValidatorClassName() {
+        return aliveValidatorClassName;
+    }
+
+    public void setAliveValidatorClassName(String aliveValidatorClassName) {
+        this.aliveValidatorClassName = aliveValidatorClassName;
+    }
+
+    public Class<? extends BeeConnectionValidator> getAliveValidatorClass() {
+        return aliveValidatorClass;
+    }
+
+    public void setAliveValidatorClass(Class<? extends BeeConnectionValidator> aliveValidatorClass) {
+        this.aliveValidatorClass = aliveValidatorClass;
+    }
+
+    public BeeConnectionValidator getAliveValidator() {
+        return aliveValidator;
+    }
+
+    public void setAliveValidator(BeeConnectionValidator aliveValidator) {
+        this.aliveValidator = aliveValidator;
+    }
+
     public Class<? extends BeeConnectionPredicate> getEvictPredicateClass() {
         return evictPredicateClass;
     }
@@ -812,10 +843,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
      */
     public BeeDataSourceConfig check() throws SQLException {
         if (initialSize > maxActive)
-            throw new BeeDataSourceConfigException("The configured value of item[initial-size] can't be greater than the configured value of item[max-active]");
+            throw new BeeDataSourceConfigException("The configured value of item 'initial-size' cannot be greater than the configured value of item 'max-active'");
 
         Object connectionFactory = createConnectionFactory();
         BeeConnectionPredicate predicate = this.createConnectionEvictPredicate();
+        BeeConnectionValidator validator = this.createConnectionValidator();
 
         BeeDataSourceConfig checkedConfig = new BeeDataSourceConfig();
         copyTo(checkedConfig);
@@ -833,6 +865,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
         this.connectionFactory = connectionFactory;
         checkedConfig.connectionFactory = connectionFactory;
         checkedConfig.evictPredicate = predicate;
+        checkedConfig.aliveValidator = validator;
         if (isBlank(checkedConfig.poolName)) checkedConfig.poolName = "FastPool-" + PoolNameIndex.getAndIncrement();
         if (checkedConfig.printConfigInfo) printConfiguration(checkedConfig);
 
@@ -1052,6 +1085,27 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
                 throw new BeeDataSourceConfigException("Not found sql exception predicate class[" + evictPredicateClassName + "]", e);
             } catch (Throwable e) {
                 throw new BeeDataSourceConfigException("Failed to create sql exception predicate with class[" + predicationClass + "]", e);
+            }
+        }
+
+        return null;
+    }
+
+    //create Validator
+    private BeeConnectionValidator createConnectionValidator() throws BeeDataSourceConfigException {
+        //step1:if exists validator,then return it
+        if (this.aliveValidator != null) return this.aliveValidator;
+
+        //step2: create validator
+        if (aliveValidatorClass != null || isNotBlank(aliveValidatorClassName)) {
+            Class<?> aliveValidatorClass = null;
+            try {
+                aliveValidatorClass = aliveValidatorClass != null ? aliveValidatorClass : Class.forName(aliveValidatorClassName);
+                return (BeeConnectionValidator) createClassInstance(aliveValidatorClass, BeeConnectionPredicate.class, "alive validator");
+            } catch (ClassNotFoundException e) {
+                throw new BeeDataSourceConfigException("Not found alive validator class[" + aliveValidatorClassName + "]", e);
+            } catch (Throwable e) {
+                throw new BeeDataSourceConfigException("Failed to create validator with class[" + aliveValidatorClass + "]", e);
             }
         }
 

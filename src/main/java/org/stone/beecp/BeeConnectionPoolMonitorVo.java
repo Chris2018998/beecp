@@ -17,16 +17,6 @@ package org.stone.beecp;
  */
 public interface BeeConnectionPoolMonitorVo {
 
-    String getDsId();
-
-    String getDsUUID();
-
-    String getHostIP();
-
-    long getThreadId();
-
-    String getThreadName();
-
     String getPoolName();
 
     String getPoolMode();

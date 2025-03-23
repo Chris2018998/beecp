@@ -91,7 +91,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         Connection con = null;
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
-        Assert.assertEquals(100L, getFieldValue(pool, "holdTimeoutMs"));
+        Assert.assertEquals(TimeUnit.MILLISECONDS.toNanos(100L), getFieldValue(pool, "holdTimeoutNs"));
         Assert.assertTrue((Boolean) getFieldValue(pool, "supportHoldTimeout"));
 
         try {
@@ -122,7 +122,7 @@ public class Tc0091ConnectionTimeoutTest extends TestCase {
         config.setTimerCheckInterval(500L);
         FastConnectionPool pool = new FastConnectionPool();
         pool.init(config);
-        Assert.assertEquals(0L, getFieldValue(pool, "holdTimeoutMs"));
+        Assert.assertEquals(0L, getFieldValue(pool, "holdTimeoutNs"));
         Assert.assertFalse((Boolean) getFieldValue(pool, "supportHoldTimeout"));
 
         Connection con = null;

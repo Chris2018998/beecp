@@ -45,9 +45,12 @@ public final class ConnectionFactoryByDriverDs implements BeeConnectionFactory, 
         this.useUsername = isNotBlank(username);
     }
 
-    //return a connection when creates successful,otherwise,throws a failure exception
     public Connection create() throws SQLException {
         return this.useUsername ? this.driverDataSource.getConnection(this.username, this.password) : this.driverDataSource.getConnection();
+    }
+
+    public Connection create(String username, String password) throws SQLException {
+        return this.driverDataSource.getConnection(username, password);
     }
 
     //***************************************************************************************************************//

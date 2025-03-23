@@ -68,12 +68,12 @@ public final class ConnectionPoolStatics {
     };
 
     //pool state
-    static final int POOL_NEW = 0;
-    static final int POOL_STARTING = 1;
-    static final int POOL_READY = 2;
-    static final int POOL_CLOSING = 3;
-    static final int POOL_CLOSED = 4;
-    static final int POOL_CLEARING = 5;
+    public static final int POOL_NEW = 0;
+    public static final int POOL_STARTING = 1;
+    public static final int POOL_READY = 2;
+    public static final int POOL_CLEARING = 3;
+    public static final int POOL_CLOSING = 4;
+    public static final int POOL_CLOSED = 5;
 
     //connection state
     static final int CON_CLOSED = 0;

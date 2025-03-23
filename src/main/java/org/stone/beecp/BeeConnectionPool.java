@@ -43,6 +43,18 @@ public interface BeeConnectionPool {
     Connection getConnection() throws SQLException;
 
     /**
+     * Attempts to get a connection from pool.
+     *
+     * @param username link to database
+     * @param password the user's password
+     * @return a borrowed connection
+     * @throws SQLException                      when fail to create a connection
+     * @throws ConnectionGetTimeoutException     when wait timeout in pool
+     * @throws ConnectionGetInterruptedException while waiting is interrupted
+     */
+    Connection getConnection(String username, String password) throws SQLException;
+
+    /**
      * Attempts to get a XAConnection from pool.
      *
      * @return a borrowed XAConnection
@@ -51,6 +63,18 @@ public interface BeeConnectionPool {
      * @throws ConnectionGetInterruptedException while waiting is interrupted
      */
     XAConnection getXAConnection() throws SQLException;
+
+    /**
+     * Attempts to get a XAConnection from pool.
+     *
+     * @param username link to database
+     * @param password the user's password
+     * @return a borrowed XAConnection
+     * @throws SQLException                      when fail to create a xa connection
+     * @throws ConnectionGetTimeoutException     when wait timeout in pool
+     * @throws ConnectionGetInterruptedException while waiting is interrupted
+     */
+    XAConnection getXAConnection(String username, String password) throws SQLException;
 
     /**
      * Shutdown pool to not work(closed state),closes all maintained connections and removes them from pool.

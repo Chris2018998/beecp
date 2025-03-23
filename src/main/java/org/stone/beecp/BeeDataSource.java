@@ -29,7 +29,6 @@ import java.util.logging.Logger;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.stone.beecp.pool.ConnectionPoolStatics.Dummy_CommonDataSource;
-import static org.stone.tools.BeanUtil.CommonLog;
 import static org.stone.tools.BeanUtil.createClassInstance;
 
 /**
@@ -103,6 +102,16 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         return createPoolByLock().getXAConnection();
     }
 
+    public Connection getConnection(String username, String password) throws SQLException {
+        if (this.ready) return pool.getConnection(username, password);
+        return createPoolByLock().getConnection(username, password);
+    }
+
+    public XAConnection getXAConnection(String username, String password) throws SQLException {
+        if (this.ready) return pool.getXAConnection(username, password);
+        return createPoolByLock().getXAConnection(username, password);
+    }
+
     private BeeConnectionPool createPoolByLock() throws SQLException {
         if (!lock.isWriteLocked() && lock.writeLock().tryLock()) {
             try {
@@ -128,19 +137,6 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         if (cause != null) throw cause;
         return pool;
     }
-
-    public Connection getConnection(String user, String password) throws SQLException {
-        //throw new SQLFeatureNotSupportedException("Not support");
-        CommonLog.warn("getConnection (user,password) ignores authentication - returning default connection");
-        return getConnection();
-    }
-
-    public XAConnection getXAConnection(String user, String password) throws SQLException {
-        //throw new SQLFeatureNotSupportedException("Not support");
-        CommonLog.warn("getXAConnection (user,password) ignores authentication - returning default XAConnection");
-        return getXAConnection();
-    }
-
 
     //***************************************************************************************************************//
     //                                      Override methods from CommonDataSource                                   //

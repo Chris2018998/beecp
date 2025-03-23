@@ -12,6 +12,7 @@ package org.stone.beecp.objects;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -50,6 +51,8 @@ public class MockObjectForPropertiesSet {
     private String[] hosts;
     private int[] ports;
     private char[] passwordChars;
+    private List<String> hostNameList;
+    private List<Integer> hostPortList;
 
     public Number getNullTxt() {
         return nullTxt;
@@ -267,6 +270,21 @@ public class MockObjectForPropertiesSet {
         this.map = map;
     }
 
+    public List<String> getHostNameList() {
+        return hostNameList;
+    }
+
+    public void setHostNameList(List<String> hostNameList) {
+        this.hostNameList = hostNameList;
+    }
+
+    public List<Integer> getHostPortList() {
+        return hostPortList;
+    }
+
+    public void setHostPortList(List<Integer> hostPortList) {
+        this.hostPortList = hostPortList;
+    }
 
     public String getURL() {
         return URL;

@@ -32,19 +32,19 @@ public class Tc0006ConnectionSizeTest extends TestCase {
             config.setInitialSize(-1);
             fail("Setting test failed on configuration item[initial-size]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("The given value to configuration item[initial-size] can't be less than zero", e.getMessage());
+            Assert.assertEquals("The given value for the configuration item 'initial-size' cannot be less than zero", e.getMessage());
         }
         try {
             config.setMaxActive(-1);
             fail("Setting test failed on configuration item[initial-size]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("The given value to configuration item[max-active] must be greater than zero", e.getMessage());
+            Assert.assertEquals("The given value for configuration item 'max-active' must be greater than zero", e.getMessage());
         }
         try {
             config.setMaxActive(0);
             fail("Setting test failed on configuration item[initial-size]");
         } catch (InvalidParameterException e) {
-            Assert.assertEquals("The given value to configuration item[max-active] must be greater than zero", e.getMessage());
+            Assert.assertEquals("The given value for configuration item 'max-active' must be greater than zero", e.getMessage());
         }
 
         config.setInitialSize(0);
@@ -74,7 +74,7 @@ public class Tc0006ConnectionSizeTest extends TestCase {
             config.check();
         } catch (BeeDataSourceConfigException e) {
             String message = e.getMessage();
-            Assert.assertTrue(message != null && message.contains("The configured value of item[initial-size] can't be greater than the configured value of item[max-active]"));
+            Assert.assertTrue(message != null && message.contains("The configured value of item 'initial-size' cannot be greater than the configured value of item 'max-active'"));
         }
     }
 }

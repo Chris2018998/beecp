@@ -110,7 +110,7 @@ public class Tc0055PoolWaitQueueTest extends TestCase {
             Assert.assertEquals(1, pool.getTransferWaitingSize());
             pool.clear(true);
             secondBorrower.join();
-            Assert.assertTrue(secondBorrower.getFailureCause().getMessage().contains("Pool was closed or in cleaning"));
+            Assert.assertTrue(secondBorrower.getFailureCause().getMessage().contains("Pool has been closed or is being cleared"));
         } finally {
             pool.close();
         }

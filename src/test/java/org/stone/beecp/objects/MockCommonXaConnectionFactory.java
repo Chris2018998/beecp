@@ -42,4 +42,8 @@ public final class MockCommonXaConnectionFactory extends MockCommonBaseFactory i
         this.increaseCurCreatedCount();
         return con;
     }
+
+    public XAConnection create(String username, String password) throws SQLException {
+        return create();
+    }
 }

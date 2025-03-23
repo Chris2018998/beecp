@@ -32,6 +32,14 @@ public class MockBlockPoolImplementation implements BeeConnectionPool {
         return new MockXaConnection(new MockConnection(), null);
     }
 
+    public Connection getConnection(String username, String password) {
+        return new MockConnection();
+    }
+
+    public XAConnection getXAConnection(String username, String password) {
+        return new MockXaConnection(new MockConnection(), null);
+    }
+
     public void close() {
         //do nothing
     }

@@ -25,4 +25,8 @@ public class MockNetBlockXaConnectionFactory2 implements BeeXaConnectionFactory 
         LockSupport.park();
         return null;
     }
+
+    public XAConnection create(String username, String password) {
+        return create();
+    }
 }

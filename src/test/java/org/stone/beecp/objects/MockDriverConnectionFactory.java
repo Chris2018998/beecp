@@ -24,4 +24,8 @@ public class MockDriverConnectionFactory extends DatabaseLinkInfo implements Bee
     public Connection create() {
         return new MockConnection();
     }
+
+    public Connection create(String username, String password) {
+        return new MockConnection();
+    }
 }

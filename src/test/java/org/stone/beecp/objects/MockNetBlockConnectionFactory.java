@@ -13,6 +13,7 @@ import org.stone.beecp.BeeConnectionFactory;
 import org.stone.beecp.driver.MockConnection;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.concurrent.locks.LockSupport;
 
 /**
@@ -39,4 +40,8 @@ public class MockNetBlockConnectionFactory extends MockNetBlockBaseFactory imple
             blockingMap.remove(creationThread);
         }
     }
+
+   public Connection create(String username, String password) throws SQLException{
+        return create();
+   }
 }

@@ -17,7 +17,7 @@ import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 import org.stone.beecp.driver.MockDriver;
 import org.stone.beecp.driver.MockXaDataSource;
-import org.stone.beecp.objects.MockBlockPoolImplementation2;
+import org.stone.beecp.objects.MockBlockPoolImplementation;
 import org.stone.beecp.objects.MockDriverConnectionFactory;
 import org.stone.beecp.objects.MockObjectForPropertiesSet;
 import org.stone.tools.exception.BeanException;
@@ -29,6 +29,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.stone.beecp.config.DsConfigFactory.MOCK_URL;
@@ -227,11 +228,10 @@ public class Tc0050PoolStaticsTest extends TestCase {
         valueMap.remove("max-active");
         setPropertiesValue(bean, valueMap);
         Assert.assertEquals(30, bean.getMaxActive());
-
     }
 
     public void testClassInstanceCreation() throws Exception {
-        Class<?> clazz = MockBlockPoolImplementation2.class;
+        Class<?> clazz = MockBlockPoolImplementation.class;
         BeeConnectionPool pool1 = (BeeConnectionPool) createClassInstance(clazz, (Class<?>) null, "pool");
         BeeConnectionPool pool2 = (BeeConnectionPool) createClassInstance(clazz, BeeConnectionPool.class, "pool");
         Assert.assertNotNull(pool1);
@@ -293,7 +293,7 @@ public class Tc0050PoolStaticsTest extends TestCase {
         localConnectProperties.put("clazz", "java.lang.String");
         localConnectProperties.put("URL", "http://localhost:8080/testdb");
         localConnectProperties.put("intArray", "1");
-        localConnectProperties.put("collection", "java.util.ArrayList");
+        localConnectProperties.put("collection", "1");
         localConnectProperties.put("map", "java.util.HashMap");
         MockObjectForPropertiesSet bean = new MockObjectForPropertiesSet();
         setPropertiesValue(bean, localConnectProperties);
@@ -337,6 +337,26 @@ public class Tc0050PoolStaticsTest extends TestCase {
         Assert.assertEquals(new Integer(2), bean.getIntArray2()[2]);
     }
 
+    public void testSetList() throws Exception {
+        Map<String, Object> localConnectProperties = new HashMap<>(10);
+        localConnectProperties.put("hostNameList", "server1,server2,server3");
+        localConnectProperties.put("hostPortList", "80,90,100");
+
+        MockObjectForPropertiesSet bean = new MockObjectForPropertiesSet();
+        setPropertiesValue(bean, localConnectProperties);
+
+        List<String> hostNameList = bean.getHostNameList();
+        Assert.assertNotNull(hostNameList);
+        Assert.assertEquals("server1", hostNameList.get(0));
+        Assert.assertEquals("server2", hostNameList.get(1));
+        Assert.assertEquals("server3", hostNameList.get(2));
+
+        List<Integer> hostPortList = bean.getHostPortList();
+        Assert.assertNotNull(hostPortList);
+        Assert.assertEquals(Integer.valueOf("80"), hostPortList.get(0));
+        Assert.assertEquals(Integer.valueOf("90"), hostPortList.get(1));
+        Assert.assertEquals(Integer.valueOf("100"), hostPortList.get(2));
+    }
 
     private static class SetTestBean2 {
     }

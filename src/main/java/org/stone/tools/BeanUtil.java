@@ -20,9 +20,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.stone.tools.CommonUtil.isBlank;
 
@@ -33,10 +31,12 @@ import static org.stone.tools.CommonUtil.isBlank;
  * @version 1.0
  */
 public class BeanUtil {
+    public static final String Separator_Comma = ",";
     //middle-line:separator symbol in configuration properties name
     public static final String Separator_MiddleLine = "-";
     //under-line:separator symbol in configuration properties name
     public static final String Separator_UnderLine = "_";
+
     //a SLF4 logger used in stone project
     public static final Logger CommonLog = LoggerFactory.getLogger(BeanUtil.class);
 
@@ -203,7 +203,7 @@ public class BeanUtil {
             if (setValue != null) {
                 Class<?> type = setMethod.getParameterTypes()[0];
                 try {
-                    setValue = convert(setValue, type);
+                    setValue = convert(setValue, type, setMethod);
                 } catch (Throwable e) {
                     throw new PropertyValueConvertException("Failed to convert value[" + setValue + "]to property type(" + propertyName + ":" + type + ")", e);
                 }
@@ -302,14 +302,14 @@ public class BeanUtil {
     /**
      * converts value to specified type
      *
-     * @param propValue is value of the property
-     * @param type      target conversion type
+     * @param propValue  is value of the property
+     * @param targetType target conversion type
      * @return converted value
      */
-    private static Object convert(Object propValue, Class<?> type) throws Exception {
-        if (type.isInstance(propValue)) {
+    private static Object convert(Object propValue, Class<?> targetType, Method setMethod) throws Exception {
+        if (targetType.isInstance(propValue)) {
             return propValue;
-        } else if (type == String.class) {
+        } else if (targetType == String.class) {
             return propValue.toString();
         }
 
@@ -317,40 +317,63 @@ public class BeanUtil {
         if (isBlank(text)) return null;
         text = text.trim();
 
-        if (type == char.class || type == Character.class) {
+        if (targetType == char.class || targetType == Character.class) {
             return Character.valueOf(text.charAt(0));
-        } else if (type == boolean.class || type == Boolean.class) {
+        } else if (targetType == boolean.class || targetType == Boolean.class) {
             return Boolean.valueOf(text);
-        } else if (type == byte.class || type == Byte.class) {
+        } else if (targetType == byte.class || targetType == Byte.class) {
             return Byte.valueOf(text);
-        } else if (type == short.class || type == Short.class) {
+        } else if (targetType == short.class || targetType == Short.class) {
             return Short.valueOf(text);
-        } else if (type == int.class || type == Integer.class) {
+        } else if (targetType == int.class || targetType == Integer.class) {
             return Integer.valueOf(text);
-        } else if (type == long.class || type == Long.class) {
+        } else if (targetType == long.class || targetType == Long.class) {
             return Long.valueOf(text);
-        } else if (type == float.class || type == Float.class) {
+        } else if (targetType == float.class || targetType == Float.class) {
             return Float.valueOf(text);
-        } else if (type == double.class || type == Double.class) {
+        } else if (targetType == double.class || targetType == Double.class) {
             return Double.valueOf(text);
-        } else if (type == BigInteger.class) {
+        } else if (targetType == BigInteger.class) {
             return new BigInteger(text);
-        } else if (type == BigDecimal.class) {
+        } else if (targetType == BigDecimal.class) {
             return new BigDecimal(text);
-        } else if (type == Class.class) {
+        } else if (targetType == Class.class) {
             return Class.forName(text);
-        } else if (type.isArray()) {
-            String[] textArray = text.split(",");
+        } else if (targetType.isArray()) {
+            String[] textArray = text.split(Separator_Comma);
             int elementSize = textArray.length;
-            Class<?> elementType = type.getComponentType();
+            Class<?> elementType = targetType.getComponentType();
             Object elementArray = Array.newInstance(elementType, elementSize);
             for (int i = 0; i < elementSize; i++) {
-                Array.set(elementArray, i, convert(textArray[i], elementType));
+                Array.set(elementArray, i, convert(textArray[i], elementType, null));
             }
             return elementArray;
+        } else if (Collection.class.isAssignableFrom(targetType)) {
+            if (setMethod == null) return null;
+
+            Collection collection;
+            if (!Modifier.isAbstract(targetType.getModifiers())) {
+                collection = (Collection<?>) targetType.newInstance();
+            } else if (Set.class.isAssignableFrom(targetType)) {
+                collection = new HashSet<>(1);
+            } else {
+                collection = new ArrayList<>(1);
+            }
+
+            Type genericParameterType = setMethod.getGenericParameterTypes()[0];
+            if (genericParameterType instanceof ParameterizedType) {
+                ParameterizedType parameterizedType = (ParameterizedType) genericParameterType;
+                Class<?> elementType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
+                for (String s : text.split(Separator_Comma)) {
+                    collection.add(convert(s, elementType, null));
+                }
+            } else {
+                Collections.addAll(collection, text.split(Separator_Comma));
+            }
+            return collection;
         } else {
             Object objInstance = Class.forName(text).newInstance();
-            if (type.isInstance(objInstance)) return objInstance;
+            if (targetType.isInstance(objInstance)) return objInstance;
             throw new ClassCastException();
         }
     }

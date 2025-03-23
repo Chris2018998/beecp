@@ -25,4 +25,9 @@ public class MockNetBlockConnectionFactory2 implements BeeConnectionFactory {
         LockSupport.park();
         return null;
     }
+
+    public Connection create(String username, String password) {
+        LockSupport.park();
+        return null;
+    }
 }
