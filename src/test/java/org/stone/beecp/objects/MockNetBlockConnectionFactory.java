@@ -41,7 +41,7 @@ public class MockNetBlockConnectionFactory extends MockNetBlockBaseFactory imple
         }
     }
 
-   public Connection create(String username, String password) throws SQLException{
-        return create();
-   }
+    public Connection create(String username, String password) throws SQLException {
+        return create(username, password);
+    }
 }

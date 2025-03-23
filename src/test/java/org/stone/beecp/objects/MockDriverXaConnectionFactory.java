@@ -12,7 +12,8 @@ public class MockDriverXaConnectionFactory extends DatabaseLinkInfo implements B
     public XAConnection create() {
         return xaDataSource.getXAConnection();
     }
+
     public XAConnection create(String username, String password) {
-        return xaDataSource.getXAConnection();
+        return xaDataSource.getXAConnection(username, password);
     }
 }

@@ -39,7 +39,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.stone.beecp.pool.ConnectionPoolStatics.*;
-import static org.stone.tools.BeanUtil.CommonLog;
 import static org.stone.tools.CommonUtil.isBlank;
 import static org.stone.tools.CommonUtil.isNotBlank;
 
@@ -224,7 +223,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                 while (index < initSize) {
                     PooledConnection p = connectionArray[index];
                     p.state = CON_CREATING;
-                    this.fillRawConnection(p, CON_IDLE);
+                    this.fillRawConnection(p, CON_IDLE, false, null, null);
                     index++;
                 }
             } catch (SQLException e) {
@@ -242,7 +241,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     }
 
     //Method-1.4: Search one or create one
-    private PooledConnection searchOrCreate() throws SQLException {
+    private PooledConnection searchOrCreate(boolean attemptTryInputtedUser, String username, String password) throws SQLException {
         //1: do initialization on connection array
         if (!connectionArrayInitialized) {
             ReentrantReadWriteLock.ReadLock readLock = connectionArrayInitLock.readLock();
@@ -252,7 +251,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                     try {
                         PooledConnection p = connectionArray[0];
                         p.state = CON_CREATING;
-                        return this.fillRawConnection(p, CON_BORROWED);
+                        return this.fillRawConnection(p, CON_BORROWED, attemptTryInputtedUser, username, password);
                     } finally {
                         writeLock.unlock();
                     }
@@ -275,17 +274,18 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                 if (ConStUpd.compareAndSet(p, CON_IDLE, CON_BORROWED)) {
                     if (this.testOnBorrow(p)) return p;
                 } else if (p.state == CON_CLOSED && ConStUpd.compareAndSet(p, CON_CLOSED, CON_CREATING)) {
-                    return this.fillRawConnection(p, CON_BORROWED);
+                    return this.fillRawConnection(p, CON_BORROWED, attemptTryInputtedUser, username, password);
                 }
             } else if (state == CON_CLOSED && ConStUpd.compareAndSet(p, CON_CLOSED, CON_CREATING)) {
-                return this.fillRawConnection(p, CON_BORROWED);
+                return this.fillRawConnection(p, CON_BORROWED, attemptTryInputtedUser, username, password);
             }
         }
         return null;
     }
 
     //Method-1.5: create a created connection and fill it into pooled Connection(a pooled wrapper of connection)
-    private PooledConnection fillRawConnection(PooledConnection p, int state) throws SQLException {
+    private PooledConnection fillRawConnection(PooledConnection p, int state,
+                                               boolean attemptTryInputtedUser, String username, String password) throws SQLException {
         //1: print info of creation starting
         if (this.printRuntimeLog)
             Log.info("BeeCP({})start to create a connection", this.poolName);
@@ -298,7 +298,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
         try {
             p.creatingInfo = new ConnectionCreatingInfo();//set creating info(thread,start time)which can be read out by calling monitor method
             if (this.isRawXaConnFactory) {
-                rawXaConn = this.rawXaConnFactory.create();//this call may be blocked
+                rawXaConn = attemptTryInputtedUser ? this.rawXaConnFactory.create(username, password) : this.rawXaConnFactory.create();//this call may be blocked
                 if (rawXaConn == null) {
                     if (Thread.interrupted())
                         throw new ConnectionGetInterruptedException("An interruption occurred when created an XA connection");
@@ -307,7 +307,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                 rawConn = rawXaConn.getConnection();
                 rawXaRes = rawXaConn.getXAResource();
             } else {
-                rawConn = this.rawConnFactory.create();
+                rawConn = attemptTryInputtedUser ? this.rawConnFactory.create(username, password) : this.rawConnFactory.create();
                 if (rawConn == null) {
                     if (Thread.interrupted())
                         throw new ConnectionGetInterruptedException("An interruption occurred when created a connection");
@@ -571,18 +571,17 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
     //***************************************************************************************************************//
     //Method-2.1: Attempts to get a connection from pool
     public Connection getConnection() throws SQLException {
-        return createProxyConnection(this.getPooledConnection());
+        return createProxyConnection(this.getPooledConnection(false, null, null));
     }
 
     //Method-2.2: Attempts to get a connection from pool
     public Connection getConnection(String username, String password) throws SQLException {
-        CommonLog.warn("getConnection (user,password) ignores authentication - returning default connection");
-        return createProxyConnection(this.getPooledConnection());
+        return createProxyConnection(this.getPooledConnection(true, username, password));
     }
 
     //Method-2.3: Attempts to get a XAConnection from pool
     public XAConnection getXAConnection() throws SQLException {
-        PooledConnection p = this.getPooledConnection();
+        PooledConnection p = this.getPooledConnection(false, null, null);
         ProxyConnectionBase proxyConn = createProxyConnection(p);
 
         XAResource proxyResource = this.isRawXaConnFactory ? new XaProxyResource(p.rawXaRes, proxyConn) : new XaResourceLocalImpl(proxyConn, p.defaultAutoCommit);
@@ -591,12 +590,15 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
     //Method-2.4: Attempts to get a XAConnection from pool
     public XAConnection getXAConnection(String username, String password) throws SQLException {
-        CommonLog.warn("getXAConnection (user,password) ignores authentication - returning default XAConnection");
-        return getXAConnection();
+        PooledConnection p = this.getPooledConnection(true, username, password);
+        ProxyConnectionBase proxyConn = createProxyConnection(p);
+
+        XAResource proxyResource = this.isRawXaConnFactory ? new XaProxyResource(p.rawXaRes, proxyConn) : new XaResourceLocalImpl(proxyConn, p.defaultAutoCommit);
+        return new XaProxyConnection(proxyConn, proxyResource);
     }
 
     //Method-2.3: attempt to get pooled connection(key method)
-    private PooledConnection getPooledConnection() throws SQLException {
+    private PooledConnection getPooledConnection(boolean useInputted, String username, String password) throws SQLException {
         if (this.poolState != POOL_READY)
             throw new ConnectionGetForbiddenException("Pool has been closed or is being cleared");
 
@@ -625,7 +627,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
 
         //3: search an idle connection or create a connection on NOT filled pooled connection
         try {
-            p = this.searchOrCreate();
+            p = this.searchOrCreate(useInputted, username, password);
         } catch (SQLException e) {
             semaphore.release();
             throw e;
@@ -779,7 +781,7 @@ public final class FastConnectionPool extends Thread implements BeeConnectionPoo
                 ServantTryCountUpd.decrementAndGet(this);
 
                 try {
-                    PooledConnection p = searchOrCreate();
+                    PooledConnection p = searchOrCreate(false, null, null);
                     if (p != null) recycle(p);
                 } catch (Throwable e) {
                     this.transferException(e);

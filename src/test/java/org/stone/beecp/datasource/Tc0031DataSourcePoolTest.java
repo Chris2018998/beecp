@@ -64,9 +64,9 @@ public class Tc0031DataSourcePoolTest extends TestCase {
             Assert.assertNotNull(xCon1);
             xCon1.close();
 
-            String logs = logAppender.endCollectedStoneLog();
-            Assert.assertTrue(logs.contains("getConnection (user,password) ignores authentication"));
-            Assert.assertTrue(logs.contains("getXAConnection (user,password) ignores authentication"));
+//            String logs = logAppender.endCollectedStoneLog();
+//            Assert.assertTrue(logs.contains("getConnection (user,password) ignores authentication"));
+//            Assert.assertTrue(logs.contains("getXAConnection (user,password) ignores authentication"));
 
             //test on methods of commonDataSource
             Assert.assertNull(ds.getParentLogger());
