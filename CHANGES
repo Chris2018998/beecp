@@ -1,7 +1,11 @@
 beecp changes
 
+Changes in 4.2.0
+1: Improve spin for getting connection
+2: Support key prefix in properties file and properties object
+
 Changes in 4.1.9
-1: Change time read methods in pool
+1: Replace some time read methods in pool(System.currentTimeMillis()-->  System.nanoTime())
 2: Provide connection alive validator interface for customization
 
 Changes in 4.1.8
