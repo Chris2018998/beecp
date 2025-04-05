@@ -36,9 +36,10 @@ public class BeanUtil {
     public static final String Separator_MiddleLine = "-";
     //under-line:separator symbol in configuration properties name
     public static final String Separator_UnderLine = "_";
-
     //a SLF4 logger used in stone project
     public static final Logger CommonLog = LoggerFactory.getLogger(BeanUtil.class);
+    //Class loader
+    private static final ClassLoader classLoader = BeanUtil.class.getClassLoader();
 
     /**
      * set a field accessible under AccessController
@@ -84,13 +85,12 @@ public class BeanUtil {
         for (Method method : methods) {
             String methodName = method.getName();
             if (method.getParameterTypes().length == 1 && methodName.startsWith("set") && methodName.length() > 3) {
-                String propertyName = methodName.substring(3);
-                propertyName = propertyName.substring(0, 1).toLowerCase() + propertyName.substring(1);
-                methodMap.put(propertyName, method);
+                methodMap.put(methodName.substring(3, 4).toLowerCase() + methodName.substring(4), method);
             }
         }
         return methodMap;
     }
+
 
     /**
      * gets property value(a string) from a properties map with property name.Three kinds of format conversion are supported on
@@ -226,6 +226,43 @@ public class BeanUtil {
     }
 
     /**
+     * attempt to load class with a class name
+     *
+     * @param className to be loaded
+     * @return a loaded class
+     * @throws ClassNotFoundException when class not found
+     */
+    public static Class<?> loadClass(String className) throws ClassNotFoundException {
+        return Class.forName(className, true, classLoader);
+    }
+
+    /**
+     * attempt to load class with a class name
+     *
+     * @param className to be loaded
+     * @return a loaded class
+     * @throws ClassNotFoundException when class not found
+     * @throws InstantiationException when class not found
+     * @throws IllegalAccessException when class not found
+     */
+    public static Object createClassInstance(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        return Class.forName(className, true, classLoader).newInstance();
+    }
+
+    /**
+     * Create instance for a bean class
+     *
+     * @param beanClassName   is need be instantiated
+     * @param parentClass     is parent class for type check(it may be an interface should be implemented by bean class)
+     * @param objectClassType is a desc of bean class
+     * @return an instance of bean class
+     * @throws BeanException when create failed
+     */
+    public static Object createClassInstance(String beanClassName, Class<?> parentClass, String objectClassType) throws ClassNotFoundException, BeanException {
+        return createClassInstance(loadClass(beanClassName), parentClass != null ? new Class[]{parentClass} : null, objectClassType);
+    }
+
+    /**
      * Create instance for a bean class
      *
      * @param beanClass       is need be instantiated
@@ -338,7 +375,7 @@ public class BeanUtil {
         } else if (targetType == BigDecimal.class) {
             return new BigDecimal(text);
         } else if (targetType == Class.class) {
-            return Class.forName(text);
+            return loadClass(text);
         } else if (targetType.isArray()) {
             String[] textArray = text.split(Separator_Comma);
             int elementSize = textArray.length;
@@ -372,7 +409,7 @@ public class BeanUtil {
             }
             return collection;
         } else {
-            Object objInstance = Class.forName(text).newInstance();
+            Object objInstance = Class.forName(text, true, classLoader).newInstance();
             if (targetType.isInstance(objInstance)) return objInstance;
             throw new ClassCastException();
         }

@@ -40,7 +40,7 @@ public class MockCommonConnectionFactory extends MockCommonBaseFactory implement
         return con;
     }
 
-    public Connection create(String username, String password) throws SQLException{
+    public Connection create(String username, String password) throws SQLException {
         return create();
     }
 }

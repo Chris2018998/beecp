@@ -238,7 +238,7 @@ public class Tc0050PoolStaticsTest extends TestCase {
         Assert.assertNotNull(pool2);
 
         try {
-            createClassInstance(null, BeeConnectionPool.class, "pool");
+            createClassInstance((Class<?>)null, BeeConnectionPool.class, "pool");
         } catch (BeanException e) {
             Assert.assertTrue(e.getMessage().contains("Bean class can't be null"));
         }

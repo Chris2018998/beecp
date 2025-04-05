@@ -20,7 +20,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.*;
 
-import static org.stone.tools.BeanUtil.CommonLog;
+import static org.stone.tools.BeanUtil.*;
 
 /**
  * Pool Static Center
@@ -100,6 +100,13 @@ public final class ConnectionPoolStatics {
     static final String DESC_RM_CLOSED = "closed";
     static final String DESC_RM_CLEAR = "clear";
     static final String DESC_RM_DESTROY = "destroy";
+    //Spin Code
+    static final int SPIN_IN_WAIT_QUEUE = 1;
+    static final int SPIN_CONNECTION_GET = 2;
+    static final int SPIN_INTERRUPTED = 3;
+    static final int SPIN_TIMEOUT = 4;
+    //pending removal
+    static final Object PendingRemoval = "Pending Removal";
 
     //***************************************************************************************************************//
     //                                1: jdbc global proxy (3)                                                       //
@@ -195,7 +202,7 @@ public final class ConnectionPoolStatics {
     //***************************************************************************************************************//
     public static Driver loadDriver(String driverClassName) throws BeeDataSourceConfigException {
         try {
-            return (Driver) Class.forName(driverClassName).newInstance();
+            return (Driver) createClassInstance(driverClassName);
         } catch (Throwable e) {
             throw new BeeDataSourceConfigException("Failed to create jdbc driver by class:" + driverClassName, e);
         }
@@ -212,9 +219,7 @@ public final class ConnectionPoolStatics {
                 "org.stone.beecp.pool.ProxyDatabaseMetaData",
                 "org.stone.beecp.pool.ProxyResultSet"};
 
-        ClassLoader loader = ConnectionPoolStatics.class.getClassLoader();
-        for (String className : classNames)
-            Class.forName(className, true, loader);
+        for (String className : classNames) loadClass(className);
     }
 
     static boolean validateTestSql(String poolName, Connection rawCon, String testSql, int validTestTimeout, boolean isDefaultAutoCommit) throws SQLException {

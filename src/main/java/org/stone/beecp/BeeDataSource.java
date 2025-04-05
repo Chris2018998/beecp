@@ -70,8 +70,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
 
     private static void createPool(BeeDataSource ds) throws SQLException {
         try {
-            Class<?> poolClass = Class.forName(ds.getPoolImplementClassName());
-            BeeConnectionPool pool = (BeeConnectionPool) createClassInstance(poolClass, BeeConnectionPool.class, "pool");
+            BeeConnectionPool pool = (BeeConnectionPool) createClassInstance(ds.getPoolImplementClassName(), BeeConnectionPool.class, "pool");
             pool.init(ds);
             ds.pool = pool;
 

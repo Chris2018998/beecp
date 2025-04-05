@@ -238,7 +238,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
         this.driverClassName = trimString(driverClassName);
     }
 
-
     //****************************************************************************************************************//
     //                                3: configuration about pool inner control(30)                                   //
     //****************************************************************************************************************//
@@ -533,7 +532,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
         }
     }
 
-
     //****************************************************************************************************************//
     //                                     5: connection default value set Indicator methods(10)                      //
     //****************************************************************************************************************//
@@ -729,6 +727,18 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     //                                     7: properties configuration(3)                                             //
     //****************************************************************************************************************//
     public void loadFromPropertiesFile(String filename) {
+        loadFromPropertiesFile(filename, null);
+    }
+
+    public void loadFromPropertiesFile(File file) {
+        loadFromPropertiesFile(file, null);
+    }
+
+    public void loadFromProperties(Properties configProperties) {
+        loadFromProperties(configProperties, null);
+    }
+
+    public void loadFromPropertiesFile(String filename, String keyPrefix) {
         if (isBlank(filename))
             throw new IllegalArgumentException("Configuration file name can't be null or empty");
         String fileLowerCaseName = filename.toLowerCase(Locale.US);
@@ -738,21 +748,21 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
         if (fileLowerCaseName.startsWith("cp:")) {//1:'cp:' prefix
             String cpFileName = fileLowerCaseName.substring("cp:".length());
             Properties fileProperties = loadPropertiesFromClassPathFile(cpFileName);
-            loadFromProperties(fileProperties);
+            loadFromProperties(fileProperties, keyPrefix);
         } else if (fileLowerCaseName.startsWith("classpath:")) {//2:'classpath:' prefix
             String cpFileName = fileLowerCaseName.substring("classpath:".length());
             Properties fileProperties = loadPropertiesFromClassPathFile(cpFileName);
-            loadFromProperties(fileProperties);
+            loadFromProperties(fileProperties, keyPrefix);
         } else {//load a real path
             File file = new File(filename);
             if (!file.exists()) throw new IllegalArgumentException("Not found configuration file:" + filename);
             if (!file.isFile())
                 throw new IllegalArgumentException("Target object is a valid configuration file:" + filename);
-            loadFromPropertiesFile(file);
+            loadFromPropertiesFile(file, keyPrefix);
         }
     }
 
-    public void loadFromPropertiesFile(File file) {
+    public void loadFromPropertiesFile(File file, String keyPrefix) {
         if (file == null) throw new IllegalArgumentException("Configuration properties file can't be null");
         if (!file.exists()) throw new IllegalArgumentException("Configuration properties file not found:" + file);
         if (!file.isFile()) throw new IllegalArgumentException("Target object is not a valid file");
@@ -763,24 +773,30 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
             Properties configProperties = new Properties();
             configProperties.load(stream);
 
-            this.loadFromProperties(configProperties);
+            this.loadFromProperties(configProperties, keyPrefix);
         } catch (IOException e) {
             throw new IllegalArgumentException("Failed to load configuration file:" + file, e);
         }
     }
 
-    public void loadFromProperties(Properties configProperties) {
+    public void loadFromProperties(Properties configProperties, String keyPrefix) {
         if (configProperties == null || configProperties.isEmpty())
             throw new IllegalArgumentException("Configuration properties can't be null or empty");
 
         //1:load configuration item values from outside properties
         Map<String, String> setValueMap;
-        synchronized (configProperties) {/* synchronization mode */
-            Set<Map.Entry<Object, Object>> entrySet = configProperties.entrySet();
-            setValueMap = new HashMap<>(entrySet.size());
-            for (Map.Entry<Object, Object> entry : entrySet) {
-                setValueMap.put((String) entry.getKey(), (String) entry.getValue());
+        if (isNotBlank(keyPrefix)) {
+            if (!keyPrefix.endsWith(".")) keyPrefix = keyPrefix + ".";
+            final int keyPrefixLen = keyPrefix.length();
+            setValueMap = new HashMap(configProperties.size());
+            for (Map.Entry<Object, Object> entry : configProperties.entrySet()) {
+                String key = (String) entry.getKey();
+                if (key.startsWith(keyPrefix)) {
+                    setValueMap.put(key.substring(keyPrefixLen), (String) entry.getValue());
+                }
             }
+        } else {
+            setValueMap = new HashMap(configProperties);
         }
 
         //2: exclude some special keys in setValueMap
@@ -789,6 +805,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
         String sqlExceptionCode = setValueMap.remove(CONFIG_SQL_EXCEPTION_CODE);//remove item if exists in properties file before injection
         String sqlExceptionState = setValueMap.remove(CONFIG_SQL_EXCEPTION_STATE);//remove item if exists in properties file before injection
         String exclusionListText = setValueMap.remove(CONFIG_CONFIG_PRINT_EXCLUSION_LIST);
+
         try {
             setPropertiesValue(this, setValueMap);
         } catch (BeanException e) {
@@ -915,7 +932,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
         if (jdbcLinkInfoDecoderClass != null || isNotBlank(jdbcLinkInfoDecoderClassName)) {
             Class<?> decoderClass = null;
             try {
-                decoderClass = jdbcLinkInfoDecoderClass != null ? jdbcLinkInfoDecoderClass : Class.forName(jdbcLinkInfoDecoderClassName);
+                decoderClass = jdbcLinkInfoDecoderClass != null ? jdbcLinkInfoDecoderClass : loadClass(jdbcLinkInfoDecoderClassName);
                 return (BeeJdbcLinkInfoDecoder) createClassInstance(decoderClass, BeeJdbcLinkInfoDecoder.class, "jdbc link info decoder");
             } catch (ClassNotFoundException e) {
                 throw new BeeDataSourceConfigException("Failed to create jdbc link info decoder with class[" + jdbcLinkInfoDecoderClassName + "]", e);
@@ -978,7 +995,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
             Class<?> conFactClass = null;
             try {
                 //3.1: load connection factory class with class name
-                conFactClass = this.connectionFactoryClass != null ? this.connectionFactoryClass : Class.forName(this.connectionFactoryClassName);
+                conFactClass = this.connectionFactoryClass != null ? this.connectionFactoryClass : loadClass(this.connectionFactoryClassName);
 
                 //3.2: check connection factory class
                 Class<?>[] parentClasses = {BeeConnectionFactory.class, BeeXaConnectionFactory.class, DataSource.class, XADataSource.class};
@@ -1079,7 +1096,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
         if (evictPredicateClass != null || isNotBlank(evictPredicateClassName)) {
             Class<?> predicationClass = null;
             try {
-                predicationClass = evictPredicateClass != null ? evictPredicateClass : Class.forName(evictPredicateClassName);
+                predicationClass = evictPredicateClass != null ? evictPredicateClass : loadClass(evictPredicateClassName);
                 return (BeeConnectionPredicate) createClassInstance(predicationClass, BeeConnectionPredicate.class, "sql exception predicate");
             } catch (ClassNotFoundException e) {
                 throw new BeeDataSourceConfigException("Not found sql exception predicate class[" + evictPredicateClassName + "]", e);
@@ -1098,14 +1115,14 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
         //step2: create validator
         if (aliveValidatorClass != null || isNotBlank(aliveValidatorClassName)) {
-            Class<?> aliveValidatorClass = null;
+            Class<?> validatorClass = null;
             try {
-                aliveValidatorClass = aliveValidatorClass != null ? aliveValidatorClass : Class.forName(aliveValidatorClassName);
-                return (BeeConnectionValidator) createClassInstance(aliveValidatorClass, BeeConnectionPredicate.class, "alive validator");
+                validatorClass = aliveValidatorClass != null ? aliveValidatorClass : loadClass(aliveValidatorClassName);
+                return (BeeConnectionValidator) createClassInstance(validatorClass, BeeConnectionValidator.class, "alive validator");
             } catch (ClassNotFoundException e) {
                 throw new BeeDataSourceConfigException("Not found alive validator class[" + aliveValidatorClassName + "]", e);
             } catch (Throwable e) {
-                throw new BeeDataSourceConfigException("Failed to create validator with class[" + aliveValidatorClass + "]", e);
+                throw new BeeDataSourceConfigException("Failed to create validator with class[" + validatorClass + "]", e);
             }
         }
 

@@ -52,5 +52,8 @@ public class Tc0005ConnectionAliveSqlTest extends TestCase {
         } catch (InvalidParameterException e) {
             Assert.assertEquals("The given value for configuration item 'alive-test-sql' must start with 'select '", e.getMessage());
         }
+
+        config.setAliveTestSql("SELECT 1");
+        Assert.assertEquals("SELECT 1", config.getAliveTestSql());
     }
 }

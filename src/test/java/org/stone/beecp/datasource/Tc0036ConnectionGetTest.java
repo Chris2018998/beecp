@@ -43,17 +43,16 @@ public class Tc0036ConnectionGetTest extends TestCase {
 
     public void testGetConnectionByFactory() throws Exception {
         String dataSourceClassName = "org.stone.beecp.objects.MockDriverConnectionFactory";
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setConnectionFactoryClassName(dataSourceClassName);
-        BeeDataSource ds = new BeeDataSource(config);
+        BeeDataSource ds = new BeeDataSource();
+        ds.setConnectionFactoryClassName(dataSourceClassName);
 
         Connection con1 = null;
         Connection con2 = null;
         try {
-            con1 = ds.getConnection();
+            con1 = ds.getConnection(null, null);
             Assert.assertNotNull(con1);
 
-            con2 = ds.getConnection(null, null);
+            con2 =  ds.getConnection();
             Assert.assertNotNull(con2);
         } finally {
             oclose(con1);
@@ -83,18 +82,17 @@ public class Tc0036ConnectionGetTest extends TestCase {
 
     public void testGetXaConnectionByFactory() throws Exception {
         String dataSourceClassName = "org.stone.beecp.objects.MockDriverXaConnectionFactory";
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setConnectionFactoryClassName(dataSourceClassName);
-        BeeDataSource ds = new BeeDataSource(config);
+        BeeDataSource ds = new BeeDataSource();
+        ds.setConnectionFactoryClassName(dataSourceClassName);
 
         XAConnection con1 = null;
         XAConnection con2 = null;
         try {
-            con1 = ds.getXAConnection();
-            Assert.assertNotNull(con1);
-
             con2 = ds.getXAConnection(null, null);
             Assert.assertNotNull(con2);
+
+            con1 = ds.getXAConnection();
+            Assert.assertNotNull(con1);
         } finally {
             oclose(con1);
             oclose(con2);

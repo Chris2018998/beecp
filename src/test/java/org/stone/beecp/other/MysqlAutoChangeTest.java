@@ -5,6 +5,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
+import static org.stone.tools.BeanUtil.loadClass;
+
 public class MysqlAutoChangeTest {
 
     public static void main(String[] args) throws Exception {
@@ -21,7 +23,7 @@ public class MysqlAutoChangeTest {
         Statement statement2 = null;
         ResultSet resultSet2 = null;
         try {
-            Class.forName(driver);
+            loadClass(driver);
             //1：建立测试性连接
             con1 = DriverManager.getConnection(url, user, password);
 

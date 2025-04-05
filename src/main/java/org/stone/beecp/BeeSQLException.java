@@ -12,7 +12,7 @@ package org.stone.beecp;
 import java.sql.SQLException;
 
 /**
- * Bee SQL exception extends from {@link java.sql.SQLException}.
+ * Bee SQL exception extends from {@link SQLException}.
  *
  * @author Chris Liao
  * @version 1.0
