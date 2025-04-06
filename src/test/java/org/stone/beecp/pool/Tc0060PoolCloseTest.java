@@ -16,6 +16,9 @@ import org.stone.beecp.pool.exception.ConnectionGetForbiddenException;
 
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
+/**
+ * @author Chris Liao
+ */
 public class Tc0060PoolCloseTest extends TestCase {
 
     public void testClose() throws Exception {

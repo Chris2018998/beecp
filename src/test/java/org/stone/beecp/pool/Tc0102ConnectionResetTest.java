@@ -22,6 +22,9 @@ import static java.sql.Connection.TRANSACTION_READ_COMMITTED;
 import static java.sql.Connection.TRANSACTION_SERIALIZABLE;
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
+/**
+ * @author Chris Liao
+ */
 public class Tc0102ConnectionResetTest extends TestCase {
 
     public void testDirtyReset() throws Exception {

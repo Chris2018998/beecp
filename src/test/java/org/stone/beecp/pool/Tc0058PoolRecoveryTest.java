@@ -24,6 +24,9 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.stone.base.TestUtil.getStoneLogAppender;
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
+/**
+ * @author Chris Liao
+ */
 public class Tc0058PoolRecoveryTest extends TestCase {
 
     public void testRecoveryAfterDBRestoreTest() throws SQLException {

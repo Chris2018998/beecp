@@ -202,17 +202,23 @@ public class Tc0012dbcLinkInfoDecoderTest extends TestCase {
         Assert.assertTrue(factory4.getUser().endsWith("-Decoded"));
         Assert.assertTrue(factory4.getPassword().endsWith("-Decoded"));
 
-        BeeDataSourceConfig config5 = new BeeDataSourceConfig();
-        clearBeeCPInfoFromSystemProperties();
-        System.setProperty("beecp.url", url);
-        System.setProperty("beecp.user", username);
-        System.setProperty("beecp.password", password);
-        config5.setConnectionFactoryClass(MockCommonConnectionFactory.class);
-        config5.setJdbcLinkInfoDecoderClass(SampleMockJdbcLinkInfoDecoder.class);
-        BeeDataSourceConfig checkedConfig5 = config5.check();
-        MockCommonConnectionFactory factory5 = (MockCommonConnectionFactory) checkedConfig5.getConnectionFactory();
-        Assert.assertTrue(factory5.getUrl().endsWith("-Decoded"));
-        Assert.assertTrue(factory5.getUser().endsWith("-Decoded"));
-        Assert.assertTrue(factory5.getPassword().endsWith("-Decoded"));
+        try {
+            BeeDataSourceConfig config5 = new BeeDataSourceConfig();
+            clearBeeCPInfoFromSystemProperties();
+            System.setProperty("beecp.url", url);
+            System.setProperty("beecp.user", username);
+            System.setProperty("beecp.password", password);
+            config5.setConnectionFactoryClass(MockCommonConnectionFactory.class);
+            config5.setJdbcLinkInfoDecoderClass(SampleMockJdbcLinkInfoDecoder.class);
+            BeeDataSourceConfig checkedConfig5 = config5.check();
+            MockCommonConnectionFactory factory5 = (MockCommonConnectionFactory) checkedConfig5.getConnectionFactory();
+            Assert.assertTrue(factory5.getUrl().endsWith("-Decoded"));
+            Assert.assertTrue(factory5.getUser().endsWith("-Decoded"));
+            Assert.assertTrue(factory5.getPassword().endsWith("-Decoded"));
+        } finally {
+            System.clearProperty("beecp.url");
+            System.clearProperty("beecp.user");
+            System.clearProperty("beecp.password");
+        }
     }
 }

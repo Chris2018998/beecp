@@ -18,6 +18,9 @@ import org.stone.beecp.driver.MockXaConnection;
 import javax.sql.XAConnection;
 import java.sql.Connection;
 
+/**
+ * @author Chris Liao
+ */
 public class MockBlockPoolImplementation implements BeeConnectionPool {
 
     public void init(BeeDataSourceConfig config) {

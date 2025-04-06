@@ -8,6 +8,9 @@ import java.sql.*;
 
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
+/**
+ * @author Chris Liao
+ */
 public class Tc0103ConnectionWrapperTest extends TestCase {
 
     public void testConnectionWrapper() throws Exception {

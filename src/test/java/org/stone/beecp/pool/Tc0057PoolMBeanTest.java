@@ -24,6 +24,9 @@ import static org.stone.base.TestUtil.getStoneLogAppender;
 import static org.stone.base.TestUtil.oclose;
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
+/**
+ * @author Chris Liao
+ */
 public class Tc0057PoolMBeanTest extends TestCase {
     public void testJmxRegister() throws Exception {
         String poolName = "test";

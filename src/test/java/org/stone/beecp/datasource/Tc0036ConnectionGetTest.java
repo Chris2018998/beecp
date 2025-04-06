@@ -12,28 +12,66 @@ package org.stone.beecp.datasource;
 import junit.framework.TestCase;
 import org.junit.Assert;
 import org.stone.beecp.BeeDataSource;
-import org.stone.beecp.BeeDataSourceConfig;
 
-import javax.sql.XAConnection;
+import java.io.PrintWriter;
 import java.sql.Connection;
 
 import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
 
+/**
+ * @author Chris Liao
+ */
 public class Tc0036ConnectionGetTest extends TestCase {
 
-    public void testGetConnectionByDriverDs() throws Exception {
-        String dataSourceClassName = "org.stone.beecp.driver.MockDataSource";
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setConnectionFactoryClassName(dataSourceClassName);
-        BeeDataSource ds = new BeeDataSource(config);
-
+    public void testGetConnectionByDriver() throws Exception {
+        BeeDataSource ds = new BeeDataSource();
+        ds.setUsername("root");
+        ds.setPassword("root");
+        ds.setUrl("jdbc:beecp://localhost/testdb");
+        ds.setDriverClassName("org.stone.beecp.driver.MockDriver");
         Connection con1 = null;
         Connection con2 = null;
+
         try {
             con1 = ds.getConnection();
             Assert.assertNotNull(con1);
+            con2 = ds.getConnection("root", "root");
+            Assert.assertNotNull(con2);
+        } finally {
+            oclose(con1);
+            oclose(con2);
+        }
+    }
 
-            con2 = ds.getConnection(null, null);
+    public void testGetConnectionByDriverDs() throws Exception {
+        BeeDataSource ds1 = new BeeDataSource();
+        ds1.setConnectionFactoryClassName("org.stone.beecp.driver.MockDataSource");
+        Connection con1 = null;
+        Connection con2 = null;
+
+        try {
+            con1 = ds1.getConnection();
+            Assert.assertNotNull(con1);
+        } finally {
+            oclose(con1);
+        }
+
+        Assert.assertNull(ds1.getLogWriter());
+        Assert.assertNull(ds1.getParentLogger());
+        ds1.setLogWriter(new PrintWriter(System.out));
+        Assert.assertNotNull(ds1.getLogWriter());
+        Assert.assertEquals(0, ds1.getLoginTimeout());
+        ds1.setLoginTimeout(10);
+        Assert.assertEquals(10, ds1.getLoginTimeout());
+
+        BeeDataSource ds2 = new BeeDataSource();
+        ds2.setUsername("root");
+        ds2.setPassword("root");
+        ds2.setConnectionFactoryClassName("org.stone.beecp.driver.MockDataSource");
+        try {
+            con1 = ds2.getConnection();
+            Assert.assertNotNull(con1);
+            con2 = ds2.getConnection("root", "root");
             Assert.assertNotNull(con2);
         } finally {
             oclose(con1);
@@ -48,51 +86,13 @@ public class Tc0036ConnectionGetTest extends TestCase {
 
         Connection con1 = null;
         Connection con2 = null;
+
         try {
             con1 = ds.getConnection(null, null);
             Assert.assertNotNull(con1);
 
-            con2 =  ds.getConnection();
+            con2 = ds.getConnection();
             Assert.assertNotNull(con2);
-        } finally {
-            oclose(con1);
-            oclose(con2);
-        }
-    }
-
-    public void testGetXaConnectionByDriverDs() throws Exception {
-        String dataSourceClassName = "org.stone.beecp.driver.MockXaDataSource";
-        BeeDataSourceConfig config = new BeeDataSourceConfig();
-        config.setConnectionFactoryClassName(dataSourceClassName);
-        BeeDataSource ds = new BeeDataSource(config);
-
-        XAConnection con1 = null;
-        XAConnection con2 = null;
-        try {
-            con1 = ds.getXAConnection();
-            Assert.assertNotNull(con1);
-
-            con2 = ds.getXAConnection(null, null);
-            Assert.assertNotNull(con2);
-        } finally {
-            oclose(con1);
-            oclose(con2);
-        }
-    }
-
-    public void testGetXaConnectionByFactory() throws Exception {
-        String dataSourceClassName = "org.stone.beecp.objects.MockDriverXaConnectionFactory";
-        BeeDataSource ds = new BeeDataSource();
-        ds.setConnectionFactoryClassName(dataSourceClassName);
-
-        XAConnection con1 = null;
-        XAConnection con2 = null;
-        try {
-            con2 = ds.getXAConnection(null, null);
-            Assert.assertNotNull(con2);
-
-            con1 = ds.getXAConnection();
-            Assert.assertNotNull(con1);
         } finally {
             oclose(con1);
             oclose(con2);

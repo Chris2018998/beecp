@@ -12,8 +12,6 @@ package org.stone.beecp.driver;
 import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 import java.io.PrintWriter;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -28,6 +26,10 @@ public class MockXaDataSource implements XADataSource {
     private String user;
     private String password;
     private Properties properties;
+
+    private PrintWriter logWriter;
+    private int loginTimeout;
+    private Logger parentLogger;
 
     public String getURL() {
         return URL;
@@ -69,24 +71,24 @@ public class MockXaDataSource implements XADataSource {
         return new MockXaConnection(new MockConnection(), new MockXaResource());
     }
 
-    public PrintWriter getLogWriter() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+    public PrintWriter getLogWriter() {
+        return this.logWriter;
     }
 
-    public void setLogWriter(PrintWriter out) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+    public void setLogWriter(PrintWriter out) {
+        this.logWriter = out;
     }
 
-    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+    public int getLoginTimeout() {
+        return loginTimeout;
     }
 
-    public int getLoginTimeout() throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+    public void setLoginTimeout(int seconds) {
+        this.loginTimeout = seconds;
     }
 
-    public void setLoginTimeout(int seconds) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
+    public Logger getParentLogger() {
+        return this.parentLogger;
     }
 }
 

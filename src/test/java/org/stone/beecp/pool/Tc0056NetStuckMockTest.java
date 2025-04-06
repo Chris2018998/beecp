@@ -19,6 +19,9 @@ import org.stone.beecp.objects.MockNetBlockXaConnectionFactory;
 import static org.stone.base.TestUtil.waitUtilWaiting;
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
+/**
+ * @author Chris Liao
+ */
 public class Tc0056NetStuckMockTest extends TestCase {
 
     public void testStuckInConnectionFactory() throws Exception {

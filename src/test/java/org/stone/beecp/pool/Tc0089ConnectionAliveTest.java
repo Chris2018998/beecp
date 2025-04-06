@@ -1,3 +1,12 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * Copyright(C) Chris2018998,All rights reserved.
+ *
+ * Project owner contact:Chris2018998@tom.com.
+ *
+ * Project Licensed under Apache License v2.0
+ */
 package org.stone.beecp.pool;
 
 import junit.framework.TestCase;
@@ -17,6 +26,9 @@ import java.util.concurrent.locks.LockSupport;
 import static org.stone.base.TestUtil.getStoneLogAppender;
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
+/**
+ * @author Chris Liao
+ */
 public class Tc0089ConnectionAliveTest extends TestCase {
 
     public void testDeadConnection() throws Exception {

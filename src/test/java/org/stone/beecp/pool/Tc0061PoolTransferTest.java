@@ -28,6 +28,9 @@ import static org.stone.base.TestUtil.waitUtilWaiting;
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 import static org.stone.beecp.pool.ConnectionPoolStatics.CON_IDLE;
 
+/**
+ * @author Chris Liao
+ */
 public class Tc0061PoolTransferTest extends TestCase {
 
     public void testTransferConnection() throws Exception {

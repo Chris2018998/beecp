@@ -17,6 +17,9 @@ import java.util.Properties;
 
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
+/**
+ * @author Chris Liao
+ */
 public class Tc0016ObjectFieldFromPropertiesTest extends TestCase {
 
     public void testObjectTypeFields() {

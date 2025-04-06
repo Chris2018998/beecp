@@ -22,6 +22,9 @@ import java.sql.SQLException;
 import static org.stone.base.TestUtil.getStoneLogAppender;
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
+/**
+ * @author Chris Liao
+ */
 public class Tc0090ConnectionTemplateTest extends TestCase {
 
     public void testEnableDefault() throws Exception {

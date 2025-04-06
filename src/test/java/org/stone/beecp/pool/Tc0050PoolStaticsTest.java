@@ -38,6 +38,9 @@ import static org.stone.beecp.pool.ConnectionPoolStatics.loadDriver;
 import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
 import static org.stone.tools.BeanUtil.*;
 
+/**
+ * @author Chris Liao
+ */
 public class Tc0050PoolStaticsTest extends TestCase {
 
     public void testInvalidDriverClass() {
@@ -238,7 +241,7 @@ public class Tc0050PoolStaticsTest extends TestCase {
         Assert.assertNotNull(pool2);
 
         try {
-            createClassInstance((Class<?>)null, BeeConnectionPool.class, "pool");
+            createClassInstance((Class<?>) null, BeeConnectionPool.class, "pool");
         } catch (BeanException e) {
             Assert.assertTrue(e.getMessage().contains("Bean class can't be null"));
         }

@@ -132,22 +132,30 @@ public class Tc0002JdbcLinkInfoTest extends TestCase {
         System.setProperty("beecp.url", url);
         System.setProperty("beecp.user", user);
         System.setProperty("beecp.password", password);
-        BeeDataSourceConfig config2 = createEmpty();
-        config2.setDriverClassName(driver);
-        BeeDataSourceConfig checkConfig = config2.check();
-        Object connectionFactory = checkConfig.getConnectionFactory();
-        Assert.assertEquals(url, TestUtil.getFieldValue(connectionFactory, "url"));
-        Properties configProperties = (Properties) TestUtil.getFieldValue(connectionFactory, "properties");
-        Assert.assertEquals(user, configProperties.getProperty("user"));
-        Assert.assertEquals(password, configProperties.getProperty("password"));
 
-        //situation3: load 'beecp.jdbcUrl' from system.properties
-        clearBeeCPInfoFromSystemProperties();
-        System.setProperty("beecp.jdbcUrl", url);
-        BeeDataSourceConfig config3 = createEmpty();
-        config3.setDriverClassName(driver);
-        connectionFactory = checkConfig.getConnectionFactory();
-        Assert.assertEquals(url, TestUtil.getFieldValue(connectionFactory, "url"));
+        try {
+            BeeDataSourceConfig config2 = createEmpty();
+            config2.setDriverClassName(driver);
+            BeeDataSourceConfig checkConfig = config2.check();
+            Object connectionFactory = checkConfig.getConnectionFactory();
+            Assert.assertEquals(url, TestUtil.getFieldValue(connectionFactory, "url"));
+            Properties configProperties = (Properties) TestUtil.getFieldValue(connectionFactory, "properties");
+            Assert.assertEquals(user, configProperties.getProperty("user"));
+            Assert.assertEquals(password, configProperties.getProperty("password"));
+
+            //situation3: load 'beecp.jdbcUrl' from system.properties
+            clearBeeCPInfoFromSystemProperties();
+            System.setProperty("beecp.jdbcUrl", url);
+            BeeDataSourceConfig config3 = createEmpty();
+            config3.setDriverClassName(driver);
+            connectionFactory = checkConfig.getConnectionFactory();
+            Assert.assertEquals(url, TestUtil.getFieldValue(connectionFactory, "url"));
+        } finally {
+            System.clearProperty("beecp.url");
+            System.clearProperty("beecp.user");
+            System.clearProperty("beecp.password");
+            System.clearProperty("beecp.jdbcUrl");
+        }
     }
 
     public void testLoadFromConnectProperties() throws Exception {

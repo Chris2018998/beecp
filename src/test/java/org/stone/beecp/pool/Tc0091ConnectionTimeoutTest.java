@@ -25,6 +25,9 @@ import static org.stone.base.TestUtil.getStoneLogAppender;
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 import static org.stone.beecp.pool.ConnectionPoolStatics.oclose;
 
+/**
+ * @author Chris Liao
+ */
 public class Tc0091ConnectionTimeoutTest extends TestCase {
 
     public void testIdleTimeout() throws Exception {

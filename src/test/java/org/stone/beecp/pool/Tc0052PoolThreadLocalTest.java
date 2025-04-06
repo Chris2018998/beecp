@@ -21,6 +21,9 @@ import static org.stone.base.TestUtil.getFieldValue;
 import static org.stone.base.TestUtil.setFieldValue;
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
+/**
+ * @author Chris Liao
+ */
 public class Tc0052PoolThreadLocalTest extends TestCase {
 
     public void testGetFromThreadLocal() throws Exception {

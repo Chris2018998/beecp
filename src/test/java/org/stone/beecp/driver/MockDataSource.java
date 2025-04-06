@@ -19,6 +19,9 @@ import java.util.logging.Logger;
  * @version 1.0
  */
 public class MockDataSource implements DataSource {
+    private PrintWriter logWriter;
+    private int loginTimeout;
+    private Logger parentLogger;
 
     public Connection getConnection() {
         return new MockConnection();
@@ -29,23 +32,23 @@ public class MockDataSource implements DataSource {
     }
 
     public PrintWriter getLogWriter() {
-        return null;
+        return this.logWriter;
     }
 
     public void setLogWriter(PrintWriter out) {
-        //do nothing
+        this.logWriter = out;
     }
 
     public int getLoginTimeout() {
-        return 0;
+        return loginTimeout;
     }
 
     public void setLoginTimeout(int seconds) {
-        //do nothing
+        this.loginTimeout = seconds;
     }
 
     public Logger getParentLogger() {
-        return null;
+        return this.parentLogger;
     }
 
     public <T> T unwrap(Class<T> face) {

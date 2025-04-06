@@ -15,6 +15,9 @@ import java.sql.*;
 import static org.stone.beecp.config.DsConfigFactory.TEST_PROCEDURE;
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
+/**
+ * @author Chris Liao
+ */
 public class Tc0093ConnectionCloseTest extends TestCase {
 
     public void testCloseResultSet() throws SQLException {

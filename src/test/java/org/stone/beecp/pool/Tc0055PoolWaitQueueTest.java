@@ -22,6 +22,9 @@ import java.util.concurrent.locks.LockSupport;
 
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
+/**
+ * @author Chris Liao
+ */
 public class Tc0055PoolWaitQueueTest extends TestCase {
     public void testTimeout() throws Exception {
         //1: enable ThreadLocal

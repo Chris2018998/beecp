@@ -22,6 +22,9 @@ import java.util.concurrent.locks.LockSupport;
 import static org.stone.base.TestUtil.waitUtilWaiting;
 import static org.stone.beecp.config.DsConfigFactory.createDefault;
 
+/**
+ * @author Chris Liao
+ */
 public class Tc0062InterruptCreationTest extends TestCase {
 
     public void testInterruptConnectionCreating1() throws Exception {

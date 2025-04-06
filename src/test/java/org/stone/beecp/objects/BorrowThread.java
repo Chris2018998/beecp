@@ -17,6 +17,9 @@ import javax.sql.XAConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+/**
+ * @author Chris Liao
+ */
 public final class BorrowThread extends Thread {
     private final boolean xa;
     private final BeeDataSource ds;

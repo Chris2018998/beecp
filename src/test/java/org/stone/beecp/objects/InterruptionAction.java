@@ -11,6 +11,9 @@ package org.stone.beecp.objects;
 
 import org.stone.base.TestUtil;
 
+/**
+ * @author Chris Liao
+ */
 public final class InterruptionAction extends Thread {
     private final Thread blockingThread;
 
