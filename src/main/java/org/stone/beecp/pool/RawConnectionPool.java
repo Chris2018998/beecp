@@ -11,19 +11,20 @@ package org.stone.beecp.pool;
 
 import org.stone.beecp.*;
 import org.stone.beecp.pool.exception.ConnectionGetForbiddenException;
-import org.stone.beecp.pool.exception.PoolCreateFailedException;
+import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
+import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
+import org.stone.beecp.pool.exception.PoolInitializeFailedException;
+import org.stone.tools.extension.InterruptionSemaphore;
 
 import javax.sql.XAConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.stone.beecp.pool.ConnectionPoolStatics.*;
 import static org.stone.tools.BeanUtil.CommonLog;
-import static org.stone.tools.CommonUtil.isNotBlank;
 
 /**
  * JDBC Connection Pool Implementation,which
@@ -34,13 +35,12 @@ import static org.stone.tools.CommonUtil.isNotBlank;
  * @version 1.0
  */
 public final class RawConnectionPool implements BeeConnectionPool {
-    private static final AtomicInteger poolNameIndex = new AtomicInteger(1);
     private static final FastConnectionPoolMonitorVo monitorVo = new FastConnectionPoolMonitorVo();
     private final AtomicInteger poolState = new AtomicInteger(POOL_NEW);
     private String poolName = "";
     private String poolMode = "";
     private long defaultMaxWait;
-    private Semaphore borrowSemaphore;
+    private InterruptionSemaphore borrowSemaphore;
     private BeeDataSourceConfig poolConfig;
     private boolean isRawXaConnFactory;
     private BeeConnectionFactory rawConnFactory;
@@ -52,10 +52,11 @@ public final class RawConnectionPool implements BeeConnectionPool {
      * @param config data source configuration
      */
     public void init(BeeDataSourceConfig config) throws SQLException {
-        poolConfig = config;
-        defaultMaxWait = MILLISECONDS.toNanos(poolConfig.getMaxWait());
-        borrowSemaphore = new Semaphore(poolConfig.getBorrowSemaphoreSize(), poolConfig.isFairMode());
-        poolName = isNotBlank(config.getPoolName()) ? config.getPoolName() : "RawPool-" + poolNameIndex.getAndIncrement();
+        if (config == null) throw new PoolInitializeFailedException("Pool initialization configuration can't be null");
+        this.poolConfig = config.check();
+        this.defaultMaxWait = MILLISECONDS.toNanos(poolConfig.getMaxWait());
+        this.poolName = poolConfig.getPoolName();
+        this.borrowSemaphore = new InterruptionSemaphore(poolConfig.getBorrowSemaphoreSize(), poolConfig.isFairMode());
 
         if (poolConfig.isFairMode()) {
             poolMode = "fair";
@@ -67,10 +68,8 @@ public final class RawConnectionPool implements BeeConnectionPool {
         if (rawFactory instanceof BeeXaConnectionFactory) {
             this.isRawXaConnFactory = true;
             this.rawXaConnFactory = (BeeXaConnectionFactory) rawFactory;
-        } else if (rawFactory instanceof BeeConnectionFactory) {
-            this.rawConnFactory = (BeeConnectionFactory) rawFactory;
         } else {
-            throw new PoolCreateFailedException("Invalid connection factory");
+            this.rawConnFactory = (BeeConnectionFactory) rawFactory;
         }
 
         //registerJMX();
@@ -86,96 +85,71 @@ public final class RawConnectionPool implements BeeConnectionPool {
         poolState.set(POOL_READY);
     }
 
-    /**
-     * borrow one connection from pool
-     *
-     * @return If exists idle connection in pool,then return one;if not, waiting
-     * until other borrower release
-     * @throws SQLException if pool is closed or waiting timeout,then throw exception
-     */
     public Connection getConnection() throws SQLException {
-        try {
-            if (poolState.get() != POOL_READY)
-                throw new ConnectionGetForbiddenException("Access forbidden,connection pool was closed or in clearing");
-            if (borrowSemaphore.tryAcquire(defaultMaxWait, NANOSECONDS)) {
-                if (isRawXaConnFactory) {
-                    return rawXaConnFactory.create().getConnection();
-                } else {
-                    return rawConnFactory.create();
-                }
-            } else {
-                throw new SQLException("Request timeout");
-            }
-        } catch (InterruptedException e) {
-            throw new SQLException("Request interrupted");
-        } finally {
-            borrowSemaphore.release();
-        }
+        return getConnection(false, null, null);
     }
 
-    /**
-     * borrow one connection from pool
-     *
-     * @return If exists idle connection in pool,then return one;if not, waiting
-     * until other borrower release
-     * @throws SQLException if pool is closed or waiting timeout,then throw exception
-     */
     public Connection getConnection(String username, String password) throws SQLException {
-        try {
-            if (poolState.get() != POOL_READY)
-                throw new ConnectionGetForbiddenException("Access forbidden,connection pool was closed or in clearing");
-            if (borrowSemaphore.tryAcquire(defaultMaxWait, NANOSECONDS)) {
-                if (isRawXaConnFactory) {
-                    return rawXaConnFactory.create(username, password).getConnection();
-                } else {
-                    return rawConnFactory.create();
-                }
-            } else {
-                throw new SQLException("Request timeout");
-            }
-        } catch (InterruptedException e) {
-            throw new SQLException("Request interrupted");
-        } finally {
-            borrowSemaphore.release();
-        }
+        return getConnection(true, username, password);
     }
 
     //borrow a connection from pool
     public XAConnection getXAConnection() throws SQLException {
+        return getXAConnection(false, null, null);
+    }
+
+    public XAConnection getXAConnection(String username, String password) throws SQLException {
+        return getXAConnection(true, username, password);
+    }
+
+    private Connection getConnection(boolean useUsername, String username, String password) throws SQLException {
         try {
             if (poolState.get() != POOL_READY)
                 throw new ConnectionGetForbiddenException("Access forbidden,connection pool was closed or in clearing");
             if (borrowSemaphore.tryAcquire(defaultMaxWait, NANOSECONDS)) {
-                if (isRawXaConnFactory) {
-                    return rawXaConnFactory.create();
+                if (useUsername) {
+                    if (isRawXaConnFactory) {
+                        return rawXaConnFactory.create(username, password).getConnection();
+                    } else {
+                        return rawConnFactory.create(username, password);
+                    }
                 } else {
-                    throw new SQLException("Not support");
+                    if (isRawXaConnFactory) {
+                        return rawXaConnFactory.create().getConnection();
+                    } else {
+                        return rawConnFactory.create();
+                    }
                 }
             } else {
-                throw new SQLException("Request timeout");
+                throw new ConnectionGetTimeoutException("Waited timeout on pool semaphore");
             }
         } catch (InterruptedException e) {
-            throw new SQLException("Request interrupted");
+            throw new ConnectionGetInterruptedException("An interruption occurred while waiting on pool semaphore");
         } finally {
             borrowSemaphore.release();
         }
     }
 
-    public XAConnection getXAConnection(String username, String password) throws SQLException {
+    private XAConnection getXAConnection(boolean useUsername, String username, String password) throws SQLException {
         try {
             if (poolState.get() != POOL_READY)
                 throw new ConnectionGetForbiddenException("Access forbidden,connection pool was closed or in clearing");
+
             if (borrowSemaphore.tryAcquire(defaultMaxWait, NANOSECONDS)) {
                 if (isRawXaConnFactory) {
-                    return rawXaConnFactory.create(username, password);
+                    if (useUsername) {
+                        return rawXaConnFactory.create(username, password);
+                    } else {
+                        return rawXaConnFactory.create();
+                    }
                 } else {
                     throw new SQLException("Not support");
                 }
             } else {
-                throw new SQLException("Request timeout");
+                throw new ConnectionGetTimeoutException("Waited timeout on pool semaphore");
             }
         } catch (InterruptedException e) {
-            throw new SQLException("Request interrupted");
+            throw new ConnectionGetInterruptedException("An interruption occurred while waiting on pool semaphore");
         } finally {
             borrowSemaphore.release();
         }
@@ -195,15 +169,10 @@ public final class RawConnectionPool implements BeeConnectionPool {
      * close pool
      */
     public void close() {
-        if (poolState.get() == POOL_CLOSED) return;
-        while (true) {
-            if (poolState.compareAndSet(POOL_READY, POOL_CLOSED)) {
-                //unregisterJMX();
-                break;
-            } else if (poolState.get() == POOL_CLOSED) {
-                break;
-            }
-        }
+        int state = poolState.get();
+        if (state == POOL_CLOSED) return;
+        if (state == POOL_READY)
+            poolState.compareAndSet(POOL_READY, POOL_CLOSED);
     }
 
     public int getConnectionCreatingCount() {
@@ -215,7 +184,7 @@ public final class RawConnectionPool implements BeeConnectionPool {
     }
 
     public Thread[] interruptConnectionCreating(boolean interruptTimeout) {
-        return null;
+        return borrowSemaphore.interruptQueuedWaitThreads().toArray(new Thread[0]);
     }
 
     /**
@@ -268,14 +237,12 @@ public final class RawConnectionPool implements BeeConnectionPool {
     }
 
     public BeeConnectionPoolMonitorVo getPoolMonitorVo() {
-        int totSize = getTotalSize();
-        int idleSize = getIdleSize();
-        monitorVo.setPoolName(poolName);
+        monitorVo.setPoolName(this.getPoolName());
         monitorVo.setPoolMode(poolMode);
         monitorVo.setPoolState(poolState.get());
         monitorVo.setPoolMaxSize(poolConfig.getMaxActive());
-        monitorVo.setIdleSize(idleSize);
-        monitorVo.setBorrowedSize(totSize - idleSize);
+        monitorVo.setIdleSize(getIdleSize());
+        monitorVo.setBorrowedSize(getBorrowedSize());
         monitorVo.setSemaphoreWaitingSize(getSemaphoreWaitingSize());
         monitorVo.setTransferWaitingSize(getTransferWaitingSize());
         return monitorVo;
