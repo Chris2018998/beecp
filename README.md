@@ -32,5 +32,8 @@ Java6(deprecated)
 
 BeeCP is a sub module of stone, its document, please visit
 
-[English](https://github.com/Chris2018998/stone/blob/main/doc/Introduction/beecp_readme_eng.md)
-[中文](https://github.com/Chris2018998/stone/blob/main/doc/Introduction/beecp_readme_cn.md)
+[https://github.com/Chris2018998/stone](https://github.com/Chris2018998/stone)
+
+[https://gitee.com/Chris2018998/stone](https://gitee.com/Chris2018998/stone)
+
+
