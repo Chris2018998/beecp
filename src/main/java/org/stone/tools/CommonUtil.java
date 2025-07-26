@@ -15,6 +15,8 @@ import java.io.InputStream;
 import java.util.Objects;
 import java.util.Properties;
 
+import static org.stone.tools.BeanUtil.BeeClassLoader;
+
 /**
  * common util
  *
@@ -26,6 +28,7 @@ public class CommonUtil {
     public static final int NCPU = Runtime.getRuntime().availableProcessors();
     public static final int maxTimedSpins = (NCPU < 2) ? 0 : 32;
     public static final int maxUntimedSpins = maxTimedSpins << 4;
+    public static final long SPIN_FOR_TIMEOUT_THRESHOLD = 1023L;
 
     public static String trimString(String value) {
         return value == null ? null : value.trim();
@@ -41,8 +44,8 @@ public class CommonUtil {
 
     public static boolean isBlank(String str) {
         if (str == null) return true;
-        for (int i = 0, l = str.length(); i < l; ++i) {
-            if (!Character.isWhitespace((int) str.charAt(i)))
+        for (int aChar : str.toCharArray()) {
+            if (!Character.isWhitespace(aChar))
                 return false;
         }
         return true;
@@ -50,8 +53,8 @@ public class CommonUtil {
 
     public static boolean isNotBlank(String str) {
         if (str == null) return false;
-        for (int i = 0, l = str.length(); i < l; ++i) {
-            if (!Character.isWhitespace((int) str.charAt(i)))
+        for (int aChar : str.toCharArray()) {
+            if (!Character.isWhitespace(aChar))
                 return true;
         }
         return false;
@@ -68,7 +71,7 @@ public class CommonUtil {
     }
 
     public static Properties loadPropertiesFromClassPathFile(String filename) {
-        try (InputStream fileStream = CommonUtil.class.getClassLoader().getResourceAsStream(filename)) {
+        try (InputStream fileStream = BeeClassLoader.getResourceAsStream(filename)) {
             if (fileStream == null) throw new FileNotFoundException("Not found file:" + filename);
             Properties properties = new Properties();
             properties.load(fileStream);

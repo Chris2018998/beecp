@@ -16,14 +16,16 @@ package org.stone.beecp.pool;
  * @version 1.0
  */
 final class Borrower {
-    final Thread thread = Thread.currentThread();
+    final Thread thread;
     volatile Object state;
     PooledConnection lastUsed;
 
-    Borrower() {
+    Borrower(Thread thread) {
+        this.thread = thread;
     }
 
-    Borrower(PooledConnection lastUsed) {
+    Borrower(Thread thread, PooledConnection lastUsed) {
+        this.thread = thread;
         this.lastUsed = lastUsed;
     }
 }

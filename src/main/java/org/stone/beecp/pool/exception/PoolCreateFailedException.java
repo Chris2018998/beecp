@@ -18,10 +18,6 @@ import org.stone.beecp.BeeConnectionPoolException;
  * @version 1.0
  */
 public class PoolCreateFailedException extends BeeConnectionPoolException {
-    public PoolCreateFailedException(String s) {
-        super(s);
-    }
-
     public PoolCreateFailedException(String s, Throwable e) {
         super(s, e);
     }

@@ -17,6 +17,8 @@ import java.sql.*;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import static org.stone.tools.CommonUtil.isNotBlank;
+
 /**
  * Connection factory Implementation with a JDBC Driver
  *
@@ -24,12 +26,12 @@ import java.util.logging.Logger;
  * @version 1.0
  */
 public final class ConnectionFactoryByDriver implements BeeConnectionFactory, CommonDataSource {
-    //Jdbc url
-    private final String url;
     //jdbc driver build connections to database
     private final Driver driver;
     //extra properties to link db
     private final Properties properties;
+    //Jdbc url
+    private String url;
 
     //Constructor
     public ConnectionFactoryByDriver(String url, Driver driver, Properties properties) {
@@ -38,15 +40,24 @@ public final class ConnectionFactoryByDriver implements BeeConnectionFactory, Co
         this.properties = properties;
     }
 
+    //return a connection if link successful to db,otherwise,throws a failure exception
     public Connection create() throws SQLException {
         return this.driver.connect(this.url, this.properties);
     }
 
-    public Connection create(String username, String password) throws SQLException {
-        Properties info = new Properties();
-        info.setProperty("user", username);
-        info.setProperty("password", password);
-        return this.driver.connect(url, info);
+    //***************************************************************************************************************//
+    //                                     update user info                                                          //
+    //***************************************************************************************************************//
+    public void setUsername(String username) {
+        if (isNotBlank(username)) properties.put("user", username);
+    }
+
+    public void setPassword(String password) {
+        if (isNotBlank(password)) properties.put("password", password);
+    }
+
+    public void setJdbcUrl(String jdbcUrl) {
+        if (isNotBlank(jdbcUrl)) this.url = jdbcUrl;
     }
 
     //***************************************************************************************************************//

@@ -28,14 +28,14 @@ import static org.stone.tools.CommonUtil.isNotBlank;
  * @version 1.0
  */
 public final class ConnectionFactoryByDriverDs implements BeeConnectionFactory, CommonDataSource {
-    //username
-    private final String username;
-    //password
-    private final String password;
-    //usernameIsNotNull
-    private final boolean useUsername;
     //driverDataSource
     private final DataSource driverDataSource;
+    //username
+    private String username;
+    //password
+    private String password;
+    //usernameIsNotNull
+    private boolean useUsername;
 
     //Constructor
     public ConnectionFactoryByDriverDs(DataSource driverDataSource, String username, String password) {
@@ -45,12 +45,21 @@ public final class ConnectionFactoryByDriverDs implements BeeConnectionFactory, 
         this.useUsername = isNotBlank(username);
     }
 
+    //return a connection when creates successful,otherwise,throws a failure exception
     public Connection create() throws SQLException {
         return this.useUsername ? this.driverDataSource.getConnection(this.username, this.password) : this.driverDataSource.getConnection();
     }
 
-    public Connection create(String username, String password) throws SQLException {
-        return this.driverDataSource.getConnection(username, password);
+    //***************************************************************************************************************//
+    //                                     update user info                                                          //
+    //***************************************************************************************************************//
+    public void setUsername(String username) {
+        this.username = username;
+        this.useUsername = isNotBlank(username);
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     //***************************************************************************************************************//

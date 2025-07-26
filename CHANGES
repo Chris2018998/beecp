@@ -1,5 +1,9 @@
 beecp changes
 
+Changes in 5.0.0
+1: sync source code from stone project
+
+
 Changes in 4.2.0
 1: Improve spin for getting connection
 2: Support key prefix in properties file and properties object

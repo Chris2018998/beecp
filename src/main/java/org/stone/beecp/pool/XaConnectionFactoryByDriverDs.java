@@ -28,14 +28,14 @@ import static org.stone.tools.CommonUtil.isNotBlank;
  * @version 1.0
  */
 public class XaConnectionFactoryByDriverDs implements BeeXaConnectionFactory, CommonDataSource {
-    //username
-    private final String username;
-    //password
-    private final String password;
-    //usernameIsNotNull
-    private final boolean useUsername;
     //driverDataSource
     private final XADataSource dataSource;
+    //username
+    private String username;
+    //password
+    private String password;
+    //usernameIsNotNull
+    private boolean useUsername;
 
     //Constructor
     public XaConnectionFactoryByDriverDs(XADataSource dataSource, String username, String password) {
@@ -45,12 +45,21 @@ public class XaConnectionFactoryByDriverDs implements BeeXaConnectionFactory, Co
         useUsername = isNotBlank(username);
     }
 
+    //create one connection
     public final XAConnection create() throws SQLException {
         return this.useUsername ? this.dataSource.getXAConnection(this.username, this.password) : this.dataSource.getXAConnection();
     }
 
-    public final XAConnection create(String username, String password) throws SQLException {
-        return this.dataSource.getXAConnection(username, password);
+    //***************************************************************************************************************//
+    //                                     update user info                                                          //
+    //***************************************************************************************************************//
+    public void setUsername(String username) {
+        this.username = username;
+        this.useUsername = isNotBlank(username);
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     //***************************************************************************************************************//

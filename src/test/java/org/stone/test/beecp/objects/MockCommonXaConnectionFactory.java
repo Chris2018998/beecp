@@ -1,0 +1,49 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * Copyright(C) Chris2018998,All rights reserved.
+ *
+ * Project owner contact:Chris2018998@tom.com.
+ *
+ * Project Licensed under Apache License v2.0
+ */
+package org.stone.test.beecp.objects;
+
+import org.stone.beecp.BeeXaConnectionFactory;
+import org.stone.test.beecp.driver.MockConnection;
+import org.stone.test.beecp.driver.MockXaConnection;
+import org.stone.test.beecp.driver.MockXaConnectionProperties;
+import org.stone.test.beecp.driver.MockXaResource;
+
+import javax.sql.XAConnection;
+import java.sql.SQLException;
+
+/**
+ * A xa connection factory impl for mock test
+ *
+ * @author Chris Liao
+ */
+public final class MockCommonXaConnectionFactory extends MockCommonBaseFactory implements BeeXaConnectionFactory {
+
+    public MockCommonXaConnectionFactory() {
+        this(new MockXaConnectionProperties());
+    }
+
+    public MockCommonXaConnectionFactory(MockXaConnectionProperties properties) {
+        super(properties);
+    }
+
+    public XAConnection create() throws SQLException {
+        this.throwCreationException();
+        if (this.returnNullOnCreate) return null;
+
+        this.checkCurCreatedCount();
+        MockXaConnection con = new MockXaConnection((MockXaConnectionProperties) properties, new MockConnection(properties), new MockXaResource());
+        this.increaseCurCreatedCount();
+        return con;
+    }
+
+    public XAConnection create(String username, String password) throws SQLException {
+        return create();
+    }
+}

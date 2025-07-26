@@ -26,7 +26,7 @@ import static org.stone.beecp.pool.ConnectionPoolStatics.*;
 abstract class ProxyStatementBase extends ProxyBaseWrapper implements Statement {
     private final ProxyConnectionBase owner;
     protected Statement raw;
-    boolean registered = true;
+    boolean unregister;
     private ProxyResultSetBase curRe;
     private ArrayList<ProxyResultSetBase> results;
     private int resultOpenCode = Statement.CLOSE_CURRENT_RESULT;
@@ -35,7 +35,7 @@ abstract class ProxyStatementBase extends ProxyBaseWrapper implements Statement 
         super(p);
         this.raw = raw;
         this.owner = o;
-        owner.registerStatement(this);
+        o.registerStatement(this);
     }
 
     //***************************************************************************************************************//
@@ -103,7 +103,7 @@ abstract class ProxyStatementBase extends ProxyBaseWrapper implements Statement 
             this.raw.close();
         } finally {
             this.raw = CLOSED_CSTM;//why? because Mysql's PreparedStatement just only remark as closed with useServerCache mode
-            if (this.registered) this.owner.unregisterStatement(this);
+            if (!this.unregister) this.owner.unregisterStatement(this);
         }
     }
 
@@ -126,6 +126,10 @@ abstract class ProxyStatementBase extends ProxyBaseWrapper implements Statement 
             }
         }
         return createProxyResultSet(re, this, this.p);
+    }
+
+    public void setPoolable(boolean var1) {
+        //do nothing
     }
 
     public void closeOnCompletion() {

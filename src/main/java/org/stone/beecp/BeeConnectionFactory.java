@@ -24,17 +24,7 @@ public interface BeeConnectionFactory {
      * Creates a connection.
      *
      * @return created connection
-     * @throws SQLException when creates failed.
+     * @throws SQLException when creates fail
      */
     Connection create() throws SQLException;
-
-    /**
-     * Creates a connection.
-     *
-     * @param username link to database
-     * @param password the user's password
-     * @throws SQLException when fail to create a connection
-     */
-    Connection create(String username, String password) throws SQLException;
-
 }

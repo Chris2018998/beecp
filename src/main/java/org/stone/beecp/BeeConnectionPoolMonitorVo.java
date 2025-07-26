@@ -36,4 +36,5 @@ public interface BeeConnectionPoolMonitorVo {
     int getCreatingCount();
 
     int getCreatingTimeoutCount();
+
 }

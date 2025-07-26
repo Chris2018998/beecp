@@ -17,7 +17,7 @@ import java.sql.SQLException;
  * @author Chris Liao
  * @version 1.0
  */
-abstract class ProxyBaseWrapper {
+public abstract class ProxyBaseWrapper {
     protected final PooledConnection p;//called by subclass to update parkTime
     protected boolean isClosed;
 

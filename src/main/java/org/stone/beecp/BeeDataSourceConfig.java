@@ -11,7 +11,6 @@ package org.stone.beecp;
 
 import org.stone.beecp.pool.ConnectionFactoryByDriver;
 import org.stone.beecp.pool.ConnectionFactoryByDriverDs;
-import org.stone.beecp.pool.FastConnectionPool;
 import org.stone.beecp.pool.XaConnectionFactoryByDriverDs;
 import org.stone.tools.exception.BeanException;
 
@@ -44,12 +43,12 @@ import static org.stone.tools.CommonUtil.*;
  * @version 1.0
  */
 public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
-    //An atomic integer for generating sequence appended to pool name as suffix,its value starts with 1
+    //An atomic integer to generate sequence value as suffix of a pool name,its value starts with 1
     private static final AtomicInteger PoolNameIndex = new AtomicInteger(1);
-    //A default list of configuration items ignore print when pool initializes
+    //A list of field name,not be log print during pool initialization, default that five field names in list
     private static final List<String> DefaultExclusionList = Arrays.asList("username", "password", "jdbcUrl", "user", "url");
 
-    //A properties map whose entries set to connection factory during pool initializes
+    //A map stores some properties of connection factory,these properties are injected to factory during pool initialization
     private final Map<String, Object> connectProperties = new HashMap<>(0);
     //A list of configuration items ignore print when pool initializes,default is copies from {@code DefaultExclusionList}
     private final List<String> configPrintExclusionList = new ArrayList<>(DefaultExclusionList);
@@ -125,10 +124,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     private boolean forceDirtyOnCatalogAfterSet;
     /**
      * connection factory class,which must be implement one of the below four interfaces
-     * 1: <class>RawConnectionFactory</class>
-     * 2: <class>RawXaConnectionFactory</class>
-     * 3: <class>DataSource</class>
-     * 4: <class>XADataSource</class>
+     * 1: {@code RawConnectionFactory}
+     * 2: {@code RawXaConnectionFactory}
+     * 3: {@code DataSource}
+     * 4: {@code XADataSource}
      */
     //Connection factory,first priority to be chosen to create connections for pool
     private Object connectionFactory;
@@ -136,13 +135,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     private Class<?> connectionFactoryClass;
     //Class name of Connection factory,third priority to be chosen
     private String connectionFactoryClassName;
-
-    //Connection alive validator
-    private BeeConnectionValidator aliveValidator;
-    //Class of predicate,second priority to be chosen
-    private Class<? extends BeeConnectionValidator> aliveValidatorClass;
-    //Class name of predicate,third priority to be chosen
-    private String aliveValidatorClassName;
 
     //Connection Predicate to do eviction test,first priority to be chosen
     private BeeConnectionPredicate evictPredicate;
@@ -165,7 +157,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     //An indicator to enable configuration log print during pool initializes,default is false
     private boolean printConfigInfo;
     //Class name of pool implementation,default is {@code FastConnectionPool}
-    private String poolImplementClassName = FastConnectionPool.class.getName();
+    private String poolImplementClassName = "org.stone.beecp.pool.FastConnectionPool";
 
     //****************************************************************************************************************//
     //                                     1: constructors(5)                                                         //
@@ -423,7 +415,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     }
 
     public void setPoolImplementClassName(String poolImplementClassName) {
-        if (isNotBlank(poolImplementClassName)) this.poolImplementClassName = trimString(poolImplementClassName);
+        this.poolImplementClassName = trimString(poolImplementClassName);
     }
 
     public boolean isEnableJmx() {
@@ -623,30 +615,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
         this.connectionFactoryClassName = trimString(connectionFactoryClassName);
     }
 
-    public String getAliveValidatorClassName() {
-        return aliveValidatorClassName;
-    }
-
-    public void setAliveValidatorClassName(String aliveValidatorClassName) {
-        this.aliveValidatorClassName = aliveValidatorClassName;
-    }
-
-    public Class<? extends BeeConnectionValidator> getAliveValidatorClass() {
-        return aliveValidatorClass;
-    }
-
-    public void setAliveValidatorClass(Class<? extends BeeConnectionValidator> aliveValidatorClass) {
-        this.aliveValidatorClass = aliveValidatorClass;
-    }
-
-    public BeeConnectionValidator getAliveValidator() {
-        return aliveValidator;
-    }
-
-    public void setAliveValidator(BeeConnectionValidator aliveValidator) {
-        this.aliveValidator = aliveValidator;
-    }
-
     public Class<? extends BeeConnectionPredicate> getEvictPredicateClass() {
         return evictPredicateClass;
     }
@@ -784,11 +752,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
             throw new IllegalArgumentException("Configuration properties can't be null or empty");
 
         //1:load configuration item values from outside properties
-        Map<String, String> setValueMap;
+        HashMap<String, String> setValueMap;
         if (isNotBlank(keyPrefix)) {
-            if (!keyPrefix.endsWith(".")) keyPrefix = keyPrefix + ".";
+            if (keyPrefix.charAt(keyPrefix.length() - 1) != '.') keyPrefix = keyPrefix + ".";
             final int keyPrefixLen = keyPrefix.length();
-            setValueMap = new HashMap(configProperties.size());
+            setValueMap = new HashMap<>(configProperties.size());
             for (Map.Entry<Object, Object> entry : configProperties.entrySet()) {
                 String key = (String) entry.getKey();
                 if (key.startsWith(keyPrefix)) {
@@ -864,7 +832,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
         Object connectionFactory = createConnectionFactory();
         BeeConnectionPredicate predicate = this.createConnectionEvictPredicate();
-        BeeConnectionValidator validator = this.createConnectionValidator();
 
         BeeDataSourceConfig checkedConfig = new BeeDataSourceConfig();
         copyTo(checkedConfig);
@@ -882,7 +849,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
         this.connectionFactory = connectionFactory;
         checkedConfig.connectionFactory = connectionFactory;
         checkedConfig.evictPredicate = predicate;
-        checkedConfig.aliveValidator = validator;
         if (isBlank(checkedConfig.poolName)) checkedConfig.poolName = "FastPool-" + PoolNameIndex.getAndIncrement();
         if (checkedConfig.printConfigInfo) printConfiguration(checkedConfig);
 
@@ -1102,27 +1068,6 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
                 throw new BeeDataSourceConfigException("Not found sql exception predicate class[" + evictPredicateClassName + "]", e);
             } catch (Throwable e) {
                 throw new BeeDataSourceConfigException("Failed to create sql exception predicate with class[" + predicationClass + "]", e);
-            }
-        }
-
-        return null;
-    }
-
-    //create Validator
-    private BeeConnectionValidator createConnectionValidator() throws BeeDataSourceConfigException {
-        //step1:if exists validator,then return it
-        if (this.aliveValidator != null) return this.aliveValidator;
-
-        //step2: create validator
-        if (aliveValidatorClass != null || isNotBlank(aliveValidatorClassName)) {
-            Class<?> validatorClass = null;
-            try {
-                validatorClass = aliveValidatorClass != null ? aliveValidatorClass : loadClass(aliveValidatorClassName);
-                return (BeeConnectionValidator) createClassInstance(validatorClass, BeeConnectionValidator.class, "alive validator");
-            } catch (ClassNotFoundException e) {
-                throw new BeeDataSourceConfigException("Not found alive validator class[" + aliveValidatorClassName + "]", e);
-            } catch (Throwable e) {
-                throw new BeeDataSourceConfigException("Failed to create validator with class[" + validatorClass + "]", e);
             }
         }
 

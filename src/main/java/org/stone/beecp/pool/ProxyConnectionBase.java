@@ -82,13 +82,13 @@ public abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Co
     public final void commit() throws SQLException {
         this.raw.commit();
         this.p.commitDirtyInd = false;
-        this.p.lastAccessTime = System.nanoTime();
+        this.p.lastAccessTime = System.currentTimeMillis();
     }
 
     public final void rollback() throws SQLException {
         this.raw.rollback();
         this.p.commitDirtyInd = false;
-        this.p.lastAccessTime = System.nanoTime();
+        this.p.lastAccessTime = System.currentTimeMillis();
     }
 
     public void setTransactionIsolation(int level) throws SQLException {

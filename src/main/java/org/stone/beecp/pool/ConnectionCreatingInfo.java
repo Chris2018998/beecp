@@ -16,6 +16,11 @@ package org.stone.beecp.pool;
  * @version 1.0
  */
 final class ConnectionCreatingInfo {
-    final long creatingStartTime = System.nanoTime();
-    final Thread creatingThread = Thread.currentThread();
+    final long creatingStartTime;
+    final Thread creatingThread;
+
+    ConnectionCreatingInfo(Thread creatingThread) {
+        this.creatingThread = creatingThread;
+        this.creatingStartTime = System.currentTimeMillis();
+    }
 }
