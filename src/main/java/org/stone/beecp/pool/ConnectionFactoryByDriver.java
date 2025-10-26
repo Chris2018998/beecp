@@ -49,11 +49,21 @@ public final class ConnectionFactoryByDriver implements BeeConnectionFactory, Co
     //                                     update user info                                                          //
     //***************************************************************************************************************//
     public void setUsername(String username) {
-        if (isNotBlank(username)) properties.put("user", username);
+        if (username != null)
+            properties.put("user", username);
+        else
+            properties.remove("user");
     }
 
     public void setPassword(String password) {
-        if (isNotBlank(password)) properties.put("password", password);
+        if (password != null)
+            properties.put("password", password);
+        else
+            properties.remove("password");
+    }
+
+    public void setUrl(String jdbcUrl) {
+        if (isNotBlank(jdbcUrl)) this.url = jdbcUrl;
     }
 
     public void setJdbcUrl(String jdbcUrl) {

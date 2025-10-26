@@ -32,7 +32,7 @@ public class LogCollector {
     }
 
     public String endLogCollector() {
-        InitTest.setSystemTestOut();
+        InitTest.switchToTestStreamOut();
         return byteStream.toString();
     }
 }

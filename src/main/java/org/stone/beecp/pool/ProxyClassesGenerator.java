@@ -1,3 +1,4 @@
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -12,9 +13,11 @@ package org.stone.beecp.pool;
 import javassist.*;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.List;
 
+import static org.stone.tools.BeanUtil.BeeClassLoader;
 import static org.stone.tools.CommonUtil.isBlank;
 
 /**
@@ -36,25 +39,6 @@ final class ProxyClassesGenerator {
         if (args != null && args.length > 0) classesFolder = args[0];
         if (isBlank(classesFolder)) classesFolder = DefaultFolder;
         ProxyClassesGenerator.writeProxyFile(classesFolder);
-    }
-
-    private static void resolveInterfaceMethods(CtClass interfaceClass, LinkedList<CtMethod> linkedList, HashSet<String> exitSignatureSet) throws Exception {
-        for (CtMethod ctMethod : interfaceClass.getDeclaredMethods()) {
-            int modifiers = ctMethod.getModifiers();
-            String signature = ctMethod.getName() + ctMethod.getSignature();
-            if (Modifier.isAbstract(modifiers)
-                    && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers))
-                    && !Modifier.isStatic(modifiers)
-                    && !Modifier.isFinal(modifiers)
-                    && !exitSignatureSet.contains(signature)) {
-
-                linkedList.add(ctMethod);
-                exitSignatureSet.add(signature);
-            }
-        }
-
-        for (CtClass superInterface : interfaceClass.getInterfaces())
-            ProxyClassesGenerator.resolveInterfaceMethods(superInterface, linkedList, exitSignatureSet);
     }
 
     /**
@@ -83,134 +67,242 @@ final class ProxyClassesGenerator {
      * org.stone.beecp.pool.ProxyResultSet
      * org.stone.beecp.pool.ProxyDatabaseMetaData
      * org.stone.beecp.pool.ProxyResultSetMetaData
+     * <p>
+     * org.stone.beecp.pool.ProxyConnection4L
+     * org.stone.beecp.pool.ProxyStatement4L
+     * org.stone.beecp.pool.ProxyPsStatement4L
+     * org.stone.beecp.pool.ProxyCsStatement4L
      * @throws Exception if failed to generate class
      */
     private static CtClass[] createProxyClasses() throws Exception {
         ClassPool classPool = ClassPool.getDefault();
         classPool.importPackage("java.sql");
+        classPool.importPackage("org.stone.beecp");
         classPool.importPackage("org.stone.beecp.pool");
-        classPool.appendClassPath(new LoaderClassPath(ProxyClassesGenerator.class.getClassLoader()));
+        classPool.appendClassPath(new LoaderClassPath(BeeClassLoader));
 
-        //............ProxyConnection Begin...............
+        //************************************************************************************************************//
+        //              1: Create proxy Classes without log Manager                                                   //                                                                                  //
+        //************************************************************************************************************//
+
+        //class1: org.stone.beecp.pool.ProxyConnection
         CtClass ctConnectionClass = classPool.get(Connection.class.getName());
         CtClass ctProxyConnectionBaseClass = classPool.get(ProxyConnectionBase.class.getName());
+        CtClass ctPooledConnectionClass = classPool.get(org.stone.beecp.pool.PooledConnection.class.getName());
+        CtClass ctBeeMethodExecutionLogCacheClass = classPool.get(MethodExecutionLogCache.class.getName());
         CtClass ctProxyConnectionClass = classPool.makeClass("org.stone.beecp.pool.ProxyConnection", ctProxyConnectionBaseClass);
-        ctProxyConnectionClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
-        CtConstructor ctConstructor = new CtConstructor(new CtClass[]{classPool.get("org.stone.beecp.pool.PooledConnection")}, ctProxyConnectionClass);
+
+        //constructor1
+        CtConstructor ctConstructor = new CtConstructor(new CtClass[]{ctPooledConnectionClass}, ctProxyConnectionClass);
         ctConstructor.setBody("{super($$);}");
         ctProxyConnectionClass.addConstructor(ctConstructor);
-        //.............ProxyConnection End................
+        //constructor2(for interceptor subclass)
+        ctConstructor = new CtConstructor(new CtClass[]{ctPooledConnectionClass, ctBeeMethodExecutionLogCacheClass}, ctProxyConnectionClass);
+        ctConstructor.setBody("{super($$);}");
+        ctProxyConnectionClass.addConstructor(ctConstructor);
 
-        //.............ProxyStatement Begin...............
+
+        //class2: org.stone.beecp.pool.ProxyStatement
+        CtClass ctLongClass = classPool.get("long");
+        CtClass ctStringClass = classPool.get("java.lang.String");
         CtClass ctStatementClass = classPool.get(Statement.class.getName());
         CtClass ctProxyStatementBaseClass = classPool.get(ProxyStatementBase.class.getName());
         CtClass ctProxyStatementClass = classPool.makeClass("org.stone.beecp.pool.ProxyStatement", ctProxyStatementBaseClass);
-        ctProxyStatementClass.setModifiers(Modifier.PUBLIC);
+        //constructor1
         CtClass[] statementCreateParamTypes = {
-                classPool.get("java.sql.Statement"),
-                classPool.get("org.stone.beecp.pool.ProxyConnectionBase"),
-                classPool.get("org.stone.beecp.pool.PooledConnection")
+                ctStatementClass,
+                ctProxyConnectionBaseClass,
+                ctPooledConnectionClass
         };
         ctConstructor = new CtConstructor(statementCreateParamTypes, ctProxyStatementClass);
         ctConstructor.setBody("{super($$);}");
         ctProxyStatementClass.addConstructor(ctConstructor);
-        //............ProxyStatement Begin...............
+        //constructor2(for interceptor subclass)
+        CtClass[] tStatementCreateParamTypes = {//for interceptor
+                ctStatementClass,
+                ctProxyConnectionBaseClass,
+                ctPooledConnectionClass,
+                ctLongClass,
+                ctStringClass
+        };
+        ctConstructor = new CtConstructor(tStatementCreateParamTypes, ctProxyStatementClass);
+        ctConstructor.setBody("{super($$);}");
+        ctProxyStatementClass.addConstructor(ctConstructor);
 
-        //............ProxyPsStatement Begin.............
+        //class3: org.stone.beecp.pool.ProxyPsStatement
         CtClass ctPreparedStatementClass = classPool.get(PreparedStatement.class.getName());
         CtClass ctProxyPsStatementClass = classPool.makeClass("org.stone.beecp.pool.ProxyPsStatement", ctProxyStatementClass);
         ctProxyPsStatementClass.setInterfaces(new CtClass[]{ctPreparedStatementClass});
-        ctProxyPsStatementClass.setModifiers(Modifier.PUBLIC);
+        //constructor1
         CtClass[] statementPsCreateParamTypes = {
-                classPool.get("java.sql.PreparedStatement"),
-                classPool.get("org.stone.beecp.pool.ProxyConnectionBase"),
-                classPool.get("org.stone.beecp.pool.PooledConnection")};
+                ctPreparedStatementClass,
+                ctProxyConnectionBaseClass,
+                ctPooledConnectionClass};
         ctConstructor = new CtConstructor(statementPsCreateParamTypes, ctProxyPsStatementClass);
         ctConstructor.setBody("{super($$);}");
         ctProxyPsStatementClass.addConstructor(ctConstructor);
-        //..............ProxyPsStatement End..............
+        //constructor2(for interceptor)
+        CtClass[] tStatementPsCreateParamTypes = new CtClass[]{//for interceptor
+                ctPreparedStatementClass,
+                ctProxyConnectionBaseClass,
+                ctPooledConnectionClass,
+                ctLongClass,
+                ctStringClass
+        };
+        ctConstructor = new CtConstructor(tStatementPsCreateParamTypes, ctProxyPsStatementClass);
+        ctConstructor.setBody("{super($$);}");
+        ctProxyPsStatementClass.addConstructor(ctConstructor);
 
-        //..............ProxyCsStatement Begin.............
+        //class4: org.stone.beecp.pool.ProxyCsStatement
         CtClass ctCallableStatementClass = classPool.get(CallableStatement.class.getName());
         CtClass ctProxyCsStatementClass = classPool.makeClass("org.stone.beecp.pool.ProxyCsStatement", ctProxyPsStatementClass);
         ctProxyCsStatementClass.setInterfaces(new CtClass[]{ctCallableStatementClass});
-        ctProxyCsStatementClass.setModifiers(Modifier.PUBLIC);
+        //constructor1
         CtClass[] statementCsCreateParamTypes = {
-                classPool.get("java.sql.CallableStatement"),
-                classPool.get("org.stone.beecp.pool.ProxyConnectionBase"),
-                classPool.get("org.stone.beecp.pool.PooledConnection")};
+                ctCallableStatementClass,
+                ctProxyConnectionBaseClass,
+                ctPooledConnectionClass};
         ctConstructor = new CtConstructor(statementCsCreateParamTypes, ctProxyCsStatementClass);
         ctConstructor.setBody("{super($$);}");
         ctProxyCsStatementClass.addConstructor(ctConstructor);
-        //..............ProxyCsStatement End....................
+        //constructor2(for interceptor)
+        CtClass[] tStatementCsCreateParamTypes = {//for interceptor
+                ctCallableStatementClass,
+                ctProxyConnectionBaseClass,
+                ctPooledConnectionClass,
+                ctLongClass,
+                ctStringClass
+        };
+        ctConstructor = new CtConstructor(tStatementCsCreateParamTypes, ctProxyCsStatementClass);
+        ctConstructor.setBody("{super($$);}");
+        ctProxyCsStatementClass.addConstructor(ctConstructor);
 
-        //..............ProxyDatabaseMetaData Begin.............
+        //class5: org.stone.beecp.pool.ProxyDatabaseMetaData
         CtClass ctDatabaseMetaDataClass = classPool.get(DatabaseMetaData.class.getName());
         CtClass ctProxyDatabaseMetaDataBaseClass = classPool.get(ProxyDatabaseMetaDataBase.class.getName());
         CtClass ctProxyDatabaseMetaDataClass = classPool.makeClass("org.stone.beecp.pool.ProxyDatabaseMetaData", ctProxyDatabaseMetaDataBaseClass);
-        ctProxyDatabaseMetaDataClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
+        ctProxyDatabaseMetaDataClass.setModifiers(Modifier.FINAL);
         CtClass[] databaseMetaDataTypes = {
-                classPool.get("java.sql.DatabaseMetaData"),
-                classPool.get("org.stone.beecp.pool.PooledConnection")};
+                ctDatabaseMetaDataClass,
+                ctPooledConnectionClass};
         ctConstructor = new CtConstructor(databaseMetaDataTypes, ctProxyDatabaseMetaDataClass);
         ctConstructor.setBody("{super($$);}");
         ctProxyDatabaseMetaDataClass.addConstructor(ctConstructor);
-        //................ProxyDatabaseMetaData End.............
 
-        //............... ProxyResultSet Begin..................
+        //class6: org.stone.beecp.pool.ProxyResultSet
         CtClass ctResultSetClass = classPool.get(ResultSet.class.getName());
         CtClass ctProxyResultSetBaseClass = classPool.get(ProxyResultSetBase.class.getName());
         CtClass ctProxyResultSetClass = classPool.makeClass("org.stone.beecp.pool.ProxyResultSet", ctProxyResultSetBaseClass);
-        ctProxyResultSetClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
+        ctProxyResultSetClass.setModifiers(Modifier.FINAL);
         CtClass[] resultSetCreateParamTypes1 = {
-                classPool.get("java.sql.ResultSet"),
-                classPool.get("org.stone.beecp.pool.PooledConnection")};
-        CtConstructor ctConstructor1 = new CtConstructor(resultSetCreateParamTypes1, ctProxyResultSetClass);
-        ctConstructor1.setBody("{super($$);}");
-        ctProxyResultSetClass.addConstructor(ctConstructor1);
-
-        CtClass[] resultSetCreateParamTypes2 = {
-                classPool.get("java.sql.ResultSet"),
-                classPool.get("org.stone.beecp.pool.ProxyStatementBase"),
-                classPool.get("org.stone.beecp.pool.PooledConnection")};
-        ctConstructor = new CtConstructor(resultSetCreateParamTypes2, ctProxyResultSetClass);
+                ctResultSetClass,
+                ctPooledConnectionClass};
+        ctConstructor = new CtConstructor(resultSetCreateParamTypes1, ctProxyResultSetClass);
         ctConstructor.setBody("{super($$);}");
         ctProxyResultSetClass.addConstructor(ctConstructor);
-        //................ProxyResultSet End............................
+        CtClass[] resultSetCreateParamTypes = {
+                ctResultSetClass,
+                ctProxyStatementBaseClass,
+                ctPooledConnectionClass};
+        ctConstructor = new CtConstructor(resultSetCreateParamTypes, ctProxyResultSetClass);
+        ctConstructor.setBody("{super($$);}");
+        ctProxyResultSetClass.addConstructor(ctConstructor);
 
-        //............... ProxyResultSetMetaData Begin..................
+        //class7: org.stone.beecp.pool.ProxyResultSetMetaData
         CtClass ctResultSetMetaDataClass = classPool.get(ResultSetMetaData.class.getName());
         CtClass ctProxyResultSetMetaDataBaseClass = classPool.get(ProxyResultSetMetaDataBase.class.getName());
         CtClass ctProxyResultSetMetaDataClass = classPool.makeClass("org.stone.beecp.pool.ProxyResultSetMetaData", ctProxyResultSetMetaDataBaseClass);
-        ctProxyResultSetMetaDataClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
-        CtClass[] resultSetMetaDataCreateParamTypes1 = {
-                classPool.get("java.sql.ResultSetMetaData"),
-                classPool.get("org.stone.beecp.pool.ProxyResultSetBase"),
-                classPool.get("org.stone.beecp.pool.PooledConnection")};
+        ctProxyResultSetMetaDataClass.setModifiers(Modifier.FINAL);
+        CtClass[] resultSetMetaDataCreateParamTypes = {
+                ctResultSetMetaDataClass,
+                ctProxyResultSetBaseClass,
+                ctPooledConnectionClass};
+        ctConstructor = new CtConstructor(resultSetMetaDataCreateParamTypes, ctProxyResultSetMetaDataClass);
+        ctConstructor.setBody("{super($$);}");
+        ctProxyResultSetMetaDataClass.addConstructor(ctConstructor);
 
-        ctConstructor1 = new CtConstructor(resultSetMetaDataCreateParamTypes1, ctProxyResultSetMetaDataClass);
-        ctConstructor1.setBody("{super($$);}");
-        ctProxyResultSetMetaDataClass.addConstructor(ctConstructor1);
-        //............ProxyResultSetMetaData End...............
+        //************************************************************************************************************//
+        //              2: add override methods to proxy classes                                                      //                                                                                  //
+        //************************************************************************************************************//
+        ProxyClassesGenerator.addMethodsToProxyConnectionClass(classPool, ctProxyConnectionClass, ctConnectionClass, ctProxyConnectionBaseClass, true);
+        ProxyClassesGenerator.addMethodsToProxyStatementClass(classPool, ctProxyStatementClass, ctStatementClass, ctProxyStatementBaseClass, true);
+        ProxyClassesGenerator.addMethodsToProxyStatementClass(classPool, ctProxyPsStatementClass, ctPreparedStatementClass, ctProxyStatementClass, true);
+        ProxyClassesGenerator.addMethodsToProxyStatementClass(classPool, ctProxyCsStatementClass, ctCallableStatementClass, ctProxyPsStatementClass, true);
+        ProxyClassesGenerator.addMethodsToProxyDatabaseMetaDataClass(classPool, ctProxyDatabaseMetaDataClass, ctDatabaseMetaDataClass, ctProxyDatabaseMetaDataBaseClass);
+        ProxyClassesGenerator.addOverrideMethodsForProxyResultSetClass(classPool, ctProxyResultSetClass, ctResultSetClass, ctProxyResultSetBaseClass);
+        ProxyClassesGenerator.addOverrideMethodsForProxyResultSetMetaDataClass(ctProxyResultSetMetaDataClass, ctResultSetMetaDataClass, ctProxyResultSetMetaDataBaseClass);
 
-        ProxyClassesGenerator.createProxyConnectionClass(classPool, ctProxyConnectionClass, ctConnectionClass, ctProxyConnectionBaseClass);
-        ProxyClassesGenerator.createProxyStatementClass(classPool, ctProxyStatementClass, ctStatementClass, ctProxyStatementBaseClass);
-        ProxyClassesGenerator.createProxyStatementClass(classPool, ctProxyPsStatementClass, ctPreparedStatementClass, ctProxyStatementClass);
-        ProxyClassesGenerator.createProxyStatementClass(classPool, ctProxyCsStatementClass, ctCallableStatementClass, ctProxyPsStatementClass);
-        ProxyClassesGenerator.createProxyDatabaseMetaDataClass(classPool, ctProxyDatabaseMetaDataClass, ctDatabaseMetaDataClass, ctProxyDatabaseMetaDataBaseClass);
-        ProxyClassesGenerator.createProxyResultSetClass(classPool, ctProxyResultSetClass, ctResultSetClass, ctProxyResultSetBaseClass);
-        ProxyClassesGenerator.createProxyResultSetMetaDataClass(ctProxyResultSetMetaDataClass, ctResultSetMetaDataClass, ctProxyResultSetMetaDataBaseClass);
+        //************************************************************************************************************//
+        //              3: Create proxy Classes for interceptor                                                       //                                                                                  //
+        //************************************************************************************************************//
+        //class: org.stone.beecp.pool.ProxyConnection4L
+        CtClass ctProxyConnection4LClass = classPool.makeClass("org.stone.beecp.pool.ProxyConnection4L", ctProxyConnectionClass);
+        ctProxyConnection4LClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
+        ctConstructor = new CtConstructor(new CtClass[]{ctPooledConnectionClass, ctBeeMethodExecutionLogCacheClass}, ctProxyConnection4LClass);
+        ctConstructor.setBody("{super($$);}");
+        ctProxyConnection4LClass.addConstructor(ctConstructor);
 
-        //............... ProxyObjectFactory Begin..................
-        CtClass ctProxyObjectFactoryClass = classPool.get(ConnectionPoolStatics.class.getName());
+        //class: org.stone.beecp.pool.ProxyStatement4l
+        CtClass ctProxyStatement4LClass = classPool.makeClass("org.stone.beecp.pool.ProxyStatement4L", ctProxyStatementClass);
+        ctProxyStatement4LClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
+        ctConstructor = new CtConstructor(tStatementCreateParamTypes, ctProxyStatement4LClass);
+        ctConstructor.setBody("{super($$);}");
+        ctProxyStatement4LClass.addConstructor(ctConstructor);
+
+        //class: org.stone.beecp.pool.ProxyPsStatement4L
+        CtClass ctProxyPsStatement4LClass = classPool.makeClass("org.stone.beecp.pool.ProxyPsStatement4L", ctProxyStatementClass);
+        ctProxyPsStatement4LClass.setInterfaces(new CtClass[]{ctPreparedStatementClass});
+        ctProxyPsStatement4LClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
+        ctConstructor = new CtConstructor(tStatementPsCreateParamTypes, ctProxyPsStatement4LClass);
+        ctConstructor.setBody("{super($$);}");
+        ctProxyPsStatement4LClass.addConstructor(ctConstructor);
+
+        //class: org.stone.beecp.pool.ProxyCsStatement4L
+        CtClass ctProxyCsStatement4LClass = classPool.makeClass("org.stone.beecp.pool.ProxyCsStatement4L", ctProxyCsStatementClass);
+        ctProxyCsStatement4LClass.setInterfaces(new CtClass[]{ctCallableStatementClass});
+        ctProxyCsStatement4LClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
+        ctConstructor = new CtConstructor(tStatementCsCreateParamTypes, ctProxyCsStatement4LClass);
+        ctConstructor.setBody("{super($$);}");
+        ctProxyCsStatement4LClass.addConstructor(ctConstructor);
+
+        //************************************************************************************************************//
+        //              4: add override methods to proxy-4L classes                                                    //                                                                                  //
+        //************************************************************************************************************//
+        ProxyClassesGenerator.addMethodsToProxyConnectionClass(classPool, ctProxyConnection4LClass, ctConnectionClass, ctProxyConnectionClass, false);
+        ProxyClassesGenerator.addMethodsToProxyStatementClass(classPool, ctProxyStatement4LClass, ctStatementClass, ctProxyStatementClass, false);
+        ProxyClassesGenerator.addMethodsToProxyStatementClass(classPool, ctProxyPsStatement4LClass, ctPreparedStatementClass, ctProxyStatementClass, false);
+        ProxyClassesGenerator.addMethodsToProxyStatementClass(classPool, ctProxyCsStatement4LClass, ctCallableStatementClass, ctProxyPsStatementClass, false);
+
+        //************************************************************************************************************//
+        //               5: Fill code into methods to create proxy classes                                            //                                                                                  //
+        //************************************************************************************************************//
+        CtClass ctProxyObjectFactoryClass = classPool.get(ProxyConnectionFactory.class.getName());
         for (CtMethod method : ctProxyObjectFactoryClass.getDeclaredMethods()) {
             if ("createProxyConnection".equals(method.getName())) {
                 method.setBody("{return new ProxyConnection($$);}");
-            } else if ("createProxyResultSet".equals(method.getName())) {
-                method.setBody("{return new ProxyResultSet($$);}");
+                break;
             }
         }
-        //............... ProxyObjectFactory end..................
+
+        CtClass ctProxyObjectFactory4LClass = classPool.get(ProxyConnectionFactory4L.class.getName());
+        for (CtMethod method : ctProxyObjectFactory4LClass.getDeclaredMethods()) {
+            if ("createProxyConnection".equals(method.getName())) {
+                method.setBody("{return new ProxyConnection4L($$,logCache);}");
+                break;
+            }
+        }
+
+        CtClass ctConnectionPoolStaticsClass = classPool.get(ConnectionPoolStatics.class.getName());
+        for (CtMethod method : ctConnectionPoolStaticsClass.getDeclaredMethods()) {
+            if ("createProxyResultSet".equals(method.getName())) {
+                method.setBody("{return new ProxyResultSet($$);}");
+                break;
+            }
+        }
+
+        //************************************************************************************************************//
+        //            6: return classes array for writing to disk                                                     //                                                                                  //
+        //************************************************************************************************************//
         return new CtClass[]{
                 ctProxyConnectionClass,
                 ctProxyStatementClass,
@@ -218,10 +310,16 @@ final class ProxyClassesGenerator {
                 ctProxyCsStatementClass,
                 ctProxyDatabaseMetaDataClass,
                 ctProxyResultSetClass,
+                ctProxyResultSetMetaDataClass,
                 ctProxyObjectFactoryClass,
-                ctProxyResultSetMetaDataClass};
-    }
+                ctConnectionPoolStaticsClass,
 
+                ctProxyConnection4LClass,
+                ctProxyStatement4LClass,
+                ctProxyPsStatement4LClass,
+                ctProxyCsStatement4LClass,
+                ctProxyObjectFactory4LClass};
+    }
 
     //find out methods,which not need add proxy
     private static HashSet<String> findMethodsNotNeedProxy(CtClass baseClass) {
@@ -246,112 +344,326 @@ final class ProxyClassesGenerator {
      * @param ctConBaseClass              super class extend by 'ctConnectionClassProxyClass'
      * @throws Exception some error occurred
      */
-    private static void createProxyConnectionClass(ClassPool classPool, CtClass ctConnectionClassProxyClass, CtClass ctConnectionClass, CtClass ctConBaseClass) throws Exception {
-        LinkedList<CtMethod> linkedList = new LinkedList<>();
-        HashSet<String> notNeedAddProxyMethods = findMethodsNotNeedProxy(ctConBaseClass);
-        ProxyClassesGenerator.resolveInterfaceMethods(ctConnectionClass, linkedList, notNeedAddProxyMethods);
-
+    private static void addMethodsToProxyConnectionClass(ClassPool classPool, CtClass ctConnectionClassProxyClass, CtClass ctConnectionClass, CtClass ctConBaseClass, boolean noTrace) throws Exception {
+        List<CtMethod> linkedList = new ArrayList<>(50);
         CtClass ctStatementClass = classPool.get(Statement.class.getName());
         CtClass ctPreparedStatementClass = classPool.get(PreparedStatement.class.getName());
         CtClass ctCallableStatementClass = classPool.get(CallableStatement.class.getName());
         CtClass ctDatabaseMetaDataClass = classPool.get(DatabaseMetaData.class.getName());
 
-        StringBuilder methodBuffer = new StringBuilder(50);
-        for (CtMethod ctMethod : linkedList) {
-            String methodName = ctMethod.getName();
-            CtMethod newCtMethod = CtNewMethod.copy(ctMethod, ctConnectionClassProxyClass, null);
-            newCtMethod.setModifiers(Modifier.PUBLIC);
+        if (noTrace) {//no log collection
+            HashSet<String> notNeedAddProxyMethods = findMethodsNotNeedProxy(ctConBaseClass);
+            ProxyClassesGenerator.resolveInterfaceMethods(ctConnectionClass, linkedList, notNeedAddProxyMethods);
+            StringBuilder methodBuffer = new StringBuilder(50);
+            for (CtMethod ctMethod : linkedList) {
+                String methodName = ctMethod.getName();
+                CtMethod newCtMethod = CtNewMethod.copy(ctMethod, ctConnectionClassProxyClass, null);
+                newCtMethod.setModifiers(Modifier.PUBLIC);
 
-            methodBuffer.delete(0, methodBuffer.length());
-            methodBuffer.append("{");
-            boolean existsSQLException = exitsSQLException(ctMethod.getExceptionTypes());
-            if (existsSQLException) methodBuffer.append("  try{");
-            if (ctMethod.getReturnType() == ctStatementClass) {
-                newCtMethod.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
-                methodBuffer.append("return new ProxyStatement(raw.").append(methodName).append("($$),this,p);");
-            } else if (ctMethod.getReturnType() == ctPreparedStatementClass) {
-                newCtMethod.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
-                methodBuffer.append("return new ProxyPsStatement(raw.").append(methodName).append("($$),this,p);");
-            } else if (ctMethod.getReturnType() == ctCallableStatementClass) {
-                newCtMethod.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
-                methodBuffer.append("return new ProxyCsStatement(raw.").append(methodName).append("($$),this,p);");
-            } else if (ctMethod.getReturnType() == ctDatabaseMetaDataClass) {
-                methodBuffer.append("return new ProxyDatabaseMetaData(raw.").append(methodName).append("($$),p);");
-            } else if (methodName.equals("close")) {
-                continue;
-            } else if (ctMethod.getReturnType() == CtClass.voidType) {
-                methodBuffer.append("raw.").append(methodName).append("($$);");
-            } else {
-                methodBuffer.append("return raw.").append(methodName).append("($$);");
+                methodBuffer.delete(0, methodBuffer.length());
+                methodBuffer.append("{");
+                boolean existsSQLException = exitsSQLException(ctMethod.getExceptionTypes());
+                if (existsSQLException) methodBuffer.append("  try{");
+                CtClass ctResultType = ctMethod.getReturnType();
+                if (ctResultType == ctStatementClass) {
+                    methodBuffer.append("return new ProxyStatement(raw.").append(methodName).append("($$),this,p);");
+                } else if (ctResultType == ctPreparedStatementClass) {
+                    methodBuffer.append("return new ProxyPsStatement(raw.").append(methodName).append("($$),this,p);");
+                } else if (ctResultType == ctCallableStatementClass) {
+                    methodBuffer.append("return new ProxyCsStatement(raw.").append(methodName).append("($$),this,p);");
+                } else if (ctResultType == ctDatabaseMetaDataClass) {
+                    methodBuffer.append("return new ProxyDatabaseMetaData(raw.").append(methodName).append("($$),p);");
+                } else if (methodName.equals("close")) {
+                    continue;
+                } else if (ctResultType == CtClass.voidType) {
+                    methodBuffer.append("raw.").append(methodName).append("($$);");
+                } else {
+                    methodBuffer.append("return raw.").append(methodName).append("($$);");
+                }
+
+                if (existsSQLException)
+                    methodBuffer.append(" }catch(SQLException e){ p.checkSQLException(e);throw e;}");
+                methodBuffer.append("}");
+                newCtMethod.setBody(methodBuffer.toString());
+                ctConnectionClassProxyClass.addMethod(newCtMethod);
             }
+        } else {//for log collect
+            ProxyClassesGenerator.getConnectionStatementMethods(classPool, ctConnectionClass, linkedList);
+            StringBuilder methodBuffer = new StringBuilder(50);
+            for (CtMethod ctMethod : linkedList) {
+                String methodName = ctMethod.getName();
+                CtMethod newCtMethod = CtNewMethod.copy(ctMethod, ctConnectionClassProxyClass, null);
+                newCtMethod.setModifiers(Modifier.PUBLIC);
+                methodBuffer.delete(0, methodBuffer.length());
 
-            if (existsSQLException)
-                methodBuffer.append(" }catch(SQLException e){ p.checkSQLException(e);throw e;}");
-            methodBuffer.append("}");
-            newCtMethod.setBody(methodBuffer.toString());
-            ctConnectionClassProxyClass.addMethod(newCtMethod);
+                //1: method start
+                methodBuffer.append("{");
+                boolean existsSQLException = exitsSQLException(ctMethod.getExceptionTypes());
+                CtClass ctResultType = ctMethod.getReturnType();
+                if (ctResultType == ctStatementClass) {
+                    //1.1: add 'try'
+                    if (existsSQLException) methodBuffer.append(" try{");
+                    //1.2: new proxy object
+                    methodBuffer.append("return new ProxyStatement4L(raw.").append(methodName).append("($$),this,p,0L,null);");
+                    //1.3: add 'catch' code snippet
+                    if (existsSQLException) {
+                        methodBuffer.append(" }catch(SQLException e){");
+                        methodBuffer.append(" p.checkSQLException(e);throw e;}");
+                    }
+                } else if (ctResultType == ctPreparedStatementClass) {//Connection.prepareStatement(...)
+                    //2.1: add 'logCache.beforeCall'
+                    String methodSignature = getCtMethodSignature(ctMethod);
+                    CtClass[] parameterTypes = ctMethod.getParameterTypes();
+                    int methodParameterSize = parameterTypes.length;
+                    if (methodParameterSize == 0) {
+                        methodBuffer.append("BeeMethodExecutionLog log = logCache.beforeCall(BeeMethodExecutionLog.Type_SQL_Preparation,").append(methodSignature).append(",null,null,null);");
+                    } else {
+                        methodBuffer.append("Object[]parameters = new Object[]{");
+                        for (int i = 0; i < methodParameterSize; i++) {
+                            if (i > 0) methodBuffer.append(",");
+                            methodBuffer.append(getConvertType("$" + (i + 1), parameterTypes[i]));
+                        }
+                        methodBuffer.append("};");
+                        methodBuffer.append("BeeMethodExecutionLog log = logCache.beforeCall(BeeMethodExecutionLog.Type_SQL_Preparation,").append(methodSignature).append(",parameters,null,null);");
+                    }
+
+                    //2.2: add 'try'
+                    if (existsSQLException) methodBuffer.append(" try{");
+
+                    //2.3: add 'raw PreparedStatement invocation'
+                    methodBuffer.append(ctResultType.getName()).append(" re=raw.").append(methodName).append("($$);");
+
+                    //2.4: add 'logCache.afterCall'
+                    methodBuffer.append("logCache.afterCall(re,0L,null,log);");
+
+                    //2.5: add 'proxy object creation' code
+                    methodBuffer.append("return new ProxyPsStatement4L(re,this,p,log.getEndTime() - log.getStartTime(),$1);");
+
+                    //2.6: add 'catch'
+                    if (existsSQLException) {
+                        methodBuffer.append(" }catch(SQLException e){");
+                        methodBuffer.append(" p.checkSQLException(e);");
+                        methodBuffer.append(" logCache.afterCall(e,0L,null,log);");
+                        methodBuffer.append(" throw e;}");
+                    }
+
+                } else if (ctResultType == ctCallableStatementClass) {//Connection.prepareCall(...)
+                    //3.1: add 'logCache.beforeCall'
+                    String methodSignature = getCtMethodSignature(ctMethod);
+                    CtClass[] parameterTypes = ctMethod.getParameterTypes();
+                    int methodParameterSize = parameterTypes.length;
+                    if (methodParameterSize == 0) {
+                        methodBuffer.append("BeeMethodExecutionLog log = logCache.beforeCall(BeeMethodExecutionLog.Type_SQL_Preparation,").append(methodSignature).append(",null,null,null);");
+                    } else {
+                        methodBuffer.append("Object[]parameters = new Object[]{");
+                        for (int i = 0; i < methodParameterSize; i++) {
+                            if (i > 0) methodBuffer.append(",");
+                            methodBuffer.append(getConvertType("$" + (i + 1), parameterTypes[i]));
+                        }
+                        methodBuffer.append("};");
+                        methodBuffer.append("BeeMethodExecutionLog log = logCache.beforeCall(BeeMethodExecutionLog.Type_SQL_Preparation,").append(methodSignature).append(",parameters,null,null);");
+                    }
+
+                    //3.2: add 'try'
+                    if (existsSQLException) methodBuffer.append(" try{");
+
+                    //3.3: add 'raw CallableStatement invocation'
+                    methodBuffer.append(ctResultType.getName()).append(" re=raw.").append(methodName).append("($$);");
+
+                    //3.4: add 'logCache.afterCall'
+                    methodBuffer.append("logCache.afterCall(re,0L,null,log);");
+
+                    //3.5: dd 'proxy object creation' code
+                    methodBuffer.append("return new ProxyCsStatement4L(re,this,p,log.getEndTime()-log.getStartTime(),$1);");
+
+                    //3.6: add 'catch'
+                    if (existsSQLException) {
+                        methodBuffer.append(" }catch(SQLException e){");
+                        methodBuffer.append(" p.checkSQLException(e);");
+                        methodBuffer.append(" logCache.afterCall(e,0L,null,log);");
+                        methodBuffer.append(" throw e;}");
+                    }
+                }
+                methodBuffer.append("}");
+                newCtMethod.setBody(methodBuffer.toString());
+                ctConnectionClassProxyClass.addMethod(newCtMethod);
+            }
         }
     }
 
-    private static void createProxyStatementClass(ClassPool classPool, CtClass statementProxyClass, CtClass ctStatementClass, CtClass ctStatementSuperClass) throws Exception {
-        LinkedList<CtMethod> linkedList = new LinkedList<>();
-        HashSet<String> notNeedAddProxyMethods = findMethodsNotNeedProxy(ctStatementSuperClass);
-        ProxyClassesGenerator.resolveInterfaceMethods(ctStatementClass, linkedList, notNeedAddProxyMethods);
+    private static void addMethodsToProxyStatementClass(ClassPool classPool, CtClass statementProxyClass, CtClass ctStatementClass, CtClass ctStatementSuperClass, boolean noTrace) throws Exception {
+        List<CtMethod> linkedList = new ArrayList<>(50);
 
-        CtClass ctResultSetClass = classPool.get(ResultSet.class.getName());
-        StringBuilder methodBuffer = new StringBuilder(50);
+        if (noTrace) {
+            HashSet<String> notNeedAddProxyMethods = findMethodsNotNeedProxy(ctStatementSuperClass);
+            ProxyClassesGenerator.resolveInterfaceMethods(ctStatementClass, linkedList, notNeedAddProxyMethods);
 
-        String rawName = "raw.";
-        if ("java.sql.PreparedStatement".equals(ctStatementClass.getName())) {
-            rawName = "((PreparedStatement)raw).";
-        } else if ("java.sql.CallableStatement".equals(ctStatementClass.getName())) {
-            rawName = "((CallableStatement)raw).";
-        }
+            CtClass ctResultSetClass = classPool.get(ResultSet.class.getName());
+            StringBuilder methodBuffer = new StringBuilder(50);
 
-        for (CtMethod ctMethod : linkedList) {
-            String methodName = ctMethod.getName();
-            CtMethod newCtMethod = CtNewMethod.copy(ctMethod, statementProxyClass, null);
-            newCtMethod.setModifiers(methodName.startsWith("execute") ? Modifier.PUBLIC | Modifier.FINAL : Modifier.PUBLIC);
-
-            methodBuffer.delete(0, methodBuffer.length());
-            methodBuffer.append("{");
-
-            boolean existsSQLException = exitsSQLException(ctMethod.getExceptionTypes());
-            if (existsSQLException) methodBuffer.append("  try{");
-            if (ctMethod.getReturnType() == CtClass.voidType) {
-                if (methodName.startsWith("execute")) methodBuffer.append("p.commitDirtyInd=!p.curAutoCommit;");
-                methodBuffer.append(rawName).append(methodName).append("($$);");
-                if (methodName.startsWith("execute"))
-                    methodBuffer.append("p.lastAccessTime=System.currentTimeMillis();");
-            } else {
-                if (methodName.startsWith("execute")) {
-                    methodBuffer.append("p.commitDirtyInd=!p.curAutoCommit;");
-                    methodBuffer.append(ctMethod.getReturnType().getName()).append(" r=").append(rawName).append(methodName).append("($$);");
-                    methodBuffer.append("p.lastAccessTime=System.currentTimeMillis();");
-                    if (ctMethod.getReturnType() == ctResultSetClass) {
-                        methodBuffer.append("return r==null?null:new ProxyResultSet(r,this,p);");
-                    } else {
-                        methodBuffer.append("return r;");
-                    }
-                } else {
-                    if (ctMethod.getReturnType() == ctResultSetClass) {
-                        methodBuffer.append(ctMethod.getReturnType().getName()).append(" r=").append(rawName).append(methodName).append("($$);");
-                        methodBuffer.append("return r==null?null:new ProxyResultSet(r,this,p);");
-                    } else
-                        methodBuffer.append("return ").append(rawName).append(methodName).append("($$);");
-                }
+            String rawName = "raw.";
+            if ("java.sql.PreparedStatement".equals(ctStatementClass.getName())) {
+                rawName = "((PreparedStatement)raw).";
+            } else if ("java.sql.CallableStatement".equals(ctStatementClass.getName())) {
+                rawName = "((CallableStatement)raw).";
             }
-            if (existsSQLException)
-                methodBuffer.append(" }catch(SQLException e){ p.checkSQLException(e);throw e;}");
-            methodBuffer.append("}");
-            newCtMethod.setBody(methodBuffer.toString());
-            statementProxyClass.addMethod(newCtMethod);
+
+            for (CtMethod ctMethod : linkedList) {
+                methodBuffer.delete(0, methodBuffer.length());
+                methodBuffer.append("{");
+
+                boolean existsSQLException = exitsSQLException(ctMethod.getExceptionTypes());
+                if (existsSQLException) methodBuffer.append("  try{");
+
+                String methodName = ctMethod.getName();
+                CtClass ctResultType = ctMethod.getReturnType();
+
+                //1: update dirty flag
+                boolean executeMethod = (methodName.startsWith("execute"));
+                if (executeMethod) methodBuffer.append("p.commitDirtyInd=!p.curAutoCommit;");
+
+                //2: method call on raw object
+                if (ctResultType == CtClass.voidType)
+                    methodBuffer.append(rawName).append(methodName).append("($$);");
+                else
+                    methodBuffer.append(ctResultType.getName()).append(" r=").append(rawName).append(methodName).append("($$);");
+
+                //3: update last access time
+                if (executeMethod) methodBuffer.append("p.lastAccessTime=System.currentTimeMillis();");
+
+                //4: return block
+                if (ctResultType == ctResultSetClass) {
+                    methodBuffer.append("return new ProxyResultSet(r,this,p);");
+                } else if (ctResultType != CtClass.voidType) {
+                    methodBuffer.append("return r;");
+                }
+
+                //5: catch block
+                if (existsSQLException)
+                    methodBuffer.append(" }catch(SQLException e){ p.checkSQLException(e);throw e;}");
+
+                //end
+                methodBuffer.append("}");
+
+                CtMethod newCtMethod = CtNewMethod.copy(ctMethod, statementProxyClass, null);
+                newCtMethod.setBody(methodBuffer.toString());
+                statementProxyClass.addMethod(newCtMethod);
+            }//for end
+        } else {//sql execution
+            getStatementExecutionMethods(ctStatementClass, linkedList);
+            CtClass ctResultSetClass = classPool.get(ResultSet.class.getName());
+            StringBuilder methodBuffer = new StringBuilder(50);
+
+            String rawName = "raw.";
+            if ("java.sql.PreparedStatement".equals(ctStatementClass.getName())) {
+                rawName = "((PreparedStatement)raw).";
+            } else if ("java.sql.CallableStatement".equals(ctStatementClass.getName())) {
+                rawName = "((CallableStatement)raw).";
+            }
+
+            for (CtMethod ctMethod : linkedList) {//all method names start with 'execute'
+                methodBuffer.delete(0, methodBuffer.length());
+
+                //method start
+                methodBuffer.append("{");
+                String methodName = ctMethod.getName();
+                CtClass ctResultType = ctMethod.getReturnType();
+                String methodSignature = getCtMethodSignature(ctMethod);
+                CtClass[] parameterTypes = ctMethod.getParameterTypes();
+                int methodParameterSize = parameterTypes.length;
+
+                //1: add start log
+                if (methodParameterSize == 0) {
+                    methodBuffer.append("BeeMethodExecutionLog log = logCache.beforeCall(BeeMethodExecutionLog.Type_SQL_Execution,").append(methodSignature).append(",null,sql,this);");
+                } else {
+                    methodBuffer.append("Object[]parameters = new Object[]{");
+                    for (int i = 0; i < methodParameterSize; i++) {
+                        if (i > 0) methodBuffer.append(",");
+                        methodBuffer.append(getConvertType("$" + (i + 1), parameterTypes[i]));
+                    }
+                    methodBuffer.append("};");
+                    methodBuffer.append("BeeMethodExecutionLog log = logCache.beforeCall(BeeMethodExecutionLog.Type_SQL_Execution,").append(methodSignature).append(",parameters,sql,this);");
+                }
+
+                //2: add 'try' code snippet
+                boolean existsSQLException = exitsSQLException(ctMethod.getExceptionTypes());
+                if (existsSQLException) methodBuffer.append("  try{");
+
+                //3: set dirty flag
+                methodBuffer.append("p.commitDirtyInd=!p.curAutoCommit;");
+
+                //4: method call on raw object
+                if (ctResultType == CtClass.voidType) {
+                    methodBuffer.append(rawName).append(methodName).append("($$);");
+                } else {
+                    methodBuffer.append(ctResultType.getName()).append(" r=").append(rawName).append(methodName).append("($$);");
+                }
+                //5: update last access time
+                methodBuffer.append("p.lastAccessTime=System.currentTimeMillis();");
+
+                //6: add 'logCache.afterCall' code snippet
+                if (ctResultType == CtClass.voidType) {
+                    methodBuffer.append("logCache.afterCall(null,preparationTookTime,null,log);");
+                } else {
+                    methodBuffer.append("logCache.afterCall(").append(getConvertType("r", ctResultType)).append(",preparationTookTime,null,log);");
+                }
+
+                //7: return block
+                if (ctResultType == ctResultSetClass) {
+                    methodBuffer.append("return new ProxyResultSet(r,this,p);");
+                } else if (ctResultType != CtClass.voidType) {
+                    methodBuffer.append("return r;");
+                }
+
+                //8: catch block
+                if (existsSQLException) {
+                    methodBuffer.append(" }catch(SQLException e){");
+                    methodBuffer.append(" p.checkSQLException(e);");
+                    methodBuffer.append(" logCache.afterCall(e,preparationTookTime,null,log);");
+                    methodBuffer.append(" throw e;}");
+                }
+
+                //method end
+                methodBuffer.append("}");
+
+                //add method to proxy class
+                CtMethod newCtMethod = CtNewMethod.copy(ctMethod, statementProxyClass, null);
+                newCtMethod.setBody(methodBuffer.toString());
+                statementProxyClass.addMethod(newCtMethod);
+            }//for end
+        }
+    }
+
+    private static String getConvertType(String variableName, CtClass parameterType) {
+        if (parameterType.isPrimitive()) {
+            String typeName = parameterType.getName();
+            if ("boolean".equals(typeName)) {
+                return "Boolean.valueOf(" + variableName + ")";
+            } else if ("byte".equals(typeName)) {
+                return "Byte.valueOf(" + variableName + ")";
+            } else if ("short".equals(typeName)) {
+                return "Short.valueOf(" + variableName + ")";
+            } else if ("int".equals(typeName)) {
+                return "Integer.valueOf(" + variableName + ")";
+            } else if ("long".equals(typeName)) {
+                return "Long.valueOf(" + variableName + ")";
+            } else if ("float".equals(typeName)) {
+                return "Float.valueOf(" + variableName + ")";
+            } else if ("double".equals(typeName)) {
+                return "Double.valueOf(" + variableName + ")";
+            } else if ("char".equals(typeName)) {
+                return "Character.valueOf(" + variableName + ")";
+            } else {
+                return variableName;
+            }
+        } else {
+            return variableName;
         }
     }
 
     //ctProxyDatabaseMetaDataClass,ctDatabaseMetaDataClass,ctDatabaseMetaDataSuperClass
-    private static void createProxyDatabaseMetaDataClass(ClassPool classPool, CtClass ctProxyDatabaseMetaDataClass, CtClass ctDatabaseMetaDataClass, CtClass ctDatabaseMetaDataSuperClass) throws Exception {
-        LinkedList<CtMethod> linkedList = new LinkedList<>();
+    private static void addMethodsToProxyDatabaseMetaDataClass(ClassPool classPool, CtClass ctProxyDatabaseMetaDataClass, CtClass ctDatabaseMetaDataClass, CtClass ctDatabaseMetaDataSuperClass) throws Exception {
+        List<CtMethod> linkedList = new ArrayList<>(50);
         HashSet<String> notNeedAddProxyMethods = findMethodsNotNeedProxy(ctDatabaseMetaDataSuperClass);
         ProxyClassesGenerator.resolveInterfaceMethods(ctDatabaseMetaDataClass, linkedList, notNeedAddProxyMethods);
         CtClass ctResultSetClass = classPool.get(ResultSet.class.getName());
@@ -385,8 +697,8 @@ final class ProxyClassesGenerator {
         }
     }
 
-    private static void createProxyResultSetClass(ClassPool classPool, CtClass ctResultSetClassProxyClass, CtClass ctResultSetClass, CtClass ctResultSetClassSuperClass) throws Exception {
-        LinkedList<CtMethod> linkedList = new LinkedList<>();
+    private static void addOverrideMethodsForProxyResultSetClass(ClassPool classPool, CtClass ctResultSetClassProxyClass, CtClass ctResultSetClass, CtClass ctResultSetClassSuperClass) throws Exception {
+        List<CtMethod> linkedList = new ArrayList<>(50);
         HashSet<String> notNeedAddProxyMethods = findMethodsNotNeedProxy(ctResultSetClassSuperClass);
         ProxyClassesGenerator.resolveInterfaceMethods(ctResultSetClass, linkedList, notNeedAddProxyMethods);
         CtClass ctResultSetMetaDataClass = classPool.get(ResultSetMetaData.class.getName());
@@ -430,8 +742,8 @@ final class ProxyClassesGenerator {
         }
     }
 
-    private static void createProxyResultSetMetaDataClass(CtClass ctProxyResultSetMetaDataClass, CtClass ctResultSetMetaDataClass, CtClass ctResultSetMetaDataSuperClass) throws Exception {
-        LinkedList<CtMethod> linkedList = new LinkedList<>();
+    private static void addOverrideMethodsForProxyResultSetMetaDataClass(CtClass ctProxyResultSetMetaDataClass, CtClass ctResultSetMetaDataClass, CtClass ctResultSetMetaDataSuperClass) throws Exception {
+        List<CtMethod> linkedList = new ArrayList<>(50);
         HashSet<String> notNeedAddProxyMethods = findMethodsNotNeedProxy(ctResultSetMetaDataSuperClass);
         ProxyClassesGenerator.resolveInterfaceMethods(ctResultSetMetaDataClass, linkedList, notNeedAddProxyMethods);
 
@@ -468,6 +780,67 @@ final class ProxyClassesGenerator {
                 return true;
         }
         return false;
+    }
+
+    private static String getCtMethodSignature(CtMethod method) throws Exception {
+        StringBuilder builder = new StringBuilder(20);
+        builder.append("\"").append(method.getName()).append("(");
+        CtClass[] paramTypes = method.getParameterTypes();
+        for (int i = 0, l = paramTypes.length; i < l; i++) {
+            if (i > 0) builder.append(",");
+            builder.append(paramTypes[i].getName());
+        }
+        builder.append(")").append("\"");
+        return builder.toString();
+    }
+
+    private static void resolveInterfaceMethods(CtClass interfaceClass, List<CtMethod> linkedList, HashSet<String> exitSignatureSet) throws Exception {
+        for (CtMethod ctMethod : interfaceClass.getDeclaredMethods()) {
+            int modifiers = ctMethod.getModifiers();
+            String signature = ctMethod.getName() + ctMethod.getSignature();
+            if (Modifier.isAbstract(modifiers)
+                    && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers))
+                    && !Modifier.isStatic(modifiers)
+                    && !Modifier.isFinal(modifiers)
+                    && !exitSignatureSet.contains(signature)) {
+
+                linkedList.add(ctMethod);
+                exitSignatureSet.add(signature);
+            }
+        }
+
+        for (CtClass superInterface : interfaceClass.getInterfaces())
+            ProxyClassesGenerator.resolveInterfaceMethods(superInterface, linkedList, exitSignatureSet);
+    }
+
+    private static void getConnectionStatementMethods(ClassPool classPool, CtClass ctConnectionInterfaceClass, List<CtMethod> linkedList) throws Exception {
+        CtClass ctStatementClass = classPool.get(Statement.class.getName());
+        CtClass ctPreparedStatementClass = classPool.get(PreparedStatement.class.getName());
+        CtClass ctCallableStatementClass = classPool.get(CallableStatement.class.getName());
+
+        for (CtMethod ctMethod : ctConnectionInterfaceClass.getMethods()) {
+            int modifiers = ctMethod.getModifiers();
+
+            if (Modifier.isAbstract(modifiers)
+                    && (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers))
+                    && !Modifier.isStatic(modifiers)
+                    && !Modifier.isFinal(modifiers)) {
+
+                CtClass ctResultType = ctMethod.getReturnType();
+                if (ctResultType == ctStatementClass || ctResultType == ctPreparedStatementClass || ctResultType == ctCallableStatementClass) {
+                    linkedList.add(ctMethod);
+                }
+            }
+        }
+    }
+
+    private static void getStatementExecutionMethods(CtClass ctStatementInterfaceClass, List<CtMethod> linkedList) {
+        for (CtMethod ctMethod : ctStatementInterfaceClass.getMethods()) {
+            String methodName = ctMethod.getName();
+            if (!"executeBatch".equals(methodName) && !"executeLargeBatch".equals(methodName) && methodName.startsWith("execute")) {
+                linkedList.add(ctMethod);
+            }
+        }
     }
 }
 

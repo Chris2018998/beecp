@@ -29,6 +29,20 @@ public class CommonUtil {
     public static final int maxTimedSpins = (NCPU < 2) ? 0 : 32;
     public static final int maxUntimedSpins = maxTimedSpins << 4;
     public static final long SPIN_FOR_TIMEOUT_THRESHOLD = 1023L;
+    public static final int INT_MOVE_SHIFT = 16;
+    public static final int INT_CLN_HIGH_MASK = 0xFFFF;//65535;
+
+    public static int low16(int v) {
+        return v & INT_CLN_HIGH_MASK;
+    }
+
+    public static int high16(int v) {
+        return v >>> INT_MOVE_SHIFT;
+    }
+
+    public static int contact(int h, int l) {
+        return (h << INT_MOVE_SHIFT) | (l & INT_CLN_HIGH_MASK);
+    }
 
     public static String trimString(String value) {
         return value == null ? null : value.trim();

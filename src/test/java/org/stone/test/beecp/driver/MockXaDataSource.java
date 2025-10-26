@@ -64,11 +64,13 @@ public class MockXaDataSource implements XADataSource {
     }
 
     public XAConnection getXAConnection() {
-        return new MockXaConnection(new MockConnection(), new MockXaResource());
+        MockConnection connection = new MockConnection();
+        return new MockXaConnection(connection, new MockXaResource(connection));
     }
 
     public XAConnection getXAConnection(String user, String password) {
-        return new MockXaConnection(new MockConnection(), new MockXaResource());
+        MockConnection connection = new MockConnection();
+        return new MockXaConnection(connection, new MockXaResource(connection));
     }
 
     public PrintWriter getLogWriter() {

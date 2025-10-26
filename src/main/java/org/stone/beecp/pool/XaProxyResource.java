@@ -20,11 +20,11 @@ import javax.transaction.xa.Xid;
  * @version 1.0
  */
 public final class XaProxyResource implements XAResource {
-    private final XAResource raw;
+    private final XAResource res;
     private final ProxyConnectionBase proxyConn;
 
     XaProxyResource(XAResource raw, ProxyConnectionBase proxyConn) {
-        this.raw = raw;
+        this.res = raw;
         this.proxyConn = proxyConn;
     }
 
@@ -35,37 +35,37 @@ public final class XaProxyResource implements XAResource {
 
     public void start(Xid xid, int flags) throws XAException {
         this.checkClosed();
-        this.raw.start(xid, flags);
+        this.res.start(xid, flags);
     }
 
     public int prepare(Xid xid) throws XAException {
         this.checkClosed();
-        return this.raw.prepare(xid);
+        return this.res.prepare(xid);
     }
 
     public void commit(Xid xid, boolean onePhase) throws XAException {
         this.checkClosed();
-        this.raw.commit(xid, onePhase);
+        this.res.commit(xid, onePhase);
     }
 
     public void rollback(Xid xid) throws XAException {
         this.checkClosed();
-        this.raw.rollback(xid);
+        this.res.rollback(xid);
     }
 
     public void end(Xid xid, int flags) throws XAException {
         this.checkClosed();
-        this.raw.end(xid, flags);
+        this.res.end(xid, flags);
     }
 
     public void forget(Xid xid) throws XAException {
         this.checkClosed();
-        this.raw.forget(xid);
+        this.res.forget(xid);
     }
 
     public Xid[] recover(int xid) throws XAException {
         this.checkClosed();
-        return this.raw.recover(xid);
+        return this.res.recover(xid);
     }
 
     public boolean isSameRM(XAResource res) throws XAException {
@@ -75,11 +75,11 @@ public final class XaProxyResource implements XAResource {
 
     public int getTransactionTimeout() throws XAException {
         this.checkClosed();
-        return this.raw.getTransactionTimeout();
+        return this.res.getTransactionTimeout();
     }
 
     public boolean setTransactionTimeout(int seconds) throws XAException {
         this.checkClosed();
-        return this.raw.setTransactionTimeout(seconds);
+        return this.res.setTransactionTimeout(seconds);
     }
 }

@@ -31,13 +31,14 @@ import java.util.logging.Logger;
 
 import static javax.transaction.Status.STATUS_ACTIVE;
 
+
 /**
  * DataSource implementation for jta
  *
  * @author Chris Liao
  * @version 1.0
  */
-public class BeeJtaDataSource extends TimerTask implements DataSource {
+public class BeeJtaDataSource extends TimerTask implements DataSource, AutoCloseable {
     private final Timer transactionTimer = new Timer(true);
     private final ConcurrentHashMap<Transaction, Connection> transactionMap = new ConcurrentHashMap<>(10);
     private BeeDataSource ds;
@@ -130,7 +131,7 @@ public class BeeJtaDataSource extends TimerTask implements DataSource {
 
     public void clear(boolean force) throws SQLException {
         checkDataSource();
-        this.ds.clear(force);
+        this.ds.restart(force);
     }
 
     public boolean isClosed() throws SQLException {
@@ -146,7 +147,7 @@ public class BeeJtaDataSource extends TimerTask implements DataSource {
 
     public void setPrintRuntimeLog(boolean printRuntimeLog) throws SQLException {
         checkDataSource();
-        ds.setPrintRuntimeLog(printRuntimeLog);
+        ds.setPrintRuntimeLogs(printRuntimeLog);
     }
 
     public BeeConnectionPoolMonitorVo getPoolMonitorVo() throws SQLException {

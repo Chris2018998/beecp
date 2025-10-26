@@ -21,20 +21,31 @@ public interface BeeConnectionPoolMonitorVo {
 
     String getPoolMode();
 
-    int getPoolMaxSize();
+    boolean isClosed();
 
-    int getPoolState();
+    boolean isReady();
+
+    boolean isStarting();
+
+    int getMaxSize();
 
     int getIdleSize();
 
     int getBorrowedSize();
 
+    int getCreatingSize();
+
+    int getCreatingTimeoutSize();
+
+    int getSemaphoreSize();
+
+    int getSemaphoreAcquiredSize();
+
     int getSemaphoreWaitingSize();
 
     int getTransferWaitingSize();
 
-    int getCreatingCount();
+    boolean isEnabledLogPrint();
 
-    int getCreatingTimeoutCount();
-
+    boolean isEnabledMethodExecutionLogCache();
 }

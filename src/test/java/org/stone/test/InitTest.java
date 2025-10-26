@@ -28,18 +28,18 @@ public class InitTest {
     public static PrintStream systemTestOut;
     public static PrintStream systemTestErr;
 
-    public static void setSystemOut() {
+    public static void switchToSystemOut() {
         System.setOut(systemOut);
         System.setErr(systemErr);
     }
 
-    public static void setSystemTestOut() {
+    public static void switchToTestStreamOut() {
         System.setOut(systemTestOut);
         System.setErr(systemTestErr);
     }
 
     @Test
-    public void testGetStream() {
+    public void testPreparation() {
         systemOut = System.out;
         systemErr = System.err;
 

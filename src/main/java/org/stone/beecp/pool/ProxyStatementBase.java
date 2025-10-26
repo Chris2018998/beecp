@@ -25,7 +25,11 @@ import static org.stone.beecp.pool.ConnectionPoolStatics.*;
  */
 abstract class ProxyStatementBase extends ProxyBaseWrapper implements Statement {
     private final ProxyConnectionBase owner;
+    protected String sql;
     protected Statement raw;
+    protected long preparationTookTime;//ms
+    protected MethodExecutionLogCache logCache;
+
     boolean unregister;
     private ProxyResultSetBase curRe;
     private ArrayList<ProxyResultSetBase> results;
@@ -36,6 +40,17 @@ abstract class ProxyStatementBase extends ProxyBaseWrapper implements Statement 
         this.raw = raw;
         this.owner = o;
         o.registerStatement(this);
+    }
+
+    ProxyStatementBase(Statement raw, ProxyConnectionBase o, PooledConnection p, long preparationTookTime, String sql) {
+        super(p);
+        this.raw = raw;
+        this.owner = o;
+        o.registerStatement(this);
+
+        this.preparationTookTime = preparationTookTime;
+        this.sql = sql;//if subclass is Statement implementation,the sql is null
+        this.logCache = o.logCache;
     }
 
     //***************************************************************************************************************//
@@ -82,7 +97,7 @@ abstract class ProxyStatementBase extends ProxyBaseWrapper implements Statement 
     //                                              Below are override methods                                       //
     //***************************************************************************************************************//
     public Connection getConnection() throws SQLException {
-        if (this.isClosed) throw new SQLException("No operations allowed after statement closed");
+        if (this.isClosed) throw new SQLException("No operations allowed on closed statement");
         return this.owner;
     }
 

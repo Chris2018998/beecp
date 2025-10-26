@@ -33,67 +33,67 @@ public class MockConnection extends MockBase implements Connection {
     //***************************************************************************************************************//
     //                                          Properties                                                           //                                                                                  //
     //***************************************************************************************************************//
-    void mockThrowExceptionOnMethod(String methodName) throws SQLException {
-        properties.mockThrowExceptionOnMethod(methodName);
+    void interceptBeforeCall(String methodName) throws SQLException {
+        properties.interceptBeforeCall(methodName);
     }
 
     public boolean getAutoCommit() throws SQLException {
-        properties.mockThrowExceptionOnMethod("getAutoCommit");
+        properties.interceptBeforeCall("getAutoCommit");
         return properties.isAutoCommit();
     }
 
     public void setAutoCommit(boolean autoCommit) throws SQLException {
-        properties.mockThrowExceptionOnMethod("setAutoCommit");
+        properties.interceptBeforeCall("setAutoCommit");
         properties.setAutoCommit(autoCommit);
     }
 
     public int getTransactionIsolation() throws SQLException {
-        properties.mockThrowExceptionOnMethod("getTransactionIsolation");
+        properties.interceptBeforeCall("getTransactionIsolation");
         return properties.getTransactionIsolation();
     }
 
     public void setTransactionIsolation(int level) throws SQLException {
-        properties.mockThrowExceptionOnMethod("setTransactionIsolation");
+        properties.interceptBeforeCall("setTransactionIsolation");
         properties.setTransactionIsolation(level);
     }
 
     public boolean isReadOnly() throws SQLException {
-        properties.mockThrowExceptionOnMethod("isReadOnly");
+        properties.interceptBeforeCall("isReadOnly");
         return properties.isReadOnly();
     }
 
     public void setReadOnly(boolean readOnly) throws SQLException {
-        properties.mockThrowExceptionOnMethod("setReadOnly");
+        properties.interceptBeforeCall("setReadOnly");
         properties.setReadOnly(readOnly);
     }
 
     public String getCatalog() throws SQLException {
-        properties.mockThrowExceptionOnMethod("getCatalog");
+        properties.interceptBeforeCall("getCatalog");
         return properties.getCatalog();
     }
 
     public void setCatalog(String catalog) throws SQLException {
-        properties.mockThrowExceptionOnMethod("setCatalog");
+        properties.interceptBeforeCall("setCatalog");
         this.properties.setCatalog(catalog);
     }
 
     public String getSchema() throws SQLException {
-        properties.mockThrowExceptionOnMethod("getSchema");
+        properties.interceptBeforeCall("getSchema");
         return properties.getSchema();
     }
 
     public void setSchema(String schema) throws SQLException {
-        properties.mockThrowExceptionOnMethod("setSchema");
+        properties.interceptBeforeCall("setSchema");
         properties.setSchema(schema);
     }
 
     public int getNetworkTimeout() throws SQLException {
-        properties.mockThrowExceptionOnMethod("getNetworkTimeout");
+        properties.interceptBeforeCall("getNetworkTimeout");
         return this.properties.getNetworkTimeout();
     }
 
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-        properties.mockThrowExceptionOnMethod("setNetworkTimeout");
+        properties.interceptBeforeCall("setNetworkTimeout");
         properties.setNetworkTimeout(milliseconds);
 //        if (executor != null) {
 //            executor.execute(new ResetNetworkTimeoutTask(properties, milliseconds));
@@ -101,7 +101,7 @@ public class MockConnection extends MockBase implements Connection {
     }
 
     public boolean isValid(int timeout) throws SQLException {
-        properties.mockThrowExceptionOnMethod("isValid");
+        properties.interceptBeforeCall("isValid");
         return properties.isValid();
     }
 
@@ -117,68 +117,74 @@ public class MockConnection extends MockBase implements Connection {
     //                                          Statement                                                            //                                                                                  //
     //***************************************************************************************************************//
     public Statement createStatement() throws SQLException {
-        properties.mockThrowExceptionOnMethod("createStatement");
+        properties.interceptBeforeCall("createStatement");
         return new MockStatement(this);
     }
 
     public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
-        properties.mockThrowExceptionOnMethod("createStatement");
+        properties.interceptBeforeCall("createStatement");
         return new MockStatement(this);
     }
 
     public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-        properties.mockThrowExceptionOnMethod("createStatement");
+        properties.interceptBeforeCall("createStatement");
         return new MockStatement(this);
     }
 
     public PreparedStatement prepareStatement(String sql) throws SQLException {
-        properties.mockThrowExceptionOnMethod("prepareStatement");
+        properties.interceptBeforeCall("prepareStatement");
         return new MockPreparedStatement(this);
     }
 
     public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
-        properties.mockThrowExceptionOnMethod("prepareStatement");
+        properties.interceptBeforeCall("prepareStatement");
         return new MockPreparedStatement(this);
     }
 
     public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
-        properties.mockThrowExceptionOnMethod("prepareStatement");
+        properties.interceptBeforeCall("prepareStatement");
         return new MockPreparedStatement(this);
     }
 
     public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
-        properties.mockThrowExceptionOnMethod("prepareStatement");
+        properties.interceptBeforeCall("prepareStatement");
         return new MockPreparedStatement(this);
     }
 
     public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
-        properties.mockThrowExceptionOnMethod("prepareStatement");
+        properties.interceptBeforeCall("prepareStatement");
         return new MockPreparedStatement(this);
     }
 
     public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-        properties.mockThrowExceptionOnMethod("prepareStatement");
+        properties.interceptBeforeCall("prepareStatement");
         return new MockPreparedStatement(this);
     }
 
     public CallableStatement prepareCall(String sql) throws SQLException {
-        properties.mockThrowExceptionOnMethod("prepareCall");
+        properties.interceptBeforeCall("prepareCall");
         return new MockCallableStatement(this);
     }
 
     public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
-        properties.mockThrowExceptionOnMethod("prepareCall");
+        properties.interceptBeforeCall("prepareCall");
         return new MockCallableStatement(this);
     }
 
     public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-        properties.mockThrowExceptionOnMethod("prepareCall");
+        properties.interceptBeforeCall("prepareCall");
         return new MockCallableStatement(this);
     }
 
     //***************************************************************************************************************//
     //                                          Transaction                                                          //                                                                                  //
     //***************************************************************************************************************//
+
+    public void close() throws SQLException {
+        properties.interceptBeforeCall("close");
+        super.close();
+    }
+
     public void commit() {
         //do nothing
     }
@@ -286,9 +292,9 @@ public class MockConnection extends MockBase implements Connection {
         return null;
     }
 
-    private static class ResetNetworkTimeoutTask implements Runnable {
-        private final int milliseconds;
+    private static class ResetNetworkTimeoutTask {
         private final MockConnectionProperties properties;
+        private final int milliseconds;
 
         public ResetNetworkTimeoutTask(MockConnectionProperties properties, int milliseconds) {
             this.properties = properties;

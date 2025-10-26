@@ -20,7 +20,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.*;
 
-import static org.stone.tools.BeanUtil.CommonLog;
+import static org.stone.tools.logger.LogPrinterFactory.CommonLogPrinter;
 
 /**
  * Pool Static Center
@@ -32,17 +32,17 @@ public final class ConnectionPoolStatics {
     //transaction manager jndi name in configuration
     public static final String CONFIG_TM_JNDI = "transactionManagerName";
     //connect properties for driver or driver dataSource
-    public static final String CONFIG_CONNECT_PROP = "connectProperties";
+    public static final String CONFIG_PROVIDER_PROP = "connectionProviderProperties";
     //connect properties count for driver or driver dataSource
-    public static final String CONFIG_CONNECT_PROP_SIZE = "connectProperties.size";
+    public static final String CONFIG_PROVIDER_PROP_SIZE = "connectionProviderProperties.size";
     //connect properties prefix for driver or driver dataSource
-    public static final String CONFIG_CONNECT_PROP_KEY_PREFIX = "connectProperties.";
+    public static final String CONFIG_PROVIDER_PROP_KEY_PREFIX = "connectionProviderProperties.";
     //sql exception fatal code
     public static final String CONFIG_SQL_EXCEPTION_CODE = "sqlExceptionCodeList";
     //sql exception fatal state
     public static final String CONFIG_SQL_EXCEPTION_STATE = "sqlExceptionStateList";
     //sql exception fatal state
-    public static final String CONFIG_CONFIG_PRINT_EXCLUSION_LIST = "configPrintExclusionList";
+    public static final String CONFIG_EXCLUSION_LIST_OF_PRINT = "exclusionListOfPrint";
 
     //dummy impl on CommonDataSource
     public static final CommonDataSource Dummy_CommonDataSource = new CommonDataSource() {
@@ -78,7 +78,7 @@ public final class ConnectionPoolStatics {
     public static final int POOL_READY = 2;
     public static final int POOL_CLOSING = 3;
     public static final int POOL_CLOSED = 4;
-    public static final int POOL_CLEARING = 5;
+    public static final int POOL_RESTARTING = 5;
 
     //pool thread state
     static final int THREAD_WORKING = 0;
@@ -111,7 +111,7 @@ public final class ConnectionPoolStatics {
                     if ("toString".equals(method.getName())) {
                         return "Connection has been closed";
                     } else {
-                        throw new SQLException("No operations allowed after connection closed");
+                        throw new SQLException("No operations allowed on closed connection");
                     }
                 }
             }
@@ -124,7 +124,7 @@ public final class ConnectionPoolStatics {
                     if ("toString".equals(method.getName())) {
                         return "Statement has been closed";
                     } else {
-                        throw new SQLException("No operations allowed after statement closed");
+                        throw new SQLException("No operations allowed on closed statement");
                     }
                 }
             }
@@ -137,11 +137,12 @@ public final class ConnectionPoolStatics {
                     if ("toString".equals(method.getName())) {
                         return "ResultSet has been closed";
                     } else {
-                        throw new SQLException("No operations allowed after resultSet closed");
+                        throw new SQLException("No operations allowed on closed resultSet");
                     }
                 }
             }
     );
+
 
     //***************************************************************************************************************//
     //                               2: JDBC close methods(4)                                                        //
@@ -150,7 +151,7 @@ public final class ConnectionPoolStatics {
         try {
             r.close();
         } catch (Throwable e) {
-            CommonLog.debug("Warning:Error at closing resultSet", e);
+            CommonLogPrinter.warn("Warning:Error at closing resultSet", e);
         }
     }
 
@@ -158,7 +159,7 @@ public final class ConnectionPoolStatics {
         try {
             s.close();
         } catch (Throwable e) {
-            CommonLog.debug("Warning:Error at closing statement", e);
+            CommonLogPrinter.warn("Warning:Error at closing statement", e);
         }
     }
 
@@ -166,7 +167,7 @@ public final class ConnectionPoolStatics {
         try {
             c.close();
         } catch (Throwable e) {
-            CommonLog.debug("Warning:Error at closing connection", e);
+            CommonLogPrinter.warn("Warning:Error at closing connection", e);
         }
     }
 
@@ -174,17 +175,13 @@ public final class ConnectionPoolStatics {
         try {
             c.close();
         } catch (Throwable e) {
-            CommonLog.debug("Warning:Error at closing connection", e);
+            CommonLogPrinter.warn("Warning:Error at closing xaConnection", e);
         }
     }
 
     //***************************************************************************************************************//
     //                               3: JDBC body auto fill by javassist methods(2)                                  //
     //***************************************************************************************************************//
-    static ProxyConnectionBase createProxyConnection(PooledConnection p) throws SQLException {
-        throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
-    }
-
     static ResultSet createProxyResultSet(ResultSet raw, ProxyStatementBase owner, PooledConnection p) throws SQLException {
         throw new SQLException("Proxy classes not be generated,please execute 'ProxyClassGenerator' after compile");
     }
@@ -202,14 +199,16 @@ public final class ConnectionPoolStatics {
 
     static void checkJdbcProxyClass() throws ClassNotFoundException {
         String[] classNames = {
-                "org.stone.beecp.pool.Borrower",
-                "org.stone.beecp.pool.PooledConnection",
                 "org.stone.beecp.pool.ProxyConnection",
                 "org.stone.beecp.pool.ProxyStatement",
                 "org.stone.beecp.pool.ProxyPsStatement",
                 "org.stone.beecp.pool.ProxyCsStatement",
+                "org.stone.beecp.pool.ProxyResultSet",
                 "org.stone.beecp.pool.ProxyDatabaseMetaData",
-                "org.stone.beecp.pool.ProxyResultSet"};
+                "org.stone.beecp.pool.ProxyConnection4L",
+                "org.stone.beecp.pool.ProxyStatement4L",
+                "org.stone.beecp.pool.ProxyPsStatement4L",
+                "org.stone.beecp.pool.ProxyCsStatement4L"};
 
         ClassLoader loader = ConnectionPoolStatics.class.getClassLoader();
         for (String className : classNames)
@@ -239,7 +238,7 @@ public final class ConnectionPoolStatics {
                 st.setQueryTimeout(validTestTimeout);
             } catch (Throwable e) {
                 supportQueryTimeout = false;
-                CommonLog.warn("BeeCP({})driver not support 'queryTimeout'", poolName, e);
+                CommonLogPrinter.warn("BeeCP({})driver not support 'queryTimeout'", poolName, e);
             }
 
             //step3: execute test sql

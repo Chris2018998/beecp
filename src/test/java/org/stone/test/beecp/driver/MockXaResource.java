@@ -19,10 +19,15 @@ import javax.transaction.xa.Xid;
  * @version 1.0
  */
 public final class MockXaResource implements XAResource {
-    private static final Xid[] EMPTY_XID_ARRAY = {};
+    private final MockConnection connection;
+    private Xid currentXid;
+
+    public MockXaResource(MockConnection connection) {
+        this.connection = connection;
+    }
 
     public void start(Xid xid, int flags) {
-        //do nothing
+        this.currentXid = xid;
     }
 
     public int prepare(Xid xid) {
@@ -30,11 +35,11 @@ public final class MockXaResource implements XAResource {
     }
 
     public void commit(Xid xid, boolean onePhase) {
-        //do nothing
+        this.connection.commit();
     }
 
     public void rollback(Xid xid) {
-        //do nothing
+        this.connection.rollback();
     }
 
     public void end(Xid xid, int flags) {
@@ -45,8 +50,8 @@ public final class MockXaResource implements XAResource {
         //do nothing
     }
 
-    public Xid[] recover(int xid) {
-        return EMPTY_XID_ARRAY;
+    public Xid[] recover(int flag) {
+        return new Xid[]{currentXid};
     }
 
     public boolean isSameRM(XAResource xares) {

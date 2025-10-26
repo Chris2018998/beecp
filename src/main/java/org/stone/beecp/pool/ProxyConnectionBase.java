@@ -11,10 +11,10 @@ package org.stone.beecp.pool;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 
 import static org.stone.beecp.pool.ConnectionPoolStatics.*;
-import static org.stone.tools.CommonUtil.objectEquals;
 
 /**
  * connection proxy
@@ -24,11 +24,20 @@ import static org.stone.tools.CommonUtil.objectEquals;
  */
 public abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Connection {
     protected Connection raw;
+    protected MethodExecutionLogCache logCache;
 
     ProxyConnectionBase(PooledConnection p) {
         super(p);
         raw = p.rawConn;
         p.proxyInUsing = this;
+    }
+
+    ProxyConnectionBase(PooledConnection p, MethodExecutionLogCache logCache) {
+        super(p);
+        raw = p.rawConn;
+        p.proxyInUsing = this;
+
+        this.logCache = logCache;
     }
 
     //***************************************************************************************************************//
@@ -39,7 +48,7 @@ public abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Co
     }
 
     final void checkClosed() throws SQLException {
-        if (this.isClosed) throw new SQLException("No operations allowed after connection closed");
+        if (this.isClosed) throw new SQLException("No operations allowed on closed connection");
     }
 
     synchronized final void registerStatement(ProxyStatementBase s) {
@@ -103,13 +112,13 @@ public abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Co
 
     public void setCatalog(String catalog) throws SQLException {
         this.raw.setCatalog(catalog);
-        this.p.setResetInd(PS_CATALOG, p.forceDirtyOnCatalogAfterSet || !objectEquals(catalog, this.p.defaultCatalog));
+        this.p.setResetInd(PS_CATALOG, p.forceDirtyOnCatalogAfterSet || !Objects.equals(catalog, this.p.defaultCatalog));
     }
 
     //--------------------------JDBC 4.1 -----------------------------
     public void setSchema(String schema) throws SQLException {
         this.raw.setSchema(schema);
-        this.p.setResetInd(PS_SCHEMA, p.forceDirtyOnSchemaAfterSet || !objectEquals(schema, this.p.defaultSchema));
+        this.p.setResetInd(PS_SCHEMA, p.forceDirtyOnSchemaAfterSet || !Objects.equals(schema, this.p.defaultSchema));
     }
 
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {

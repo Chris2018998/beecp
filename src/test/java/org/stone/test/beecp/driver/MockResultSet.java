@@ -31,6 +31,7 @@ public class MockResultSet extends MockBase implements ResultSet {
     }
 
     public void close() throws SQLException {
+        if (statement != null) statement.connection.interceptBeforeCall("close");
         super.close();
         if (statement != returnNull()) statement.resultSet = null;
     }

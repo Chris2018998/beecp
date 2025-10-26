@@ -17,29 +17,25 @@ package org.stone.beecp.pool;
  */
 public interface FastConnectionPoolMBean {
 
-    //return poolName
     String getPoolName();
 
-    //return current size(using +idle)
-    int getTotalSize();
+    int getSemaphoreSize();
 
-    //return idle connection size
-    int getIdleSize();
-
-    //return borrowed connection size
-    int getBorrowedSize();
-
-    //return semaphore acquired successful size of pool
     int getSemaphoreAcquiredSize();
 
-    //return waiting size to take semaphore
     int getSemaphoreWaitingSize();
 
-    //return waiter size for transferred connection
     int getTransferWaitingSize();
 
-    //set pool info debug switch
-    void setPrintRuntimeLog(boolean indicator);
+    int getMaxSize();
+
+    int getIdleSize();
+
+    int getBorrowedSize();
+
+    boolean isPrintRuntimeLog();
+
+    void setPrintRuntimeLog(boolean enable);
 
 }
 

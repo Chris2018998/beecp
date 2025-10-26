@@ -9,8 +9,10 @@
  */
 package org.stone.test.beecp.driver;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * A properties holder in mock connection
@@ -18,13 +20,14 @@ import java.util.HashMap;
  * @author Chris Liao
  */
 public class MockConnectionProperties {
+    private final HashMap<String, Boolean> methodDelayFlagMap;
     private final HashMap<String, Boolean> methodExceptionFlagMap;
 
     //connection properties
     private boolean autoCommit = true;
     private boolean readOnly = false;
     private boolean valid = true;
-    private int transactionIsolation;
+    private int transactionIsolation = Connection.TRANSACTION_READ_COMMITTED;
     private String catalog;
     private String schema;
     private int networkTimeout;
@@ -33,14 +36,101 @@ public class MockConnectionProperties {
     private String error;
     private int errorCode;
     private String errorState;
+
+    //protected long parkNanos;
+    private long parkNanos;
     private SQLException mockException1;
     private RuntimeException mockException2;
     private Error mockException3;
 
     public MockConnectionProperties() {
-        this.methodExceptionFlagMap = new HashMap<>();
+        this.methodDelayFlagMap = new HashMap<>(32);
+        this.methodExceptionFlagMap = new HashMap<>(32);
     }
 
+    //****************************************************************************************************************//
+    //                                     1: Exception Setting                                                       //
+    //****************************************************************************************************************//
+    public SQLException getMockException1() {
+        return mockException1;
+    }
+
+    public void setMockException1(SQLException mockException1) {
+        this.mockException1 = mockException1;
+    }
+
+    public RuntimeException getMockException2() {
+        return mockException2;
+    }
+
+    public void setMockException2(RuntimeException mockException2) {
+        this.mockException2 = mockException2;
+    }
+
+    public Error getMockException3() {
+        return mockException3;
+    }
+
+    public void setMockException3(Error mockException3) {
+        this.mockException3 = mockException3;
+    }
+
+    public void setParkNanos(long parkNanos) {
+        this.parkNanos = parkNanos;
+    }
+
+    public void throwsExceptionWhenCallMethod(String names) {
+        if (names != null) {
+            for (String methodName : names.split(",")) {
+                this.methodExceptionFlagMap.put(methodName, Boolean.TRUE);
+            }
+        }
+    }
+
+    public void clearExceptionableMethod(String names) {
+        if (names != null) {
+            for (String methodName : names.split(",")) {
+                this.methodExceptionFlagMap.remove(methodName);
+            }
+        }
+    }
+
+    public void parkWhenCallMethod(String names) {
+        if (names != null) {
+            for (String methodName : names.split(",")) {
+                this.methodDelayFlagMap.put(methodName, Boolean.TRUE);
+            }
+        }
+    }
+
+    public void clearParkableMethod(String names) {
+        if (names != null) {
+            for (String methodName : names.split(",")) {
+                this.methodDelayFlagMap.remove(methodName);
+            }
+        }
+    }
+
+    public void interceptBeforeCall(String methodName) throws SQLException {
+        if (methodExceptionFlagMap.containsKey(methodName)) {
+            if (mockException1 != null) throw mockException1;
+            if (mockException2 != null) throw mockException2;
+            if (mockException3 != null) throw mockException3;
+            throw new SQLException(error, this.errorState, this.errorCode);
+        }
+
+        if (methodDelayFlagMap.containsKey(methodName)) {
+            if (this.parkNanos > 0L) {
+                LockSupport.parkNanos(parkNanos);
+            } else {
+                LockSupport.park();
+            }
+        }
+    }
+
+    //****************************************************************************************************************//
+    //                                     2: Properties set/get                                                      //
+    //****************************************************************************************************************//
     public boolean isAutoCommit() {
         return autoCommit;
     }
@@ -97,30 +187,6 @@ public class MockConnectionProperties {
         this.networkTimeout = networkTimeout;
     }
 
-    public SQLException getMockException1() {
-        return mockException1;
-    }
-
-    public void setMockException1(SQLException mockException1) {
-        this.mockException1 = mockException1;
-    }
-
-    public RuntimeException getMockException2() {
-        return mockException2;
-    }
-
-    public void setMockException2(RuntimeException mockException2) {
-        this.mockException2 = mockException2;
-    }
-
-    public Error getMockException3() {
-        return mockException3;
-    }
-
-    public void setMockException3(Error mockException3) {
-        this.mockException3 = mockException3;
-    }
-
     public int getHoldability() {
         return holdability;
     }
@@ -153,29 +219,4 @@ public class MockConnectionProperties {
         this.errorState = errorState;
     }
 
-    public void enableExceptionOnMethod(String names) {
-        if (names != null) {
-            for (String methodName : names.split(",")) {
-                this.methodExceptionFlagMap.put(methodName, Boolean.TRUE);
-            }
-        }
-    }
-
-    public void disableExceptionOnMethod(String names) {
-        if (names != null) {
-            for (String methodName : names.split(",")) {
-                this.methodExceptionFlagMap.put(methodName, Boolean.FALSE);
-            }
-        }
-    }
-
-    public void mockThrowExceptionOnMethod(String methodName) throws SQLException {
-        if (methodExceptionFlagMap.containsKey(methodName) && methodExceptionFlagMap.get(methodName)) {
-            if (mockException1 != null) throw mockException1;
-            if (mockException2 != null) throw mockException2;
-            if (mockException3 != null) throw mockException3;
-
-            throw new SQLException(error, this.errorState, this.errorCode);
-        }
-    }
 }

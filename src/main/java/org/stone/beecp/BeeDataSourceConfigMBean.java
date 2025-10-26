@@ -19,7 +19,7 @@ public interface BeeDataSourceConfigMBean {
 
     String getUsername();
 
-    String getUrl();
+    String getJdbcUrl();
 
     String getDriverClassName();
 
@@ -33,11 +33,11 @@ public interface BeeDataSourceConfigMBean {
 
     int getMaxActive();
 
-    int getBorrowSemaphoreSize();
+    int getSemaphoreSize();
 
     Boolean isDefaultAutoCommit();
 
-    Integer getDefaultTransactionIsolationCode();
+    Integer getDefaultTransactionIsolation();
 
     String getDefaultTransactionIsolationName();
 
@@ -61,9 +61,9 @@ public interface BeeDataSourceConfigMBean {
 
     long getParkTimeForRetry();
 
-    long getTimerCheckInterval();
+    long getIntervalOfClearTimeout();
 
     String getPoolImplementClassName();
 
-    boolean isEnableJmx();
+    boolean isRegisterMbeans();
 }

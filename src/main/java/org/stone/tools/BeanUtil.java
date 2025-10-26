@@ -9,8 +9,6 @@
  */
 package org.stone.tools;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.stone.tools.exception.BeanException;
 import org.stone.tools.exception.PropertyValueConvertException;
 import org.stone.tools.exception.PropertyValueSetFailedException;
@@ -36,8 +34,6 @@ public class BeanUtil {
     public static final String Separator_MiddleLine = "-";
     //under-line:separator symbol in configuration properties name
     public static final String Separator_UnderLine = "_";
-    //a SLF4 logger used in stone project
-    public static final Logger CommonLog = LoggerFactory.getLogger(BeanUtil.class);
     //Class loader
     public static final ClassLoader BeeClassLoader = BeanUtil.class.getClassLoader();
 
@@ -90,7 +86,6 @@ public class BeanUtil {
         }
         return methodMap;
     }
-
 
     /**
      * gets property value(a string) from a properties map with property name.Three kinds of format conversion are supported on
@@ -319,7 +314,7 @@ public class BeanUtil {
         try {
             return beanClass.getConstructor().newInstance();
         } catch (Throwable e) {
-            throw new BeanException("Failed to create instance on class[" + beanClass + "]", e);
+            throw new BeanException("Failed to create instance on class[" + beanClass.getName() + "]", e);
         }
     }
 
@@ -333,7 +328,7 @@ public class BeanUtil {
         StringBuilder buf = new StringBuilder(classes.length * 10);
         for (Class<?> clazz : classes) {
             if (clazz == null) continue;
-            if (buf.length() == 0) buf.append(",");
+            if (buf.length() > 0) buf.append(",");
             buf.append(clazz.getName());
         }
         return buf.toString();

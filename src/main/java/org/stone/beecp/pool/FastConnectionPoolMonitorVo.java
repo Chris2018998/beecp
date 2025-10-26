@@ -11,6 +11,8 @@ package org.stone.beecp.pool;
 
 import org.stone.beecp.BeeConnectionPoolMonitorVo;
 
+import static org.stone.beecp.pool.ConnectionPoolStatics.*;
+
 /**
  * Connection pool Monitor impl
  *
@@ -18,96 +20,149 @@ import org.stone.beecp.BeeConnectionPoolMonitorVo;
  * @version 1.0
  */
 
-public class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonitorVo {
-    private String poolName;
-    private String poolMode;
-    private int poolMaxSize;
+public final class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonitorVo {
+    private final String poolName;
+    private final String poolMode;
+    private final int maxSize;
+    private final int semaphoreSize;
 
     private int poolState;
     private int idleSize;
     private int borrowedSize;
+    private int semaphoreAcquiredSize;
     private int semaphoreWaitingSize;
     private int transferWaitingSize;
-    private int creatingCount;
-    private int creatingTimeoutCount;
+    private int creatingSize;
+    private int creatingTimeoutSize;
 
+    private boolean enabledLogPrint;
+    private boolean enableMethodExecutionLogCache;
+
+    public FastConnectionPoolMonitorVo(String poolName, String poolMode, int maxSize, int semaphoreSize) {
+        this.poolName = poolName;
+        this.poolMode = poolMode;
+        this.maxSize = maxSize;
+        this.semaphoreSize = semaphoreSize;
+    }
+
+    @Override
     public String getPoolName() {
         return poolName;
     }
 
-    void setPoolName(String poolName) {
-        this.poolName = poolName;
-    }
-
+    @Override
     public String getPoolMode() {
         return poolMode;
     }
 
-    void setPoolMode(String poolMode) {
-        this.poolMode = poolMode;
+    @Override
+    public boolean isClosed() {
+        return poolState == POOL_CLOSED;
     }
 
-    public int getPoolMaxSize() {
-        return poolMaxSize;
+    @Override
+    public boolean isReady() {
+        return poolState == POOL_READY;
     }
 
-    void setPoolMaxSize(int poolMaxSize) {
-        this.poolMaxSize = poolMaxSize;
+    @Override
+    public boolean isStarting() {
+        return poolState == POOL_STARTING || poolState == POOL_RESTARTING;
     }
 
-    public int getPoolState() {
-        return poolState;
-    }
-
-    void setPoolState(int poolState) {
+    public void setPoolState(int poolState) {
         this.poolState = poolState;
     }
 
-    public int getIdleSize() {
-        return idleSize;
+    @Override
+    public int getMaxSize() {
+        return maxSize;
     }
 
-    void setIdleSize(int idleSize) {
-        this.idleSize = idleSize;
+    @Override
+    public int getSemaphoreSize() {
+        return semaphoreSize;
     }
 
+    @Override
     public int getBorrowedSize() {
         return borrowedSize;
     }
 
-    void setBorrowedSize(int borrowedSize) {
+    public void setBorrowedSize(int borrowedSize) {
         this.borrowedSize = borrowedSize;
     }
 
+    @Override
+    public int getIdleSize() {
+        return idleSize;
+    }
+
+    public void setIdleSize(int idleSize) {
+        this.idleSize = idleSize;
+    }
+
+    @Override
+    public int getCreatingSize() {
+        return creatingSize;
+    }
+
+    public void setCreatingSize(int creatingSize) {
+        this.creatingSize = creatingSize;
+    }
+
+    @Override
+    public int getCreatingTimeoutSize() {
+        return creatingTimeoutSize;
+    }
+
+    public void setCreatingTimeoutSize(int creatingTimeoutSize) {
+        this.creatingTimeoutSize = creatingTimeoutSize;
+    }
+
+
+    @Override
+    public int getSemaphoreAcquiredSize() {
+        return semaphoreAcquiredSize;
+    }
+
+    public void setSemaphoreAcquiredSize(int semaphoreAcquiredSize) {
+        this.semaphoreAcquiredSize = semaphoreAcquiredSize;
+    }
+
+    @Override
     public int getSemaphoreWaitingSize() {
         return semaphoreWaitingSize;
     }
 
-    void setSemaphoreWaitingSize(int semaphoreWaitingSize) {
+    public void setSemaphoreWaitingSize(int semaphoreWaitingSize) {
         this.semaphoreWaitingSize = semaphoreWaitingSize;
     }
 
+    @Override
     public int getTransferWaitingSize() {
         return transferWaitingSize;
     }
 
-    void setTransferWaitingSize(int transferWaitingSize) {
+    public void setTransferWaitingSize(int transferWaitingSize) {
         this.transferWaitingSize = transferWaitingSize;
     }
 
-    public int getCreatingTimeoutCount() {
-        return creatingTimeoutCount;
+    @Override
+    public boolean isEnabledLogPrint() {
+        return enabledLogPrint;
     }
 
-    void setCreatingTimeoutCount(int creatingTimeoutCount) {
-        this.creatingTimeoutCount = creatingTimeoutCount;
+    public void setEnabledLogPrint(boolean enabledLogPrint) {
+        this.enabledLogPrint = enabledLogPrint;
     }
 
-    public int getCreatingCount() {
-        return creatingCount;
+    @Override
+    public boolean isEnabledMethodExecutionLogCache() {
+        return enableMethodExecutionLogCache;
     }
 
-    void setCreatingCount(int creatingCount) {
-        this.creatingCount = creatingCount;
+    public void setEnableMethodExecutionLogCache(boolean enableMethodExecutionLogCache) {
+        this.enableMethodExecutionLogCache = enableMethodExecutionLogCache;
     }
 }

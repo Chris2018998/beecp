@@ -38,16 +38,17 @@ public final class MockXaConnection implements XAConnection {
     }
 
     public void close() throws SQLException {
+        properties.interceptBeforeCall("close");
         con.close();
     }
 
     public Connection getConnection() throws SQLException {
-        properties.mockThrowExceptionOnMethod("getConnection");
+        properties.interceptBeforeCall("getConnection");
         return con;
     }
 
     public XAResource getXAResource() throws SQLException {
-        properties.mockThrowExceptionOnMethod("getXAResource");
+        properties.interceptBeforeCall("getXAResource");
         return res;
     }
 

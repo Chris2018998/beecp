@@ -27,6 +27,7 @@ import static org.stone.beecp.pool.ConnectionPoolStatics.*;
 import static org.stone.tools.BeanUtil.*;
 import static org.stone.tools.CommonUtil.isBlank;
 import static org.stone.tools.CommonUtil.isNotBlank;
+import static org.stone.tools.logger.LogPrinterFactory.CommonLogPrinter;
 
 /**
  * Bee implementation of object factory interface.
@@ -58,7 +59,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
             if (refObject == null) return null;
             String value = refObject.toString().trim();
             if (isNotBlank(value)) {
-                CommonLog.info("beecp.{}={}", propertyName, value);
+                CommonLogPrinter.info("beecp.{}={}", propertyName, value);
                 return value;
             }
         }
@@ -107,12 +108,12 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         setPropertiesValue(config, setMethodMap, setValueMap);
 
         //7:try to find 'connectProperties' config value and put to ds config object
-        config.addConnectProperty(getConfigValue(ref, CONFIG_CONNECT_PROP));
-        String connectPropertiesCount = getConfigValue(ref, CONFIG_CONNECT_PROP_SIZE);
+        config.addConnectionProviderProperty(getConfigValue(ref, CONFIG_PROVIDER_PROP));
+        String connectPropertiesCount = getConfigValue(ref, CONFIG_PROVIDER_PROP_SIZE);
         if (isNotBlank(connectPropertiesCount)) {
             int count = Integer.parseInt(connectPropertiesCount.trim());
             for (int i = 1; i <= count; i++)
-                config.addConnectProperty(getConfigValue(ref, CONFIG_CONNECT_PROP_KEY_PREFIX + i));
+                config.addConnectionProviderProperty(getConfigValue(ref, CONFIG_PROVIDER_PROP_KEY_PREFIX + i));
         }
 
         //8:try to load sql exception fatal code and fatal state
