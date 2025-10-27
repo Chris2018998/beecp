@@ -27,16 +27,17 @@ import static org.stone.beecp.BeeMethodExecutionLog.*;
  * @version 1.0
  */
 public class MethodExecutionLogCache {
+    private final int maxSize;
     //slow threshold value of connection get,time unit:milliseconds,refer to {@code BeeDataSourceConfig.slowConnectionGetThreshold}
     private final long slowConnectionGetThreshold;
     //slow threshold of sql execution,time unit:milliseconds,refer to {@code BeeDataSourceConfig.slowSQLExecutionThreshold}
     private final long slowSQLExecutionThreshold;
-    private final int maxSize;
+
     //logs queue of connection get
     private final LinkedBlockingQueue<MethodExecutionLog> conLogQueue;
     //logs queue of sql execution
     private final LinkedBlockingQueue<MethodExecutionLog> sqlLogQueue;
-    private BeeMethodExecutionListener logHandler;
+    private BeeMethodExecutionListener listener;
 
     //***************************************************************************************************************//
     //                                         1: initialization                                                     //
@@ -45,13 +46,13 @@ public class MethodExecutionLogCache {
     /**
      * initialize log manager.
      *
-     * @param cacheSize  is capacity of logs cache
-     * @param slowGet    is slow threshold value of connection get,time unit:milliseconds
-     * @param slowExec   is slow threshold of sql execution,time unit:milliseconds
-     * @param logHandler is a log handler
+     * @param cacheSize is capacity of logs cache
+     * @param slowGet   is slow threshold value of connection get,time unit:milliseconds
+     * @param slowExec  is slow threshold of sql execution,time unit:milliseconds
+     * @param listener  is an execution listener
      */
-    MethodExecutionLogCache(int cacheSize, long slowGet, long slowExec, BeeMethodExecutionListener logHandler) {
-        this.logHandler = logHandler;
+    MethodExecutionLogCache(int cacheSize, long slowGet, long slowExec, BeeMethodExecutionListener listener) {
+        this.listener = listener;
         this.slowConnectionGetThreshold = slowGet;
         this.slowSQLExecutionThreshold = slowExec;
 
@@ -61,25 +62,19 @@ public class MethodExecutionLogCache {
     }
 
     public void setMethodExecutionListener(BeeMethodExecutionListener handler) {
-        this.logHandler = handler;
+        this.listener = handler;
     }
 
     //***************************************************************************************************************//
     //                                         2: logs record                                                        //
     //***************************************************************************************************************//
 
-    /**
-     * Start to call a method and a log object is return this start method
-     *
-     * @param type       is method call type
-     * @param method     is method name,for example:getConnection()
-     * @param parameters is an array of method parameters
-     */
+
     public BeeMethodExecutionLog beforeCall(int type, String method, Object[] parameters, String sql, Statement statement) throws SQLException {
         MethodExecutionLog log = new MethodExecutionLog(type, method, parameters);
         log.setStatement(statement);
         if (type != Type_SQL_Preparation) {
-            if (logHandler != null) logHandler.onMethodStart(log);
+            if (listener != null) listener.onMethodStart(log);
             offerQueue(log, type, parameters, sql);
         }
         return log;
@@ -109,13 +104,6 @@ public class MethodExecutionLogCache {
         }
     }
 
-    /**
-     * update result info to log object
-     *
-     * @param callResult is result of target method call
-     * @param log        generated from startCall method
-     * @preparedParameters is a parameter array of PreparedSQL or CallableSQL
-     */
     public void afterCall(Object callResult, long preparationTookTime, Object[] preparedParameters, BeeMethodExecutionLog log) throws SQLException {
         MethodExecutionLog defaultTypeLog = (MethodExecutionLog) log;
         defaultTypeLog.setResult(callResult, preparationTookTime, preparedParameters);
@@ -125,12 +113,12 @@ public class MethodExecutionLogCache {
             offerQueue(defaultTypeLog, log.getType(), log.getParameters(), log.getSql());
         }
 
-        if (((Type_Connection_Get == log.getType() && log.getEndTime() - log.getStartTime() >= slowConnectionGetThreshold)
-                || (Type_SQL_Execution == log.getType() && log.getEndTime() - log.getStartTime() >= slowSQLExecutionThreshold))) {
+        if (((Type_Connection_Get == log.getType() && log.getEndTime() - log.getStartTime() - slowConnectionGetThreshold >= 0L)
+                || (Type_SQL_Execution == log.getType() && log.getEndTime() - log.getStartTime() - slowSQLExecutionThreshold >= 0L))) {
             defaultTypeLog.setAsSlow();
         }
 
-        if (logHandler != null) logHandler.onMethodEnd(log);
+        if (listener != null) listener.onMethodEnd(log);
     }
 
     //***************************************************************************************************************//
@@ -179,11 +167,7 @@ public class MethodExecutionLogCache {
         return removedLogList;
     }
 
-    /**
-     * Clear timeout logs from manager.
-     *
-     * @param timeout to check timeout logs
-     */
+
     public void clearTimeout(long timeout) {
         List<BeeMethodExecutionLog> longRunningLogList = new ArrayList<>(1);
         List<BeeMethodExecutionLog> conPendingRemovalLogList = new LinkedList<>();
@@ -231,20 +215,15 @@ public class MethodExecutionLogCache {
         }
 
         //5: handle slow log list
-        if (logHandler != null) {
+        if (listener != null) {
             try {
-                logHandler.onLongRunningDetected(longRunningLogList);
+                listener.onLongRunningDetected(longRunningLogList);
             } catch (Throwable e) {
                 //
             }
         }
     }
 
-    /**
-     * Cancel statement in executing
-     *
-     * @param logId is an id of statement log cached in manager.
-     */
     public boolean cancelStatement(Object logId) throws SQLException {
         if (logId == null) return false;
         for (BeeMethodExecutionLog log : sqlLogQueue) {

@@ -86,25 +86,25 @@ public class Tc0016ConfigInfoLogPrintTest {
         logs = logCollector.endLogCollector();
         Assertions.assertFalse(logs.contains(".maxActive"));
 
-        //situation5: test on pint connectionProviderProperties
-        config.addConnectionProviderProperty("dbGroup", "test");
-        config.addConnectionProviderProperty("dbName", "test-Mysql1");
+        //situation5: test on pint connectionFactoryProperties
+        config.addConnectionFactoryProperty("dbGroup", "test");
+        config.addConnectionFactoryProperty("dbName", "test-Mysql1");
 
         logCollector = startLogCollector();
         config.check();
         logs = logCollector.endLogCollector();
-        Assertions.assertTrue(logs.contains(".connectionProviderProperties.dbGroup"));
-        Assertions.assertTrue(logs.contains(".connectionProviderProperties.dbName"));
+        Assertions.assertTrue(logs.contains(".connectionFactoryProperties.dbGroup"));
+        Assertions.assertTrue(logs.contains(".connectionFactoryProperties.dbName"));
 
-        //situation6: test on exclusion connectionProviderProperties
+        //situation6: test on exclusion connectionFactoryProperties
         config.addExclusionNameOfPrint("dbGroup");
         config.addExclusionNameOfPrint("dbName");
-        config.addExclusionNameOfPrint("connectionProviderProperties");
+        config.addExclusionNameOfPrint("connectionFactoryProperties");
 
         logCollector = startLogCollector();
         config.check();
         logs = logCollector.endLogCollector();
-        Assertions.assertFalse(logs.contains(".connectionProviderProperties.dbGroup"));
-        Assertions.assertFalse(logs.contains(".connectionProviderProperties.dbName"));
+        Assertions.assertFalse(logs.contains(".connectionFactoryProperties.dbGroup"));
+        Assertions.assertFalse(logs.contains(".connectionFactoryProperties.dbName"));
     }
 }

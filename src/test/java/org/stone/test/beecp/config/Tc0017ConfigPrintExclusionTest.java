@@ -60,8 +60,8 @@ public class Tc0017ConfigPrintExclusionTest {
     @Test
     public void testOnConfigCopy() throws Exception {
         BeeDataSourceConfig config = createDefault();
-        config.addConnectionProviderProperty("DB-Name", "MySQL");
-        config.addConnectionProviderProperty("DB-URL", "jdbc:test");
+        config.addConnectionFactoryProperty("DB-Name", "MySQL");
+        config.addConnectionFactoryProperty("DB-URL", "jdbc:test");
         config.addExclusionNameOfPrint("DB-Name");
         BeeDataSourceConfig config2 = config.check();
         Assertions.assertTrue(config2.existExclusionNameOfPrint("DB-Name"));

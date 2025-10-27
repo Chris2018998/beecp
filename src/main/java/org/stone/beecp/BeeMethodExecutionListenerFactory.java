@@ -19,7 +19,8 @@ public interface BeeMethodExecutionListenerFactory {
     /**
      * Creates method execution listener.
      *
-     * @return created Listener instance
+     * @return created listener instance
+     * @throws Exception when failed to create listener
      */
     BeeMethodExecutionListener create() throws Exception;
 

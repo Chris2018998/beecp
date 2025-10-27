@@ -23,6 +23,7 @@ public interface BeeMethodExecutionListener {
      * Plugin method: Handles a log of method call.
      *
      * @param log to be handled
+     * @throws SQLException when failure during onMethodStart call
      */
     void onMethodStart(BeeMethodExecutionLog log) throws SQLException;
 
@@ -30,6 +31,7 @@ public interface BeeMethodExecutionListener {
      * Plugin method: Handles a log of method call.
      *
      * @param log to be handled
+     * @throws SQLException when failure during onMethodEnd call
      */
     void onMethodEnd(BeeMethodExecutionLog log) throws SQLException;
 

@@ -89,8 +89,8 @@ public class Tc0048DataSourceFactoryTest {
         ref5.add(new StringRefAddr("defaultCatalog", ""));
         ref5.add(new StringRefAddr("initial-size", "10"));
         ref5.add(new StringRefAddr("max_active", "20"));
-        ref5.add(new StringRefAddr(CONFIG_PROVIDER_PROP, "A=a&B=b"));
-        ref5.add(new StringRefAddr(CONFIG_PROVIDER_PROP_SIZE, "2"));
+        ref5.add(new StringRefAddr(CONFIG_FACTORY_PROP, "A=a&B=b"));
+        ref5.add(new StringRefAddr(CONFIG_FACTORY_PROP_SIZE, "2"));
         ref5.add(new StringRefAddr("connectProperties.1", "2"));
         ref5.add(new StringRefAddr("connectProperties.2", "2"));
         ref5.add(new StringRefAddr(CONFIG_SQL_EXCEPTION_CODE, "1,2"));
@@ -100,8 +100,8 @@ public class Tc0048DataSourceFactoryTest {
             Assertions.assertNotNull(ds5);
             Assertions.assertEquals(10, ds5.getInitialSize());
             Assertions.assertEquals(20, ds5.getMaxActive());
-            Assertions.assertEquals("a", ds5.getConnectionProviderProperty("A"));
-            Assertions.assertEquals("b", ds5.getConnectionProviderProperty("B"));
+            Assertions.assertEquals("a", ds5.getConnectionFactoryProperty("A"));
+            Assertions.assertEquals("b", ds5.getConnectionFactoryProperty("B"));
         }
 
 

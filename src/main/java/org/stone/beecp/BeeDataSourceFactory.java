@@ -108,12 +108,12 @@ public final class BeeDataSourceFactory implements ObjectFactory {
         setPropertiesValue(config, setMethodMap, setValueMap);
 
         //7:try to find 'connectProperties' config value and put to ds config object
-        config.addConnectionProviderProperty(getConfigValue(ref, CONFIG_PROVIDER_PROP));
-        String connectPropertiesCount = getConfigValue(ref, CONFIG_PROVIDER_PROP_SIZE);
+        config.addConnectionFactoryProperty(getConfigValue(ref, CONFIG_FACTORY_PROP));
+        String connectPropertiesCount = getConfigValue(ref, CONFIG_FACTORY_PROP_SIZE);
         if (isNotBlank(connectPropertiesCount)) {
             int count = Integer.parseInt(connectPropertiesCount.trim());
             for (int i = 1; i <= count; i++)
-                config.addConnectionProviderProperty(getConfigValue(ref, CONFIG_PROVIDER_PROP_KEY_PREFIX + i));
+                config.addConnectionFactoryProperty(getConfigValue(ref, CONFIG_FACTORY_PROP_KEY_PREFIX + i));
         }
 
         //8:try to load sql exception fatal code and fatal state

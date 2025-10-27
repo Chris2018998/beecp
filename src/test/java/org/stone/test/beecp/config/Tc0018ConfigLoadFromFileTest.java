@@ -240,10 +240,10 @@ public class Tc0018ConfigLoadFromFileTest {
         Assertions.assertEquals("org.stone.test.beecp.objects.pool.MockRawConnectionPool", config.getPoolImplementClassName());
         Assertions.assertTrue(config.isRegisterMbeans());
 
-        Assertions.assertEquals("true", config.getConnectionProviderProperty("cachePrepStmts"));
-        Assertions.assertEquals("50", config.getConnectionProviderProperty("prepStmtCacheSize"));
-        Assertions.assertEquals("2048", config.getConnectionProviderProperty("prepStmtCacheSqlLimit"));
-        Assertions.assertEquals("true", config.getConnectionProviderProperty("useServerPrepStmts"));
+        Assertions.assertEquals("true", config.getConnectionFactoryProperty("cachePrepStmts"));
+        Assertions.assertEquals("50", config.getConnectionFactoryProperty("prepStmtCacheSize"));
+        Assertions.assertEquals("2048", config.getConnectionFactoryProperty("prepStmtCacheSqlLimit"));
+        Assertions.assertEquals("true", config.getConnectionFactoryProperty("useServerPrepStmts"));
         return Boolean.TRUE;
     }
 }

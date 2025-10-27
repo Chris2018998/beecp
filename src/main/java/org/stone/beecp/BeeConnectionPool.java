@@ -144,6 +144,7 @@ public interface BeeConnectionPool extends Closeable {
      * Gets logs from pool with specified type.
      *
      * @param type should be one of[BeeMethodExecutionLog.Type_Connection_Get,BeeMethodExecutionLog.Type_SQL_Execution];if not,then return all logs
+     * @return a result list
      */
     List<BeeMethodExecutionLog> getMethodExecutionLog(int type);
 
@@ -151,6 +152,7 @@ public interface BeeConnectionPool extends Closeable {
      * Clears logs from pool with specified type.
      *
      * @param type should be one of[BeeMethodExecutionLog.Type_Connection_Get,BeeMethodExecutionLog.Type_SQL_Execution];if not,then clear all logs
+     * @return a cleared list
      */
     List<BeeMethodExecutionLog> clearMethodExecutionLog(int type);
 
@@ -166,6 +168,7 @@ public interface BeeConnectionPool extends Closeable {
      *
      * @param logId log id
      * @return boolean is true that log is a statement log and success to cancellation called on this statement.
+     * @throws SQLException when cancellation failed
      */
     boolean cancelStatement(Object logId) throws SQLException;
 }

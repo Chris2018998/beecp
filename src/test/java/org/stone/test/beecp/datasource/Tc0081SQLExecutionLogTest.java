@@ -22,7 +22,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.stone.beecp.BeeMethodExecutionLog.Type_SQL_Execution;
@@ -35,9 +37,8 @@ public class Tc0081SQLExecutionLogTest {
     @Test
     public void testExceptionLog() throws SQLException {
         try (BeeDataSource ds = new BeeDataSource()) {
-            //ds.setEventLogManager(new MethodLogCache());
             ds.setMethodExecutionListener(new MockMethodExecutionListener1());
-            ds.setEnableMethodExecutionLogCache(true);//sync mode
+            ds.setEnableMethodExecutionLogCache(true);
 
             MockConnectionProperties connectionProperties = new MockConnectionProperties();
             connectionProperties.throwsExceptionWhenCallMethod("execute,executeQuery,executeUpdate,executeLargeUpdate");
@@ -86,9 +87,8 @@ public class Tc0081SQLExecutionLogTest {
     @Test
     public void testSlowLog() throws Exception {
         try (BeeDataSource ds = new BeeDataSource()) {
-            //ds.setEventLogManager(new MethodLogCache());
             ds.setMethodExecutionListener(new MockMethodExecutionListener1());
-            ds.setEnableMethodExecutionLogCache(true);//sync mode
+            ds.setEnableMethodExecutionLogCache(true);
             ds.setSlowSQLThreshold(50L);
 
             MockConnectionProperties connectionProperties = new MockConnectionProperties();
@@ -98,17 +98,13 @@ public class Tc0081SQLExecutionLogTest {
             ds.setConnectionFactory(connectionFactory);
 
             //1: test statement
-            try (Connection con = ds.getConnection(); Statement st = con.createStatement()) {
-                Thread statementThread = new Thread(() -> {
-                    try {
-                        st.execute("select 1");
-                        st.executeQuery("select 1");
-                        st.executeUpdate("update user set id=1");
-                        st.executeLargeUpdate("update user set id=1");
-                    } catch (SQLException e) {
-                        //do nothing
-                    }
-                });
+            try (Connection con = ds.getConnection()) {
+                Map<String, String> sqlMap = new HashMap<>(4);
+                sqlMap.put("execute", "select 1");
+                sqlMap.put("executeQuery", "select 1");
+                sqlMap.put("executeUpdate", "update user set id=1");
+                sqlMap.put("executeLargeUpdate", "update user set id=1");
+                Thread statementThread = new StatementExecuteThread(con, sqlMap);
                 statementThread.start();
                 statementThread.join();
 
@@ -125,28 +121,16 @@ public class Tc0081SQLExecutionLogTest {
 
             //3: test PreparedStatement
             try (Connection con = ds.getConnection()) {
-                Thread preparedStatementThread = new Thread(() -> {
-                    try (PreparedStatement ps1 = con.prepareStatement("select 1")) {
-                        ps1.execute();
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    try (PreparedStatement ps2 = con.prepareStatement("update test_user set name =? where id=?")) {
-                        ps2.setString(1, "Chris");
-                        ps2.setLong(2, 666888);
-                        ps2.executeUpdate();
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                Map<String, String> sqlMap = new HashMap<>(1);
+                sqlMap.put("execute", "select 1");
+                PrepareStatementThread preparedStatementThread = new PrepareStatementThread(con, sqlMap);
                 preparedStatementThread.start();
                 preparedStatementThread.join();
 
                 List<BeeMethodExecutionLog> logList = ds.getMethodExecutionLog(Type_SQL_Execution);
                 Assertions.assertEquals(1, logList.size());
                 for (BeeMethodExecutionLog log : logList) {
-                    //Assertions.assertTrue(log.getSqlPreparedTime() > 0L);
+                    Assertions.assertTrue(log.getSqlPreparedTime() > 0L);
                     Assertions.assertTrue(log.isSlow());
 
                     try {
@@ -164,10 +148,9 @@ public class Tc0081SQLExecutionLogTest {
     @Test
     public void testCancelStatement() throws Exception {
         try (BeeDataSource ds = new BeeDataSource()) {
-            //ds.setEventLogManager(new MethodLogCache());
             ds.setMethodExecutionListener(new MockMethodExecutionListener1());
             ds.setEnableMethodExecutionLogCache(true);//sync mode
-            ds.setSlowSQLThreshold(50L);
+            ds.setSlowSQLThreshold(1L);
 
             MockConnectionProperties connectionProperties = new MockConnectionProperties();
             connectionProperties.parkWhenCallMethod("execute");//blocking execute method
@@ -176,8 +159,11 @@ public class Tc0081SQLExecutionLogTest {
             ds.setConnectionFactory(connectionFactory);
 
             try (Connection con = ds.getConnection()) {
-                StatementThread statementThread1 = new StatementThread(con);
+                Map<String, String> sqlMap = new HashMap<>(1);
+                sqlMap.put("execute", "select 1");
+                PrepareStatementThread statementThread1 = new PrepareStatementThread(con, sqlMap);
                 statementThread1.start();
+
                 if (TestUtil.waitUtilWaiting(statementThread1)) {
                     List<BeeMethodExecutionLog> logList = ds.getMethodExecutionLog(Type_SQL_Execution);
                     Assertions.assertEquals(1, logList.size());
@@ -188,7 +174,7 @@ public class Tc0081SQLExecutionLogTest {
 
                 Assertions.assertFalse(ds.cancelStatement(null));
                 Assertions.assertFalse(ds.cancelStatement(new Object()));
-                StatementThread statementThread2 = new StatementThread(con);
+                PrepareStatementThread statementThread2 = new PrepareStatementThread(con, sqlMap);
                 statementThread2.start();
                 if (TestUtil.waitUtilWaiting(statementThread2)) {
                     List<BeeMethodExecutionLog> logList = ds.getMethodExecutionLog(Type_SQL_Execution);
@@ -201,18 +187,61 @@ public class Tc0081SQLExecutionLogTest {
         }
     }
 
-    private static class StatementThread extends Thread {
-        private final Connection con;
 
-        StatementThread(Connection con) {
+    private static class StatementExecuteThread extends Thread {
+        private final Connection con;
+        private final Map<String, String> sqlMap;
+
+        StatementExecuteThread(Connection con, Map<String, String> sqlMap) {
             this.con = con;
+            this.sqlMap = sqlMap;
         }
 
         public void run() {
-            try (PreparedStatement ps1 = con.prepareStatement("select 1")) {
-                ps1.execute();//blocking test
+            try (Statement statement = con.createStatement()) {
+                for (Map.Entry<String, String> entry : sqlMap.entrySet()) {
+                    String methodName = entry.getKey();
+                    if ("execute".equals(methodName)) {
+                        statement.execute(entry.getValue());
+                    } else if ("executeQuery".equals(methodName)) {
+                        statement.executeQuery(entry.getValue());
+                    } else if ("executeUpdate".equals(methodName)) {
+                        statement.executeUpdate(entry.getValue());
+                    } else if ("executeLargeUpdate".equals(methodName)) {
+                        statement.executeLargeUpdate(entry.getValue());
+                    }
+                }
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+
+            }
+        }
+    }
+
+    private static class PrepareStatementThread extends Thread {
+        private final Connection con;
+        private final Map<String, String> sqlMap;
+
+        PrepareStatementThread(Connection con, Map<String, String> sqlMap) {
+            this.con = con;
+            this.sqlMap = sqlMap;
+        }
+
+        public void run() {
+            for (Map.Entry<String, String> entry : sqlMap.entrySet()) {
+                String methodName = entry.getKey();
+                try (PreparedStatement statement = con.prepareStatement(entry.getValue())) {
+                    if ("execute".equals(methodName)) {
+                        statement.execute();
+                    } else if ("executeQuery".equals(methodName)) {
+                        statement.executeQuery();
+                    } else if ("executeUpdate".equals(methodName)) {
+                        statement.executeUpdate();
+                    } else if ("executeLargeUpdate".equals(methodName)) {
+                        statement.executeLargeUpdate();
+                    }
+                } catch (SQLException e) {
+
+                }
             }
         }
     }

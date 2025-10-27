@@ -49,7 +49,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     //23: An exclusion list of configuration print,default is copies from {@code DefaultExclusionList}
     private final List<String> exclusionListOfPrint = new ArrayList<>(DefaultExclusionList);
     //24: A map stores some properties of connection provider,these properties are injected to provider during pool initialization
-    private final Map<String, Object> connectionProviderProperties = new HashMap<>(1);
+    private final Map<String, Object> connectionFactoryProperties = new HashMap<>(1);
 
     //1: Username link to database,default is none
     private String username;
@@ -435,29 +435,29 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
         return this.exclusionListOfPrint.contains(fieldName);
     }
 
-    public Object getConnectionProviderProperty(String key) {
-        return this.connectionProviderProperties.get(key);
+    public Object getConnectionFactoryProperty(String key) {
+        return this.connectionFactoryProperties.get(key);
     }
 
-    public Object removeConnectionProviderProperty(String key) {
-        return this.connectionProviderProperties.remove(key);
+    public Object removeConnectionFactoryProperty(String key) {
+        return this.connectionFactoryProperties.remove(key);
     }
 
-    public void addConnectionProviderProperty(String key, Object value) {
+    public void addConnectionFactoryProperty(String key, Object value) {
         if (isBlank(key)) throw new InvalidParameterException("The given key cannot be null or blank");
-        this.connectionProviderProperties.put(key, value);
+        this.connectionFactoryProperties.put(key, value);
     }
 
-    public void addConnectionProviderProperty(String connectPropertyText) {
+    public void addConnectionFactoryProperty(String connectPropertyText) {
         if (isNotBlank(connectPropertyText)) {
             for (String attribute : connectPropertyText.split("&")) {
                 String[] pair = attribute.split("=");
                 if (pair.length == 2) {
-                    this.addConnectionProviderProperty(pair[0].trim(), pair[1].trim());
+                    this.addConnectionFactoryProperty(pair[0].trim(), pair[1].trim());
                 } else {
                     pair = attribute.split(":");
                     if (pair.length == 2) {
-                        this.addConnectionProviderProperty(pair[0].trim(), pair[1].trim());
+                        this.addConnectionFactoryProperty(pair[0].trim(), pair[1].trim());
                     }
                 }
             }
@@ -917,8 +917,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
         }
 
         //2: exclude some special keys in setValueMap
-        String connectPropertiesText = setValueMap.remove(CONFIG_PROVIDER_PROP);//remove item if exists in properties file before injection
-        String connectPropertiesSize = setValueMap.remove(CONFIG_PROVIDER_PROP_SIZE);//remove item if exists in properties file before injection
+        String connectPropertiesText = setValueMap.remove(CONFIG_FACTORY_PROP);//remove item if exists in properties file before injection
+        String connectPropertiesSize = setValueMap.remove(CONFIG_FACTORY_PROP_SIZE);//remove item if exists in properties file before injection
         String sqlExceptionCode = setValueMap.remove(CONFIG_SQL_EXCEPTION_CODE);//remove item if exists in properties file before injection
         String sqlExceptionState = setValueMap.remove(CONFIG_SQL_EXCEPTION_STATE);//remove item if exists in properties file before injection
         String exclusionListText = setValueMap.remove(CONFIG_EXCLUSION_LIST_OF_PRINT);
@@ -930,11 +930,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
         }
 
         //3:try to find 'connectProperties' config value and put to ds config object
-        this.addConnectionProviderProperty(connectPropertiesText);
+        this.addConnectionFactoryProperty(connectPropertiesText);
         if (isNotBlank(connectPropertiesSize)) {
             int size = Integer.parseInt(connectPropertiesSize.trim());
             for (int i = 1; i <= size; i++)//properties index begin with 1
-                this.addConnectionProviderProperty(getPropertyValue(setValueMap, CONFIG_PROVIDER_PROP_KEY_PREFIX + i));
+                this.addConnectionFactoryProperty(getPropertyValue(setValueMap, CONFIG_FACTORY_PROP_KEY_PREFIX + i));
         }
 
         //4: add error codes if not null and not empty
@@ -1015,8 +1015,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
                 fieldName = field.getName();
                 switch (fieldName) {
-                    case CONFIG_PROVIDER_PROP: //copy 'connectProperties'
-                        config.connectionProviderProperties.putAll(connectionProviderProperties);
+                    case CONFIG_FACTORY_PROP: //copy 'connectProperties'
+                        config.connectionFactoryProperties.putAll(connectionFactoryProperties);
                         break;
                     case CONFIG_EXCLUSION_LIST_OF_PRINT: //copy 'exclusionListOfPrint'
                         if (exclusionListOfPrint.isEmpty())
@@ -1161,7 +1161,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
             //step2.5: make a copy from connect properties
             Properties localConnectProperties = new Properties();
-            localConnectProperties.putAll(this.connectionProviderProperties);
+            localConnectProperties.putAll(this.connectionFactoryProperties);
 
             //2.6: set username and password to local connectProperties
             if (isNotBlank(username)) {
@@ -1187,7 +1187,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
                 }
 
                 //3.4: create a copy on local connectProperties
-                Map<String, Object> localConnectProperties = new HashMap<>(this.connectionProviderProperties);//copy
+                Map<String, Object> localConnectProperties = new HashMap<>(this.connectionFactoryProperties);//copy
 
                 //3.5: set jdbc link info
                 String url = jdbcLinkInfoProperties.getProperty("url");
@@ -1245,12 +1245,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
         String password = this.password;
 
         if (isBlank(url)) {
-            url = (String) this.connectionProviderProperties.get("url");
-            if (isBlank(url)) url = (String) connectionProviderProperties.get("URL");
-            if (isBlank(url)) url = (String) connectionProviderProperties.get("jdbcUrl");
+            url = (String) this.connectionFactoryProperties.get("url");
+            if (isBlank(url)) url = (String) connectionFactoryProperties.get("URL");
+            if (isBlank(url)) url = (String) connectionFactoryProperties.get("jdbcUrl");
             if (isNotBlank(url)) {//url found from connectProperties
-                username = (String) connectionProviderProperties.get("user");
-                password = (String) connectionProviderProperties.get("password");
+                username = (String) connectionFactoryProperties.get("user");
+                password = (String) connectionFactoryProperties.get("password");
             } else {
                 url = System.getProperty("beecp.url");
                 if (isBlank(url)) url = System.getProperty("beecp.URL");
@@ -1303,14 +1303,14 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
                 switch (fieldName) {
                     case CONFIG_EXCLUSION_LIST_OF_PRINT: //copy 'exclusionConfigPrintList'
                         break;
-                    case CONFIG_PROVIDER_PROP: //copy 'connectionProviderProperties'
-                        if (!connectionProviderProperties.isEmpty()) {
+                    case CONFIG_FACTORY_PROP: //copy 'connectionFactoryProperties'
+                        if (!connectionFactoryProperties.isEmpty()) {
                             if (infoPrint) {
-                                for (Map.Entry<String, Object> entry : checkedConfig.connectionProviderProperties.entrySet())
-                                    CommonLogPrinter.info("BeeCP({}).connectionProviderProperties.{}={}", poolName, entry.getKey(), entry.getValue());
+                                for (Map.Entry<String, Object> entry : checkedConfig.connectionFactoryProperties.entrySet())
+                                    CommonLogPrinter.info("BeeCP({}).connectionFactoryProperties.{}={}", poolName, entry.getKey(), entry.getValue());
                             } else {
-                                for (Map.Entry<String, Object> entry : checkedConfig.connectionProviderProperties.entrySet())
-                                    CommonLogPrinter.debug("BeeCP({}).connectionProviderProperties.{}={}", poolName, entry.getKey(), entry.getValue());
+                                for (Map.Entry<String, Object> entry : checkedConfig.connectionFactoryProperties.entrySet())
+                                    CommonLogPrinter.debug("BeeCP({}).connectionFactoryProperties.{}={}", poolName, entry.getKey(), entry.getValue());
                             }
                         }
                         break;

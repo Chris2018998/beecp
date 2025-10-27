@@ -156,6 +156,7 @@ public interface BeeMethodExecutionLog extends Serializable {
      * cancel a executing statement
      *
      * @return boolean is true that log is a statement log exist in manager and success to cancellation called on this statement.
+     * @throws SQLException when failed to cancel statement
      */
     boolean cancelStatement() throws SQLException;
 }

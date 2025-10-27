@@ -137,9 +137,9 @@ public class Tc0005JdbcLinkInfoTest {
             config.setPassword(password);
 
             //2: add jdbc link info to connectProperties
-            config.addConnectionProviderProperty("user", newUser);
-            config.addConnectionProviderProperty("password", newPassword);
-            config.addConnectionProviderProperty("url", newUrl);
+            config.addConnectionFactoryProperty("user", newUser);
+            config.addConnectionFactoryProperty("password", newPassword);
+            config.addConnectionFactoryProperty("url", newUrl);
 
             //3: set to System.Properties
             clearBeeCPInfoFromSystemProperties();
@@ -170,9 +170,9 @@ public class Tc0005JdbcLinkInfoTest {
             assertEquals(newUrl, fact_url2);
 
             //copy31: test(priority from ‘System.property’)
-            config.removeConnectionProviderProperty("user");
-            config.removeConnectionProviderProperty("password");
-            config.removeConnectionProviderProperty("url");
+            config.removeConnectionFactoryProperty("user");
+            config.removeConnectionFactoryProperty("password");
+            config.removeConnectionFactoryProperty("url");
             BeeDataSourceConfig checkConfig31 = config.check();
             Object connectionFactory31 = checkConfig31.getConnectionFactory();
             String fact_url31 = (String) TestUtil.getFieldValue(connectionFactory31, "url");

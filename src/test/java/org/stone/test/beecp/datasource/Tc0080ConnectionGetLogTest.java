@@ -68,7 +68,6 @@ public class Tc0080ConnectionGetLogTest {
 
         //2: get XA connection
         try (BeeDataSource ds = new BeeDataSource()) {
-            //ds.setEventLogManager(new MethodLogCache());
             ds.setMethodExecutionListener(new MockMethodExecutionListener1());
             ds.setEnableMethodExecutionLogCache(true);//sync mode
             MockXaConnectionFactory xaConnectionFactory = new MockXaConnectionFactory();
@@ -107,7 +106,6 @@ public class Tc0080ConnectionGetLogTest {
     public void testSlowLog() throws Exception {
         //1: get connection
         try (BeeDataSource ds = new BeeDataSource()) {
-            //ds.setEventLogManager(new MethodLogCache());
             ds.setMethodExecutionListener(new MockMethodExecutionListener1());
             ds.setEnableMethodExecutionLogCache(true);//sync mode
             ds.setSlowConnectionThreshold(1L);
@@ -133,10 +131,9 @@ public class Tc0080ConnectionGetLogTest {
 
         //2: get XA connection
         try (BeeDataSource ds = new BeeDataSource()) {
-            //ds.setEventLogManager(new MethodLogCache());
             ds.setMethodExecutionListener(new MockMethodExecutionListener1());
-            ds.setEnableMethodExecutionLogCache(true);//sync mode
-            ds.setSlowConnectionThreshold(100L);
+            ds.setEnableMethodExecutionLogCache(true);
+            ds.setSlowConnectionThreshold(1L);
             MockXaConnectionFactory xaConnectionFactory = new MockXaConnectionFactory();
             xaConnectionFactory.setNeedPark(true);
             xaConnectionFactory.setParkNanos(TimeUnit.MILLISECONDS.toNanos(500L));

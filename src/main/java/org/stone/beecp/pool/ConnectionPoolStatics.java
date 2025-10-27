@@ -32,11 +32,11 @@ public final class ConnectionPoolStatics {
     //transaction manager jndi name in configuration
     public static final String CONFIG_TM_JNDI = "transactionManagerName";
     //connect properties for driver or driver dataSource
-    public static final String CONFIG_PROVIDER_PROP = "connectionProviderProperties";
+    public static final String CONFIG_FACTORY_PROP = "connectionFactoryProperties";
     //connect properties count for driver or driver dataSource
-    public static final String CONFIG_PROVIDER_PROP_SIZE = "connectionProviderProperties.size";
+    public static final String CONFIG_FACTORY_PROP_SIZE = "connectionFactoryProperties.size";
     //connect properties prefix for driver or driver dataSource
-    public static final String CONFIG_PROVIDER_PROP_KEY_PREFIX = "connectionProviderProperties.";
+    public static final String CONFIG_FACTORY_PROP_KEY_PREFIX = "connectionFactoryProperties.";
     //sql exception fatal code
     public static final String CONFIG_SQL_EXCEPTION_CODE = "sqlExceptionCodeList";
     //sql exception fatal state

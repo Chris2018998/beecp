@@ -182,9 +182,9 @@ public class Tc0013dbcLinkInfoDecoderTest {
         Assertions.assertTrue(factory3.getPassword().endsWith("-Decoded"));
 
         BeeDataSourceConfig config4 = new BeeDataSourceConfig();
-        config4.addConnectionProviderProperty("url", url);
-        config4.addConnectionProviderProperty("user", username);
-        config4.addConnectionProviderProperty("password", password);
+        config4.addConnectionFactoryProperty("url", url);
+        config4.addConnectionFactoryProperty("user", username);
+        config4.addConnectionFactoryProperty("password", password);
         config4.setConnectionFactoryClass(MockConnectionFactory.class);
         config4.setLinkInfoDecoderClass(SampleMockJdbcLinkInfoDecoder.class);
         BeeDataSourceConfig checkedConfig4 = config4.check();
