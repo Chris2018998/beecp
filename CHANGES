@@ -1,5 +1,11 @@
 beecp changes
 
+Changes in 5.1.1
+1: Exception replacement in BeeDataSourceConfig(IllegalArgumentException ---> BeeDataSourceConfigException)
+2: Add two Exceptions for default value set/get on initial test connection(ConnectionDefaultValueGetException,ConnectionDefaultValueSetException)
+3: Rename some configuration items
+
+
 Changes in 5.1.0
 1: rename some configuration items
 2: delete three update methods(updateUsername,updatePassword,updateJdbcUrl) from data source
