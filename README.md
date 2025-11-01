@@ -5,16 +5,18 @@
 ![](https://img.shields.io/badge/Java-7+-green.svg)
 ![](https://img.shields.io/github/license/Chris2018998/BeeCP)
 
-BeeCP is a fast JDBC connection pool has techology features: caching single connection, not-moving waiting, fixed length array.
+BeeCP is a fast JDBC connection pool has techology features: caching single connection, not-moving waiting, fixed length
+array.
 
 ##
+
 Java7+
 
 ```xml
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>5.1.0</version>
+   <version>5.1.1</version>
 </dependency>
 ```
 

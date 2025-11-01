@@ -8,13 +8,14 @@
 BeeCP是一款轻量级JDBC连接池，Jar包仅133KB，其技术亮点：单连接缓存，非移动等待，固定长度数组
 
 ##
+
 Java7+
 
 ```xml
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>5.1.0</version>
+   <version>5.1.1</version>
 </dependency>
 ```
 
@@ -27,6 +28,7 @@ Java6(deprecated)
    <version>1.6.10</version>
 </dependency>
 ```
+
 ##
 
 BeeCP is a sub module of stone, its document please visit
