@@ -25,8 +25,8 @@ public class Tc0019ObjectFieldFromPropertiesTest {
     @Test
     public void testObjectTypeFields() {
         Properties prop = new Properties();
-        prop.put("predicate", "org.stone.test.beecp.objects.eviction.MockEvictConnectionPredicate");
-        prop.put("predicateClass", "org.stone.test.beecp.objects.eviction.MockEvictConnectionPredicate");
+        prop.put("predicate", "org.stone.test.beecp.objects.predicate.MockEvictConnectionPredicate1");
+        prop.put("predicateClass", "org.stone.test.beecp.objects.predicate.MockEvictConnectionPredicate1");
         prop.put("linkInfoDecoder", "org.stone.test.beecp.objects.decoder.SampleMockJdbcLinkInfoDecoder");
         prop.put("linkInfoDecoderClass", "org.stone.test.beecp.objects.decoder.SampleMockJdbcLinkInfoDecoder");
         prop.put("connectionFactory", "org.stone.test.beecp.objects.factory.MockConnectionFactory");
@@ -45,8 +45,8 @@ public class Tc0019ObjectFieldFromPropertiesTest {
     @Test
     public void testKeyPrefix() {
         Properties prop = new Properties();
-        prop.put("beecp.predicate", "org.stone.test.beecp.objects.eviction.MockEvictConnectionPredicate");
-        prop.put("beecp.predicateClass", "org.stone.test.beecp.objects.eviction.MockEvictConnectionPredicate");
+        prop.put("beecp.predicate", "org.stone.test.beecp.objects.predicate.MockEvictConnectionPredicate1");
+        prop.put("beecp.predicateClass", "org.stone.test.beecp.objects.predicate.MockEvictConnectionPredicate1");
         prop.put("beecp.linkInfoDecoder", "org.stone.test.beecp.objects.decoder.SampleMockJdbcLinkInfoDecoder");
         prop.put("beecp.linkInfoDecoderClass", "org.stone.test.beecp.objects.decoder.SampleMockJdbcLinkInfoDecoder");
         prop.put("beecp.connectionFactory", "org.stone.test.beecp.objects.factory.MockConnectionFactory");

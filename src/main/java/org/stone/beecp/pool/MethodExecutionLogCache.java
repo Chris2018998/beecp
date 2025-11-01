@@ -29,9 +29,9 @@ import static org.stone.beecp.BeeMethodExecutionLog.*;
 public class MethodExecutionLogCache {
     private final int maxSize;
     //slow threshold value of connection get,time unit:milliseconds,refer to {@code BeeDataSourceConfig.slowConnectionGetThreshold}
-    private final long slowConnectionGetThreshold;
+    private final long slowConnectionThreshold;
     //slow threshold of sql execution,time unit:milliseconds,refer to {@code BeeDataSourceConfig.slowSQLExecutionThreshold}
-    private final long slowSQLExecutionThreshold;
+    private final long slowSQLThreshold;
 
     //logs queue of connection get
     private final LinkedBlockingQueue<MethodExecutionLog> conLogQueue;
@@ -44,7 +44,7 @@ public class MethodExecutionLogCache {
     //***************************************************************************************************************//
 
     /**
-     * initialize log manager.
+     * initialize log cache.
      *
      * @param cacheSize is capacity of logs cache
      * @param slowGet   is slow threshold value of connection get,time unit:milliseconds
@@ -53,8 +53,8 @@ public class MethodExecutionLogCache {
      */
     MethodExecutionLogCache(int cacheSize, long slowGet, long slowExec, BeeMethodExecutionListener listener) {
         this.listener = listener;
-        this.slowConnectionGetThreshold = slowGet;
-        this.slowSQLExecutionThreshold = slowExec;
+        this.slowConnectionThreshold = slowGet;
+        this.slowSQLThreshold = slowExec;
 
         this.maxSize = cacheSize;
         this.conLogQueue = new LinkedBlockingQueue<>(cacheSize);
@@ -113,8 +113,8 @@ public class MethodExecutionLogCache {
             offerQueue(defaultTypeLog, log.getType(), log.getParameters(), log.getSql());
         }
 
-        if (((Type_Connection_Get == log.getType() && log.getEndTime() - log.getStartTime() - slowConnectionGetThreshold >= 0L)
-                || (Type_SQL_Execution == log.getType() && log.getEndTime() - log.getStartTime() - slowSQLExecutionThreshold >= 0L))) {
+        if (((Type_Connection_Get == log.getType() && log.getEndTime() - log.getStartTime() - slowConnectionThreshold >= 0L)
+                || (Type_SQL_Execution == log.getType() && log.getEndTime() - log.getStartTime() - slowSQLThreshold >= 0L))) {
             defaultTypeLog.setAsSlow();
         }
 
@@ -180,7 +180,7 @@ public class MethodExecutionLogCache {
                 conPendingRemovalLogList.add(log);
             }
 
-            if (log.getEndTime() == 0 && currentTime - log.getStartTime() >= slowConnectionGetThreshold) {
+            if (log.getEndTime() == 0 && currentTime - log.getStartTime() >= slowConnectionThreshold) {
                 log.setAsSlow();
                 longRunningLogList.add(log);
             }
@@ -192,7 +192,7 @@ public class MethodExecutionLogCache {
                 sqlPendingRemovalLogList.add(log);
             }
 
-            if (log.getEndTime() == 0 && currentTime - log.getStartTime() >= slowSQLExecutionThreshold) {
+            if (log.getEndTime() == 0 && currentTime - log.getStartTime() >= slowSQLThreshold) {
                 log.setAsSlow();
                 longRunningLogList.add(log);
             }

@@ -33,10 +33,7 @@ public abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Co
     }
 
     ProxyConnectionBase(PooledConnection p, MethodExecutionLogCache logCache) {
-        super(p);
-        raw = p.rawConn;
-        p.proxyInUsing = this;
-
+        this(p);
         this.logCache = logCache;
     }
 
@@ -112,13 +109,13 @@ public abstract class ProxyConnectionBase extends ProxyBaseWrapper implements Co
 
     public void setCatalog(String catalog) throws SQLException {
         this.raw.setCatalog(catalog);
-        this.p.setResetInd(PS_CATALOG, p.forceDirtyOnCatalogAfterSet || !Objects.equals(catalog, this.p.defaultCatalog));
+        this.p.setResetInd(PS_CATALOG, p.forceDirtyWhenSetCatalog || !Objects.equals(catalog, this.p.defaultCatalog));
     }
 
     //--------------------------JDBC 4.1 -----------------------------
     public void setSchema(String schema) throws SQLException {
         this.raw.setSchema(schema);
-        this.p.setResetInd(PS_SCHEMA, p.forceDirtyOnSchemaAfterSet || !Objects.equals(schema, this.p.defaultSchema));
+        this.p.setResetInd(PS_SCHEMA, p.forceDirtyWhenSetSchema || !Objects.equals(schema, this.p.defaultSchema));
     }
 
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {

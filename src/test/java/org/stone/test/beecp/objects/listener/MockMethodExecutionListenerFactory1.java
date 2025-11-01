@@ -15,6 +15,7 @@
  */
 package org.stone.test.beecp.objects.listener;
 
+import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeMethodExecutionListener;
 import org.stone.beecp.BeeMethodExecutionListenerFactory;
 
@@ -30,7 +31,7 @@ public class MockMethodExecutionListenerFactory1 implements BeeMethodExecutionLi
      *
      * @return created Listener instance
      */
-    public BeeMethodExecutionListener create() throws Exception {
+    public BeeMethodExecutionListener create(BeeDataSourceConfig config) throws Exception {
         return new MockMethodExecutionListener1();
     }
 }

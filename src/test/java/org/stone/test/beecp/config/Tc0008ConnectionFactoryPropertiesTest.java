@@ -12,8 +12,8 @@ package org.stone.test.beecp.config;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeDataSourceConfig;
+import org.stone.beecp.BeeDataSourceConfigException;
 
-import java.security.InvalidParameterException;
 import java.util.Properties;
 
 import static org.stone.test.beecp.config.DsConfigFactory.createEmpty;
@@ -29,19 +29,19 @@ public class Tc0008ConnectionFactoryPropertiesTest {
         try {
             config.addConnectionFactoryProperty(null, null);
             Assertions.fail("[testOnAddProperty]Test failed");
-        } catch (InvalidParameterException e) {
+        } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given key cannot be null or blank", e.getMessage());
         }
         try {
             config.addConnectionFactoryProperty("", "value");
             Assertions.fail("[testOnAddProperty]Test failed");
-        } catch (InvalidParameterException e) {
+        } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given key cannot be null or blank", e.getMessage());
         }
         try {
             config.addConnectionFactoryProperty(" ", "value");
             Assertions.fail("[testOnAddProperty]Test failed");
-        } catch (InvalidParameterException e) {
+        } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given key cannot be null or blank", e.getMessage());
         }
 

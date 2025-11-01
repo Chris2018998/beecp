@@ -16,7 +16,7 @@ import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.test.base.TestUtil;
 import org.stone.test.beecp.objects.factory.BlockingMockConnectionFactory;
 import org.stone.test.beecp.objects.threads.BorrowThread;
-import org.stone.tools.extension.InterruptionReentrantReadWriteLock;
+import org.stone.tools.extension.InterruptableReentrantReadWriteLock;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
@@ -76,7 +76,7 @@ public class Tc0040DsPoolInternalLockTest {
             //2: attempt to get connection in current thread
             if (waitUtilWaiting(firstBorrower)) {//block 1 second in pool instance creation
                 Object dsPool = TestUtil.getFieldValue(ds, "pool");
-                InterruptionReentrantReadWriteLock lock = (InterruptionReentrantReadWriteLock) TestUtil.getFieldValue(dsPool, "connectionArrayInitLock");
+                InterruptableReentrantReadWriteLock lock = (InterruptableReentrantReadWriteLock) TestUtil.getFieldValue(dsPool, "connectionArrayInitLock");
 
                 BorrowThread secondBorrower = new BorrowThread(ds);
                 secondBorrower.start();
@@ -112,7 +112,7 @@ public class Tc0040DsPoolInternalLockTest {
             //2: attempt to get connection in current thread
             if (waitUtilWaiting(firstBorrower)) {//block 1 second in pool instance creation
                 Object dsPool = TestUtil.getFieldValue(ds, "pool");
-                InterruptionReentrantReadWriteLock lock = (InterruptionReentrantReadWriteLock) TestUtil.getFieldValue(dsPool, "connectionArrayInitLock");
+                InterruptableReentrantReadWriteLock lock = (InterruptableReentrantReadWriteLock) TestUtil.getFieldValue(dsPool, "connectionArrayInitLock");
                 BorrowThread secondBorrower = new BorrowThread(ds);
                 secondBorrower.start();
                 while (lock.getQueueLength() == 0) {

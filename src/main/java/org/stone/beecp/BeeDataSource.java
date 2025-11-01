@@ -15,7 +15,7 @@ import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
 import org.stone.beecp.pool.exception.PoolCreateFailedException;
 import org.stone.beecp.pool.exception.PoolNotCreatedException;
 import org.stone.tools.BeanUtil;
-import org.stone.tools.extension.InterruptionReentrantReadWriteLock;
+import org.stone.tools.extension.InterruptableReentrantReadWriteLock;
 
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
@@ -46,8 +46,8 @@ import static org.stone.tools.logger.LogPrinterFactory.CommonLogPrinter;
 //fix BeeCP-Starter-#6 Chris-2020-09-01 start
 //public final class BeeDataSource extends BeeDataSourceConfig implements DataSource {
 public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XADataSource, Closeable {
-    private final InterruptionReentrantReadWriteLock lock = new InterruptionReentrantReadWriteLock();
-    private final InterruptionReentrantReadWriteLock.ReadLock readLock = lock.readLock();
+    private final InterruptableReentrantReadWriteLock lock = new InterruptableReentrantReadWriteLock();
+    private final InterruptableReentrantReadWriteLock.ReadLock readLock = lock.readLock();
     private long maxWaitNanos = 8000L;//default vale same to config
     private BeeConnectionPool pool;
     private CommonDataSource subDs;//used to set loginTimeout

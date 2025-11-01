@@ -53,39 +53,39 @@ public class Tc0009ConnectionDefaultValueTest {
         Assertions.assertTrue(config.isDefaultAutoCommit().booleanValue());
 
         //enableDefaultOnCatalog
-        Assertions.assertTrue(config.isUseDefaultCatalog());//default value check(true)
-        config.setUseDefaultCatalog(false);
-        Assertions.assertFalse(config.isUseDefaultCatalog());
-        config.setUseDefaultCatalog(true);
-        Assertions.assertTrue(config.isUseDefaultCatalog());
+        Assertions.assertTrue(config.isEnableDefaultCatalog());//default value check(true)
+        config.setEnableDefaultCatalog(false);
+        Assertions.assertFalse(config.isEnableDefaultCatalog());
+        config.setEnableDefaultCatalog(true);
+        Assertions.assertTrue(config.isEnableDefaultCatalog());
 
         //enableDefaultOnSchema
-        Assertions.assertTrue(config.isUseDefaultSchema());//default value check(true)
-        config.setUseDefaultSchema(false);
-        Assertions.assertFalse(config.isUseDefaultSchema());
-        config.setUseDefaultSchema(true);
-        Assertions.assertTrue(config.isUseDefaultSchema());
+        Assertions.assertTrue(config.isEnableDefaultSchema());//default value check(true)
+        config.setEnableDefaultSchema(false);
+        Assertions.assertFalse(config.isEnableDefaultSchema());
+        config.setEnableDefaultSchema(true);
+        Assertions.assertTrue(config.isEnableDefaultSchema());
 
         //enableDefaultOnReadOnly
-        Assertions.assertTrue(config.isUseDefaultReadOnly());//default value check(true)
-        config.setUseDefaultReadOnly(false);
-        Assertions.assertFalse(config.isUseDefaultReadOnly());
-        config.setUseDefaultReadOnly(true);
-        Assertions.assertTrue(config.isUseDefaultReadOnly());
+        Assertions.assertTrue(config.isEnableDefaultReadOnly());//default value check(true)
+        config.setEnableDefaultReadOnly(false);
+        Assertions.assertFalse(config.isEnableDefaultReadOnly());
+        config.setEnableDefaultReadOnly(true);
+        Assertions.assertTrue(config.isEnableDefaultReadOnly());
 
         //enableDefaultOnReadOnly
-        Assertions.assertTrue(config.isUseDefaultAutoCommit());//default check
-        config.setUseDefaultAutoCommit(false);
-        Assertions.assertFalse(config.isUseDefaultAutoCommit());
-        config.setUseDefaultAutoCommit(true);
-        Assertions.assertTrue(config.isUseDefaultAutoCommit());
+        Assertions.assertTrue(config.isEnableDefaultAutoCommit());//default check
+        config.setEnableDefaultAutoCommit(false);
+        Assertions.assertFalse(config.isEnableDefaultAutoCommit());
+        config.setEnableDefaultAutoCommit(true);
+        Assertions.assertTrue(config.isEnableDefaultAutoCommit());
 
         //enableDefaultOnTransactionIsolation
-        Assertions.assertTrue(config.isUseDefaultTransactionIsolation());//default check
-        config.setUseDefaultTransactionIsolation(false);
-        Assertions.assertFalse(config.isUseDefaultTransactionIsolation());
-        config.setUseDefaultTransactionIsolation(true);
-        Assertions.assertTrue(config.isUseDefaultTransactionIsolation());
+        Assertions.assertTrue(config.isEnableDefaultTransactionIsolation());//default check
+        config.setEnableDefaultTransactionIsolation(false);
+        Assertions.assertFalse(config.isEnableDefaultTransactionIsolation());
+        config.setEnableDefaultTransactionIsolation(true);
+        Assertions.assertTrue(config.isEnableDefaultTransactionIsolation());
 
         //forceDirtyOnSchemaAfterSet
         Assertions.assertFalse(config.isForceDirtyWhenSetSchema());//default check

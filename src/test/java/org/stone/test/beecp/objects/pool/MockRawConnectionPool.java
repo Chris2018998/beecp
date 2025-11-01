@@ -14,7 +14,7 @@ import org.stone.beecp.pool.exception.ConnectionGetForbiddenException;
 import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
 import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
 import org.stone.beecp.pool.exception.PoolInitializeFailedException;
-import org.stone.tools.extension.InterruptionSemaphore;
+import org.stone.tools.extension.InterruptableSemaphore;
 
 import javax.sql.XAConnection;
 import java.sql.Connection;
@@ -42,7 +42,7 @@ public final class MockRawConnectionPool implements BeeConnectionPool {
     private String poolName = "";
     private String poolMode = "";
     private long defaultMaxWait;
-    private InterruptionSemaphore borrowSemaphore;
+    private InterruptableSemaphore borrowSemaphore;
     private BeeDataSourceConfig poolConfig;
     private boolean isRawXaConnFactory;
     private BeeConnectionFactory rawConnFactory;
@@ -54,11 +54,11 @@ public final class MockRawConnectionPool implements BeeConnectionPool {
      * @param config data source configuration
      */
     public void start(BeeDataSourceConfig config) throws SQLException {
-        if (config == null) throw new PoolInitializeFailedException("Pool initialization configuration can't be null");
+        if (config == null) throw new PoolInitializeFailedException("Data source configuration can't be null");
         this.poolConfig = config.check();
         this.defaultMaxWait = MILLISECONDS.toNanos(poolConfig.getMaxWait());
         this.poolName = poolConfig.getPoolName();
-        this.borrowSemaphore = new InterruptionSemaphore(poolConfig.getSemaphoreSize(), poolConfig.isFairMode());
+        this.borrowSemaphore = new InterruptableSemaphore(poolConfig.getSemaphoreSize(), poolConfig.isFairMode());
 
         if (poolConfig.isFairMode()) {
             poolMode = "fair";

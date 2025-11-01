@@ -15,8 +15,8 @@ import org.stone.beecp.BeeConnectionPoolMonitorVo;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.test.beecp.driver.MockConnectionProperties;
-import org.stone.test.beecp.objects.eviction.MockEvictConnectionPredicate;
 import org.stone.test.beecp.objects.factory.MockConnectionFactory;
+import org.stone.test.beecp.objects.predicate.MockEvictConnectionPredicate1;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -85,7 +85,7 @@ public class Tc0063ConnectionEvictionTest {
         BeeDataSourceConfig config = createDefault();
         config.setMaxActive(2);
         config.setInitialSize(2);
-        config.setPredicate(new MockEvictConnectionPredicate(errorCode, errorState));
+        config.setPredicate(new MockEvictConnectionPredicate1(errorCode, errorState));
 
         MockConnectionProperties conProperties = new MockConnectionProperties();
         conProperties.setErrorState(errorState);

@@ -20,9 +20,9 @@ import java.util.concurrent.Semaphore;
  * @author Chris Liao
  * @version 1.0
  */
-public final class InterruptionSemaphore extends Semaphore {
+public final class InterruptableSemaphore extends Semaphore {
 
-    public InterruptionSemaphore(int permits, boolean fair) {
+    public InterruptableSemaphore(int permits, boolean fair) {
         super(permits, fair);
     }
 

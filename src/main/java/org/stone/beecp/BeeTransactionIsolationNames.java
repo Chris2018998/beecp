@@ -41,11 +41,11 @@ public final class BeeTransactionIsolationNames {
     private static final Map<String, Integer> IsolationNameToCodeMap = new HashMap<>(5);
 
     static {
-        IsolationNameToCodeMap.put(TRANSACTION_NONE, Connection.TRANSACTION_NONE);
-        IsolationNameToCodeMap.put(TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_READ_COMMITTED);
-        IsolationNameToCodeMap.put(TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_UNCOMMITTED);
-        IsolationNameToCodeMap.put(TRANSACTION_REPEATABLE_READ, Connection.TRANSACTION_REPEATABLE_READ);
-        IsolationNameToCodeMap.put(TRANSACTION_SERIALIZABLE, Connection.TRANSACTION_SERIALIZABLE);
+        IsolationNameToCodeMap.put(TRANSACTION_NONE, Integer.valueOf(Connection.TRANSACTION_NONE));
+        IsolationNameToCodeMap.put(TRANSACTION_READ_COMMITTED, Integer.valueOf(Connection.TRANSACTION_READ_COMMITTED));
+        IsolationNameToCodeMap.put(TRANSACTION_READ_UNCOMMITTED, Integer.valueOf(Connection.TRANSACTION_READ_UNCOMMITTED));
+        IsolationNameToCodeMap.put(TRANSACTION_REPEATABLE_READ, Integer.valueOf(Connection.TRANSACTION_REPEATABLE_READ));
+        IsolationNameToCodeMap.put(TRANSACTION_SERIALIZABLE, Integer.valueOf(Connection.TRANSACTION_SERIALIZABLE));
     }
 
     private BeeTransactionIsolationNames() {

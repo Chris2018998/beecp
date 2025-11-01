@@ -20,7 +20,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author Chris Liao
  * @version 1.0
  */
-public class InterruptionReentrantReadWriteLock extends ReentrantReadWriteLock {
+public class InterruptableReentrantReadWriteLock extends ReentrantReadWriteLock {
 
     public Thread getOwnerThread() {
         return super.getOwner();

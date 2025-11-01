@@ -7,12 +7,12 @@
  *
  * Project Licensed under Apache License v2.0
  */
-package org.stone.test.beecp.objects.eviction;
+package org.stone.test.beecp.objects.predicate;
 
 /**
  * @author Chris Liao
  */
-public class MockEvictConnectionPredicate2 extends MockEvictConnectionPredicate {
+public class MockEvictConnectionPredicate2 extends MockEvictConnectionPredicate1 {
 
     public MockEvictConnectionPredicate2(String name) {
 

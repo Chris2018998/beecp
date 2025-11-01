@@ -85,7 +85,7 @@ public class Tc0034DsPoolStartFailTest {
             Assertions.fail("[testNullConfig]Test failed");
         } catch (SQLException e) {
             Assertions.assertInstanceOf(PoolInitializeFailedException.class, e);
-            Assertions.assertEquals("Pool initialization configuration can't be null", e.getMessage());
+            Assertions.assertEquals("Data source configuration can't be null", e.getMessage());
         }
     }
 

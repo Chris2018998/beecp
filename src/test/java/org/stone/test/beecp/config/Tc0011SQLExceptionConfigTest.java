@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeConnectionPredicate;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
-import org.stone.test.beecp.objects.eviction.MockNotEvictConnectionPredicate1;
+import org.stone.test.beecp.objects.predicate.MockNotEvictConnectionPredicate1;
 
 import java.util.List;
 import java.util.Properties;
@@ -101,7 +101,7 @@ public class Tc0011SQLExceptionConfigTest {
         Assertions.assertNotNull(checkConfig2.getPredicate());
 
         BeeDataSourceConfig config3 = createDefault();
-        String predicationClassName = "org.stone.test.beecp.objects.eviction.MockNotEvictConnectionPredicate1";
+        String predicationClassName = "org.stone.test.beecp.objects.predicate.MockNotEvictConnectionPredicate1";
         config3.setPredicateClassName(predicationClassName);
         Assertions.assertEquals(predicationClassName, config3.getPredicateClassName());
         BeeDataSourceConfig checkConfig3 = config3.check();

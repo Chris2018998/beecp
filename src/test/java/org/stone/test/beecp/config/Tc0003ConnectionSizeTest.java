@@ -14,8 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
 
-import java.security.InvalidParameterException;
-
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.stone.test.beecp.config.DsConfigFactory.createDefault;
@@ -40,7 +38,7 @@ public class Tc0003ConnectionSizeTest {
         try {
             config.setInitialSize(-1);
             fail("[testSetAndGet]Setting test failed on configuration item[semaphore-size]");
-        } catch (InvalidParameterException e) {
+        } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given value for the configuration item 'initial-size' cannot be less than zero", e.getMessage());
         }
         Assertions.assertEquals(1, config.getInitialSize());
@@ -54,13 +52,13 @@ public class Tc0003ConnectionSizeTest {
         try {
             config.setMaxActive(0);
             fail("[testSetAndGet]Setting test failed on configuration item[max-active]");
-        } catch (InvalidParameterException e) {
+        } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given value for configuration item 'max-active' must be greater than zero", e.getMessage());
         }
         try {
             config.setMaxActive(-1);
             fail("[testSetAndGet]Setting test failed on configuration item[max-active]");
-        } catch (InvalidParameterException e) {
+        } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given value for configuration item 'max-active' must be greater than zero", e.getMessage());
         }
         Assertions.assertEquals(1, config.getMaxActive());
@@ -71,13 +69,13 @@ public class Tc0003ConnectionSizeTest {
         try {
             config.setSemaphoreSize(0);//zero is not acceptable
             fail("[testOnSetAndGet]Setting test failed on configuration item[semaphore-size]");
-        } catch (InvalidParameterException e) {
+        } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given value for configuration item 'semaphore-size' must be greater than zero", e.getMessage());
         }
         try {
             config.setSemaphoreSize(-1);//negative number is not acceptable
             fail("[testOnSetAndGet]Setting test failed on configuration item[semaphore-size]");
-        } catch (InvalidParameterException e) {
+        } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given value for configuration item 'semaphore-size' must be greater than zero", e.getMessage());
         }
         Assertions.assertEquals(1, config.getSemaphoreSize());//check value is whether changed

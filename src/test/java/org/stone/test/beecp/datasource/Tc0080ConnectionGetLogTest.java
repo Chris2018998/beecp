@@ -132,7 +132,7 @@ public class Tc0080ConnectionGetLogTest {
         //2: get XA connection
         try (BeeDataSource ds = new BeeDataSource()) {
             ds.setMethodExecutionListener(new MockMethodExecutionListener1());
-            ds.setEnableMethodExecutionLogCache(true);
+            ds.setEnableMethodExecutionLogCache(true);//sync mode
             ds.setSlowConnectionThreshold(1L);
             MockXaConnectionFactory xaConnectionFactory = new MockXaConnectionFactory();
             xaConnectionFactory.setNeedPark(true);

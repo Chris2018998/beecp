@@ -7,7 +7,7 @@
  *
  * Project Licensed under Apache License v2.0
  */
-package org.stone.test.beecp.objects.eviction;
+package org.stone.test.beecp.objects.predicate;
 
 import org.stone.beecp.BeeConnectionPredicate;
 
@@ -17,16 +17,16 @@ import java.util.Objects;
 /**
  * @author Chris Liao
  */
-public class MockEvictConnectionPredicate implements BeeConnectionPredicate {
+public class MockEvictConnectionPredicate1 implements BeeConnectionPredicate {
 
     private final int errorCode;
     private final String errorState;
 
-    public MockEvictConnectionPredicate() {
+    public MockEvictConnectionPredicate1() {
         this(0, null);
     }
 
-    public MockEvictConnectionPredicate(int errorCode, String errorState) {
+    public MockEvictConnectionPredicate1(int errorCode, String errorState) {
         this.errorCode = errorCode;
         this.errorState = errorState;
     }

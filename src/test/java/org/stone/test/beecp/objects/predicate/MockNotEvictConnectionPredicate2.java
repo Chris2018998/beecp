@@ -7,7 +7,7 @@
  *
  * Project Licensed under Apache License v2.0
  */
-package org.stone.test.beecp.objects.eviction;
+package org.stone.test.beecp.objects.predicate;
 
 import org.stone.beecp.BeeConnectionPredicate;
 

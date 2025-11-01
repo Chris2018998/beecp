@@ -574,7 +574,7 @@ final class ProxyClassesGenerator {
 
                 //1: add start log
                 if (methodParameterSize == 0) {
-                    methodBuffer.append("BeeMethodExecutionLog log = logCache.beforeCall(BeeMethodExecutionLog.Type_SQL_Execution,").append(methodSignature).append(",null,sql,this);");
+                    methodBuffer.append("BeeMethodExecutionLog log = logCache.beforeCall(BeeMethodExecutionLog.Type_SQL_Execution,").append(methodSignature).append(",null,preparedSql,this);");
                 } else {
                     methodBuffer.append("Object[]parameters = new Object[]{");
                     for (int i = 0; i < methodParameterSize; i++) {
@@ -582,7 +582,7 @@ final class ProxyClassesGenerator {
                         methodBuffer.append(getConvertType("$" + (i + 1), parameterTypes[i]));
                     }
                     methodBuffer.append("};");
-                    methodBuffer.append("BeeMethodExecutionLog log = logCache.beforeCall(BeeMethodExecutionLog.Type_SQL_Execution,").append(methodSignature).append(",parameters,sql,this);");
+                    methodBuffer.append("BeeMethodExecutionLog log = logCache.beforeCall(BeeMethodExecutionLog.Type_SQL_Execution,").append(methodSignature).append(",parameters,preparedSql,this);");
                 }
 
                 //2: add 'try' code snippet

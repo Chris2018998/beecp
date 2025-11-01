@@ -13,8 +13,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.BeeDataSourceConfigException;
-import org.stone.test.beecp.objects.eviction.MockEvictConnectionPredicate;
 import org.stone.test.beecp.objects.factory.MockConnectionFactory;
+import org.stone.test.beecp.objects.predicate.MockEvictConnectionPredicate1;
 import org.stone.tools.exception.BeanException;
 
 import static org.stone.test.beecp.config.DsConfigFactory.createEmpty;
@@ -29,19 +29,19 @@ public class Tc0014ConnectionPredicateTest {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
 
         Assertions.assertNull(config.getPredicate());//default check
-        config.setPredicate(new MockEvictConnectionPredicate());
+        config.setPredicate(new MockEvictConnectionPredicate1());
         Assertions.assertNotNull(config.getPredicate());//default check
         config.setPredicate(null);
         Assertions.assertNull(config.getPredicate());
 
         Assertions.assertNull(config.getPredicateClass());//default check
-        config.setPredicateClass(MockEvictConnectionPredicate.class);
+        config.setPredicateClass(MockEvictConnectionPredicate1.class);
         Assertions.assertNotNull(config.getPredicateClass());
         config.setPredicateClass(null);
         Assertions.assertNull(config.getPredicateClass());
 
         Assertions.assertNull(config.getPredicateClassName());//default check
-        config.setPredicateClassName(MockEvictConnectionPredicate.class.getName());
+        config.setPredicateClassName(MockEvictConnectionPredicate1.class.getName());
         Assertions.assertNotNull(config.getPredicateClassName());
         config.setPredicateClassName(null);
         Assertions.assertNull(config.getPredicateClassName());
@@ -52,7 +52,7 @@ public class Tc0014ConnectionPredicateTest {
         MockConnectionFactory connectionFactory = new MockConnectionFactory();
         BeeDataSourceConfig config1 = createEmpty();
         config1.setConnectionFactory(connectionFactory);
-        config1.setPredicateClassName("org.stone.test.beecp.objects.eviction.MockEvictConnectionPredicate2");//class can not be
+        config1.setPredicateClassName("org.stone.test.beecp.objects.predicate.MockEvictConnectionPredicate2");//class can not be
         try {
             config1.check();
             Assertions.fail();
@@ -64,7 +64,7 @@ public class Tc0014ConnectionPredicateTest {
 
         BeeDataSourceConfig config2 = createEmpty();
         config2.setConnectionFactory(connectionFactory);
-        config2.setPredicateClassName("org.stone.test.beecp.objects.MockEvictConnectionPredicate3");//class not found
+        config2.setPredicateClassName("org.stone.test.beecp.predicate.MockEvictConnectionPredicate3");//class not found
         try {
             config2.check();
             Assertions.fail();
@@ -81,7 +81,7 @@ public class Tc0014ConnectionPredicateTest {
         //1: instance
         BeeDataSourceConfig config1 = new BeeDataSourceConfig();
         config1.setConnectionFactory(connectionFactory);
-        MockEvictConnectionPredicate predicate = new MockEvictConnectionPredicate();
+        MockEvictConnectionPredicate1 predicate = new MockEvictConnectionPredicate1();
         config1.setPredicate(predicate);
         try {
             BeeDataSourceConfig checkedConfig = config1.check();
@@ -93,7 +93,7 @@ public class Tc0014ConnectionPredicateTest {
         //2: class name
         BeeDataSourceConfig config2 = new BeeDataSourceConfig();
         config2.setConnectionFactory(connectionFactory);
-        config2.setPredicateClass(MockEvictConnectionPredicate.class);
+        config2.setPredicateClass(MockEvictConnectionPredicate1.class);
         try {
             config2.check();
         } catch (BeeDataSourceConfigException e) {
@@ -103,7 +103,7 @@ public class Tc0014ConnectionPredicateTest {
         //3: class name
         BeeDataSourceConfig config3 = new BeeDataSourceConfig();
         config3.setConnectionFactory(connectionFactory);
-        config3.setPredicateClassName(MockEvictConnectionPredicate.class.getName());
+        config3.setPredicateClassName(MockEvictConnectionPredicate1.class.getName());
         try {
             config3.check();
         } catch (BeeDataSourceConfigException e) {

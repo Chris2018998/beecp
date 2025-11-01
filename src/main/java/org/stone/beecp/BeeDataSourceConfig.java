@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
-import java.security.InvalidParameterException;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -114,16 +113,16 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     private Integer defaultTransactionIsolation;
     //33: Name of transactionIsolation,a mapping value of{@code defaultTransactionIsolation} retrieved by it when pool initialization
     private String defaultTransactionIsolationName;
-    //34: A flag to enable catalog default setting on new connections,default is true
-    private boolean useDefaultCatalog = true;
-    //35: A flag to enable schema default setting on new connections,default is true
-    private boolean useDefaultSchema = true;
-    //36: A flag to enable readonly default setting on new connections,default is true
-    private boolean useDefaultReadOnly = true;
-    //37: A flag to enable autoCommit default setting on new connections,default is true
-    private boolean useDefaultAutoCommit = true;
-    //38: A flag to enable transactionIsolation default setting on new connections,default is true
-    private boolean useDefaultTransactionIsolation = true;
+    //34: A flag to set default value of property 'catalog' on a pooled connections after it created,default is true
+    private boolean enableDefaultCatalog = true;
+    //35: A flag to set default value of property 'schema' on a pooled connections after it created,default is true
+    private boolean enableDefaultSchema = true;
+    //36: A flag to set default value of property 'read-only' on a pooled connections after it created,default is true
+    private boolean enableDefaultReadOnly = true;
+    //37: A flag to set default value of property 'auto-commit' on a pooled connections after it created,default is true
+    private boolean enableDefaultAutoCommit = true;
+    //38: A flag to set default value of property 'transaction-isolation' on a pooled connections after it created,default is true
+    private boolean enableDefaultTransactionIsolation = true;
     //39: A flag to set dirty on schema property to support to be reset under transaction,for example:PG driver
     private boolean forceDirtyWhenSetSchema;
     //40: A flag to set dirty on catalog property to support to be reset under transaction,for example:PG driver
@@ -286,7 +285,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setInitialSize(int initialSize) {
         if (initialSize < 0)
-            throw new InvalidParameterException("The given value for the configuration item 'initial-size' cannot be less than zero");
+            throw new BeeDataSourceConfigException("The given value for the configuration item 'initial-size' cannot be less than zero");
         this.initialSize = initialSize;
     }
 
@@ -304,7 +303,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setMaxActive(int maxActive) {
         if (maxActive <= 0)
-            throw new InvalidParameterException("The given value for configuration item 'max-active' must be greater than zero");
+            throw new BeeDataSourceConfigException("The given value for configuration item 'max-active' must be greater than zero");
         this.maxActive = maxActive;
         //fix issue:#19 Chris-2020-08-16 begin
         this.semaphoreSize = maxActive > 1 ? Math.min(maxActive / 2, NCPU) : 1;
@@ -317,7 +316,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setSemaphoreSize(int semaphoreSize) {
         if (semaphoreSize <= 0)
-            throw new InvalidParameterException("The given value for configuration item 'semaphore-size' must be greater than zero");
+            throw new BeeDataSourceConfigException("The given value for configuration item 'semaphore-size' must be greater than zero");
         this.semaphoreSize = semaphoreSize;
     }
 
@@ -335,7 +334,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setMaxWait(long maxWait) {
         if (maxWait <= 0L)
-            throw new InvalidParameterException("The given value for configuration item 'max-wait' must be greater than zero");
+            throw new BeeDataSourceConfigException("The given value for configuration item 'max-wait' must be greater than zero");
         this.maxWait = maxWait;
     }
 
@@ -345,7 +344,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setIdleTimeout(long idleTimeout) {
         if (idleTimeout <= 0L)
-            throw new InvalidParameterException("The given value for configuration item 'idle-timeout' must be greater than zero");
+            throw new BeeDataSourceConfigException("The given value for configuration item 'idle-timeout' must be greater than zero");
         this.idleTimeout = idleTimeout;
     }
 
@@ -355,7 +354,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setHoldTimeout(long holdTimeout) {
         if (holdTimeout < 0L)
-            throw new InvalidParameterException("The given value for configuration item 'hold-timeout' cannot be less than zero");
+            throw new BeeDataSourceConfigException("The given value for configuration item 'hold-timeout' cannot be less than zero");
         this.holdTimeout = holdTimeout;
     }
 
@@ -365,7 +364,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setIntervalOfClearTimeout(long intervalOfClearTimeout) {
         if (intervalOfClearTimeout <= 0L)
-            throw new InvalidParameterException("The given value for configuration item 'interval-of-clear-timeout' must be greater than zero");
+            throw new BeeDataSourceConfigException("The given value for configuration item 'interval-of-clear-timeout' must be greater than zero");
         this.intervalOfClearTimeout = intervalOfClearTimeout;
     }
 
@@ -383,7 +382,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setParkTimeForRetry(long parkTimeForRetry) {
         if (parkTimeForRetry < 0L)
-            throw new InvalidParameterException("The given value for configuration item 'park-time-for-retry' cannot be less than zero");
+            throw new BeeDataSourceConfigException("The given value for configuration item 'park-time-for-retry' cannot be less than zero");
         this.parkTimeForRetry = parkTimeForRetry;
     }
 
@@ -444,7 +443,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     }
 
     public void addConnectionFactoryProperty(String key, Object value) {
-        if (isBlank(key)) throw new InvalidParameterException("The given key cannot be null or blank");
+        if (isBlank(key)) throw new BeeDataSourceConfigException("The given key cannot be null or blank");
         this.connectionFactoryProperties.put(key, value);
     }
 
@@ -473,11 +472,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setAliveTestSql(String aliveTestSql) {
         if (isBlank(aliveTestSql))
-            throw new InvalidParameterException("The given value for configuration item 'alive-test-sql' cannot be null or empty");
+            throw new BeeDataSourceConfigException("The given value for configuration item 'alive-test-sql' cannot be null or empty");
 
         aliveTestSql = trimString(aliveTestSql);
         if (!aliveTestSql.toUpperCase(Locale.US).startsWith("SELECT "))
-            throw new InvalidParameterException("The given value for configuration item 'alive-test-sql' must start with 'select '");
+            throw new BeeDataSourceConfigException("The given value for configuration item 'alive-test-sql' must start with 'select '");
 
         this.aliveTestSql = aliveTestSql;
     }
@@ -488,7 +487,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setAliveTestTimeout(int aliveTestTimeout) {
         if (aliveTestTimeout < 0L)
-            throw new InvalidParameterException("The given value for configuration item 'alive-test-timeout' cannot  be less than zero");
+            throw new BeeDataSourceConfigException("The given value for configuration item 'alive-test-timeout' cannot  be less than zero");
         this.aliveTestTimeout = aliveTestTimeout;
     }
 
@@ -498,7 +497,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setAliveAssumeTime(long aliveAssumeTime) {
         if (aliveAssumeTime < 0L)
-            throw new InvalidParameterException("The given value for configuration item 'alive-assume-time' cannot be less than zero");
+            throw new BeeDataSourceConfigException("The given value for configuration item 'alive-assume-time' cannot be less than zero");
         this.aliveAssumeTime = aliveAssumeTime;
     }
 
@@ -552,7 +551,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     public void setDefaultTransactionIsolationName(String transactionIsolationName) {
         String transactionIsolationNameTemp = trimString(transactionIsolationName);
         if (isBlank(transactionIsolationNameTemp))
-            throw new InvalidParameterException("The given value for configuration item 'default-transaction-isolation-name' cannot be null or empty");
+            throw new BeeDataSourceConfigException("The given value for configuration item 'default-transaction-isolation-name' cannot be null or empty");
 
         this.defaultTransactionIsolation = BeeTransactionIsolationNames.getTransactionIsolationCode(transactionIsolationNameTemp);
         if (this.defaultTransactionIsolation != null) {
@@ -562,44 +561,44 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
         }
     }
 
-    public boolean isUseDefaultCatalog() {
-        return useDefaultCatalog;
+    public boolean isEnableDefaultCatalog() {
+        return enableDefaultCatalog;
     }
 
-    public void setUseDefaultCatalog(boolean useDefaultCatalog) {
-        this.useDefaultCatalog = useDefaultCatalog;
+    public void setEnableDefaultCatalog(boolean enableDefaultCatalog) {
+        this.enableDefaultCatalog = enableDefaultCatalog;
     }
 
-    public boolean isUseDefaultSchema() {
-        return useDefaultSchema;
+    public boolean isEnableDefaultSchema() {
+        return enableDefaultSchema;
     }
 
-    public void setUseDefaultSchema(boolean useDefaultSchema) {
-        this.useDefaultSchema = useDefaultSchema;
+    public void setEnableDefaultSchema(boolean enableDefaultSchema) {
+        this.enableDefaultSchema = enableDefaultSchema;
     }
 
-    public boolean isUseDefaultReadOnly() {
-        return useDefaultReadOnly;
+    public boolean isEnableDefaultReadOnly() {
+        return enableDefaultReadOnly;
     }
 
-    public void setUseDefaultReadOnly(boolean useDefaultReadOnly) {
-        this.useDefaultReadOnly = useDefaultReadOnly;
+    public void setEnableDefaultReadOnly(boolean enableDefaultReadOnly) {
+        this.enableDefaultReadOnly = enableDefaultReadOnly;
     }
 
-    public boolean isUseDefaultAutoCommit() {
-        return useDefaultAutoCommit;
+    public boolean isEnableDefaultAutoCommit() {
+        return enableDefaultAutoCommit;
     }
 
-    public void setUseDefaultAutoCommit(boolean useDefaultAutoCommit) {
-        this.useDefaultAutoCommit = useDefaultAutoCommit;
+    public void setEnableDefaultAutoCommit(boolean enableDefaultAutoCommit) {
+        this.enableDefaultAutoCommit = enableDefaultAutoCommit;
     }
 
-    public boolean isUseDefaultTransactionIsolation() {
-        return useDefaultTransactionIsolation;
+    public boolean isEnableDefaultTransactionIsolation() {
+        return enableDefaultTransactionIsolation;
     }
 
-    public void setUseDefaultTransactionIsolation(boolean useDefaultTransactionIsolation) {
-        this.useDefaultTransactionIsolation = useDefaultTransactionIsolation;
+    public void setEnableDefaultTransactionIsolation(boolean enableDefaultTransactionIsolation) {
+        this.enableDefaultTransactionIsolation = enableDefaultTransactionIsolation;
     }
 
     public boolean isForceDirtyWhenSetSchema() {
@@ -747,7 +746,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setMethodExecutionLogCacheSize(int methodExecutionLogCacheSize) {
         if (methodExecutionLogCacheSize <= 0)
-            throw new InvalidParameterException("The given value for configuration item 'method-execution-log-cache-size' must be greater than zero");
+            throw new BeeDataSourceConfigException("The given value for configuration item 'method-execution-log-cache-size' must be greater than zero");
         this.methodExecutionLogCacheSize = methodExecutionLogCacheSize;
     }
 
@@ -757,7 +756,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setMethodExecutionLogTimeout(long methodExecutionLogTimeout) {
         if (methodExecutionLogTimeout <= 0L)
-            throw new InvalidParameterException("The given value for configuration item 'method-execution-log-timeout' must be greater than zero");
+            throw new BeeDataSourceConfigException("The given value for configuration item 'method-execution-log-timeout' must be greater than zero");
         this.methodExecutionLogTimeout = methodExecutionLogTimeout;
     }
 
@@ -767,7 +766,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setIntervalOfClearTimeoutExecutionLogs(long intervalOfClearTimeoutExecutionLogs) {
         if (intervalOfClearTimeoutExecutionLogs <= 0L)
-            throw new InvalidParameterException("The given value for configuration item 'interval-of-clear-timeout-execution-logs' must be greater than zero");
+            throw new BeeDataSourceConfigException("The given value for configuration item 'interval-of-clear-timeout-execution-logs' must be greater than zero");
         this.intervalOfClearTimeoutExecutionLogs = intervalOfClearTimeoutExecutionLogs;
     }
 
@@ -777,7 +776,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setSlowConnectionThreshold(long slowConnectionThreshold) {
         if (slowConnectionThreshold < 0L)
-            throw new InvalidParameterException("The given value for configuration item 'slow-connection-threshold' must be greater than zero");
+            throw new BeeDataSourceConfigException("The given value for configuration item 'slow-connection-threshold' must be greater than zero");
         this.slowConnectionThreshold = slowConnectionThreshold;
     }
 
@@ -787,7 +786,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void setSlowSQLThreshold(long slowSQLThreshold) {
         if (slowSQLThreshold < 0L)
-            throw new InvalidParameterException("The given value for configuration item 'slow-SQL-threshold' must be greater than zero");
+            throw new BeeDataSourceConfigException("The given value for configuration item 'slow-SQL-threshold' must be greater than zero");
         this.slowSQLThreshold = slowSQLThreshold;
     }
 
@@ -857,10 +856,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
     public void loadFromPropertiesFile(String filename, String keyPrefix) {
         if (isBlank(filename))
-            throw new IllegalArgumentException("Configuration file name can't be null or empty");
+            throw new BeeDataSourceConfigException("Configuration file name can't be null or empty");
         String fileLowerCaseName = filename.toLowerCase(Locale.US);
         if (!fileLowerCaseName.endsWith(".properties"))
-            throw new IllegalArgumentException("Configuration file name file must be end with '.properties'");
+            throw new BeeDataSourceConfigException("Configuration file name file must be end with '.properties'");
 
         if (fileLowerCaseName.startsWith("cp:")) {//1:'cp:' prefix
             String cpFileName = fileLowerCaseName.substring("cp:".length());
@@ -872,19 +871,19 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
             loadFromProperties(fileProperties, keyPrefix);
         } else {//load a real path
             File file = new File(filename);
-            if (!file.exists()) throw new IllegalArgumentException("Not found configuration file:" + filename);
+            if (!file.exists()) throw new BeeDataSourceConfigException("Not found configuration file:" + filename);
             if (!file.isFile())
-                throw new IllegalArgumentException("Target object is a valid configuration file:" + filename);
+                throw new BeeDataSourceConfigException("Target object is a valid configuration file:" + filename);
             loadFromPropertiesFile(file, keyPrefix);
         }
     }
 
     public void loadFromPropertiesFile(File file, String keyPrefix) {
-        if (file == null) throw new IllegalArgumentException("Configuration properties file can't be null");
-        if (!file.exists()) throw new IllegalArgumentException("Configuration properties file not found:" + file);
-        if (!file.isFile()) throw new IllegalArgumentException("Target object is not a valid file");
+        if (file == null) throw new BeeDataSourceConfigException("Configuration properties file can't be null");
+        if (!file.exists()) throw new BeeDataSourceConfigException("Configuration properties file not found:" + file);
+        if (!file.isFile()) throw new BeeDataSourceConfigException("Target object is not a valid file");
         if (!file.getAbsolutePath().toLowerCase(Locale.US).endsWith(".properties"))
-            throw new IllegalArgumentException("Target file is not a properties file");
+            throw new BeeDataSourceConfigException("Target file is not a properties file");
 
         try (InputStream stream = Files.newInputStream(file.toPath())) {
             Properties configProperties = new Properties();
@@ -892,13 +891,13 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
 
             this.loadFromProperties(configProperties, keyPrefix);
         } catch (IOException e) {
-            throw new IllegalArgumentException("Failed to load configuration file:" + file, e);
+            throw new BeeDataSourceConfigException("Failed to load configuration file:" + file, e);
         }
     }
 
     public void loadFromProperties(Properties configProperties, String keyPrefix) {
         if (configProperties == null || configProperties.isEmpty())
-            throw new IllegalArgumentException("Configuration properties must not be null or empty");
+            throw new BeeDataSourceConfigException("Configuration properties must not be null or empty");
 
         //1:load configuration item values from outside properties
         HashMap<String, String> setValueMap;
@@ -1085,7 +1084,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
         //step2:if exists listener factory,then use it to create one
         if (this.methodExecutionListenerFactory != null) {
             try {
-                return methodExecutionListenerFactory.create();
+                return methodExecutionListenerFactory.create(this);
             } catch (Throwable e) {
                 throw new BeeDataSourceConfigException("Failed to create method execution listener by listener factory", e);
             }
@@ -1105,7 +1104,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
             }
 
             try {
-                return factory.create();
+                return factory.create(this);
             } catch (Throwable e) {
                 throw new BeeDataSourceConfigException("Failed to create method execution listener by listener factory", e);
             }

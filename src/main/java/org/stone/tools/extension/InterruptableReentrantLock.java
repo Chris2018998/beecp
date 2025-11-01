@@ -21,7 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @version 1.0
  */
 
-public final class InterruptionReentrantLock extends ReentrantLock {
+public final class InterruptableReentrantLock extends ReentrantLock {
 
     public Thread getOwnerThread() {
         return super.getOwner();

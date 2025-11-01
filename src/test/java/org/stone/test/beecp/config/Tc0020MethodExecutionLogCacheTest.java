@@ -12,8 +12,7 @@ package org.stone.test.beecp.config;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeDataSourceConfig;
-
-import java.security.InvalidParameterException;
+import org.stone.beecp.BeeDataSourceConfigException;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -37,13 +36,13 @@ public class Tc0020MethodExecutionLogCacheTest {
         try {
             config.setMethodExecutionLogCacheSize(0);
             fail("[testSetAndGet]Setting test failed on configuration item[log-cache-size]");
-        } catch (InvalidParameterException e) {
+        } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given value for configuration item 'method-execution-log-cache-size' must be greater than zero", e.getMessage());
         }
         try {
             config.setMethodExecutionLogCacheSize(-1);
             fail("[testSetAndGet]Setting test failed on configuration item[log-cache-size]");
-        } catch (InvalidParameterException e) {
+        } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given value for configuration item 'method-execution-log-cache-size' must be greater than zero", e.getMessage());
         }
         Assertions.assertEquals(500, config.getMethodExecutionLogCacheSize());//not changed check
@@ -57,7 +56,7 @@ public class Tc0020MethodExecutionLogCacheTest {
         try {
             config.setSlowConnectionThreshold(-1L);
             fail("[testSetAndGet]Setting test failed on configuration item[slow-connection-get-threshold]");
-        } catch (InvalidParameterException e) {
+        } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given value for configuration item 'slow-connection-threshold' must be greater than zero", e.getMessage());
         }
         Assertions.assertEquals(0L, config.getSlowConnectionThreshold());//not changed check
@@ -71,7 +70,7 @@ public class Tc0020MethodExecutionLogCacheTest {
         try {
             config.setSlowSQLThreshold(-1L);
             fail("[testSetAndGet]Setting test failed on configuration item[slow-SQL-execution-threshold]");
-        } catch (InvalidParameterException e) {
+        } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given value for configuration item 'slow-SQL-threshold' must be greater than zero", e.getMessage());
         }
         Assertions.assertEquals(0L, config.getSlowSQLThreshold());//not changed check
@@ -83,13 +82,13 @@ public class Tc0020MethodExecutionLogCacheTest {
         try {
             config.setMethodExecutionLogTimeout(0L);
             fail("[testSetAndGet]Setting test failed on configuration item[log-timeout]");
-        } catch (InvalidParameterException e) {
+        } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given value for configuration item 'method-execution-log-timeout' must be greater than zero", e.getMessage());
         }
         try {
             config.setMethodExecutionLogTimeout(-1L);
             fail("[testSetAndGet]Setting test failed on configuration item[log-timeout]");
-        } catch (InvalidParameterException e) {
+        } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given value for configuration item 'method-execution-log-timeout' must be greater than zero", e.getMessage());
         }
         Assertions.assertEquals(5000L, config.getMethodExecutionLogTimeout());//not changed check
@@ -102,13 +101,13 @@ public class Tc0020MethodExecutionLogCacheTest {
         try {
             config.setIntervalOfClearTimeoutExecutionLogs(0L);
             fail("[testSetAndGet]Setting test failed on configuration item[log-clear-interval]");
-        } catch (InvalidParameterException e) {
+        } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given value for configuration item 'interval-of-clear-timeout-execution-logs' must be greater than zero", e.getMessage());
         }
         try {
             config.setIntervalOfClearTimeoutExecutionLogs(-1L);
             fail("[testSetAndGet]Setting test failed on configuration item[log-clear-interval]");
-        } catch (InvalidParameterException e) {
+        } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given value for configuration item 'interval-of-clear-timeout-execution-logs' must be greater than zero", e.getMessage());
         }
         Assertions.assertEquals(5000L, config.getIntervalOfClearTimeoutExecutionLogs());//not changed check

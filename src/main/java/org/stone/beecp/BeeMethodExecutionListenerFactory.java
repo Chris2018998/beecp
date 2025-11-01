@@ -19,9 +19,10 @@ public interface BeeMethodExecutionListenerFactory {
     /**
      * Creates method execution listener.
      *
+     * @param config is Bee data source configuration
      * @return created listener instance
      * @throws Exception when failed to create listener
      */
-    BeeMethodExecutionListener create() throws Exception;
+    BeeMethodExecutionListener create(BeeDataSourceConfig config) throws Exception;
 
 }

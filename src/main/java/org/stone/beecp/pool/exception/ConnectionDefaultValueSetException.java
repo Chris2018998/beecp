@@ -17,13 +17,13 @@ import org.stone.beecp.BeeSQLException;
  * @author Chris Liao
  * @version 1.0
  */
-public class ConnectionDefaultSetFailedException extends BeeSQLException {
+public class ConnectionDefaultValueSetException extends BeeSQLException {
 
-    public ConnectionDefaultSetFailedException(String message) {
+    public ConnectionDefaultValueSetException(String message) {
         super(message);
     }
 
-    public ConnectionDefaultSetFailedException(String message, Throwable cause) {
+    public ConnectionDefaultValueSetException(String message, Throwable cause) {
         super(message, cause);
     }
 }

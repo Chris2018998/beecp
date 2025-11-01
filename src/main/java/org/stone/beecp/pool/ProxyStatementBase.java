@@ -25,8 +25,8 @@ import static org.stone.beecp.pool.ConnectionPoolStatics.*;
  */
 abstract class ProxyStatementBase extends ProxyBaseWrapper implements Statement {
     private final ProxyConnectionBase owner;
-    protected String sql;
     protected Statement raw;
+    protected String preparedSql;
     protected long preparationTookTime;//ms
     protected MethodExecutionLogCache logCache;
 
@@ -42,14 +42,11 @@ abstract class ProxyStatementBase extends ProxyBaseWrapper implements Statement 
         o.registerStatement(this);
     }
 
-    ProxyStatementBase(Statement raw, ProxyConnectionBase o, PooledConnection p, long preparationTookTime, String sql) {
-        super(p);
-        this.raw = raw;
-        this.owner = o;
-        o.registerStatement(this);
+    ProxyStatementBase(Statement raw, ProxyConnectionBase o, PooledConnection p, long preparationTookTime, String preparedSql) {
+        this(raw, o, p);
 
+        this.preparedSql = preparedSql;
         this.preparationTookTime = preparationTookTime;
-        this.sql = sql;//if subclass is Statement implementation,the sql is null
         this.logCache = o.logCache;
     }
 
@@ -109,7 +106,7 @@ abstract class ProxyStatementBase extends ProxyBaseWrapper implements Statement 
         if (this.isClosed) return;
         this.isClosed = true;
         if (this.curRe != null) oclose(this.curRe);
-        if (this.results != null) {
+        if (this.results != null && !results.isEmpty()) {
             for (ProxyResultSetBase resultSetBase : this.results)
                 oclose(resultSetBase);
             this.results.clear();

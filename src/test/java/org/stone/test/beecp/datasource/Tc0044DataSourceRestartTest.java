@@ -89,7 +89,7 @@ public class Tc0044DataSourceRestartTest {
                 ds.restart(true, null);
                 Assertions.fail("[testReInitialize]test fail");
             } catch (BeeDataSourceConfigException e) {
-                Assertions.assertEquals("Pool reinitialization configuration can't be null", e.getMessage());
+                Assertions.assertEquals("Data source configuration can't be null", e.getMessage());
             }
 
             //3: clear with a new configuration

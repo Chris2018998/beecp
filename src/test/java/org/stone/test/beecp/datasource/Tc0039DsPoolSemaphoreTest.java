@@ -16,7 +16,7 @@ import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.test.base.TestUtil;
 import org.stone.test.beecp.objects.factory.BlockingMockConnectionFactory;
 import org.stone.test.beecp.objects.threads.BorrowThread;
-import org.stone.tools.extension.InterruptionSemaphore;
+import org.stone.tools.extension.InterruptableSemaphore;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
@@ -77,7 +77,7 @@ public class Tc0039DsPoolSemaphoreTest {
                 Assertions.assertEquals(1, ds.getPoolMonitorVo().getSemaphoreAcquiredSize());
 
                 Object dsPool = getFieldValue(ds, "pool");
-                InterruptionSemaphore semaphore = (InterruptionSemaphore) TestUtil.getFieldValue(dsPool, "semaphore");
+                InterruptableSemaphore semaphore = (InterruptableSemaphore) TestUtil.getFieldValue(dsPool, "semaphore");
                 BorrowThread secondBorrower = new BorrowThread(ds);
                 secondBorrower.start();
                 while (semaphore.getQueueLength() == 0) {
