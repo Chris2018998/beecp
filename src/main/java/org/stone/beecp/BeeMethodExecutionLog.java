@@ -27,6 +27,14 @@ public interface BeeMethodExecutionLog extends Serializable {
     //Log type represent method call that sql execution on (Statement,PreparedStatement,CallableStatement)
     int Type_SQL_Execution = 3;
 
+
+    /**
+     * Get pool name of current log
+     *
+     * @return pool name
+     */
+    String getPoolName();
+
     /**
      * Get log type.
      *
@@ -39,7 +47,7 @@ public interface BeeMethodExecutionLog extends Serializable {
      *
      * @return log id
      */
-    Object getId();
+    String getId();
 
     /**
      * Get method name of method call

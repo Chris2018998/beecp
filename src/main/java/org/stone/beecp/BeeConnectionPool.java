@@ -170,6 +170,6 @@ public interface BeeConnectionPool extends Closeable {
      * @return boolean is true that log is a statement log and success to cancellation called on this statement.
      * @throws SQLException when cancellation failed
      */
-    boolean cancelStatement(Object logId) throws SQLException;
+    boolean cancelStatement(String logId) throws SQLException;
 }
 	

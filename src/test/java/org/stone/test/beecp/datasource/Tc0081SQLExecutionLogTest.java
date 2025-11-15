@@ -66,7 +66,7 @@ public class Tc0081SQLExecutionLogTest {
                     //do nothing
                 }
                 try {
-                    st.executeLargeUpdate("update user set id=1");
+                    st.executeUpdate("update user set id=1");
                     Assertions.fail("[testExceptionLog]test failed");
                 } catch (SQLException e) {
                     //do nothing
@@ -173,7 +173,7 @@ public class Tc0081SQLExecutionLogTest {
                 }
 
                 Assertions.assertFalse(ds.cancelStatement(null));
-                Assertions.assertFalse(ds.cancelStatement(new Object()));
+                Assertions.assertFalse(ds.cancelStatement("Test"));
                 PrepareStatementThread statementThread2 = new PrepareStatementThread(con, sqlMap);
                 statementThread2.start();
                 if (TestUtil.waitUtilWaiting(statementThread2)) {

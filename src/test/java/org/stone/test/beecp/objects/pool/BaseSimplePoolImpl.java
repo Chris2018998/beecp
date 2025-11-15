@@ -71,7 +71,7 @@ public class BaseSimplePoolImpl implements BeeConnectionPool {
         return false;
     }
 
-    public boolean cancelStatement(Object logId) {
+    public boolean cancelStatement(String logId) {
         return false;
     }
 

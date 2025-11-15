@@ -9,23 +9,22 @@
  */
 package org.stone.beecp.jta;
 
-import org.stone.beecp.BeeConnectionPoolMonitorVo;
-import org.stone.beecp.BeeDataSource;
-
-import javax.sql.DataSource;
-import javax.sql.XAConnection;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import org.stone.beecp.BeeConnectionPoolMonitorVo;
+import org.stone.beecp.BeeDataSource;
+import org.stone.beecp.BeeMethodExecutionListener;
+import org.stone.beecp.BeeMethodExecutionLog;
+
+import javax.sql.DataSource;
+import javax.sql.XAConnection;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -60,6 +59,14 @@ public class BeeJtaDataSource extends TimerTask implements DataSource, AutoClose
 
     public void setTransactionManager(TransactionManager tm) {
         this.tm = tm;
+    }
+
+    //***************************************************************************************************************//
+    //                                         2: Pooled connections get                                             //
+    //***************************************************************************************************************//
+    public Connection getConnection(String username, String password) throws SQLException {
+        checkDataSource();
+        return this.ds.getConnection();
     }
 
     public Connection getConnection() throws SQLException {
@@ -119,49 +126,24 @@ public class BeeJtaDataSource extends TimerTask implements DataSource, AutoClose
     }
 
     private void checkDataSource() throws SQLException {
-        if (this.ds == null || ds.isClosed()) throw new SQLException("dataSource not set or closed");
+        if (this.ds == null || ds.isClosed()) throw new SQLException("Inner data source not set or has been closed");
     }
 
     //***************************************************************************************************************//
-    //                   statement call BeeDataSource methods  (Begin)                                                   //
-    //****************************************************************************************************************//
-    public void clear() throws SQLException {
-        clear(false);
+    //                                         3: Inner Data source restart(2)                                       //
+    //***************************************************************************************************************//
+    public void restart() throws SQLException {
+        restart(false);
     }
 
-    public void clear(boolean force) throws SQLException {
+    public void restart(boolean force) throws SQLException {
         checkDataSource();
         this.ds.restart(force);
     }
 
-    public boolean isClosed() throws SQLException {
-        checkDataSource();
-        return ds.isClosed();
-    }
-
-    public void close() throws SQLException {
-        checkDataSource();
-        this.ds.close();
-        this.transactionTimer.cancel();
-    }
-
-    public void setPrintRuntimeLog(boolean printRuntimeLog) throws SQLException {
-        checkDataSource();
-        ds.setPrintRuntimeLogs(printRuntimeLog);
-    }
-
-    public BeeConnectionPoolMonitorVo getPoolMonitorVo() throws SQLException {
-        checkDataSource();
-        return ds.getPoolMonitorVo();
-    }
-    //***************************************************************************************************************//
-    //                   statement call BeeDataSource methods  (End)                                                      //
     //****************************************************************************************************************//
-
-    public Connection getConnection(String username, String password) throws SQLException {
-        throw new SQLFeatureNotSupportedException("Not supported");
-    }
-
+    //                                         4: Override methods                                                    //
+    //****************************************************************************************************************//
     public PrintWriter getLogWriter() throws SQLException {
         throw new SQLFeatureNotSupportedException("Not supported");
     }
@@ -191,5 +173,70 @@ public class BeeJtaDataSource extends TimerTask implements DataSource, AutoClose
             return clazz.cast(this);
         else
             throw new SQLException("Wrapped object was not an instance of " + clazz);
+    }
+
+    public BeeConnectionPoolMonitorVo getPoolMonitorVo() throws SQLException {
+        checkDataSource();
+        return ds.getPoolMonitorVo();
+    }
+
+    //***************************************************************************************************************//
+    //                                         5: runtime logs print(4)                                              //
+    //***************************************************************************************************************//
+    public boolean isEnabledLogPrint() throws SQLException {
+        checkDataSource();
+        return ds.isEnabledLogPrint();
+    }
+
+    public void enableLogPrint(boolean printRuntimeLog) throws SQLException {
+        checkDataSource();
+        ds.enableLogPrint(printRuntimeLog);
+    }
+
+    //***************************************************************************************************************//
+    //                                         6: Method Execution Log Cache(6)                                      //
+    //***************************************************************************************************************//
+    public boolean isEnabledMethodExecutionLogCache() throws SQLException {
+        checkDataSource();
+        return this.ds.isEnabledMethodExecutionLogCache();
+    }
+
+    public void enableMethodExecutionLogCache(boolean enable) throws SQLException {
+        checkDataSource();
+        this.ds.enableMethodExecutionLogCache(enable);
+    }
+
+    public List<BeeMethodExecutionLog> getMethodExecutionLog(int type) throws SQLException {
+        checkDataSource();
+        return this.ds.getMethodExecutionLog(type);
+    }
+
+    public List<BeeMethodExecutionLog> clearMethodExecutionLog(int type) throws SQLException {
+        checkDataSource();
+        return this.ds.clearMethodExecutionLog(type);
+    }
+
+    public boolean cancelStatement(String logId) throws SQLException {
+        checkDataSource();
+        return this.ds.cancelStatement(logId);
+    }
+
+    public void setMethodExecutionListener(BeeMethodExecutionListener listener) throws SQLException {
+        checkDataSource();
+        this.ds.setMethodExecutionListener(listener);
+    }
+
+    //***************************************************************************************************************//
+    //                                         7: close methods(2)                                                   //
+    //***************************************************************************************************************//
+    public boolean isClosed() throws SQLException {
+        checkDataSource();
+        return ds.isClosed();
+    }
+
+    public void close() throws SQLException {
+        checkDataSource();
+        this.ds.close();
+        this.transactionTimer.cancel();
     }
 }

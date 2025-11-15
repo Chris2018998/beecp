@@ -28,10 +28,12 @@ public class MethodExecutionLog implements BeeMethodExecutionLog {
     //Method call is failed
     static final int Status_Failed = 2;
 
+    //pool name
+    private final String poolName;
     //Log type
     private final int type;
     //log id
-    private final Object id;
+    private final String id;
 
     //Method name of pool or (Statement,PreparedStatement,CallableStatement)
     private final String method;
@@ -46,7 +48,7 @@ public class MethodExecutionLog implements BeeMethodExecutionLog {
     private int status = Status_Running;
 
     //Result object of method call
-    private Object resultObject;
+    private transient Object resultObject;
     //Fail exception when method call
     private Throwable failCause;
 
@@ -59,25 +61,29 @@ public class MethodExecutionLog implements BeeMethodExecutionLog {
     //if current log is a sql execution
     private transient Statement statement;
 
-
     //Flag of removed from log manager
     private boolean removed;
     //Flag of handled by Handler
     private boolean slow;
 
-    public MethodExecutionLog(int type, String method, Object[] parameters) {
+    public MethodExecutionLog(String poolName, int type, String method, Object[] parameters) {
+        this.poolName = poolName;
         this.type = type;
         this.method = method;
         this.parameters = parameters;
-        this.id = UUID.randomUUID();
+        this.id = UUID.randomUUID().toString();
         this.startTime = System.currentTimeMillis();
+    }
+
+    public String getPoolName() {
+        return this.poolName;
     }
 
     public int getType() {
         return type;
     }
 
-    public Object getId() {
+    public String getId() {
         return id;
     }
 

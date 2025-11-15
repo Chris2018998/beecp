@@ -48,7 +48,7 @@ public class Tc0082MethodLogCacheTest {
                 Assertions.assertTrue(ds.isEnabledMethodExecutionLogCache());
                 ds.enableMethodExecutionLogCache(false);
                 ds.enableMethodExecutionLogCache(false);
-                Assertions.assertFalse(ds.cancelStatement(new Object()));
+                Assertions.assertFalse(ds.cancelStatement("Teat"));
                 ds.setMethodExecutionListener(null);
             }
         }

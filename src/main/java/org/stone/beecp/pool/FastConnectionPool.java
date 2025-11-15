@@ -193,6 +193,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
 
             //7.4: create method cache and its scanning thread
             this.methodLogCache = new MethodExecutionLogCache(
+                    poolName,
                     poolConfig.getMethodExecutionLogCacheSize(),
                     poolConfig.getSlowConnectionThreshold(),
                     poolConfig.getSlowSQLThreshold(),
@@ -438,8 +439,8 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
 
         //step4: initialization for catalog property of connection(get default,test default)
         String defaultCatalog = poolConfig.getDefaultCatalog();
-        boolean enableDefaultOnCatalog = poolConfig.isEnableDefaultCatalog();
-        if (enableDefaultOnCatalog) {
+        boolean enableDefaultCatalog = poolConfig.isEnableDefaultCatalog();
+        if (enableDefaultCatalog) {
             if (isBlank(defaultCatalog)) {
                 try {
                     defaultCatalog = firstConn.getCatalog();
@@ -537,7 +538,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
                     enableDefaultReadOnly,
                     defaultReadOnly,
                     //4:defaultCatalog
-                    enableDefaultOnCatalog,
+                    enableDefaultCatalog,
                     defaultCatalog,
                     poolConfig.isForceDirtyWhenSetCatalog(),
                     //5:defaultCatalog
@@ -1001,7 +1002,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
         methodLogCache.setMethodExecutionListener(listener);
     }
 
-    public boolean cancelStatement(Object id) throws SQLException {
+    public boolean cancelStatement(String id) throws SQLException {
         return methodLogCache.cancelStatement(id);
     }
 

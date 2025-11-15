@@ -76,8 +76,8 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
 
     private static void createPool(BeeDataSource ds) throws SQLException {
         String poolImplementClassName = ds.getPoolImplementClassName();
+        if (isBlank(poolImplementClassName)) poolImplementClassName = FastConnectionPool.class.getName();
         try {
-            if (isBlank(poolImplementClassName)) poolImplementClassName = FastConnectionPool.class.getName();
             ds.pool = (BeeConnectionPool) createClassInstance(poolImplementClassName, BeeConnectionPool.class, "pool");
             ds.pool.start(ds);
             ds.poolStarted = true;
@@ -246,7 +246,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         return this.getPool().clearMethodExecutionLog(type);
     }
 
-    public boolean cancelStatement(Object logId) throws SQLException {
+    public boolean cancelStatement(String logId) throws SQLException {
         return this.getPool().cancelStatement(logId);
     }
 

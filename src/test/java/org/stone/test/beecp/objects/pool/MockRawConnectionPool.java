@@ -228,7 +228,7 @@ public final class MockRawConnectionPool implements BeeConnectionPool {
         //do nothing
     }
 
-    public boolean cancelStatement(Object logId) {
+    public boolean cancelStatement(String logId) {
         return false;
     }
 
