@@ -56,7 +56,13 @@ public final class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonit
     }
 
     @Override
-    public int getPoolState(){return poolState;}
+    public int getPoolState() {
+        return poolState;
+    }
+
+    void setPoolState(int poolState) {
+        this.poolState = poolState;
+    }
 
     @Override
     public boolean isClosed() {
@@ -71,10 +77,6 @@ public final class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonit
     @Override
     public boolean isStarting() {
         return poolState == POOL_STARTING || poolState == POOL_RESTARTING;
-    }
-
-    public void setPoolState(int poolState) {
-        this.poolState = poolState;
     }
 
     @Override
@@ -92,7 +94,7 @@ public final class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonit
         return borrowedSize;
     }
 
-    public void setBorrowedSize(int borrowedSize) {
+    void setBorrowedSize(int borrowedSize) {
         this.borrowedSize = borrowedSize;
     }
 
@@ -101,7 +103,7 @@ public final class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonit
         return idleSize;
     }
 
-    public void setIdleSize(int idleSize) {
+    void setIdleSize(int idleSize) {
         this.idleSize = idleSize;
     }
 
@@ -110,7 +112,7 @@ public final class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonit
         return creatingSize;
     }
 
-    public void setCreatingSize(int creatingSize) {
+    void setCreatingSize(int creatingSize) {
         this.creatingSize = creatingSize;
     }
 
@@ -119,17 +121,16 @@ public final class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonit
         return creatingTimeoutSize;
     }
 
-    public void setCreatingTimeoutSize(int creatingTimeoutSize) {
+    void setCreatingTimeoutSize(int creatingTimeoutSize) {
         this.creatingTimeoutSize = creatingTimeoutSize;
     }
-
 
     @Override
     public int getSemaphoreAcquiredSize() {
         return semaphoreAcquiredSize;
     }
 
-    public void setSemaphoreAcquiredSize(int semaphoreAcquiredSize) {
+    void setSemaphoreAcquiredSize(int semaphoreAcquiredSize) {
         this.semaphoreAcquiredSize = semaphoreAcquiredSize;
     }
 
@@ -138,7 +139,7 @@ public final class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonit
         return semaphoreWaitingSize;
     }
 
-    public void setSemaphoreWaitingSize(int semaphoreWaitingSize) {
+    void setSemaphoreWaitingSize(int semaphoreWaitingSize) {
         this.semaphoreWaitingSize = semaphoreWaitingSize;
     }
 
@@ -147,7 +148,7 @@ public final class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonit
         return transferWaitingSize;
     }
 
-    public void setTransferWaitingSize(int transferWaitingSize) {
+    void setTransferWaitingSize(int transferWaitingSize) {
         this.transferWaitingSize = transferWaitingSize;
     }
 
@@ -156,7 +157,7 @@ public final class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonit
         return enabledLogPrint;
     }
 
-    public void setEnabledLogPrint(boolean enabledLogPrint) {
+    void setEnabledLogPrint(boolean enabledLogPrint) {
         this.enabledLogPrint = enabledLogPrint;
     }
 
@@ -165,7 +166,7 @@ public final class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonit
         return enableMethodExecutionLogCache;
     }
 
-    public void setEnableMethodExecutionLogCache(boolean enableMethodExecutionLogCache) {
+    void setEnableMethodExecutionLogCache(boolean enableMethodExecutionLogCache) {
         this.enableMethodExecutionLogCache = enableMethodExecutionLogCache;
     }
 }

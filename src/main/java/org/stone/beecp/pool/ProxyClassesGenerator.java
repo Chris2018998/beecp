@@ -412,7 +412,7 @@ final class ProxyClassesGenerator {
                     }
                 } else if (ctResultType == ctPreparedStatementClass) {//Connection.prepareStatement(...)
                     //2.1: add 'logCache.beforeCall'
-                    String methodSignature = getCtMethodSignature(ctMethod);
+                    String methodSignature = getCtMethodSignature("Connection.", ctMethod);
                     CtClass[] parameterTypes = ctMethod.getParameterTypes();
                     int methodParameterSize = parameterTypes.length;
                     if (methodParameterSize == 0) {
@@ -449,7 +449,7 @@ final class ProxyClassesGenerator {
 
                 } else if (ctResultType == ctCallableStatementClass) {//Connection.prepareCall(...)
                     //3.1: add 'logCache.beforeCall'
-                    String methodSignature = getCtMethodSignature(ctMethod);
+                    String methodSignature = getCtMethodSignature("Connection.", ctMethod);
                     CtClass[] parameterTypes = ctMethod.getParameterTypes();
                     int methodParameterSize = parameterTypes.length;
                     if (methodParameterSize == 0) {
@@ -555,10 +555,15 @@ final class ProxyClassesGenerator {
             StringBuilder methodBuffer = new StringBuilder(50);
 
             String rawName = "raw.";
+            String statementType;
             if ("java.sql.PreparedStatement".equals(ctStatementClass.getName())) {
+                statementType = "PreparedStatement.";
                 rawName = "((PreparedStatement)raw).";
             } else if ("java.sql.CallableStatement".equals(ctStatementClass.getName())) {
+                statementType = "CallableStatement.";
                 rawName = "((CallableStatement)raw).";
+            } else {
+                statementType = "Statement.";
             }
 
             for (CtMethod ctMethod : linkedList) {//all method names start with 'execute'
@@ -568,7 +573,7 @@ final class ProxyClassesGenerator {
                 methodBuffer.append("{");
                 String methodName = ctMethod.getName();
                 CtClass ctResultType = ctMethod.getReturnType();
-                String methodSignature = getCtMethodSignature(ctMethod);
+                String methodSignature = getCtMethodSignature(statementType, ctMethod);
                 CtClass[] parameterTypes = ctMethod.getParameterTypes();
                 int methodParameterSize = parameterTypes.length;
 
@@ -782,9 +787,9 @@ final class ProxyClassesGenerator {
         return false;
     }
 
-    private static String getCtMethodSignature(CtMethod method) throws Exception {
+    private static String getCtMethodSignature(String methodOwer, CtMethod method) throws Exception {
         StringBuilder builder = new StringBuilder(20);
-        builder.append("\"").append(method.getName()).append("(");
+        builder.append("\"").append(methodOwer).append(method.getName()).append("(");
         CtClass[] paramTypes = method.getParameterTypes();
         for (int i = 0, l = paramTypes.length; i < l; i++) {
             if (i > 0) builder.append(",");
