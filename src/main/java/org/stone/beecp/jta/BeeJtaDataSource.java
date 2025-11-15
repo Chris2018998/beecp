@@ -9,10 +9,6 @@
  */
 package org.stone.beecp.jta;
 
-import javax.transaction.Status;
-import javax.transaction.Synchronization;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 import org.stone.beecp.BeeConnectionPoolMonitorVo;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeMethodExecutionListener;
@@ -20,6 +16,10 @@ import org.stone.beecp.BeeMethodExecutionLog;
 
 import javax.sql.DataSource;
 import javax.sql.XAConnection;
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
