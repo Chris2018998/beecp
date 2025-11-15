@@ -3,6 +3,7 @@ beecp changes
 Changes in 5.1.2
 1: Add pool name to method execution logs
 2: Change log id type of method execution to String
+3: Restore a method(int getPoolState()) to monitor Vo
 
 
 Changes in 5.1.1

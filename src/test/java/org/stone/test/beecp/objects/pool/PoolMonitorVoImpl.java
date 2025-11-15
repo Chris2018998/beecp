@@ -56,6 +56,8 @@ public class PoolMonitorVoImpl implements BeeConnectionPoolMonitorVo {
         this.poolMode = poolMode;
     }
 
+    public int getPoolState() {return this.poolState;}
+
     @Override
     public boolean isClosed() {
         return poolState == POOL_CLOSED;

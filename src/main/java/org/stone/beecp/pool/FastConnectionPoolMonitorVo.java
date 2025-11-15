@@ -56,6 +56,9 @@ public final class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonit
     }
 
     @Override
+    public int getPoolState(){return poolState;}
+
+    @Override
     public boolean isClosed() {
         return poolState == POOL_CLOSED;
     }
