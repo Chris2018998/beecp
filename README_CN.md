@@ -16,16 +16,9 @@
 * 支持重启和配置重载
 * 提供接口支持扩展
 * 支持虚拟线程应用
-* [自带监控功能](https://github.com/Chris2018998/beecp-starter)
+* 内置监控功能
 
-![image](https://github.com/user-attachments/assets/e0684ff2-8a7e-4a20-ab68-69c7b2f30bfa)<br/>
-
-![image](https://github.com/user-attachments/assets/b59dbac9-a3b3-4173-9ff5-845783691e0d)
-
-_*温馨提示：如果您的项目是基于springboot框架构建，且有意向使用BeeCP连接池，那么推荐[beecp-starter](https://github.com/Chris2018998/beecp-starter)_
-
-
-## 坐标
+## 🍁 坐标
 
 Java7+
 
@@ -160,7 +153,7 @@ BeeCP预留一些接口可供外部扩展
 
 * C. 异常断言配置：``` BeeDataSourceConfig.setPredicate(BeeConnectionPredicate p);BeeDataSourceConfig.setPredicateClass(Clas c); BeeDataSourceConfig.setPredicateClassName(String n); ```
 
-## 🏭 工厂属性设置
+## 🏭 工厂属性
 
 BeeCP可通过以下方法设置连接工厂属性，在连接池初始化的时候，这些属性将会被注入到连接工厂中
 
@@ -172,7 +165,7 @@ BeeCP可通过以下方法设置连接工厂属性，在连接池初始化的时
 _*以上两个方法也适用于动态增加驱动扩展性参数_
 
 
-## 📜 属性文件配置
+## 📜 文件配置
  BeeCP支持从属性文件（*.properities）或属性对象（java.util.properities）中读取参数信息到配置对象上，参考例子如下
 
 ```java
@@ -219,12 +212,16 @@ connectionFactoryProperties.2=prepStmtCacheSqlLimit=2048&useServerPrepStmts=true
 *_温馨提示：属性名配置支持：驼峰，中划线，下划线_
 
 
-## 💻 运行时监控
+## 💻 监控UI
+
+![image](https://github.com/user-attachments/assets/e0684ff2-8a7e-4a20-ab68-69c7b2f30bfa)<br/>
+
+![image](https://github.com/user-attachments/assets/b59dbac9-a3b3-4173-9ff5-845783691e0d)
+
+_*温馨提示：如果您的项目是基于springboot框架构建，且有意向使用BeeCP连接池，那么推荐[beecp-starter](https://github.com/Chris2018998/beecp-starter)_
 
 
-
-
-## 🛠️ 属性参考列表
+## 🛠️ 属性列表
 
 | 属性                             | 描述                                                                 | 默认值                    |
 |----------------------------------|----------------------------------------------------------------------|--------------------------|
@@ -285,7 +282,7 @@ connectionFactoryProperties.2=prepStmtCacheSqlLimit=2048&useServerPrepStmts=true
 
 BeeCP发布支持两条路线
 
-* 独立版: 用于支持低版本Java，如Java7,Java8等，当前高版本Java也可使用，[最新版本](https://github.com/Chris2018998/beecp)
+* 独立版: 用于支持低版本Java，如Java7,Java8等，当前高版本Java也可使用
   
 * 组合版: 组合连接池，对象池，任务池，适用Java17起步的高版本，使用时VM参数需要引入: --add-exports java.base/jdk.internal.misc=ALL-UNNAMED
 
