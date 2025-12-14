@@ -43,7 +43,7 @@ public class BeanUtil {
      * @param field reflection access field
      */
     public static void setAccessible(Object object, Field field) {
-        if (!field.canAccess(object)) {
+        if (!field.isAccessible()) {
             field.setAccessible(true);
         }
     }
@@ -54,7 +54,7 @@ public class BeanUtil {
      * @param method reflection access method
      */
     public static void setAccessible(Object object, Method method) {
-        if (!method.canAccess(object)) {
+        if (!method.isAccessible()) {
             method.setAccessible(true);
         }
     }
