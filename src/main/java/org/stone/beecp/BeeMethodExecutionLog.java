@@ -27,7 +27,6 @@ public interface BeeMethodExecutionLog extends Serializable {
     //Log type represent method call that sql execution on (Statement,PreparedStatement,CallableStatement)
     int Type_SQL_Execution = 3;
 
-
     /**
      * Get pool name of current log
      *
@@ -38,7 +37,7 @@ public interface BeeMethodExecutionLog extends Serializable {
     /**
      * Get log type.
      *
-     * @return type value,which is one of [Type_Connection_Get,Type_SQL_Execution]
+     * @return type value,which is one of [Type_Connection_Get,Type_SQL_Preparation,Type_SQL_Execution]
      */
     int getType();
 
@@ -110,6 +109,27 @@ public interface BeeMethodExecutionLog extends Serializable {
      */
     boolean isSlow();
 
+    /**
+     * Query log is long-running.
+     *
+     * @return a boolean,true is slow
+     */
+    boolean isLongRunning();
+
+    /**
+     * Query log is whether handled by listener.
+     *
+     * @return a boolean,true is that log has been handled
+     */
+    boolean hasHandledByListener();
+
+    /**
+     * Query log is whether removed from log cache.
+     *
+     * @return a boolean,true is removed,false is the log is still in log cache
+     */
+    boolean isRemoved();
+
     //***************************************************************************************************************//
     //                                         3: Result                                                             //
     //***************************************************************************************************************//
@@ -128,19 +148,12 @@ public interface BeeMethodExecutionLog extends Serializable {
      */
     Throwable getFailCause();
 
-    /**
-     * Query log is whether removed from log manager.
-     *
-     * @return a boolean,true is removed,false is the log is still in log manager
-     */
-    boolean isRemoved();
-
     //***************************************************************************************************************//
     //                                         4: SQL Execution                                                      //
     //***************************************************************************************************************//
 
     /**
-     * Get execution sql
+     * Get execution sql.
      *
      * @return log sql,return null if log type is not {@link #Type_SQL_Execution}.
      */
@@ -161,9 +174,9 @@ public interface BeeMethodExecutionLog extends Serializable {
     Object[] getSqlPreparedParameters();
 
     /**
-     * cancel a executing statement
+     * Cancel a executing statement.
      *
-     * @return boolean is true that log is a statement log exist in manager and success to cancellation called on this statement.
+     * @return boolean is true that log is a statement log exist in cache and success to cancellation called on this statement.
      * @throws SQLException when failed to cancel statement
      */
     boolean cancelStatement() throws SQLException;

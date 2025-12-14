@@ -143,7 +143,7 @@ public interface BeeConnectionPool extends Closeable {
     /**
      * Gets logs from pool with specified type.
      *
-     * @param type should be one of[BeeMethodExecutionLog.Type_Connection_Get,BeeMethodExecutionLog.Type_SQL_Execution];if not,then return all logs
+     * @param type should be one of[BeeMethodExecutionLog.Type_Connection_Get,BeeMethodExecutionLog.Type_SQL_Preparation,BeeMethodExecutionLog.Type_SQL_Execution];if not,then return all logs
      * @return a result list
      */
     List<BeeMethodExecutionLog> getMethodExecutionLog(int type);
@@ -151,7 +151,7 @@ public interface BeeConnectionPool extends Closeable {
     /**
      * Clears logs from pool with specified type.
      *
-     * @param type should be one of[BeeMethodExecutionLog.Type_Connection_Get,BeeMethodExecutionLog.Type_SQL_Execution];if not,then clear all logs
+     * @param type should be one of[BeeMethodExecutionLog.Type_Connection_Get,BeeMethodExecutionLog.Type_SQL_Preparation,BeeMethodExecutionLog.Type_SQL_Execution];if not,then clear all logs
      * @return a cleared list
      */
     List<BeeMethodExecutionLog> clearMethodExecutionLog(int type);
@@ -164,7 +164,7 @@ public interface BeeConnectionPool extends Closeable {
     void setMethodExecutionListener(BeeMethodExecutionListener listener);
 
     /**
-     * Cancel statement in executing,this method may be support distribution network.
+     * Cancel statement in executing.
      *
      * @param logId log id
      * @return boolean is true that log is a statement log and success to cancellation called on this statement.

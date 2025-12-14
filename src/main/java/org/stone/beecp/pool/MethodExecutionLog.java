@@ -28,12 +28,12 @@ public class MethodExecutionLog implements BeeMethodExecutionLog {
     //Method call is failed
     static final int Status_Failed = 2;
 
-    //pool name
-    private final String poolName;
     //Log type
     private final int type;
     //log id
     private final String id;
+    //pool name
+    private final String poolName;
 
     //Method name of pool or (Statement,PreparedStatement,CallableStatement)
     private final String method;
@@ -61,16 +61,21 @@ public class MethodExecutionLog implements BeeMethodExecutionLog {
     //if current log is a sql execution
     private transient Statement statement;
 
-    //Flag of removed from log manager
+    //Removed flag
     private boolean removed;
-    //Flag of handled by Handler
+    //Slow flag
     private boolean slow;
+    //Long-running flag
+    private boolean longRunning;
+    //handled flag
+    private boolean handled;
 
-    public MethodExecutionLog(String poolName, int type, String method, Object[] parameters) {
+    public MethodExecutionLog(String poolName, int type, String method, Object[] parameters, Statement statement) {
         this.poolName = poolName;
         this.type = type;
         this.method = method;
         this.parameters = parameters;
+        this.statement = statement;
         this.id = UUID.randomUUID().toString();
         this.startTime = System.currentTimeMillis();
     }
@@ -119,8 +124,24 @@ public class MethodExecutionLog implements BeeMethodExecutionLog {
         return slow;
     }
 
-    void setAsSlow() {
-        this.slow = true;
+    public boolean hasHandledByListener() {
+        return handled;
+    }
+
+    void setHandled(boolean isHandled) {
+        this.handled = isHandled;
+    }
+
+    public boolean isLongRunning() {
+        return this.longRunning;
+    }
+
+    void setAsSlow(long curTime, long slowThreshold) {
+        if (this.endTime != 0L) {
+            this.slow = this.endTime - this.startTime - slowThreshold >= 0L;
+        } else {
+            this.slow = this.longRunning = curTime - this.startTime - slowThreshold >= 0L;
+        }
     }
 
     public Object getResult() {

@@ -53,8 +53,6 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
     private static final AtomicReferenceFieldUpdater<Borrower, Object> BorrowStUpd = ReferenceFieldUpdaterImpl.newUpdater(Borrower.class, Object.class, "state");
     private static final AtomicIntegerFieldUpdater<FastConnectionPool> PoolStateUpd = IntegerFieldUpdaterImpl.newUpdater(FastConnectionPool.class, "poolState");
     private static final AtomicIntegerFieldUpdater<FastConnectionPool> ServantTryCountUpd = IntegerFieldUpdaterImpl.newUpdater(FastConnectionPool.class, "servantTryCount");
-    protected boolean usingMethodLogCache;
-    protected MethodExecutionLogCache methodLogCache;
     LogPrinter logPrinter = LogPrinterFactory.CommonLogPrinter;
 
     String poolMode;
@@ -86,6 +84,8 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
     private ProxyConnectionFactory conProxyFactory;
     private PooledConnectionAliveTest conValidTest;
     private ThreadPoolExecutor networkTimeoutExecutor;
+    private boolean usingMethodLogCache;
+    private MethodExecutionLogCache methodLogCache;
 
     private long idleTimeoutMs;//milliseconds
     private long holdTimeoutMs;//milliseconds
@@ -148,7 +148,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
         this.maxWaitMs = poolConfig.getMaxWait();
         this.maxWaitNs = TimeUnit.MILLISECONDS.toNanos(maxWaitMs);
         int initialSize = poolConfig.getInitialSize();
-        if (initialSize > 0 && !poolConfig.isAsyncCreateInitConnection())
+        if (initialSize > 0 && !poolConfig.isAsyncCreateInitConnections())
             createInitConnections(poolConfig.getInitialSize(), true);
 
         //step4: create connection transfer policy tool(fair or unfair)
@@ -231,7 +231,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
         }
 
         //step9: create a thread to do pool initialization(create initial connections and fill them to array)
-        if (initialSize > 0 && poolConfig.isAsyncCreateInitConnection())
+        if (initialSize > 0 && poolConfig.isAsyncCreateInitConnections())
             new PoolInitAsyncCreateThread(this, initialSize, "BeeCP(" + poolName + ")" + "-asyncInitialConnectionCreator").start();
 
         //step10: print pool info at end

@@ -42,14 +42,9 @@ public class BeanUtil {
      *
      * @param field reflection access field
      */
-    public static void setAccessible(final Field field) {
-        if (!field.isAccessible()) {
-            AccessController.doPrivileged(new PrivilegedAction<Field>() {
-                public Field run() {
-                    field.setAccessible(true);
-                    return field;
-                }
-            });
+    public static void setAccessible(Object object, Field field) {
+        if (!field.canAccess(object)) {
+            field.setAccessible(true);
         }
     }
 
@@ -58,14 +53,9 @@ public class BeanUtil {
      *
      * @param method reflection access method
      */
-    public static void setAccessible(final Method method) {
-        if (!method.isAccessible()) {
-            AccessController.doPrivileged(new PrivilegedAction<Method>() {
-                public Method run() {
-                    method.setAccessible(true);
-                    return method;
-                }
-            });
+    public static void setAccessible(Object object, Method method) {
+        if (!method.canAccess(object)) {
+            method.setAccessible(true);
         }
     }
 
@@ -356,7 +346,7 @@ public class BeanUtil {
         text = text.trim();
 
         if (targetType == char.class || targetType == Character.class) {
-            return text.charAt(0);
+            return Character.valueOf(text.charAt(0));
         } else if (targetType == boolean.class || targetType == Boolean.class) {
             return Boolean.valueOf(text);
         } else if (targetType == byte.class || targetType == Byte.class) {

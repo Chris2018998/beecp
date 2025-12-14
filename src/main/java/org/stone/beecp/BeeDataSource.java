@@ -50,6 +50,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     private final InterruptableReentrantReadWriteLock.ReadLock readLock = lock.readLock();
     private long maxWaitNanos = 8000L;//default vale same to config
     private BeeConnectionPool pool;
+
     private CommonDataSource subDs;//used to set loginTimeout
     private boolean poolStarted;//true,means that inner pool has created
     private SQLException cause;//inner pool create failed cause
@@ -97,7 +98,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     private static void set(Object target, String setMethodName, String value) {
         try {
             Method method = target.getClass().getMethod(setMethodName, String.class);
-            BeanUtil.setAccessible(method);
+            BeanUtil.setAccessible(target, method);
             method.invoke(target, value);
         } catch (Exception e) {
             throw new UnsupportedOperationException(e);
@@ -154,7 +155,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     }
 
     //***************************************************************************************************************//
-    //                                         3: Pool clear(2)                                                       //
+    //                                         3: Pool restart(2)                                                    //
     //***************************************************************************************************************//
     public void restart(boolean forceRecycleBorrowed) throws SQLException {
         this.getPool().restart(forceRecycleBorrowed);

@@ -51,7 +51,7 @@ public class MockMethodExecutionListener1 implements BeeMethodExecutionListener 
         }
     }
 
-    public void onLongRunningDetected(List<BeeMethodExecutionLog> slowList) {
-
+    public List<Boolean> onLongRunningDetected(List<BeeMethodExecutionLog> slowList) {
+        return null;
     }
 }

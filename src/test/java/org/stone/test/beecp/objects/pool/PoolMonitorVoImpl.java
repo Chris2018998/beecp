@@ -56,7 +56,13 @@ public class PoolMonitorVoImpl implements BeeConnectionPoolMonitorVo {
         this.poolMode = poolMode;
     }
 
-    public int getPoolState() {return this.poolState;}
+    public int getPoolState() {
+        return this.poolState;
+    }
+
+    public void setPoolState(int poolState) {
+        this.poolState = poolState;
+    }
 
     @Override
     public boolean isClosed() {
@@ -71,10 +77,6 @@ public class PoolMonitorVoImpl implements BeeConnectionPoolMonitorVo {
     @Override
     public boolean isStarting() {
         return poolState == POOL_STARTING || poolState == POOL_RESTARTING;
-    }
-
-    public void setPoolState(int poolState) {
-        this.poolState = poolState;
     }
 
     @Override

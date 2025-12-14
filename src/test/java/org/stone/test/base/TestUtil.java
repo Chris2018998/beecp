@@ -52,7 +52,7 @@ public class TestUtil {
 
     public static Object getFieldValue(final Object ob, final Class clazz, final String fieldName) throws Exception {
         Field field = getField(clazz, fieldName);
-        setAccessible(field);
+        setAccessible(ob,field);
         return field.get(ob);
     }
 
@@ -62,7 +62,7 @@ public class TestUtil {
 
     public static Object invokeMethod2(final Object ob, final Class clazz, final String methodName) throws Exception {
         Method method = getMethod(clazz, methodName);
-        setAccessible(method);
+        setAccessible(null,method);
         return method.invoke(ob);
     }
 

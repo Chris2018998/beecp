@@ -166,6 +166,9 @@ public final class ConnectionPoolStatics {
     public static void oclose(Connection c) {
         try {
             c.close();
+        } catch (SQLRecoverableException e) {
+            CommonLogPrinter.warn("Warning:Error at closing connection", e);
+            oclose(c);//retry
         } catch (Throwable e) {
             CommonLogPrinter.warn("Warning:Error at closing connection", e);
         }

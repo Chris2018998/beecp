@@ -54,7 +54,7 @@ public class Tc0048DataSourceFactoryTest {
         ref2.add(new StringRefAddr(CONFIG_TM_JNDI, "transactionManagerName"));
 
         Method method = BeeDataSourceFactory.class.getDeclaredMethod("getConfigValue", Reference.class, String.class);
-        setAccessible(method);
+        setAccessible(null,method);
         Assertions.assertNull(method.invoke(factory, ref2, "URL"));
 
         try (BeeDataSource ds2 = (BeeDataSource) factory.getObjectInstance(ref2, null, null, null)) {

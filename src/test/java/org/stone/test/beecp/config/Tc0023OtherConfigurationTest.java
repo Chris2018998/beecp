@@ -27,9 +27,9 @@ public class Tc0023OtherConfigurationTest {
         Assertions.assertTrue(config.isFairMode());
 
         //asyncCreateInitConnection
-        Assertions.assertFalse(config.isAsyncCreateInitConnection());//default is false
-        config.setAsyncCreateInitConnection(true);
-        Assertions.assertTrue(config.isAsyncCreateInitConnection());
+        Assertions.assertFalse(config.isAsyncCreateInitConnections());//default is false
+        config.setAsyncCreateInitConnections(true);
+        Assertions.assertTrue(config.isAsyncCreateInitConnections());
 
         //enableJmx
         Assertions.assertFalse(config.isRegisterMbeans());//default check

@@ -40,6 +40,6 @@ public interface BeeMethodExecutionListener {
      *
      * @param logList to be handled
      */
-    void onLongRunningDetected(List<BeeMethodExecutionLog> logList);
+    List<Boolean> onLongRunningDetected(List<BeeMethodExecutionLog> logList);
 
 }

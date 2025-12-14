@@ -66,7 +66,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     //7: Initialization size of pooled connections
     private int initialSize;
     //8: Creation mode of initialization connections;if it is true,pool use a thread to create them;default is false
-    private boolean asyncCreateInitConnection;
+    private boolean asyncCreateInitConnections;
     //9: Maximum of connections in pool,default value is calculated by formula
     private int maxActive = Math.min(Math.max(10, NCPU), 50);
     //10: Maximum of semaphore permits to control concurrency on connections get,default value is calculated by formula
@@ -83,7 +83,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     private long intervalOfClearTimeout = 180000L;
     //16: A flag to recycle borrowed connections and remove them from pool when pool shutdown,default is false.
     private boolean forceRecycleBorrowedOnClose;
-    //17: Milliseconds,A spin park time to wait borrowed connections self return to pool during when pool shutdown,default is 3000 milliseconds
+    //17: Milliseconds,A spin park time to wait borrowed connections return to pool during when pool shutdown,default is 3000 milliseconds
     private long parkTimeForRetry = 3000L;
     //18: A flag to register configuration and pool to JMX server
     private boolean registerMbeans;
@@ -98,7 +98,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     private String aliveTestSql = "SELECT 1";
     //26: Seconds,max wait time of pool to get alive test result from borrowed connections,default is 3 seconds.
     private int aliveTestTimeout = 3;
-    //27: Milliseconds: A threshold time for borrowed connections,if gap time of them is less than it,not need do alive test on them,default is 500 milliseconds;(Gap time = (time at borrowed) - (last used))
+    //27: Milliseconds: A gap threshold time of connections test, (connection's gap time = time-point-at-borrowed - last active time),if connection's gap time is less than it,not need do alive test on them,default is 500 milliseconds
     private long aliveAssumeTime = 500L;
 
     //28: Default value to {@code java.sql.Connection.setCatalog(String)} on created connections and released connections
@@ -165,24 +165,24 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     private boolean enableMethodExecutionLogCache;
     //53: Capacity of logs cache size,default is 1000
     private int methodExecutionLogCacheSize = 1000;
-    //54: Logs timeout,default is 3 minutes
+    //54: Logs timeout in cache,default is 180000 milliseconds(3 minutes)
     private long methodExecutionLogTimeout = 180000L;
-    //55: interval time to clear timeout logs,default is 3 minutes
+    //55: Interval time to clear timeout logs,default is 180000 milliseconds(3 minutes)
     private long intervalOfClearTimeoutExecutionLogs = methodExecutionLogTimeout;
 
-    //56: Slow threshold for connection acquisition,default is 30 seconds,time unit:milliseconds
+    //56: Milliseconds,slow threshold for connection acquisition,default is 30000(30 seconds)
     private long slowConnectionThreshold = 30000L;
-    //57: Slow threshold for sql execution,default is 30 seconds,time unit:milliseconds
+    //57: Milliseconds,slow threshold for sql execution,default is 30000(30 seconds)
     private long slowSQLThreshold = 30000L;
 
-    //58: method execution listener: instance > class > class name
+    //58: Method execution listener,priority order:instance > class > class name
     private BeeMethodExecutionListener methodExecutionListener;
     //59: Class of method execution listener,default is none
     private Class<? extends BeeMethodExecutionListener> methodExecutionListenerClass;
     //60: Class name of method execution listener,default is none
     private String methodExecutionListenerClassName;
 
-    //61: method execution listener factory: instance > class > class name
+    //61: Method execution listener factory, instance > class > class name
     private BeeMethodExecutionListenerFactory methodExecutionListenerFactory;
     //62: Class of method execution listener factory ,default is none
     private Class<? extends BeeMethodExecutionListenerFactory> methodExecutionListenerFactoryClass;
@@ -289,12 +289,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
         this.initialSize = initialSize;
     }
 
-    public boolean isAsyncCreateInitConnection() {
-        return asyncCreateInitConnection;
+    public boolean isAsyncCreateInitConnections() {
+        return asyncCreateInitConnections;
     }
 
-    public void setAsyncCreateInitConnection(boolean asyncCreateInitConnection) {
-        this.asyncCreateInitConnection = asyncCreateInitConnection;
+    public void setAsyncCreateInitConnections(boolean asyncCreateInitConnections) {
+        this.asyncCreateInitConnections = asyncCreateInitConnections;
     }
 
     public int getMaxActive() {
@@ -730,7 +730,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMBean {
     }
 
     //****************************************************************************************************************//
-    //                                    9: Log Manager(24)[52 --- 63]                                               //
+    //                                    9: Log Cache(24)[52 --- 63]                                                //
     //****************************************************************************************************************//
     public boolean isEnableMethodExecutionLogCache() {
         return enableMethodExecutionLogCache;

@@ -82,13 +82,13 @@ final class ProxyClassesGenerator {
         classPool.appendClassPath(new LoaderClassPath(BeeClassLoader));
 
         //************************************************************************************************************//
-        //              1: Create proxy Classes without log Manager                                                   //                                                                                  //
+        //              1: Create proxy Classes without log Cache                                                   //                                                                                  //
         //************************************************************************************************************//
 
         //class1: org.stone.beecp.pool.ProxyConnection
         CtClass ctConnectionClass = classPool.get(Connection.class.getName());
         CtClass ctProxyConnectionBaseClass = classPool.get(ProxyConnectionBase.class.getName());
-        CtClass ctPooledConnectionClass = classPool.get(org.stone.beecp.pool.PooledConnection.class.getName());
+        CtClass ctPooledConnectionClass = classPool.get(PooledConnection.class.getName());
         CtClass ctBeeMethodExecutionLogCacheClass = classPool.get(MethodExecutionLogCache.class.getName());
         CtClass ctProxyConnectionClass = classPool.makeClass("org.stone.beecp.pool.ProxyConnection", ctProxyConnectionBaseClass);
 

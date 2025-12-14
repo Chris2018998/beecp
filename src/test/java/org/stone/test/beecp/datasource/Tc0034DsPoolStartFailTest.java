@@ -35,7 +35,7 @@ public class Tc0034DsPoolStartFailTest {
     public void testInitializationFail() {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
         config.setInitialSize(5);
-        config.setAsyncCreateInitConnection(false);//<---- test point
+        config.setAsyncCreateInitConnections(false);//<---- test point
 
         String errorMsg1 = "Network exception,connection can't be established";
         ExceptionConnectionFactory connectionFactory = new ExceptionConnectionFactory();
@@ -65,7 +65,7 @@ public class Tc0034DsPoolStartFailTest {
 
         //3: create initial connections in sync mode
         config.setPrintRuntimeLogs(true);
-        config.setAsyncCreateInitConnection(true);//<---- test point
+        config.setAsyncCreateInitConnections(true);//<---- test point
         LogCollector logCollector = LogCollector.startLogCollector();
         try (BeeDataSource ignored = new BeeDataSource(config)) {
             LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(500L));

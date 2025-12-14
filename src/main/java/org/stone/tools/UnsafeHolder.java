@@ -28,7 +28,7 @@ public final class UnsafeHolder {
     static {
         try {
             Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
-            setAccessible(theUnsafe);
+            setAccessible(null,theUnsafe);
             U = (Unsafe) theUnsafe.get(null);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new ReflectionOperationException(e);
