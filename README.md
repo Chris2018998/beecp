@@ -9,8 +9,6 @@
 
 A JDBC connection pool with the characteristics of minimal code, few dependencies, high performance, and high coverage; Technical advantages: single-connection caching, fixed-length array, non-moving wait, asynchronous addition, etc.
 
-## 🌼 Key Features
-
 * Supports blocking interruption operations‌
 * Supports restart and configuration reload‌
 * Provides interfaces for extensibility‌
