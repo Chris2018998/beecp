@@ -206,7 +206,7 @@ public class Tc0069ConnectionDefaultTest {
                 Assertions.fail("[testInitExceptionOnValid]Test failed");
             }
             String logInfo = logCollector.endLogCollector();
-            Assertions.assertTrue(logInfo.contains("Exception occurred when call 'isValid' method on initial test connection"));
+            Assertions.assertTrue(logInfo.contains("exception occurred when call 'isValid' method on initial test connection"));
         }
 
         connectionProperties.clearExceptionableMethod("isValid");
@@ -219,7 +219,7 @@ public class Tc0069ConnectionDefaultTest {
                 Assertions.fail("[testInitExceptionOnValid]Test failed");
             }
             String logInfo = logCollector.endLogCollector();
-            Assertions.assertTrue(logInfo.contains("Driver not support 'isValid' method call on connection"));
+            Assertions.assertTrue(logInfo.contains("driver not support 'isValid' method call on connection"));
         }
     }
 
@@ -245,7 +245,7 @@ public class Tc0069ConnectionDefaultTest {
                 Assertions.fail("[testInitExceptionOnValid]Test failed");
             }
             String logInfo = logCollector.endLogCollector();
-            Assertions.assertTrue(logInfo.contains("Driver not support 'getNetworkTimeout()/setNetworkTimeout(time)' method call on connection"));
+            Assertions.assertTrue(logInfo.contains("driver not support 'getNetworkTimeout()/setNetworkTimeout(time)' method call on connection"));
         }
 
         //test exception from 'getNetworkTimeout()'
@@ -258,7 +258,7 @@ public class Tc0069ConnectionDefaultTest {
                 Assertions.fail("[testInitExceptionOnValid]Test failed");
             }
             String logInfo = logCollector.endLogCollector();
-            Assertions.assertTrue(logInfo.contains("Exception occurred when call 'getNetworkTimeout()/setNetworkTimeout(time)' method on initial test connection"));
+            Assertions.assertTrue(logInfo.contains("exception occurred when call 'getNetworkTimeout()/setNetworkTimeout(time)' method on initial test connection"));
         }
 
         //test exception from 'setNetworkTimeout()'
@@ -273,7 +273,7 @@ public class Tc0069ConnectionDefaultTest {
                 Assertions.fail("[testInitExceptionOnValid]Test failed");
             }
             String logInfo = logCollector.endLogCollector();
-            Assertions.assertTrue(logInfo.contains("Exception occurred when call 'getNetworkTimeout()/setNetworkTimeout(time)' method on initial test connection"));
+            Assertions.assertTrue(logInfo.contains("exception occurred when call 'getNetworkTimeout()/setNetworkTimeout(time)' method on initial test connection"));
         }
     }
 

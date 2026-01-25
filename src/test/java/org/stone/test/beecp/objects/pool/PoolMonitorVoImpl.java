@@ -22,10 +22,11 @@ import static org.stone.beecp.pool.ConnectionPoolStatics.*;
 
 public class PoolMonitorVoImpl implements BeeConnectionPoolMonitorVo {
     private String poolName;
-    private String poolMode;
+    private boolean poolMode;
     private int poolState;
     private int maxSize;
     private int semaphoreSize;
+    private boolean useThreadLocal;
 
     private int idleSize;
     private int borrowedSize;
@@ -48,11 +49,19 @@ public class PoolMonitorVoImpl implements BeeConnectionPoolMonitorVo {
     }
 
     @Override
-    public String getPoolMode() {
+    public boolean isFairMode() {
         return poolMode;
     }
 
-    public void setPoolMode(String poolMode) {
+    public boolean useThreadLocal() {
+        return useThreadLocal;
+    }
+
+    public void setUsingThreadLocal(boolean useThreadLocal) {
+        this.useThreadLocal = useThreadLocal;
+    }
+
+    public void setPoolMode(boolean poolMode) {
         this.poolMode = poolMode;
     }
 
@@ -65,8 +74,18 @@ public class PoolMonitorVoImpl implements BeeConnectionPoolMonitorVo {
     }
 
     @Override
-    public boolean isClosed() {
-        return poolState == POOL_CLOSED;
+    public boolean isLazy() {
+        return poolState == POOL_LAZY;
+    }
+
+    @Override
+    public boolean isNew() {
+        return poolState == POOL_NEW;
+    }
+
+    @Override
+    public boolean isClosing() {
+        return poolState == POOL_CLOSING;
     }
 
     @Override
@@ -76,7 +95,22 @@ public class PoolMonitorVoImpl implements BeeConnectionPoolMonitorVo {
 
     @Override
     public boolean isStarting() {
-        return poolState == POOL_STARTING || poolState == POOL_RESTARTING;
+        return poolState == POOL_STARTING;
+    }
+
+    @Override
+    public boolean isRestarting() {
+        return poolState == POOL_RESTARTING;
+    }
+
+    @Override
+    public boolean isRestartFailed() {
+        return poolState == POOL_RESTART_FAILED;
+    }
+
+    @Override
+    public boolean isSuspended() {
+        return poolState == POOL_SUSPENDED;
     }
 
     @Override
@@ -116,7 +150,7 @@ public class PoolMonitorVoImpl implements BeeConnectionPoolMonitorVo {
     }
 
     @Override
-    public int getSemaphoreAcquiredSize() {
+    public int getSemaphoreRemainSize() {
         return semaphoreAcquiredSize;
     }
 
@@ -161,7 +195,7 @@ public class PoolMonitorVoImpl implements BeeConnectionPoolMonitorVo {
     }
 
     @Override
-    public boolean isEnabledLogPrint() {
+    public boolean isEnabledLogPrinter() {
         return enabledLogPrint;
     }
 
@@ -170,7 +204,7 @@ public class PoolMonitorVoImpl implements BeeConnectionPoolMonitorVo {
     }
 
     @Override
-    public boolean isEnabledMethodExecutionLogCache() {
+    public boolean isEnabledLogCache() {
         return enabledJdbcEventLogManager;
     }
 

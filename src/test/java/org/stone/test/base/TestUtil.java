@@ -14,10 +14,13 @@ import org.slf4j.LoggerFactory;
 import org.stone.tools.CommonUtil;
 
 import javax.sql.XAConnection;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -52,7 +55,7 @@ public class TestUtil {
 
     public static Object getFieldValue(final Object ob, final Class clazz, final String fieldName) throws Exception {
         Field field = getField(clazz, fieldName);
-        setAccessible(ob,field);
+        setAccessible(ob, field);
         return field.get(ob);
     }
 
@@ -62,7 +65,7 @@ public class TestUtil {
 
     public static Object invokeMethod2(final Object ob, final Class clazz, final String methodName) throws Exception {
         Method method = getMethod(clazz, methodName);
-        setAccessible(null,method);
+        setAccessible(null, method);
         return method.invoke(ob);
     }
 
@@ -85,6 +88,19 @@ public class TestUtil {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public static int[] getClassVersion(File classFile) throws IOException {
+        try (DataInputStream in = new DataInputStream(Files.newInputStream(classFile.toPath()))) {
+            int magic = in.readInt();
+            if (magic != 0xcafebabe) {
+                System.out.println(classFile + " is not a valid class!");
+            }
+
+            int minor = in.readUnsignedShort();
+            int major = in.readUnsignedShort();
+            return new int[]{major, minor};
         }
     }
 

@@ -10,193 +10,173 @@
 package org.stone.test.beecp.config;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.BeeDataSourceConfigException;
+import org.stone.beecp.exception.BeeDataSourceConfigException;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.net.URL;
 import java.util.List;
-import java.util.Objects;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.stone.test.base.TestUtil.getClassPathFileAbsolutePath;
 import static org.stone.test.beecp.config.DsConfigFactory.createEmpty;
-import static org.stone.tools.CommonUtil.loadPropertiesFromClassPathFile;
 
 /**
  * @author Chris Liao
  * @version 1.0
  */
 public class Tc0018ConfigLoadFromFileTest {
-    private static final String filename = "file/beecp/config2.properties";
+    //classes/beecp/file1.
+    private static String beecpResourceAbsolutePath;
+
+    @BeforeAll
+    public static void resourcePath() throws Exception {
+        String filename = "beecp/config1.properties";//must be existed
+        URL resourceURL = Tc0018ConfigLoadFromFileTest.class.getClassLoader().getResource(filename);
+        Assertions.assertNotNull(resourceURL);
+        File resourceFile = new File(resourceURL.toURI());
+        beecpResourceAbsolutePath = resourceFile.getParent();
+    }
 
     /********************************************Constructor**************************************************/
     @Test
-    public void testOnCorrectFile() throws Exception {
-        String classFilename = "cp:" + filename;
-        Assertions.assertTrue(check(new BeeDataSourceConfig(classFilename)).booleanValue());//classpath
-        Assertions.assertTrue(check(new BeeDataSourceConfig(getClassPathFileAbsolutePath(filename))).booleanValue());//from file
-        Assertions.assertTrue(check(new BeeDataSourceConfig(loadPropertiesFromClassPathFile(filename))).booleanValue());//from properties
+    public void testCorrectFile() throws Exception {
+        String filename = "config1.properties";
+        String classPathFilename1 = "cp:beecp/" + filename;
+        String classPathFilename2 = "classpath:beecp/" + filename;
+        String absolutePathFileName = beecpResourceAbsolutePath + File.separator + filename;
+        File fileFile = new File(absolutePathFileName);
 
+        //1: load file in constructor
+        //1.1: load file from class path
+        Assertions.assertTrue(check(new BeeDataSourceConfig(classPathFilename1)).booleanValue());//classpath
+        Assertions.assertTrue(check(new BeeDataSourceConfig(classPathFilename2)).booleanValue());//classpath
+
+        //1.2: load file from absolution path
+        Assertions.assertTrue(check(new BeeDataSourceConfig(fileFile)).booleanValue());//from file
+        Assertions.assertTrue(check(new BeeDataSourceConfig(absolutePathFileName)).booleanValue());//from file
+
+
+        //1.3: load from Properties
+        Properties properties = new Properties();
+        try (FileInputStream fileStream = new FileInputStream(fileFile)) {
+            properties.load(fileStream);
+        }
+        Assertions.assertTrue(check(new BeeDataSourceConfig(properties)).booleanValue());//from properties
+
+        //2: load configuration by methods
+        //2.1: load file from class path
         BeeDataSourceConfig config1 = createEmpty();
-        config1.loadFromPropertiesFile(classFilename);
+        config1.loadFromPropertiesFile(classPathFilename1);
         Assertions.assertTrue(check(config1).booleanValue());
-
+        config1 = createEmpty();
+        config1.loadFromPropertiesFile(classPathFilename1);
+        Assertions.assertTrue(check(config1).booleanValue());
+        //2.2: load file from absolution path
         BeeDataSourceConfig config2 = createEmpty();
-        config2.loadFromPropertiesFile(getClassPathFileAbsolutePath(filename));
+        config2.loadFromPropertiesFile(fileFile);
+        Assertions.assertTrue(check(config2).booleanValue());
+        config2 = createEmpty();
+        config2.loadFromPropertiesFile(absolutePathFileName);
         Assertions.assertTrue(check(config2).booleanValue());
 
+        //2.3: load file from absolution path
         BeeDataSourceConfig config3 = createEmpty();
-        config3.loadFromProperties(loadPropertiesFromClassPathFile(filename));
+        config3.loadFromProperties(properties);
         Assertions.assertTrue(check(config3).booleanValue());
     }
 
     @Test
-    public void testOnLoadByFileName() throws Exception {
-        BeeDataSourceConfig config1 = createEmpty();
-        try {
-            config1.loadFromPropertiesFile("");
-            fail("[testOnLoadByFileName]not threw exception when load blank filename");
+    public void testInvalidFileName() throws Exception {
+        BeeDataSourceConfig config = createEmpty();
+        try {//null filename
+            config.loadFromPropertiesFile((String) null);
+            fail("[testInvalidFileName]failed");
+        } catch (Exception e) {
+            Assertions.assertEquals("Load file name cannot be null or empty", e.getMessage());
+        }
+
+        try {//blank filename
+            config.loadFromPropertiesFile("");
+            fail("[testInvalidFileName]failed");
+        } catch (Exception e) {
+            Assertions.assertEquals("Load file name cannot be null or empty", e.getMessage());
+        }
+
+        try {//file extension name test
+            config.loadFromPropertiesFile(beecpResourceAbsolutePath + File.separator + "invalidProperties");
+            fail("[testInvalidFileName]failed");
         } catch (Exception e) {
             String message = e.getMessage();
-            Assertions.assertTrue(message != null && message.contains("file name can't be null or empty"));
-        }
-
-
-        try {
-            config1.loadFromPropertiesFile("D:\\beecp\\ds.properties1");
-            fail("[testOnLoadByFileName]not threw exception when properties file not existed");
-        } catch (Exception e) {
-            String message = e.getMessage();
-            Assertions.assertTrue(message != null && message.contains("Configuration file name file must be end with '.properties'"));
-        }
-
-        try {
-            config1.loadFromPropertiesFile("D:\\beecp\\ds.properties");//file not found
-            fail("[testOnLoadByFileName]not threw exception when properties file not existed");
-        } catch (Exception e) {
-            String message = e.getMessage();
-            Assertions.assertTrue(message != null && message.contains("Not found configuration file"));
-        }
-
-        try {//failure test
-            String fullFilename = Objects.requireNonNull(getClassPathFileAbsolutePath(filename)).toString();
-            String osFileName2 = "/file/beecp/invalid.properties".replace("/", File.separator);
-            int lasIndex = fullFilename.lastIndexOf(filename.replace("/", File.separator));
-            String invalidFilePath = fullFilename.substring(0, lasIndex) + osFileName2;
-            config1.loadFromPropertiesFile(invalidFilePath);//folder test
-            fail("[testOnLoadByFileName]not threw exception when properties file object is folder");
-        } catch (Exception e) {
-            String message = e.getMessage();
-            Assertions.assertTrue(message != null && message.contains("Target object is a valid configuration file"));
-        }
-
-        File path = getClassPathFileAbsolutePath(filename);
-        assert path != null;
-        try {//success test
-            config1.loadFromPropertiesFile(path.toString());
-        } catch (Exception e) {
-            Assertions.fail("[testOnLoadByFileName]Test failed");
-        }
-
-        try {//success test:load from classpath
-            config1.loadFromPropertiesFile("cp:" + filename);
-        } catch (Exception e) {
-            Assertions.fail("[testOnLoadByFileName]Test failed");
-        }
-
-        try {//success test: load from classpath
-            config1.loadFromPropertiesFile("classpath:" + filename);
-        } catch (Exception e) {
-            Assertions.fail("[testOnLoadByFileName]Test failed");
+            Assertions.assertTrue(message != null && message.contains("Load file extension name must be 'properties':"));
         }
     }
 
     @Test
-    public void testOnLoadProperties() {
+    public void testInvalidFile() {
+        BeeDataSourceConfig config = createEmpty();
+        try {//null filename
+            config.loadFromPropertiesFile((File) null);
+            fail("[testInvalidFile]failed");
+        } catch (Exception e) {
+            Assertions.assertEquals("Load file cannot be null", e.getMessage());
+        }
+
+        try {//file not found test
+            config.loadFromPropertiesFile(new File(beecpResourceAbsolutePath + File.separator + "not_found.properties"));
+            fail("[testInvalidFile]failed");
+        } catch (Exception e) {
+            String message = e.getMessage();
+            Assertions.assertTrue(message != null && message.contains("Load file not found"));
+        }
+
+        try {//test file is a folder
+            config.loadFromPropertiesFile(new File(beecpResourceAbsolutePath + File.separator + "empty"));
+            fail("[testInvalidFile]failed");
+        } catch (Exception e) {
+            String message = e.getMessage();
+            Assertions.assertTrue(message != null && message.contains("Load file cannot be a folder"), message);
+        }
+
+        try {//file extension name test
+            config.loadFromPropertiesFile(new File(beecpResourceAbsolutePath + File.separator + "invalidProperties"));
+            fail("[testInvalidFile]failed");
+        } catch (Exception e) {
+            String message = e.getMessage();
+            Assertions.assertTrue(message != null && message.contains("Load file extension name must be 'properties':"), message);
+        }
+    }
+
+    @Test
+    public void testLoadProperties() {
         BeeDataSourceConfig config1 = createEmpty();
         try {
             config1.loadFromProperties(null);
-            fail("[testOnLoadProperties]not threw exception when loading null properties file");
+            fail("[testLoadProperties]not threw exception when loading null properties file");
         } catch (Exception e) {
             String message = e.getMessage();
-            Assertions.assertTrue(message != null && message.contains("Configuration properties must not be null or empty"));
+            Assertions.assertTrue(message != null && message.contains("Load properties cannot be null or empty"));
         }
 
         try {//correct
             config1.loadFromProperties(new Properties());
-            fail("[testOnLoadProperties]not threw exception when loading empty properties");
+            fail("[testLoadProperties]not threw exception when loading empty properties");
         } catch (Exception e) {
             String message = e.getMessage();
-            Assertions.assertTrue(message != null && message.contains("Configuration properties must not be null or empty"));
+            Assertions.assertTrue(message != null && message.contains("Load properties cannot be null or empty"));
         }
 
         try {//correct
             Properties properties = new Properties();
             properties.put("maxActive", "oooo");
             config1.loadFromProperties(properties);
-            fail("[testOnLoadProperties]not threw exception when loading invalid properties item");
+            fail("[testLoadProperties]not threw exception when loading invalid properties item");
         } catch (BeeDataSourceConfigException e) {
             String message = e.getMessage();
             Assertions.assertTrue(message != null && message.contains("Failed to convert value[oooo]to property type(maxActive:int)"));
-        }
-    }
-
-    @Test
-    public void testOnLoadByFile() {
-        BeeDataSourceConfig config1 = createEmpty();
-
-        try {//null file test
-            config1.loadFromPropertiesFile((File) null);
-            fail("[testOnLoadByFile]not threw exception when loading null properties file");
-        } catch (Exception e) {
-            String message = e.getMessage();
-            Assertions.assertTrue(message != null && message.contains("can't be null"));
-        }
-
-        try {//existence test
-            File configFile = new File("c:\\beecp\\ds.properties");
-            config1.loadFromPropertiesFile(configFile);
-            fail("[testOnLoadByFile]not threw exception when loading null properties file");
-        } catch (Exception e) {
-            String message = e.getMessage();
-            Assertions.assertTrue(message != null && message.contains("file not found"));
-        }
-
-        try {//existence test
-            File configFile = new File("c:\\beecp\\ds");
-            config1.loadFromPropertiesFile(configFile);
-            fail("[testOnLoadByFile]not threw exception when load invalid file");
-        } catch (Exception e) {
-            String message = e.getMessage();
-            Assertions.assertTrue(message != null && message.contains("file not found"));
-        }
-
-        try {//valid file
-            String os = System.getProperty("os.name").toLowerCase();
-            File configFile = os.contains("windows") ? new File("C:\\") : new File("//");
-            config1.loadFromPropertiesFile(configFile);
-            fail("[testOnLoadByFile]not threw exception when loading null properties file");
-        } catch (Exception e) {
-            String message = e.getMessage();
-            Assertions.assertTrue(message != null && message.contains("is not a valid file"));
-        }
-
-        try {//valid file
-            Class<?> selfClass = Tc0018ConfigLoadFromFileTest.class;
-            URL resource = selfClass.getClassLoader().getResource(filename);
-            Assertions.assertNotNull(resource);
-
-            String path = resource.getPath();
-            String filePath = path.substring(0, path.indexOf("config2.properties")) + "invalid.properties1";
-            File configFile = new File(filePath);
-            config1.loadFromPropertiesFile(configFile);
-            fail("testOnLoadByFile");
-        } catch (Exception e) {
-            String message = e.getMessage();
-            Assertions.assertTrue(message != null && message.contains("not a properties file"));
         }
     }
 

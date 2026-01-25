@@ -12,7 +12,7 @@ package org.stone.test.beecp.config;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.BeeDataSourceConfigException;
+import org.stone.beecp.exception.BeeDataSourceConfigException;
 import org.stone.test.beecp.objects.factory.MockConnectionFactory;
 import org.stone.test.beecp.objects.predicate.MockEvictConnectionPredicate1;
 import org.stone.tools.exception.BeanException;

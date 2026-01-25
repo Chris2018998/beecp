@@ -9,25 +9,48 @@
  */
 package org.stone.beecp;
 
+import java.io.Serializable;
+
 /**
  * Pool monitoring interface.
  *
  * @author Chris Liao
  * @version 1.0
  */
-public interface BeeConnectionPoolMonitorVo {
+public interface BeeConnectionPoolMonitorVo extends Serializable {
+
+    //***************************************************************************************************************//
+    //                                        1: Unchangeable fields                                                 //
+    //***************************************************************************************************************//
 
     String getPoolName();
 
-    String getPoolMode();
+    boolean isFairMode();
 
-    int getPoolState();
+    boolean useThreadLocal();
 
-    boolean isClosed();
+    //***************************************************************************************************************//
+    //                                     2: State`methods                                                           //
+    //***************************************************************************************************************//
+    boolean isLazy();
+
+    boolean isNew();
 
     boolean isReady();
 
+    boolean isClosing();
+
     boolean isStarting();
+
+    boolean isRestarting();
+
+    boolean isRestartFailed();
+
+    boolean isSuspended();
+
+    //***************************************************************************************************************//
+    //                                     3: Other methods                                                          //
+    //***************************************************************************************************************//
 
     int getMaxSize();
 
@@ -41,13 +64,13 @@ public interface BeeConnectionPoolMonitorVo {
 
     int getSemaphoreSize();
 
-    int getSemaphoreAcquiredSize();
+    int getSemaphoreRemainSize();
 
     int getSemaphoreWaitingSize();
 
     int getTransferWaitingSize();
 
-    boolean isEnabledLogPrint();
+    boolean isEnabledLogPrinter();
 
-    boolean isEnabledMethodExecutionLogCache();
+    boolean isEnabledLogCache();
 }

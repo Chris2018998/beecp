@@ -16,22 +16,22 @@
 package org.stone.test.beecp.objects.listener;
 
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.BeeMethodExecutionListener;
-import org.stone.beecp.BeeMethodExecutionListenerFactory;
+import org.stone.beecp.BeeMethodLogListener;
+import org.stone.beecp.BeeMethodLogListenerFactory;
 
 /**
  * Method execution listener factory, for success test
  *
  * @author Chris Liao
  */
-public class MockMethodExecutionListenerFactory1 implements BeeMethodExecutionListenerFactory {
+public class MockMethodExecutionListenerFactory1 implements BeeMethodLogListenerFactory {
 
     /**
      * Creates method execution listener.
      *
      * @return created Listener instance
      */
-    public BeeMethodExecutionListener create(BeeDataSourceConfig config) throws Exception {
+    public BeeMethodLogListener create(BeeDataSourceConfig config) throws Exception {
         return new MockMethodExecutionListener1();
     }
 }

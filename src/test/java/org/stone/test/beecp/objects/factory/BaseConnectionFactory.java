@@ -9,7 +9,7 @@
  */
 package org.stone.test.beecp.objects.factory;
 
-import org.stone.beecp.pool.exception.ConnectionCreateException;
+import org.stone.beecp.exception.ConnectionCreatedException;
 
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -90,7 +90,7 @@ public class BaseConnectionFactory {
         do {
             count = createdCount.get();
             if (count >= maxSize)
-                throw new ConnectionCreateException("the count of created connections has reached max");
+                throw new ConnectionCreatedException("the count of created connections has reached max");
         } while (!createdCount.compareAndSet(count, count + 1));
     }
 }

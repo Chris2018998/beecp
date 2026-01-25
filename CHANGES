@@ -1,5 +1,10 @@
 beecp changes
 
+Changes in 5.2.0
+1: Refactor method logs feature
+2: Enhance pool robustness
+3: Improve pool performance(reused pooled connections)
+
 Changes in 5.1.3
 1: Enhance method execution log cache to support sql preparation logs
 2: Change configuration item(asyncCreateInitConnection ---> asyncCreateInitConnections)

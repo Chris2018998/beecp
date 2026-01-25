@@ -14,8 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeConnectionPool;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.BeeDataSourceCreationException;
-import org.stone.beecp.pool.exception.PoolCreateFailedException;
+import org.stone.beecp.exception.BeeDataSourceCreatedException;
+import org.stone.beecp.exception.BeeDataSourcePoolInstantiatedException;
 import org.stone.test.beecp.objects.factory.MockConnectionFactory;
 import org.stone.test.beecp.objects.pool.PoolImpl_NoDefaultConstructor;
 import org.stone.tools.exception.BeanException;
@@ -35,9 +35,9 @@ public class Tc0032DsPoolCreateFailTest {
         config.setPoolImplementClassName(poolClassName);
         try (BeeDataSource ignored = new BeeDataSource(config)) {
             Assertions.fail("[testFailException]test failed");
-        } catch (BeeDataSourceCreationException e) {
-            Assertions.assertInstanceOf(PoolCreateFailedException.class, e.getCause());
-            PoolCreateFailedException poolCreateFailedException = (PoolCreateFailedException) e.getCause();
+        } catch (BeeDataSourceCreatedException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolInstantiatedException.class, e.getCause());
+            BeeDataSourcePoolInstantiatedException poolCreateFailedException = (BeeDataSourcePoolInstantiatedException) e.getCause();
             Assertions.assertInstanceOf(BeanException.class, poolCreateFailedException.getCause());
             BeanException exception = (BeanException) poolCreateFailedException.getCause();
             Assertions.assertEquals("Failed to create instance on class[" + poolClassName + "]", exception.getMessage());
@@ -48,9 +48,9 @@ public class Tc0032DsPoolCreateFailTest {
         config.setPoolImplementClassName(poolClassName2);
         try (BeeDataSource ignored = new BeeDataSource(config)) {
             Assertions.fail("[testFailException]test failed");
-        } catch (BeeDataSourceCreationException e) {
-            Assertions.assertInstanceOf(PoolCreateFailedException.class, e.getCause());
-            PoolCreateFailedException poolCreateFailedException = (PoolCreateFailedException) e.getCause();
+        } catch (BeeDataSourceCreatedException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolInstantiatedException.class, e.getCause());
+            BeeDataSourcePoolInstantiatedException poolCreateFailedException = (BeeDataSourcePoolInstantiatedException) e.getCause();
             Assertions.assertInstanceOf(BeanException.class, poolCreateFailedException.getCause());
             BeanException exception = (BeanException) poolCreateFailedException.getCause();
             String errorMsg = "Can‘t create instance on class[" + poolClassName2 + "]which must extend from one of type[" + BeeConnectionPool.class.getName() + "]at least,creation category[pool]";
@@ -62,9 +62,9 @@ public class Tc0032DsPoolCreateFailTest {
         config.setPoolImplementClassName(poolClassName3);
         try (BeeDataSource ignored = new BeeDataSource(config)) {
             Assertions.fail("[testFailException]test failed");
-        } catch (BeeDataSourceCreationException e) {
-            Assertions.assertInstanceOf(PoolCreateFailedException.class, e.getCause());
-            PoolCreateFailedException poolCreateFailedException = (PoolCreateFailedException) e.getCause();
+        } catch (BeeDataSourceCreatedException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolInstantiatedException.class, e.getCause());
+            BeeDataSourcePoolInstantiatedException poolCreateFailedException = (BeeDataSourcePoolInstantiatedException) e.getCause();
             Assertions.assertInstanceOf(ClassNotFoundException.class, poolCreateFailedException.getCause());
             String errorMsg = "Failed to create a pool with class:" + poolClassName3;
             Assertions.assertEquals(errorMsg, poolCreateFailedException.getMessage());

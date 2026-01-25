@@ -9,8 +9,11 @@
  */
 package org.stone.beecp.pool;
 
-import org.stone.beecp.BeeDataSourceConfigException;
-import org.stone.beecp.pool.exception.TestSqlExecFailedException;
+import org.stone.beecp.BeeConnectionPool;
+import org.stone.beecp.exception.BeeDataSourceConfigException;
+import org.stone.beecp.exception.BeeDataSourcePoolHasClosedException;
+import org.stone.beecp.exception.BeeDataSourcePoolLazyInitializationException;
+import org.stone.beecp.exception.ConnectionTestSqlExecutedException;
 
 import javax.sql.CommonDataSource;
 import javax.sql.XAConnection;
@@ -20,7 +23,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.*;
 
-import static org.stone.tools.logger.LogPrinterFactory.CommonLogPrinter;
+import static org.stone.tools.LogPrinter.DefaultLogPrinter;
 
 /**
  * Pool Static Center
@@ -72,13 +75,52 @@ public final class ConnectionPoolStatics {
     public static final int CON_IDLE = 1;
     public static final int CON_CREATING = 2;
     public static final int CON_BORROWED = 3;
+
     //pool state
+    public static final int POOL_LAZY = -1;
     public static final int POOL_NEW = 0;
     public static final int POOL_STARTING = 1;
     public static final int POOL_READY = 2;
     public static final int POOL_CLOSING = 3;
     public static final int POOL_CLOSED = 4;
     public static final int POOL_RESTARTING = 5;
+    public static final int POOL_RESTART_FAILED = 6;
+    public static final int POOL_SUSPENDED = 7;
+
+
+    public static final BeeConnectionPool LAZY_POOL = (BeeConnectionPool) Proxy.newProxyInstance(
+            ConnectionPoolStatics.class.getClassLoader(),
+            new Class[]{BeeConnectionPool.class},
+            new InvocationHandler() {
+                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                    String methodName = method.getName();
+                    if ("isClosed".equals(methodName)) {
+                        return true;
+                    } else if ("toString".equals(methodName)) {
+                        return getPoolStateDesc(POOL_LAZY);
+                    } else {
+                        throw new BeeDataSourcePoolLazyInitializationException("No operations allowed on lazy pool");
+                    }
+                }
+            }
+    );
+
+    public static final BeeConnectionPool CLOSED_POOL = (BeeConnectionPool) Proxy.newProxyInstance(
+            ConnectionPoolStatics.class.getClassLoader(),
+            new Class[]{BeeConnectionPool.class},
+            new InvocationHandler() {
+                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                    String methodName = method.getName();
+                    if ("isClosed".equals(methodName)) {
+                        return true;
+                    } else if ("toString".equals(methodName)) {
+                        return getPoolStateDesc(POOL_CLOSED);
+                    } else {
+                        throw new BeeDataSourcePoolHasClosedException("No operations allowed on closed pool");
+                    }
+                }
+            }
+    );
 
     //pool thread state
     static final int THREAD_WORKING = 0;
@@ -92,14 +134,12 @@ public final class ConnectionPoolStatics {
     static final int PS_SCHEMA = 4;
     static final int PS_NETWORK = 5;
     //eviction status
-    static final String DESC_RM_INIT = "init";
-    static final String DESC_RM_BAD = "bad";
-    static final String DESC_RM_ABORT = "abort";
-    static final String DESC_RM_IDLE = "idle";
-    // static final String DESC_RM_CLOSED = "closed";
-    static final String DESC_RM_CLEAR = "clear";
-    static final String DESC_RM_DESTROY = "destroy";
-
+    static final String DESC_RM_POOL_START = "pool_init";
+    static final String DESC_RM_CON_BAD = "bad";
+    static final String DESC_RM_CON_ABORT = "abort";
+    static final String DESC_RM_CON_IDLE = "idle";
+    static final String DESC_RM_POOL_RESTART = "pool_restart";
+    static final String DESC_RM_POOL_SHUTDOWN = "pool_shutdown";
     //***************************************************************************************************************//
     //                                1: jdbc global proxy (3)                                                       //
     //***************************************************************************************************************//
@@ -143,6 +183,30 @@ public final class ConnectionPoolStatics {
             }
     );
 
+    static String getPoolStateDesc(int state) {
+        switch (state) {
+            case POOL_LAZY:
+                return "Pool is lazy and initialized by calling one of its methods:getObjectHandle or getXAConnection";
+            case POOL_NEW:
+                return "Pool is new";
+            case POOL_STARTING:
+                return "Pool is starting";
+            case POOL_READY:
+                return "Pool is ready";
+            case POOL_CLOSING:
+                return "Pool is closing";
+            case POOL_CLOSED:
+                return "Pool has been closed";
+            case POOL_RESTARTING:
+                return "Pool is restarting";
+            case POOL_RESTART_FAILED:
+                return "Pool has restarted failed";
+            case POOL_SUSPENDED:
+                return "Pool has been suspended";
+            default:
+                return "Unknown state of pool";
+        }
+    }
 
     //***************************************************************************************************************//
     //                               2: JDBC close methods(4)                                                        //
@@ -151,7 +215,7 @@ public final class ConnectionPoolStatics {
         try {
             r.close();
         } catch (Throwable e) {
-            CommonLogPrinter.warn("Warning:Error at closing resultSet", e);
+            DefaultLogPrinter.warn("Warning:Error at closing resultSet", e);
         }
     }
 
@@ -159,7 +223,7 @@ public final class ConnectionPoolStatics {
         try {
             s.close();
         } catch (Throwable e) {
-            CommonLogPrinter.warn("Warning:Error at closing statement", e);
+            DefaultLogPrinter.warn("Warning:Error at closing statement", e);
         }
     }
 
@@ -167,10 +231,10 @@ public final class ConnectionPoolStatics {
         try {
             c.close();
         } catch (SQLRecoverableException e) {
-            CommonLogPrinter.warn("Warning:Error at closing connection", e);
+            DefaultLogPrinter.warn("Warning:Error at closing connection", e);
             oclose(c);//retry
         } catch (Throwable e) {
-            CommonLogPrinter.warn("Warning:Error at closing connection", e);
+            DefaultLogPrinter.warn("Warning:Error at closing connection", e);
         }
     }
 
@@ -178,7 +242,7 @@ public final class ConnectionPoolStatics {
         try {
             c.close();
         } catch (Throwable e) {
-            CommonLogPrinter.warn("Warning:Error at closing xaConnection", e);
+            DefaultLogPrinter.warn("Warning:Error at closing xaConnection", e);
         }
     }
 
@@ -241,14 +305,14 @@ public final class ConnectionPoolStatics {
                 st.setQueryTimeout(validTestTimeout);
             } catch (Throwable e) {
                 supportQueryTimeout = false;
-                CommonLogPrinter.warn("BeeCP({})driver not support 'queryTimeout'", poolName, e);
+                DefaultLogPrinter.warn("BeeCP({})-driver not support 'queryTimeout'", poolName, e);
             }
 
             //step3: execute test sql
             try {
                 st.execute(testSql);
             } catch (Throwable e) {
-                throw new TestSqlExecFailedException("Invalid test sql:" + testSql, e);
+                throw new ConnectionTestSqlExecutedException("Invalid test sql:" + testSql, e);
             } finally {
                 rawCon.rollback();//why? maybe store procedure in test sql
             }

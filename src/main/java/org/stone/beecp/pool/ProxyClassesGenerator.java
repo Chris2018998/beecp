@@ -89,7 +89,7 @@ final class ProxyClassesGenerator {
         CtClass ctConnectionClass = classPool.get(Connection.class.getName());
         CtClass ctProxyConnectionBaseClass = classPool.get(ProxyConnectionBase.class.getName());
         CtClass ctPooledConnectionClass = classPool.get(PooledConnection.class.getName());
-        CtClass ctBeeMethodExecutionLogCacheClass = classPool.get(MethodExecutionLogCache.class.getName());
+        CtClass ctBeeMethodLogCacheClass = classPool.get(MethodExecutionLogCache.class.getName());
         CtClass ctProxyConnectionClass = classPool.makeClass("org.stone.beecp.pool.ProxyConnection", ctProxyConnectionBaseClass);
 
         //constructor1
@@ -97,7 +97,7 @@ final class ProxyClassesGenerator {
         ctConstructor.setBody("{super($$);}");
         ctProxyConnectionClass.addConstructor(ctConstructor);
         //constructor2(for interceptor subclass)
-        ctConstructor = new CtConstructor(new CtClass[]{ctPooledConnectionClass, ctBeeMethodExecutionLogCacheClass}, ctProxyConnectionClass);
+        ctConstructor = new CtConstructor(new CtClass[]{ctPooledConnectionClass, ctBeeMethodLogCacheClass}, ctProxyConnectionClass);
         ctConstructor.setBody("{super($$);}");
         ctProxyConnectionClass.addConstructor(ctConstructor);
 
@@ -238,7 +238,7 @@ final class ProxyClassesGenerator {
         //class: org.stone.beecp.pool.ProxyConnection4L
         CtClass ctProxyConnection4LClass = classPool.makeClass("org.stone.beecp.pool.ProxyConnection4L", ctProxyConnectionClass);
         ctProxyConnection4LClass.setModifiers(Modifier.PUBLIC | Modifier.FINAL);
-        ctConstructor = new CtConstructor(new CtClass[]{ctPooledConnectionClass, ctBeeMethodExecutionLogCacheClass}, ctProxyConnection4LClass);
+        ctConstructor = new CtConstructor(new CtClass[]{ctPooledConnectionClass, ctBeeMethodLogCacheClass}, ctProxyConnection4LClass);
         ctConstructor.setBody("{super($$);}");
         ctProxyConnection4LClass.addConstructor(ctConstructor);
 
@@ -412,11 +412,11 @@ final class ProxyClassesGenerator {
                     }
                 } else if (ctResultType == ctPreparedStatementClass) {//Connection.prepareStatement(...)
                     //2.1: add 'logCache.beforeCall'
-                    String methodSignature = getCtMethodSignature("Connection.", ctMethod);
+                    String methodSignature = getCtMethodSignature("Connection", ctMethod);
                     CtClass[] parameterTypes = ctMethod.getParameterTypes();
                     int methodParameterSize = parameterTypes.length;
                     if (methodParameterSize == 0) {
-                        methodBuffer.append("BeeMethodExecutionLog log = logCache.beforeCall(BeeMethodExecutionLog.Type_SQL_Preparation,").append(methodSignature).append(",null,null,null);");
+                        methodBuffer.append("BeeMethodLog log = logCache.beforeCall(BeeMethodLog.Type_Statement_Log,").append(methodSignature).append(",null,null,null);");
                     } else {
                         methodBuffer.append("Object[]parameters = new Object[]{");
                         for (int i = 0; i < methodParameterSize; i++) {
@@ -424,7 +424,7 @@ final class ProxyClassesGenerator {
                             methodBuffer.append(getConvertType("$" + (i + 1), parameterTypes[i]));
                         }
                         methodBuffer.append("};");
-                        methodBuffer.append("BeeMethodExecutionLog log = logCache.beforeCall(BeeMethodExecutionLog.Type_SQL_Preparation,").append(methodSignature).append(",parameters,null,null);");
+                        methodBuffer.append("BeeMethodLog log = logCache.beforeCall(BeeMethodLog.Type_Statement_Log,").append(methodSignature).append(",parameters,null,null);");
                     }
 
                     //2.2: add 'try'
@@ -449,11 +449,11 @@ final class ProxyClassesGenerator {
 
                 } else if (ctResultType == ctCallableStatementClass) {//Connection.prepareCall(...)
                     //3.1: add 'logCache.beforeCall'
-                    String methodSignature = getCtMethodSignature("Connection.", ctMethod);
+                    String methodSignature = getCtMethodSignature("Connection", ctMethod);
                     CtClass[] parameterTypes = ctMethod.getParameterTypes();
                     int methodParameterSize = parameterTypes.length;
                     if (methodParameterSize == 0) {
-                        methodBuffer.append("BeeMethodExecutionLog log = logCache.beforeCall(BeeMethodExecutionLog.Type_SQL_Preparation,").append(methodSignature).append(",null,null,null);");
+                        methodBuffer.append("BeeMethodLog log = logCache.beforeCall(BeeMethodLog.Type_Connection_Log,").append(methodSignature).append(",null,null,null);");
                     } else {
                         methodBuffer.append("Object[]parameters = new Object[]{");
                         for (int i = 0; i < methodParameterSize; i++) {
@@ -461,7 +461,7 @@ final class ProxyClassesGenerator {
                             methodBuffer.append(getConvertType("$" + (i + 1), parameterTypes[i]));
                         }
                         methodBuffer.append("};");
-                        methodBuffer.append("BeeMethodExecutionLog log = logCache.beforeCall(BeeMethodExecutionLog.Type_SQL_Preparation,").append(methodSignature).append(",parameters,null,null);");
+                        methodBuffer.append("BeeMethodLog log = logCache.beforeCall(BeeMethodLog.Type_Connection_Log,").append(methodSignature).append(",parameters,null,null);");
                     }
 
                     //3.2: add 'try'
@@ -557,19 +557,19 @@ final class ProxyClassesGenerator {
             String rawName = "raw.";
             String statementType;
             if ("java.sql.PreparedStatement".equals(ctStatementClass.getName())) {
-                statementType = "PreparedStatement.";
+                statementType = "PreparedStatement";
                 rawName = "((PreparedStatement)raw).";
             } else if ("java.sql.CallableStatement".equals(ctStatementClass.getName())) {
-                statementType = "CallableStatement.";
+                statementType = "CallableStatement";
                 rawName = "((CallableStatement)raw).";
             } else {
-                statementType = "Statement.";
+                statementType = "Statement";
             }
 
             for (CtMethod ctMethod : linkedList) {//all method names start with 'execute'
                 methodBuffer.delete(0, methodBuffer.length());
 
-                //method start
+                // start of method codes
                 methodBuffer.append("{");
                 String methodName = ctMethod.getName();
                 CtClass ctResultType = ctMethod.getReturnType();
@@ -579,7 +579,7 @@ final class ProxyClassesGenerator {
 
                 //1: add start log
                 if (methodParameterSize == 0) {
-                    methodBuffer.append("BeeMethodExecutionLog log = logCache.beforeCall(BeeMethodExecutionLog.Type_SQL_Execution,").append(methodSignature).append(",null,preparedSql,this);");
+                    methodBuffer.append("BeeMethodLog log = logCache.beforeCall(BeeMethodLog.Type_Statement_Log,").append(methodSignature).append(",null,preparedSql,this);");
                 } else {
                     methodBuffer.append("Object[]parameters = new Object[]{");
                     for (int i = 0; i < methodParameterSize; i++) {
@@ -587,7 +587,7 @@ final class ProxyClassesGenerator {
                         methodBuffer.append(getConvertType("$" + (i + 1), parameterTypes[i]));
                     }
                     methodBuffer.append("};");
-                    methodBuffer.append("BeeMethodExecutionLog log = logCache.beforeCall(BeeMethodExecutionLog.Type_SQL_Execution,").append(methodSignature).append(",parameters,preparedSql,this);");
+                    methodBuffer.append("BeeMethodLog log = logCache.beforeCall(BeeMethodLog.Type_Statement_Log,").append(methodSignature).append(",parameters,preparedSql,this);");
                 }
 
                 //2: add 'try' code snippet
@@ -789,7 +789,7 @@ final class ProxyClassesGenerator {
 
     private static String getCtMethodSignature(String methodOwer, CtMethod method) throws Exception {
         StringBuilder builder = new StringBuilder(20);
-        builder.append("\"").append(methodOwer).append(method.getName()).append("(");
+        builder.append("\"").append(methodOwer).append(".").append(method.getName()).append("(");
         CtClass[] paramTypes = method.getParameterTypes();
         for (int i = 0, l = paramTypes.length; i < l; i++) {
             if (i > 0) builder.append(",");

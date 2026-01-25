@@ -15,8 +15,10 @@
  */
 package org.stone.test.beecp.objects.listener;
 
-import org.stone.beecp.BeeMethodExecutionListener;
-import org.stone.beecp.BeeMethodExecutionLog;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.stone.beecp.BeeMethodLog;
+import org.stone.beecp.BeeMethodLogListener;
 
 import java.util.List;
 
@@ -25,25 +27,27 @@ import java.util.List;
  *
  * @author Chris Liao
  */
-public class MockMethodExecutionListener1 implements BeeMethodExecutionListener {
+public class MockMethodExecutionListener1 implements BeeMethodLogListener {
+    private Logger logger = LoggerFactory.getLogger(MockMethodExecutionListener1.class);
 
-    private BeeMethodExecutionLog slowLog;
+    private BeeMethodLog slowLog;
 
-    private BeeMethodExecutionLog exceptionLog;
+    private BeeMethodLog exceptionLog;
 
-    public BeeMethodExecutionLog getSlowLog() {
+    public BeeMethodLog getSlowLog() {
         return slowLog;
     }
 
-    public BeeMethodExecutionLog getExceptionLog() {
+    public BeeMethodLog getExceptionLog() {
         return exceptionLog;
     }
 
-    public void onMethodStart(BeeMethodExecutionLog log) {
-
+    public void onMethodStart(BeeMethodLog log) {
+        logger.info("onMethodStart");
     }
 
-    public void onMethodEnd(BeeMethodExecutionLog log) {
+    public void onMethodEnd(BeeMethodLog log) {
+        logger.info("onMethodEnd");
         if (log.isException()) {
             exceptionLog = log;
         } else if (log.isSlow()) {
@@ -51,7 +55,7 @@ public class MockMethodExecutionListener1 implements BeeMethodExecutionListener 
         }
     }
 
-    public List<Boolean> onLongRunningDetected(List<BeeMethodExecutionLog> slowList) {
+    public List<Boolean> onLongRunningDetected(List<BeeMethodLog> slowList) {
         return null;
     }
 }

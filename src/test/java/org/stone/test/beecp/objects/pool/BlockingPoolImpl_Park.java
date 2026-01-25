@@ -9,8 +9,8 @@
  */
 package org.stone.test.beecp.objects.pool;
 
-import org.stone.beecp.BeeDataSourceCreationException;
-import org.stone.beecp.pool.exception.PoolCreateFailedException;
+import org.stone.beecp.exception.BeeDataSourceCreatedException;
+import org.stone.beecp.exception.BeeDataSourcePoolInstantiatedException;
 
 import java.util.concurrent.locks.LockSupport;
 
@@ -22,6 +22,6 @@ public class BlockingPoolImpl_Park extends BaseSimplePoolImpl {
     public BlockingPoolImpl_Park() {
         LockSupport.park();
         if (Thread.interrupted())
-            throw new BeeDataSourceCreationException(new PoolCreateFailedException("Interruption occurred during pool being instantiated", new InterruptedException()));
+            throw new BeeDataSourceCreatedException(new BeeDataSourcePoolInstantiatedException("Interruption occurred during pool being instantiated", new InterruptedException()));
     }
 }

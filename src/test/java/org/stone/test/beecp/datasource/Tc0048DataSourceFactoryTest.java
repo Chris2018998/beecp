@@ -12,8 +12,8 @@ package org.stone.test.beecp.datasource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeDataSource;
-import org.stone.beecp.BeeDataSourceConfigException;
 import org.stone.beecp.BeeDataSourceFactory;
+import org.stone.beecp.exception.BeeDataSourceConfigException;
 import org.stone.beecp.jta.BeeJtaDataSource;
 
 import javax.naming.InitialContext;
@@ -54,7 +54,7 @@ public class Tc0048DataSourceFactoryTest {
         ref2.add(new StringRefAddr(CONFIG_TM_JNDI, "transactionManagerName"));
 
         Method method = BeeDataSourceFactory.class.getDeclaredMethod("getConfigValue", Reference.class, String.class);
-        setAccessible(null,method);
+        setAccessible(null, method);
         Assertions.assertNull(method.invoke(factory, ref2, "URL"));
 
         try (BeeDataSource ds2 = (BeeDataSource) factory.getObjectInstance(ref2, null, null, null)) {

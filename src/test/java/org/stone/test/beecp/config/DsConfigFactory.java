@@ -1,3 +1,4 @@
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -10,6 +11,7 @@
 package org.stone.test.beecp.config;
 
 import org.stone.beecp.BeeDataSourceConfig;
+import org.stone.beecp.exception.BeeDataSourceConfigException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +39,7 @@ public class DsConfigFactory {
     static int POOL_MAX_ACTIVE;
     static int POOL_INIT_SIZE;
     static int REQUEST_TIMEOUT = 8000;
-    static String CONFIG_FILE = "/file/beecp/jdbc.properties";
+    static String CONFIG_FILE = "/beecp/jdbc.properties";
 
     static {
         try {
@@ -45,7 +47,7 @@ public class DsConfigFactory {
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            throw new IllegalArgumentException(e);
+            throw new BeeDataSourceConfigException(e);
         }
     }
 
@@ -97,22 +99,22 @@ public class DsConfigFactory {
             }
 
             if (isBlank(JDBC_USER))
-                throw new IllegalArgumentException("'USER_ID' missed");
+                throw new BeeDataSourceConfigException("'USER_ID' missed");
             if (isBlank(JDBC_DRIVER))
-                throw new IllegalArgumentException("'JDBC_DRIVER' missed");
+                throw new BeeDataSourceConfigException("'JDBC_DRIVER' missed");
             if (isBlank(JDBC_URL))
-                throw new IllegalArgumentException("'JDBC_URL' missed");
+                throw new BeeDataSourceConfigException("'JDBC_URL' missed");
             if (isBlank(TEST_TABLE))
-                throw new IllegalArgumentException("'TEST_TABLE' missed");
+                throw new BeeDataSourceConfigException("'TEST_TABLE' missed");
             if (isBlank(TEST_PROCEDURE))
-                throw new IllegalArgumentException("'TEST_PROCEDURE' missed");
+                throw new BeeDataSourceConfigException("'TEST_PROCEDURE' missed");
 
             if (POOL_MAX_ACTIVE <= 0)
-                throw new IllegalArgumentException("'POOL_MAX_ACTIVE' must be more than zero");
+                throw new BeeDataSourceConfigException("'POOL_MAX_ACTIVE' must be more than zero");
             if (POOL_INIT_SIZE < 0)
-                throw new IllegalArgumentException("'POOL_INIT_SIZE' can't be less than zero");
+                throw new BeeDataSourceConfigException("'POOL_INIT_SIZE' can't be less than zero");
             if (POOL_INIT_SIZE > POOL_MAX_ACTIVE)
-                throw new IllegalArgumentException("'POOL_INIT_SIZE' must be less than 'POOL_MAX_ACTIVE'");
+                throw new BeeDataSourceConfigException("'POOL_INIT_SIZE' must be less than 'POOL_MAX_ACTIVE'");
         } finally {
             if (fileStream != null) {
                 try {

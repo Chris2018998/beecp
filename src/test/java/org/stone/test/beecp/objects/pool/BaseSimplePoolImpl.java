@@ -43,32 +43,27 @@ public class BaseSimplePoolImpl implements BeeConnectionPool {
         return new MockXaConnection(new MockConnection(), null);
     }
 
+
     public void close() {
-        //do nothing
+    }
+
+    public boolean suspendPool() {
+        return false;
+    }
+
+    public boolean resumePool() {
+        return false;
     }
 
     public boolean isClosed() {
         return false;
     }
 
-    public boolean isReady() {
-        return false;
+    public void enableLogPrinter(boolean enable) {
     }
 
-    public void enableLogPrint(boolean indicator) {
+    public void enableLogCache(boolean enable) {
         //do nothing
-    }
-
-    public boolean isEnabledLogPrint() {
-        return false;
-    }
-
-    public void enableMethodExecutionLogCache(boolean enable) {
-        //do nothing
-    }
-
-    public boolean isEnabledMethodExecutionLogCache() {
-        return false;
     }
 
     public boolean cancelStatement(String logId) {
@@ -80,15 +75,14 @@ public class BaseSimplePoolImpl implements BeeConnectionPool {
      *
      * @param type is log type to query
      */
-    public List<BeeMethodExecutionLog> getMethodExecutionLog(int type) {
+    public List<BeeMethodLog> getLogs(int type) {
         return Collections.emptyList();
     }
 
     /**
      * Clear All logs in log collector.
      */
-    public List<BeeMethodExecutionLog> clearMethodExecutionLog(int type) {
-        return null;
+    public void clearLogs(int type) {
     }
 
     /**
@@ -96,7 +90,7 @@ public class BaseSimplePoolImpl implements BeeConnectionPool {
      *
      * @param handler to handle method logs
      */
-    public void setMethodExecutionListener(BeeMethodExecutionListener handler) {
+    public void changeLogListener(BeeMethodLogListener handler) {
 
     }
 

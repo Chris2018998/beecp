@@ -12,7 +12,7 @@ package org.stone.test.beecp.config;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.BeeDataSourceConfigException;
+import org.stone.beecp.exception.BeeDataSourceConfigException;
 import org.stone.test.beecp.driver.MockDriver;
 import org.stone.test.beecp.objects.driver.TestDriver_NoDefaultConstructor;
 

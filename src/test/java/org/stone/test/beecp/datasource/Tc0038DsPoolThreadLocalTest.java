@@ -36,6 +36,8 @@ public class Tc0038DsPoolThreadLocalTest {
         config.setUseThreadLocal(false);
 
         try (BeeDataSource ds = new BeeDataSource(config)) {
+            Assertions.assertFalse(ds.getPoolMonitorVo().useThreadLocal());
+
             Object dsPool = getFieldValue(ds, "pool");
             Assertions.assertNull(getFieldValue(dsPool, "threadLocal"));
 
@@ -53,6 +55,8 @@ public class Tc0038DsPoolThreadLocalTest {
         config.setUseThreadLocal(true);
 
         try (BeeDataSource ds = new BeeDataSource(config)) {
+            Assertions.assertTrue(ds.getPoolMonitorVo().useThreadLocal());
+
             Object dsPool = getFieldValue(ds, "pool");
             ThreadLocal<WeakReference<Object>> threadLocal = (ThreadLocal<WeakReference<Object>>) getFieldValue(dsPool, "threadLocal");
             Assertions.assertNotNull(threadLocal);

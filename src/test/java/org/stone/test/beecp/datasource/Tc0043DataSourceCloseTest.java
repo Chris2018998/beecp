@@ -13,9 +13,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
+import org.stone.beecp.BeeMethodLog;
+import org.stone.beecp.exception.BeeDataSourcePoolHasClosedException;
+import org.stone.test.beecp.objects.listener.MockMethodExecutionListener1;
 
-import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 import static org.stone.test.beecp.config.DsConfigFactory.createDefault;
 
@@ -25,40 +29,163 @@ import static org.stone.test.beecp.config.DsConfigFactory.createDefault;
 public class Tc0043DataSourceCloseTest {
 
     @Test
-    public void testDatasourceClose() throws SQLException {
-        BeeDataSource ds1 = new BeeDataSource();
-        Assertions.assertTrue(ds1.isClosed());
-        ds1.close();//no impact
-        Assertions.assertTrue(ds1.isClosed());
-        Assertions.assertFalse(ds1.isReady());
+    public void testDatasourceClose() throws Exception {
+        String poolClosedDesc = "Pool has been closed";
+        String poolClosedExceptionMsg = "No operations allowed on closed pool";
 
-        BeeDataSource ds2 = null;
+        BeeDataSource ds = new BeeDataSource(createDefault());
+        Assertions.assertFalse(ds.isClosed());
+        long targetTime = System.nanoTime() + TimeUnit.SECONDS.toNanos(1L);
+        DsCloseThread thread1 = new DsCloseThread(ds, targetTime);
+        DsCloseThread thread2 = new DsCloseThread(ds, targetTime);
+        thread1.start();
+        thread2.start();
+        thread1.join();
+        thread2.join();
+        Assertions.assertTrue(ds.isClosed());
+        Assertions.assertEquals(poolClosedDesc, ds.toString());
+
         try {
-            BeeDataSourceConfig config = createDefault();
-            ds2 = new BeeDataSource(config);
-            Assertions.assertTrue(ds2.isReady());
-            Assertions.assertFalse(ds2.isClosed());
-            Assertions.assertTrue(ds2.getPoolMonitorVo().isReady());
-            Assertions.assertFalse(ds2.getPoolMonitorVo().isClosed());
+            ds.suspend();
+            Assertions.fail("[testDatasourceClose]test failed");
+        } catch (SQLException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolHasClosedException.class, e);
+            Assertions.assertEquals(poolClosedExceptionMsg, e.getMessage());
+        }
 
-            try (Connection ignored = ds2.getConnection()) {
-                Assertions.assertFalse(ds2.isClosed());
-            }
-            ds2.close();
-            Assertions.assertTrue(ds2.isClosed());
-            Assertions.assertFalse(ds2.isReady());
-            Assertions.assertTrue(ds2.getPoolMonitorVo().isClosed());
-            Assertions.assertFalse(ds2.getPoolMonitorVo().isReady());
+        try {
+            ds.resume();
+            Assertions.fail("[testDatasourceClose]test failed");
+        } catch (SQLException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolHasClosedException.class, e);
+            Assertions.assertEquals(poolClosedExceptionMsg, e.getMessage());
+        }
 
-            try (Connection ignored = ds2.getConnection()) {
-                Assertions.fail("[testDatasourceClose]Test failed");
-            } catch (SQLException ee) {
-                Assertions.assertEquals("Pool has been closed or is restarting", ee.getMessage());
-            }
-        } finally {
-            if (ds2 != null && !ds2.isClosed()) {
-                ds2.close();
-            }
+        try {
+            ds.restart(true);
+            Assertions.fail("[testDatasourceClose]test failed");
+        } catch (SQLException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolHasClosedException.class, e);
+            Assertions.assertEquals(poolClosedExceptionMsg, e.getMessage());
+        }
+
+        try {
+            ds.restart(true, new BeeDataSourceConfig());
+            Assertions.fail("[testDatasourceClose]test failed");
+        } catch (SQLException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolHasClosedException.class, e);
+            Assertions.assertEquals(poolClosedExceptionMsg, e.getMessage());
+        }
+
+        try {
+            ds.enableLogPrinter(false);
+            Assertions.fail("[testDatasourceClose]test failed");
+        } catch (SQLException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolHasClosedException.class, e);
+            Assertions.assertEquals(poolClosedExceptionMsg, e.getMessage());
+        }
+
+        try {
+            ds.enableLogCache(false);
+            Assertions.fail("[testDatasourceClose]test failed");
+        } catch (SQLException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolHasClosedException.class, e);
+            Assertions.assertEquals(poolClosedExceptionMsg, e.getMessage());
+        }
+
+        try {
+            ds.changeLogListener(new MockMethodExecutionListener1());
+            Assertions.fail("[testDatasourceClose]test failed");
+        } catch (SQLException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolHasClosedException.class, e);
+            Assertions.assertEquals(poolClosedExceptionMsg, e.getMessage());
+        }
+
+        try {
+            ds.getLogs(BeeMethodLog.Type_Pool_Log);
+            Assertions.fail("[testDatasourceClose]test failed");
+        } catch (SQLException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolHasClosedException.class, e);
+            Assertions.assertEquals(poolClosedExceptionMsg, e.getMessage());
+        }
+
+        try {
+            ds.clearLogs(BeeMethodLog.Type_Pool_Log);
+            Assertions.fail("[testDatasourceClose]test failed");
+        } catch (SQLException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolHasClosedException.class, e);
+            Assertions.assertEquals(poolClosedExceptionMsg, e.getMessage());
+        }
+
+        try {
+            ds.clearLogs(BeeMethodLog.Type_Pool_Log);
+            Assertions.fail("[testDatasourceClose]test failed");
+        } catch (SQLException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolHasClosedException.class, e);
+            Assertions.assertEquals(poolClosedExceptionMsg, e.getMessage());
+        }
+
+        try {
+            ds.cancelStatement(null);
+            Assertions.fail("[testDatasourceClose]test failed");
+        } catch (SQLException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolHasClosedException.class, e);
+            Assertions.assertEquals(poolClosedExceptionMsg, e.getMessage());
+        }
+
+        try {
+            ds.enableLogPrinter(true);
+            Assertions.fail("[testDatasourceClose]test failed");
+        } catch (SQLException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolHasClosedException.class, e);
+            Assertions.assertEquals(poolClosedExceptionMsg, e.getMessage());
+        }
+
+        try {
+            ds.getConnection();
+            Assertions.fail("[testDatasourceClose]test failed");
+        } catch (SQLException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolHasClosedException.class, e);
+            Assertions.assertEquals(poolClosedExceptionMsg, e.getMessage());
+        }
+
+        try {
+            ds.getConnection("test", "test");
+            Assertions.fail("[testDatasourceClose]test failed");
+        } catch (SQLException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolHasClosedException.class, e);
+            Assertions.assertEquals(poolClosedExceptionMsg, e.getMessage());
+        }
+
+        try {
+            ds.getXAConnection();
+            Assertions.fail("[testDatasourceClose]test failed");
+        } catch (SQLException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolHasClosedException.class, e);
+            Assertions.assertEquals(poolClosedExceptionMsg, e.getMessage());
+        }
+
+        try {
+            ds.getXAConnection("test", "test");
+            Assertions.fail("[testDatasourceClose]test failed");
+        } catch (SQLException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolHasClosedException.class, e);
+            Assertions.assertEquals(poolClosedExceptionMsg, e.getMessage());
+        }
+    }
+
+    private static class DsCloseThread extends Thread {
+        private BeeDataSource ds;
+        private long delayToTime;
+
+        public DsCloseThread(BeeDataSource ds, long delayToTime) {
+            this.ds = ds;
+            this.delayToTime = delayToTime;
+        }
+
+        public void run() {
+            LockSupport.parkNanos(System.nanoTime() - delayToTime);
+            ds.close();
         }
     }
 }

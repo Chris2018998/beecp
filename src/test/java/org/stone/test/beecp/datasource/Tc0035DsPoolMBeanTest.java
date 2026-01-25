@@ -11,9 +11,10 @@ package org.stone.test.beecp.datasource;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.stone.beecp.BeeConnectionPoolMonitorVo;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.pool.FastConnectionPoolMBean;
+import org.stone.beecp.pool.FastConnectionPoolMXBean;
 import org.stone.test.base.LogCollector;
 import org.stone.test.beecp.objects.BeeCPHello;
 
@@ -42,8 +43,8 @@ public class Tc0035DsPoolMBeanTest {
         config.setInitialSize(initialSize);
         config.setSemaphoreSize(semaphoreSize);
 
-        String name1 = "FastConnectionPool:type=BeeCP(" + poolName + ")";
-        String name2 = "BeeDataSourceConfig:type=BeeCP(" + poolName + ")-config";
+        String name1 = String.format("org.stone.beecp.pool.FastConnectionPool:type=BeeCP(%s)", poolName);
+        String name2 = String.format("org.stone.beecp.BeeDataSourceConfig:type=BeeCP(%s)-config", poolName);
         ObjectName jmxRegName1 = new ObjectName(name1);
         ObjectName jmxRegName2 = new ObjectName(name2);
         MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
@@ -52,20 +53,23 @@ public class Tc0035DsPoolMBeanTest {
             Assertions.assertFalse(mBeanServer.isRegistered(jmxRegName1));
             Assertions.assertFalse(mBeanServer.isRegistered(jmxRegName2));
             Object dsPool = getFieldValue(ds, "pool");
-            Assertions.assertInstanceOf(FastConnectionPoolMBean.class, dsPool);
-            FastConnectionPoolMBean mbean = (FastConnectionPoolMBean) dsPool;
+            Assertions.assertInstanceOf(FastConnectionPoolMXBean.class, dsPool);
+            FastConnectionPoolMXBean mbean = (FastConnectionPoolMXBean) dsPool;
 
-            Assertions.assertEquals(poolName, mbean.getPoolName());
-            Assertions.assertEquals(semaphoreSize, mbean.getSemaphoreSize());
-            Assertions.assertEquals(0, mbean.getSemaphoreAcquiredSize());
-            Assertions.assertEquals(0, mbean.getSemaphoreWaitingSize());
-            Assertions.assertEquals(0, mbean.getTransferWaitingSize());
-            Assertions.assertEquals(maxSize, mbean.getMaxSize());
-            Assertions.assertEquals(initialSize, mbean.getIdleSize());
-            Assertions.assertEquals(0, mbean.getBorrowedSize());
-            Assertions.assertFalse(mbean.isPrintRuntimeLog());
-            mbean.setPrintRuntimeLog(true);
-            Assertions.assertTrue(mbean.isPrintRuntimeLog());
+            BeeConnectionPoolMonitorVo vo = mbean.getPoolMonitorVo();
+            Assertions.assertEquals(poolName, vo.getPoolName());
+            Assertions.assertEquals(semaphoreSize, vo.getSemaphoreSize());
+            Assertions.assertEquals(semaphoreSize, vo.getSemaphoreRemainSize());
+            Assertions.assertEquals(0, vo.getSemaphoreWaitingSize());
+            Assertions.assertEquals(0, vo.getTransferWaitingSize());
+            Assertions.assertEquals(maxSize, vo.getMaxSize());
+            Assertions.assertEquals(initialSize, vo.getIdleSize());
+            Assertions.assertEquals(0, vo.getBorrowedSize());
+            Assertions.assertFalse(vo.isEnabledLogPrinter());
+            mbean.enableLogPrinter(true);
+
+            vo = mbean.getPoolMonitorVo();
+            Assertions.assertTrue(vo.isEnabledLogPrinter());
         }
 
         config.setRegisterMbeans(true);
@@ -79,14 +83,9 @@ public class Tc0035DsPoolMBeanTest {
 
     @Test
     public void testRegisterFail() throws Exception {
-        BeeDataSourceConfig config = createDefault();
-        config.setPrintRuntimeLogs(true);
-        config.setRegisterMbeans(true);
         String poolName = "JMX-POOL";
-        config.setPoolName(poolName);
-
-        String name1 = "FastConnectionPool:type=BeeCP(" + poolName + ")";
-        String name2 = "BeeDataSourceConfig:type=BeeCP(" + poolName + ")-config";
+        String name1 = String.format("org.stone.beecp.BeeDataSourceConfig:type=BeeCP(%s)-config", poolName);
+        String name2 = String.format("org.stone.beecp.pool.FastConnectionPool:type=BeeCP(%s)", poolName);
         ObjectName jmxRegName1 = new ObjectName(name1);
         ObjectName jmxRegName2 = new ObjectName(name2);
         MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
@@ -95,17 +94,22 @@ public class Tc0035DsPoolMBeanTest {
             Assertions.assertNotNull(mBeanServer.registerMBean(new BeeCPHello(), jmxRegName1));
             Assertions.assertNotNull(mBeanServer.registerMBean(new BeeCPHello(), jmxRegName2));
 
+            BeeDataSourceConfig config = createDefault();
+            config.setPoolName(poolName);
+            config.setPrintRuntimeLogs(true);
+            config.setRegisterMbeans(true);
+
             LogCollector logCollector = LogCollector.startLogCollector();
             try (BeeDataSource ignored = new BeeDataSource(config)) {
                 Assertions.assertTrue(mBeanServer.isRegistered(jmxRegName1));
                 Assertions.assertTrue(mBeanServer.isRegistered(jmxRegName2));
             }
             String logs = logCollector.endLogCollector();
-            String msg1 = "BeeCP(" + poolName + ")failed to register jmx-bean:" + name1;
-            String msg2 = "BeeCP(" + poolName + ")failed to register jmx-bean:" + name2;
+            String msg1 = "BeeCP(" + poolName + ")-failed to register a MBean with name:" + name1;
+            String msg2 = "BeeCP(" + poolName + ")-failed to register a MBean with name:" + name2;
+
             Assertions.assertTrue(logs.contains(msg1));
             Assertions.assertTrue(logs.contains(msg2));
-
         } finally {
             if (mBeanServer.isRegistered(jmxRegName1))
                 mBeanServer.unregisterMBean(jmxRegName1);
@@ -122,8 +126,8 @@ public class Tc0035DsPoolMBeanTest {
         String poolName = "JMX-POOL";
         config.setPoolName(poolName);
 
-        String name1 = "FastConnectionPool:type=BeeCP(" + poolName + ")";
-        String name2 = "BeeDataSourceConfig:type=BeeCP(" + poolName + ")-config";
+        String name1 = String.format("org.stone.beecp.pool.FastConnectionPool:type=BeeCP(%s)", poolName);
+        String name2 = String.format("org.stone.beecp.BeeDataSourceConfig:type=BeeCP(%s)-config", poolName);
         ObjectName jmxRegName1 = new ObjectName(name1);
         ObjectName jmxRegName2 = new ObjectName(name2);
         MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
@@ -137,8 +141,8 @@ public class Tc0035DsPoolMBeanTest {
             mBeanServer.unregisterMBean(jmxRegName2);
         }
         String logs = logCollector.endLogCollector();
-        String msg1 = "BeeCP(" + poolName + ")failed to unregister jmx-bean:" + name1;
-        String msg2 = "BeeCP(" + poolName + ")failed to unregister jmx-bean:" + name2;
+        String msg1 = "BeeCP(" + poolName + ")-failed to unregister a MBean with name:" + name1;
+        String msg2 = "BeeCP(" + poolName + ")-failed to unregister a MBean with name:" + name2;
         Assertions.assertTrue(logs.contains(msg1));
         Assertions.assertTrue(logs.contains(msg2));
     }

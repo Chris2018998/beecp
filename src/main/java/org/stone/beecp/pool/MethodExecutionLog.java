@@ -9,24 +9,24 @@
  */
 package org.stone.beecp.pool;
 
-import org.stone.beecp.BeeMethodExecutionLog;
+import org.stone.beecp.BeeMethodLog;
 
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.UUID;
 
 /**
- * Default implementation of {@link BeeMethodExecutionLog}
+ * Default implementation of {@link BeeMethodLog}
  *
  * @author Chris Liao
  */
-public class MethodExecutionLog implements BeeMethodExecutionLog {
+public class MethodExecutionLog implements BeeMethodLog {
     //Method call is in executing
-    static final int Status_Running = 0;
+    static final int State_Running = 0;
     //Method call is successful
-    static final int Status_Successful = 1;
+    static final int State_Successful = 1;
     //Method call is failed
-    static final int Status_Failed = 2;
+    static final int State_Failed = 2;
 
     //Log type
     private final int type;
@@ -45,12 +45,12 @@ public class MethodExecutionLog implements BeeMethodExecutionLog {
     //End time of method call,time unit:milliseconds
     private long endTime;
     //End time of method call,time unit:milliseconds
-    private int status = Status_Running;
+    private int status = State_Running;
 
     //Result object of method call
     private transient Object resultObject;
     //Fail exception when method call
-    private Throwable failCause;
+    private Throwable failureCause;
 
     //A prepared sql or a statement sql.
     private String sql;
@@ -109,15 +109,15 @@ public class MethodExecutionLog implements BeeMethodExecutionLog {
     }
 
     public boolean isRunning() {
-        return this.status == Status_Running;
+        return this.status == State_Running;
     }
 
     public boolean isSuccessful() {
-        return this.status == Status_Successful;
+        return this.status == State_Successful;
     }
 
     public boolean isException() {
-        return this.status == Status_Failed;
+        return this.status == State_Failed;
     }
 
     public boolean isSlow() {
@@ -148,8 +148,8 @@ public class MethodExecutionLog implements BeeMethodExecutionLog {
         return resultObject;
     }
 
-    public Throwable getFailCause() {
-        return failCause;
+    public Throwable getFailureCause() {
+        return failureCause;
     }
 
     public String getSql() {
@@ -195,11 +195,11 @@ public class MethodExecutionLog implements BeeMethodExecutionLog {
         this.statement = null;
         this.endTime = System.currentTimeMillis();
         if (result instanceof Throwable) {
-            this.failCause = (Throwable) result;
-            this.status = Status_Failed;
+            this.failureCause = (Throwable) result;
+            this.status = State_Failed;
         } else {
             this.resultObject = result;
-            this.status = Status_Successful;
+            this.status = State_Successful;
         }
     }
 

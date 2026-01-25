@@ -12,7 +12,7 @@ package org.stone.test.beecp.config;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.BeeDataSourceConfigException;
+import org.stone.beecp.exception.BeeDataSourceConfigException;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -25,27 +25,27 @@ public class Tc0020MethodExecutionLogCacheTest {
     @Test
     public void testSetAndGet() {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
-        Assertions.assertFalse(config.isEnableMethodExecutionLogCache());//default check
-        config.setEnableMethodExecutionLogCache(true);
-        Assertions.assertTrue(config.isEnableMethodExecutionLogCache());//default check
+        Assertions.assertFalse(config.isEnableLogCache());//default check
+        config.setEnableLogCache(true);
+        Assertions.assertTrue(config.isEnableLogCache());//default check
 
         //jdbcCallLogCacheSize
-        Assertions.assertEquals(1000, config.getMethodExecutionLogCacheSize());//default check
-        config.setMethodExecutionLogCacheSize(500);
-        Assertions.assertEquals(500, config.getMethodExecutionLogCacheSize());
+        Assertions.assertEquals(1000, config.getLogCacheSize());//default check
+        config.setLogCacheSize(500);
+        Assertions.assertEquals(500, config.getLogCacheSize());
         try {
-            config.setMethodExecutionLogCacheSize(0);
+            config.setLogCacheSize(0);
             fail("[testSetAndGet]Setting test failed on configuration item[log-cache-size]");
         } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given value for configuration item 'method-execution-log-cache-size' must be greater than zero", e.getMessage());
         }
         try {
-            config.setMethodExecutionLogCacheSize(-1);
+            config.setLogCacheSize(-1);
             fail("[testSetAndGet]Setting test failed on configuration item[log-cache-size]");
         } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given value for configuration item 'method-execution-log-cache-size' must be greater than zero", e.getMessage());
         }
-        Assertions.assertEquals(500, config.getMethodExecutionLogCacheSize());//not changed check
+        Assertions.assertEquals(500, config.getLogCacheSize());//not changed check
 
         //slowConnectionGetThreshold
         Assertions.assertEquals(30000L, config.getSlowConnectionThreshold());//default check
@@ -76,41 +76,41 @@ public class Tc0020MethodExecutionLogCacheTest {
         Assertions.assertEquals(0L, config.getSlowSQLThreshold());//not changed check
 
         //jdbcCallLogTimeout
-        Assertions.assertEquals(180000L, config.getMethodExecutionLogTimeout());//default check
-        config.setMethodExecutionLogTimeout(5000L);
-        Assertions.assertEquals(5000L, config.getMethodExecutionLogTimeout());
+        Assertions.assertEquals(180000L, config.getLogTimeout());//default check
+        config.setLogTimeout(5000L);
+        Assertions.assertEquals(5000L, config.getLogTimeout());
         try {
-            config.setMethodExecutionLogTimeout(0L);
+            config.setLogTimeout(0L);
             fail("[testSetAndGet]Setting test failed on configuration item[log-timeout]");
         } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given value for configuration item 'method-execution-log-timeout' must be greater than zero", e.getMessage());
         }
         try {
-            config.setMethodExecutionLogTimeout(-1L);
+            config.setLogTimeout(-1L);
             fail("[testSetAndGet]Setting test failed on configuration item[log-timeout]");
         } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given value for configuration item 'method-execution-log-timeout' must be greater than zero", e.getMessage());
         }
-        Assertions.assertEquals(5000L, config.getMethodExecutionLogTimeout());//not changed check
+        Assertions.assertEquals(5000L, config.getLogTimeout());//not changed check
 
 
         //jdbcCallLogTimeoutInterval
-        Assertions.assertEquals(180000L, config.getIntervalOfClearTimeoutExecutionLogs());//default check
-        config.setIntervalOfClearTimeoutExecutionLogs(5000L);
-        Assertions.assertEquals(5000L, config.getIntervalOfClearTimeoutExecutionLogs());
+        Assertions.assertEquals(180000L, config.getIntervalOfClearTimeoutLogs());//default check
+        config.setIntervalOfClearTimeoutLogs(5000L);
+        Assertions.assertEquals(5000L, config.getIntervalOfClearTimeoutLogs());
         try {
-            config.setIntervalOfClearTimeoutExecutionLogs(0L);
+            config.setIntervalOfClearTimeoutLogs(0L);
             fail("[testSetAndGet]Setting test failed on configuration item[log-clear-interval]");
         } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given value for configuration item 'interval-of-clear-timeout-execution-logs' must be greater than zero", e.getMessage());
         }
         try {
-            config.setIntervalOfClearTimeoutExecutionLogs(-1L);
+            config.setIntervalOfClearTimeoutLogs(-1L);
             fail("[testSetAndGet]Setting test failed on configuration item[log-clear-interval]");
         } catch (BeeDataSourceConfigException e) {
             Assertions.assertEquals("The given value for configuration item 'interval-of-clear-timeout-execution-logs' must be greater than zero", e.getMessage());
         }
-        Assertions.assertEquals(5000L, config.getIntervalOfClearTimeoutExecutionLogs());//not changed check
+        Assertions.assertEquals(5000L, config.getIntervalOfClearTimeoutLogs());//not changed check
     }
 
 //    @Test

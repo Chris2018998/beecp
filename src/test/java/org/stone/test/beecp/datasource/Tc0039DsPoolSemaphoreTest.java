@@ -47,7 +47,7 @@ public class Tc0039DsPoolSemaphoreTest {
 
             //2: attempt to get connection in current thread
             if (waitUtilWaiting(firstBorrower)) {//block 1 second in pool instance creation
-                Assertions.assertEquals(1, ds.getPoolMonitorVo().getSemaphoreAcquiredSize());
+                Assertions.assertEquals(0, ds.getPoolMonitorVo().getSemaphoreRemainSize());
 
                 BorrowThread secondBorrower = new BorrowThread(ds);
                 secondBorrower.start();
@@ -74,7 +74,7 @@ public class Tc0039DsPoolSemaphoreTest {
             BorrowThread firstBorrower = new BorrowThread(ds);
             firstBorrower.start();
             if (waitUtilWaiting(firstBorrower)) {//block 1 second in pool instance creation
-                Assertions.assertEquals(1, ds.getPoolMonitorVo().getSemaphoreAcquiredSize());
+                Assertions.assertEquals(0, ds.getPoolMonitorVo().getSemaphoreRemainSize());
 
                 Object dsPool = getFieldValue(ds, "pool");
                 InterruptableSemaphore semaphore = (InterruptableSemaphore) TestUtil.getFieldValue(dsPool, "semaphore");

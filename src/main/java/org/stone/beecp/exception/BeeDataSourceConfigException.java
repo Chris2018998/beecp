@@ -1,0 +1,33 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * Copyright(C) Chris2018998,All rights reserved.
+ *
+ * Project owner contact:Chris2018998@tom.com.
+ *
+ * Project Licensed under Apache License v2.0.
+ */
+package org.stone.beecp.exception;
+
+import org.stone.beecp.BeeDataSourceConfig;
+
+/**
+ * Throws this exception when sets illegal arguments to {@link BeeDataSourceConfig} or check failed by calling {@link BeeDataSourceConfig#check()}.
+ *
+ * @author Chris Liao
+ * @version 1.0
+ */
+public final class BeeDataSourceConfigException extends RuntimeException {
+
+    public BeeDataSourceConfigException(String s) {
+        super(s);
+    }
+
+    public BeeDataSourceConfigException(Throwable cause) {
+        super(cause);
+    }
+
+    public BeeDataSourceConfigException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}

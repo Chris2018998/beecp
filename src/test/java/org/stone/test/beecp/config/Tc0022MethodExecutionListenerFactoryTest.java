@@ -12,7 +12,7 @@ package org.stone.test.beecp.config;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.BeeDataSourceConfigException;
+import org.stone.beecp.exception.BeeDataSourceConfigException;
 import org.stone.test.beecp.objects.factory.MockConnectionFactory;
 import org.stone.test.beecp.objects.listener.MockMethodExecutionListenerFactory1;
 import org.stone.test.beecp.objects.listener.MockMethodExecutionListenerFactory2;
@@ -27,23 +27,23 @@ public class Tc0022MethodExecutionListenerFactoryTest {
     @Test
     public void testSetAndGet() {
         BeeDataSourceConfig config = new BeeDataSourceConfig();
-        Assertions.assertNull(config.getMethodExecutionListener());//default check
-        config.setMethodExecutionListenerFactory(new MockMethodExecutionListenerFactory1());
-        Assertions.assertNotNull(config.getMethodExecutionListenerFactory());//default check
-        config.setMethodExecutionListenerFactory(null);
-        Assertions.assertNull(config.getMethodExecutionListenerFactory());//default check
+        Assertions.assertNull(config.getLogListener());//default check
+        config.setLogListenerFactory(new MockMethodExecutionListenerFactory1());
+        Assertions.assertNotNull(config.getLogListenerFactory());//default check
+        config.setLogListenerFactory(null);
+        Assertions.assertNull(config.getLogListenerFactory());//default check
 
-        Assertions.assertNull(config.getMethodExecutionListenerFactoryClass());//default check
-        config.setMethodExecutionListenerFactoryClass(MockMethodExecutionListenerFactory1.class);
-        Assertions.assertNotNull(config.getMethodExecutionListenerFactoryClass());
-        config.setMethodExecutionListenerFactoryClass(null);
-        Assertions.assertNull(config.getMethodExecutionListenerFactoryClass());
+        Assertions.assertNull(config.getLogListenerFactoryClass());//default check
+        config.setLogListenerFactoryClass(MockMethodExecutionListenerFactory1.class);
+        Assertions.assertNotNull(config.getLogListenerFactoryClass());
+        config.setLogListenerFactoryClass(null);
+        Assertions.assertNull(config.getLogListenerFactoryClass());
 
-        Assertions.assertNull(config.getMethodExecutionListenerFactoryClassName());//default check
-        config.setMethodExecutionListenerFactoryClassName(MockMethodExecutionListenerFactory1.class.getName());
-        Assertions.assertNotNull(config.getMethodExecutionListenerFactoryClassName());
-        config.setMethodExecutionListenerFactoryClassName(null);
-        Assertions.assertNull(config.getMethodExecutionListenerFactoryClassName());
+        Assertions.assertNull(config.getLogListenerFactoryClassName());//default check
+        config.setLogListenerFactoryClassName(MockMethodExecutionListenerFactory1.class.getName());
+        Assertions.assertNotNull(config.getLogListenerFactoryClassName());
+        config.setLogListenerFactoryClassName(null);
+        Assertions.assertNull(config.getLogListenerFactoryClassName());
     }
 
     @Test
@@ -53,10 +53,10 @@ public class Tc0022MethodExecutionListenerFactoryTest {
         //1: instance test
         BeeDataSourceConfig config1 = new BeeDataSourceConfig();
         config1.setConnectionFactory(connectionFactory);
-        config1.setMethodExecutionListenerFactory(new MockMethodExecutionListenerFactory1());
+        config1.setLogListenerFactory(new MockMethodExecutionListenerFactory1());
         try {
             BeeDataSourceConfig checkedOConfig = config1.check();
-            Assertions.assertNotNull(checkedOConfig.getMethodExecutionListener());
+            Assertions.assertNotNull(checkedOConfig.getLogListener());
         } catch (BeeDataSourceConfigException e) {
             Assertions.fail("[testCheckPassed]Test failed");
         }
@@ -64,10 +64,10 @@ public class Tc0022MethodExecutionListenerFactoryTest {
         //2: class test
         BeeDataSourceConfig config2 = new BeeDataSourceConfig();
         config2.setConnectionFactory(connectionFactory);
-        config2.setMethodExecutionListenerFactoryClass(MockMethodExecutionListenerFactory1.class);
+        config2.setLogListenerFactoryClass(MockMethodExecutionListenerFactory1.class);
         try {
             BeeDataSourceConfig checkedOConfig = config2.check();
-            Assertions.assertNotNull(checkedOConfig.getMethodExecutionListener());
+            Assertions.assertNotNull(checkedOConfig.getLogListener());
         } catch (BeeDataSourceConfigException e) {
             Assertions.fail("[testCheckPassed]Test failed");
         }
@@ -75,10 +75,10 @@ public class Tc0022MethodExecutionListenerFactoryTest {
         //3: class name test
         BeeDataSourceConfig config3 = new BeeDataSourceConfig();
         config3.setConnectionFactory(connectionFactory);
-        config3.setMethodExecutionListenerFactoryClassName(MockMethodExecutionListenerFactory1.class.getName());
+        config3.setLogListenerFactoryClassName(MockMethodExecutionListenerFactory1.class.getName());
         try {
             BeeDataSourceConfig checkedOConfig = config3.check();
-            Assertions.assertNotNull(checkedOConfig.getMethodExecutionListener());
+            Assertions.assertNotNull(checkedOConfig.getLogListener());
         } catch (BeeDataSourceConfigException e) {
             Assertions.fail("[testCheckPassed]Test failed");
         }
@@ -91,7 +91,7 @@ public class Tc0022MethodExecutionListenerFactoryTest {
         //1:Class test（No parameterized constructor）
         BeeDataSourceConfig config1 = new BeeDataSourceConfig();
         config1.setConnectionFactory(connectionFactory);
-        config1.setMethodExecutionListenerFactoryClass(MockMethodExecutionListenerFactory2.class);
+        config1.setLogListenerFactoryClass(MockMethodExecutionListenerFactory2.class);
         try {
             config1.check();
             Assertions.fail("[testCheckFailed]Test failed");
@@ -103,7 +103,7 @@ public class Tc0022MethodExecutionListenerFactoryTest {
         //2.1:Class name test（No parameterized constructor）
         BeeDataSourceConfig config21 = new BeeDataSourceConfig();
         config21.setConnectionFactory(connectionFactory);
-        config21.setMethodExecutionListenerFactoryClassName(MockMethodExecutionListenerFactory2.class.getName());
+        config21.setLogListenerFactoryClassName(MockMethodExecutionListenerFactory2.class.getName());
         try {
             config21.check();
             Assertions.fail("[testCheckFailed]Test failed");
@@ -115,7 +115,7 @@ public class Tc0022MethodExecutionListenerFactoryTest {
         //2.2 class not found
         BeeDataSourceConfig config22 = new BeeDataSourceConfig();
         config22.setConnectionFactory(connectionFactory);
-        config22.setMethodExecutionListenerFactoryClassName(MockMethodExecutionListenerFactory2.class.getName() + "_NotFound");
+        config22.setLogListenerFactoryClassName(MockMethodExecutionListenerFactory2.class.getName() + "_NotFound");
         try {
             config22.check();
             Assertions.fail("[testCheckFailed]Test failed");
@@ -127,7 +127,7 @@ public class Tc0022MethodExecutionListenerFactoryTest {
         //2.3 class type check
         BeeDataSourceConfig config23 = new BeeDataSourceConfig();
         config23.setConnectionFactory(connectionFactory);
-        config23.setMethodExecutionListenerFactoryClassName(String.class.getName());//not implementation
+        config23.setLogListenerFactoryClassName(String.class.getName());//not implementation
         try {
             config23.check();
             Assertions.fail("[testCheckFailed]Test failed");
@@ -142,7 +142,7 @@ public class Tc0022MethodExecutionListenerFactoryTest {
         MockConnectionFactory connectionFactory = new MockConnectionFactory();
         BeeDataSourceConfig config1 = new BeeDataSourceConfig();
         config1.setConnectionFactory(connectionFactory);
-        config1.setMethodExecutionListenerFactory(new MockMethodExecutionListenerFactory3());
+        config1.setLogListenerFactory(new MockMethodExecutionListenerFactory3());
         try {
             config1.check();
             Assertions.fail("[testCheckFailed]Test failed");
@@ -152,7 +152,7 @@ public class Tc0022MethodExecutionListenerFactoryTest {
 
         BeeDataSourceConfig config2 = new BeeDataSourceConfig();
         config2.setConnectionFactory(connectionFactory);
-        config2.setMethodExecutionListenerFactoryClass(MockMethodExecutionListenerFactory3.class);
+        config2.setLogListenerFactoryClass(MockMethodExecutionListenerFactory3.class);
         try {
             config2.check();
             Assertions.fail("[testCheckFailed]Test failed");

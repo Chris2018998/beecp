@@ -10,10 +10,10 @@
 package org.stone.test.beecp.objects.pool;
 
 import org.stone.beecp.*;
-import org.stone.beecp.pool.exception.ConnectionGetForbiddenException;
-import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
-import org.stone.beecp.pool.exception.ConnectionGetTimeoutException;
-import org.stone.beecp.pool.exception.PoolInitializeFailedException;
+import org.stone.beecp.exception.BeeDataSourcePoolNotReadyException;
+import org.stone.beecp.exception.BeeDataSourcePoolStartedFailureException;
+import org.stone.beecp.exception.ConnectionGetInterruptedException;
+import org.stone.beecp.exception.ConnectionGetTimeoutException;
 import org.stone.tools.extension.InterruptableSemaphore;
 
 import javax.sql.XAConnection;
@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.stone.beecp.pool.ConnectionPoolStatics.*;
-import static org.stone.tools.logger.LogPrinterFactory.CommonLogPrinter;
+import static org.stone.tools.LogPrinter.DefaultLogPrinter;
 
 /**
  * JDBC Connection Pool Implementation,which
@@ -54,7 +54,8 @@ public final class MockRawConnectionPool implements BeeConnectionPool {
      * @param config data source configuration
      */
     public void start(BeeDataSourceConfig config) throws SQLException {
-        if (config == null) throw new PoolInitializeFailedException("Data source configuration can't be null");
+        if (config == null)
+            throw new BeeDataSourcePoolStartedFailureException("Data source configuration can't be null");
         this.poolConfig = config.check();
         this.defaultMaxWait = MILLISECONDS.toNanos(poolConfig.getMaxWait());
         this.poolName = poolConfig.getPoolName();
@@ -75,7 +76,7 @@ public final class MockRawConnectionPool implements BeeConnectionPool {
         }
 
         //registerJMX();
-        CommonLogPrinter.info("BeeCP({})has been startup{init size:{},max size:{}, size:{},mode:{},max wait:{}ms},driver:{}}",
+        DefaultLogPrinter.info("BeeCP({})has been startup{init size:{},max size:{}, size:{},mode:{},max wait:{}ms},driver:{}}",
                 poolName,
                 0,
                 0,
@@ -107,7 +108,7 @@ public final class MockRawConnectionPool implements BeeConnectionPool {
     private Connection getConnection(boolean useUsername, String username, String password) throws SQLException {
         try {
             if (poolState.get() != POOL_READY)
-                throw new ConnectionGetForbiddenException("Access forbidden,connection pool was closed or in clearing");
+                throw new BeeDataSourcePoolNotReadyException("Access forbidden,connection pool was closed or in clearing");
             if (borrowSemaphore.tryAcquire(defaultMaxWait, NANOSECONDS)) {
                 if (useUsername) {
                     if (isRawXaConnFactory) {
@@ -135,7 +136,7 @@ public final class MockRawConnectionPool implements BeeConnectionPool {
     private XAConnection getXAConnection(boolean useUsername, String username, String password) throws SQLException {
         try {
             if (poolState.get() != POOL_READY)
-                throw new ConnectionGetForbiddenException("Access forbidden,connection pool was closed or in clearing");
+                throw new BeeDataSourcePoolNotReadyException("Access forbidden,connection pool was closed or in clearing");
 
             if (borrowSemaphore.tryAcquire(defaultMaxWait, NANOSECONDS)) {
                 if (isRawXaConnFactory) {
@@ -167,10 +168,6 @@ public final class MockRawConnectionPool implements BeeConnectionPool {
             poolState.compareAndSet(POOL_READY, POOL_CLOSED);
     }
 
-    public List<Thread> interruptWaitingThreads() {
-        return null;
-    }
-
     /**
      * is pool shutdown
      */
@@ -180,6 +177,22 @@ public final class MockRawConnectionPool implements BeeConnectionPool {
 
     public boolean isReady() {
         return poolState.get() == POOL_READY;
+    }
+
+    public boolean isSuspended() {
+        return poolState.get() == POOL_SUSPENDED;
+    }
+
+    public boolean suspendPool() {
+        return poolState.compareAndSet(POOL_READY, POOL_SUSPENDED);
+    }
+
+    public boolean resumePool() {
+        return poolState.compareAndSet(POOL_SUSPENDED, POOL_READY);
+    }
+
+    public List<Thread> interruptWaitingThreads() {
+        return null;
     }
 
     //******************************** JMX **************************************//
@@ -195,18 +208,6 @@ public final class MockRawConnectionPool implements BeeConnectionPool {
         return this.poolName;
     }
 
-    public int getTotalSize() {
-        return 0;
-    }
-
-    public int getIdleSize() {
-        return 0;
-    }
-
-    public int getBorrowedSize() {
-        return 0;
-    }
-
     public int getSemaphoreAcquiredSize() {
         return poolConfig.getSemaphoreSize() - borrowSemaphore.availablePermits();
     }
@@ -215,16 +216,12 @@ public final class MockRawConnectionPool implements BeeConnectionPool {
         return borrowSemaphore.getQueueLength();
     }
 
-    public int getTransferWaitingSize() {
-        return 0;
-    }
-
     //set pool info debug switch
-    public void enableLogPrint(boolean enabledDebug) {
+    public void enableLogPrinter(boolean enabledDebug) {
         //do nothing
     }
 
-    public void enableMethodExecutionLogCache(boolean enable) {
+    public void enableLogCache(boolean enable) {
         //do nothing
     }
 
@@ -232,35 +229,27 @@ public final class MockRawConnectionPool implements BeeConnectionPool {
         return false;
     }
 
-    public List<BeeMethodExecutionLog> getMethodExecutionLog(int type) {
+    public List<BeeMethodLog> getLogs(int type) {
         return Collections.emptyList();
     }
 
-    public List<BeeMethodExecutionLog> clearMethodExecutionLog(int type) {
-        return null;
+    public void clearLogs(int type) {
     }
 
-    public boolean isEnabledLogPrint() {
-        return false;
-    }
-
-    public boolean isEnabledMethodExecutionLogCache() {
-        return false;
-    }
-
-    public void setMethodExecutionListener(BeeMethodExecutionListener handler) {
+    public void changeLogListener(BeeMethodLogListener handler) {
 
     }
 
     public BeeConnectionPoolMonitorVo getPoolMonitorVo() {
         monitorVo.setPoolName(this.poolName);
-        monitorVo.setPoolMode(poolMode);
+        monitorVo.setPoolMode(poolConfig.isFairMode());
         monitorVo.setPoolState(poolState.get());
         monitorVo.setMaxSize(poolConfig.getMaxActive());
-        monitorVo.setIdleSize(getIdleSize());
-        monitorVo.setBorrowedSize(getBorrowedSize());
+
+        monitorVo.setIdleSize(0);
+        monitorVo.setBorrowedSize(0);
         monitorVo.setSemaphoreWaitingSize(getSemaphoreWaitingSize());
-        monitorVo.setTransferWaitingSize(getTransferWaitingSize());
+        monitorVo.setTransferWaitingSize(0);
         return monitorVo;
     }
 

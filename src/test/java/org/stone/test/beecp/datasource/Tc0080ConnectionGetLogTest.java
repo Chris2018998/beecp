@@ -12,7 +12,7 @@ package org.stone.test.beecp.datasource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeDataSource;
-import org.stone.beecp.BeeMethodExecutionLog;
+import org.stone.beecp.BeeMethodLog;
 import org.stone.test.beecp.objects.factory.MockConnectionFactory;
 import org.stone.test.beecp.objects.factory.MockXaConnectionFactory;
 import org.stone.test.beecp.objects.listener.MockMethodExecutionListener1;
@@ -24,7 +24,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.stone.beecp.BeeMethodExecutionLog.Type_Connection_Get;
+import static org.stone.beecp.BeeMethodLog.Type_Pool_Log;
 
 /**
  * @author Chris Liao
@@ -35,9 +35,9 @@ public class Tc0080ConnectionGetLogTest {
     public void testExceptionLog() throws SQLException {
         //1: get connection
         try (BeeDataSource ds = new BeeDataSource()) {
+            ds.setEnableLogCache(true);
+            ds.setLogListener(new MockMethodExecutionListener1());
 
-            ds.setEnableMethodExecutionLogCache(true);
-            ds.setMethodExecutionListener(new MockMethodExecutionListener1());
             MockConnectionFactory connectionFactory = new MockConnectionFactory();
             connectionFactory.setFailCause(new SQLException("Failed to connect database"));
             ds.setConnectionFactory(connectionFactory);
@@ -45,20 +45,19 @@ public class Tc0080ConnectionGetLogTest {
             try (Connection ignored = ds.getConnection()) {
                 Assertions.fail("[testConnectionExceptionLog]Test failed");
             } catch (SQLException e) {
-                Assertions.assertTrue(ds.isEnabledMethodExecutionLogCache());
-                Assertions.assertTrue(ds.getPoolMonitorVo().isEnabledMethodExecutionLogCache());
-                List<BeeMethodExecutionLog> logList = ds.getMethodExecutionLog(Type_Connection_Get);
+                Assertions.assertTrue(ds.getPoolMonitorVo().isEnabledLogCache());
+                List<BeeMethodLog> logList = ds.getLogs(Type_Pool_Log);
                 Assertions.assertEquals(1, logList.size());
-                BeeMethodExecutionLog log = logList.get(0);
+                BeeMethodLog log = logList.get(0);
                 Assertions.assertNotNull(log.getId());
-                Assertions.assertEquals(Type_Connection_Get, log.getType());
+                Assertions.assertEquals(Type_Pool_Log, log.getType());
 
                 Assertions.assertEquals("FastConnectionPool.getConnection()", log.getMethod());
                 Assertions.assertFalse(log.isSuccessful());
                 Assertions.assertTrue(log.isException());
                 Assertions.assertFalse(log.isRunning());
                 Assertions.assertNull(log.getResult());
-                Assertions.assertNotNull(log.getFailCause());
+                Assertions.assertNotNull(log.getFailureCause());
 
                 Assertions.assertTrue(log.getStartTime() != 0);
                 Assertions.assertTrue(log.getEndTime() != 0);
@@ -68,8 +67,8 @@ public class Tc0080ConnectionGetLogTest {
 
         //2: get XA connection
         try (BeeDataSource ds = new BeeDataSource()) {
-            ds.setMethodExecutionListener(new MockMethodExecutionListener1());
-            ds.setEnableMethodExecutionLogCache(true);//sync mode
+            ds.setLogListener(new MockMethodExecutionListener1());
+            ds.setEnableLogCache(true);//sync mode
             MockXaConnectionFactory xaConnectionFactory = new MockXaConnectionFactory();
             xaConnectionFactory.setFailCause(new SQLException("Failed to connect database"));
             ds.setXaConnectionFactory(xaConnectionFactory);
@@ -80,12 +79,12 @@ public class Tc0080ConnectionGetLogTest {
                     Assertions.fail("[testConnectionExceptionLog]Test failed");
                 }
             } catch (SQLException e) {
-                Assertions.assertTrue(ds.isEnabledMethodExecutionLogCache());
-                List<BeeMethodExecutionLog> logList = ds.getMethodExecutionLog(Type_Connection_Get);
+                Assertions.assertTrue(ds.getPoolMonitorVo().isEnabledLogCache());
+                List<BeeMethodLog> logList = ds.getLogs(Type_Pool_Log);
                 Assertions.assertEquals(1, logList.size());
-                BeeMethodExecutionLog log = logList.get(0);
+                BeeMethodLog log = logList.get(0);
                 Assertions.assertNotNull(log.getId());
-                Assertions.assertEquals(Type_Connection_Get, log.getType());
+                Assertions.assertEquals(Type_Pool_Log, log.getType());
 
                 Assertions.assertEquals("FastConnectionPool.getXAConnection()", log.getMethod());
                 Assertions.assertTrue(log.isException());
@@ -96,8 +95,8 @@ public class Tc0080ConnectionGetLogTest {
                 Assertions.assertTrue(log.getEndTime() != 0);
                 Assertions.assertTrue(log.getEndTime() >= log.getStartTime());
 
-                logList = ds.clearMethodExecutionLog(Type_Connection_Get);
-                Assertions.assertEquals(1, logList.size());
+                Assertions.assertEquals(1, ds.getLogs(Type_Pool_Log).size());
+                ds.clearLogs(Type_Pool_Log);
             }
         }
     }
@@ -106,8 +105,8 @@ public class Tc0080ConnectionGetLogTest {
     public void testSlowLog() throws Exception {
         //1: get connection
         try (BeeDataSource ds = new BeeDataSource()) {
-            ds.setMethodExecutionListener(new MockMethodExecutionListener1());
-            ds.setEnableMethodExecutionLogCache(true);//sync mode
+            ds.setLogListener(new MockMethodExecutionListener1());
+            ds.setEnableLogCache(true);//sync mode
             ds.setSlowConnectionThreshold(1L);
             MockConnectionFactory connectionFactory = new MockConnectionFactory();
             connectionFactory.setNeedPark(true);
@@ -117,13 +116,12 @@ public class Tc0080ConnectionGetLogTest {
             BorrowThread borrowThread = new BorrowThread(ds);
             borrowThread.start();
             borrowThread.join();
-
-            Assertions.assertTrue(ds.isEnabledMethodExecutionLogCache());
-            List<BeeMethodExecutionLog> logList = ds.getMethodExecutionLog(Type_Connection_Get);
+            Assertions.assertTrue(ds.getPoolMonitorVo().isEnabledLogCache());
+            List<BeeMethodLog> logList = ds.getLogs(Type_Pool_Log);
             Assertions.assertEquals(1, logList.size());
-            BeeMethodExecutionLog log = logList.get(0);
+            BeeMethodLog log = logList.get(0);
             Assertions.assertNotNull(log.getId());
-            Assertions.assertEquals(Type_Connection_Get, log.getType());
+            Assertions.assertEquals(Type_Pool_Log, log.getType());
             Assertions.assertTrue(log.isSlow());
             Assertions.assertTrue(log.isSuccessful());
             Assertions.assertFalse(log.isException());
@@ -131,8 +129,8 @@ public class Tc0080ConnectionGetLogTest {
 
         //2: get XA connection
         try (BeeDataSource ds = new BeeDataSource()) {
-            ds.setMethodExecutionListener(new MockMethodExecutionListener1());
-            ds.setEnableMethodExecutionLogCache(true);//sync mode
+            ds.setLogListener(new MockMethodExecutionListener1());
+            ds.setEnableLogCache(true);//sync mode
             ds.setSlowConnectionThreshold(1L);
             MockXaConnectionFactory xaConnectionFactory = new MockXaConnectionFactory();
             xaConnectionFactory.setNeedPark(true);
@@ -143,9 +141,9 @@ public class Tc0080ConnectionGetLogTest {
             borrowThread.start();
             borrowThread.join();
 
-            List<BeeMethodExecutionLog> logList = ds.getMethodExecutionLog(Type_Connection_Get);
-            BeeMethodExecutionLog log = logList.get(0);
-            Assertions.assertEquals(Type_Connection_Get, log.getType());
+            List<BeeMethodLog> logList = ds.getLogs(Type_Pool_Log);
+            BeeMethodLog log = logList.get(0);
+            Assertions.assertEquals(Type_Pool_Log, log.getType());
             Assertions.assertTrue(log.isSlow());
         }
     }

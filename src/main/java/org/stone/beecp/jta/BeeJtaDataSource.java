@@ -11,8 +11,8 @@ package org.stone.beecp.jta;
 
 import org.stone.beecp.BeeConnectionPoolMonitorVo;
 import org.stone.beecp.BeeDataSource;
-import org.stone.beecp.BeeMethodExecutionListener;
-import org.stone.beecp.BeeMethodExecutionLog;
+import org.stone.beecp.BeeMethodLog;
+import org.stone.beecp.BeeMethodLogListener;
 
 import javax.sql.DataSource;
 import javax.sql.XAConnection;
@@ -181,49 +181,39 @@ public class BeeJtaDataSource extends TimerTask implements DataSource, AutoClose
     }
 
     //***************************************************************************************************************//
-    //                                         5: runtime logs print(4)                                              //
+    //                                         5: runtime logs print(1)                                              //
     //***************************************************************************************************************//
-    public boolean isEnabledLogPrint() throws SQLException {
+    public void enableLogPrinter(boolean printRuntimeLog) throws SQLException {
         checkDataSource();
-        return ds.isEnabledLogPrint();
-    }
-
-    public void enableLogPrint(boolean printRuntimeLog) throws SQLException {
-        checkDataSource();
-        ds.enableLogPrint(printRuntimeLog);
+        ds.enableLogPrinter(printRuntimeLog);
     }
 
     //***************************************************************************************************************//
-    //                                         6: Method Execution Log Cache(6)                                      //
+    //                                         6: Method Execution Log Cache(4)                                      //
     //***************************************************************************************************************//
-    public boolean isEnabledMethodExecutionLogCache() throws SQLException {
+    public void enableLogCache(boolean enable) throws SQLException {
         checkDataSource();
-        return this.ds.isEnabledMethodExecutionLogCache();
+        this.ds.enableLogCache(enable);
     }
 
-    public void enableMethodExecutionLogCache(boolean enable) throws SQLException {
+    public void changeLogListener(BeeMethodLogListener listener) throws SQLException {
         checkDataSource();
-        this.ds.enableMethodExecutionLogCache(enable);
+        this.ds.changeLogListener(listener);
     }
 
-    public List<BeeMethodExecutionLog> getMethodExecutionLog(int type) throws SQLException {
+    public List<BeeMethodLog> getLogs(int type) throws SQLException {
         checkDataSource();
-        return this.ds.getMethodExecutionLog(type);
+        return this.ds.getLogs(type);
     }
 
-    public List<BeeMethodExecutionLog> clearMethodExecutionLog(int type) throws SQLException {
+    public void clearLogs(int type) throws SQLException {
         checkDataSource();
-        return this.ds.clearMethodExecutionLog(type);
+        this.ds.clearLogs(type);
     }
 
     public boolean cancelStatement(String logId) throws SQLException {
         checkDataSource();
         return this.ds.cancelStatement(logId);
-    }
-
-    public void setMethodExecutionListener(BeeMethodExecutionListener listener) throws SQLException {
-        checkDataSource();
-        this.ds.setMethodExecutionListener(listener);
     }
 
     //***************************************************************************************************************//

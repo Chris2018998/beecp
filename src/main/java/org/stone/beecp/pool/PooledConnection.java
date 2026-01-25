@@ -10,7 +10,7 @@
 package org.stone.beecp.pool;
 
 import org.stone.beecp.BeeConnectionPredicate;
-import org.stone.beecp.pool.exception.ConnectionRecycleException;
+import org.stone.beecp.exception.ConnectionRecycledException;
 
 import javax.transaction.xa.XAResource;
 import java.sql.Connection;
@@ -176,7 +176,7 @@ final class PooledConnection {
      * remove connection from pool,method called by {@link ProxyConnectionBase#abort}
      */
     void abortSelf() {
-        pool.abort(this, DESC_RM_ABORT);
+        pool.abort(this, DESC_RM_CON_ABORT);
     }
 
     /**
@@ -190,8 +190,8 @@ final class PooledConnection {
             this.resetRawConn();
             this.pool.recycle(this);
         } catch (Throwable e) {
-            this.pool.abort(this, DESC_RM_BAD);
-            throw e instanceof SQLException ? (SQLException) e : new ConnectionRecycleException(e);
+            this.pool.abort(this, DESC_RM_CON_BAD);
+            throw e instanceof SQLException ? (SQLException) e : new ConnectionRecycledException(e);
         }
     }
 
@@ -203,12 +203,12 @@ final class PooledConnection {
      * call back while remove pooledConnection from pool
      */
     void onRemove(String msg) {
-        pool.logPrinter.info("BeeCP({}))begin to remove a pooled connection:{} for cause:{}", pool.getPoolName(), this, msg);
+        pool.logPrinter.info("BeeCP({})-begin to remove a pooled connection:{} for cause:{}", pool.poolName, this, msg);
 
         try {
             this.resetRawConn();
         } catch (Throwable e) {
-            pool.logPrinter.warn("BeeCP({})Resetting connection failed", pool.getPoolName(), e);
+            pool.logPrinter.warn("BeeCP({})-resetting connection failed", pool.poolName, e);
         } finally {
             oclose(this.rawConn);
 
@@ -271,20 +271,20 @@ final class PooledConnection {
         if (predicate != null) {
             String msg = predicate.evictionTest(e);
             if (isNotBlank(msg)) {
-                pool.logPrinter.warn("BeeCP({})Connection has been broken because of predicate result({})", pool.getPoolName(), msg);
+                pool.logPrinter.warn("BeeCP({})-connection has been broken because of predicate result({})", pool.poolName, msg);
                 proxyInUsing.abort(null);//remove connection from pool and add re-try count for other borrowers
             }
         } else {
             int code = e.getErrorCode();
             if (code != 0 && sqlExceptionCodeList != null && sqlExceptionCodeList.contains(code)) {
-                pool.logPrinter.warn("BeeCP({})Connection has been broken because of error code({})", pool.getPoolName(), code);
+                pool.logPrinter.warn("BeeCP({})-connection has been broken because of error code({})", pool.poolName, code);
                 proxyInUsing.abort(null);//remove connection from pool and add re-try count for other borrowers
                 return;
             }
 
             String state = e.getSQLState();
             if (state != null && sqlExceptionStateList != null && sqlExceptionStateList.contains(state)) {
-                pool.logPrinter.warn("BeeCP({})Connection has been broken because of SQL state({})", pool.getPoolName(), state);
+                pool.logPrinter.warn("BeeCP({})-connection has been broken because of SQL state({})", pool.poolName, state);
                 proxyInUsing.abort(null);//remove connection from pool and add re-try count for other borrowers
             }
         }

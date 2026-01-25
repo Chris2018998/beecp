@@ -117,7 +117,7 @@ public class Tc0063ConnectionEvictionTest {
             BeeConnectionPoolMonitorVo vo = ds.getPoolMonitorVo();
             Assertions.assertEquals("test", vo.getPoolName());
             Assertions.assertEquals(4, vo.getMaxSize());
-            Assertions.assertEquals("compete", vo.getPoolMode());
+            Assertions.assertFalse(vo.isFairMode());
             Assertions.assertTrue(vo.isReady());
 
             Assertions.assertEquals(0, vo.getBorrowedSize());

@@ -9,6 +9,7 @@
  */
 package org.stone.beecp;
 
+import org.stone.beecp.exception.BeeDataSourceConfigException;
 import org.stone.beecp.jta.BeeJtaDataSource;
 
 import javax.naming.Context;
@@ -27,7 +28,7 @@ import static org.stone.beecp.pool.ConnectionPoolStatics.*;
 import static org.stone.tools.BeanUtil.*;
 import static org.stone.tools.CommonUtil.isBlank;
 import static org.stone.tools.CommonUtil.isNotBlank;
-import static org.stone.tools.logger.LogPrinterFactory.CommonLogPrinter;
+import static org.stone.tools.LogPrinter.DefaultLogPrinter;
 
 /**
  * Bee implementation of object factory interface.
@@ -59,7 +60,7 @@ public final class BeeDataSourceFactory implements ObjectFactory {
             if (refObject == null) return null;
             String value = refObject.toString().trim();
             if (isNotBlank(value)) {
-                CommonLogPrinter.info("beecp.{}={}", propertyName, value);
+                DefaultLogPrinter.info("beecp.{}={}", propertyName, value);
                 return value;
             }
         }

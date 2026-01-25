@@ -16,7 +16,7 @@
 package org.stone.test.beecp.objects.listener;
 
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.BeeMethodExecutionListener;
+import org.stone.beecp.BeeMethodLogListener;
 
 /**
  * Method execution listener factory,for creation fail test
@@ -30,7 +30,7 @@ public class MockMethodExecutionListenerFactory3 extends MockMethodExecutionList
      *
      * @return created Listener instance
      */
-    public BeeMethodExecutionListener create(BeeDataSourceConfig config) throws Exception {
+    public BeeMethodLogListener create(BeeDataSourceConfig config) throws Exception {
         throw new Exception("Failed to create a listener");
     }
 }

@@ -13,11 +13,11 @@ import org.stone.tools.exception.BeanException;
 import org.stone.tools.exception.PropertyValueConvertException;
 import org.stone.tools.exception.PropertyValueSetFailedException;
 
+import javax.management.ObjectName;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.*;
 
 import static org.stone.tools.CommonUtil.isBlank;
@@ -217,8 +217,9 @@ public class BeanUtil {
      * @return a loaded class
      * @throws ClassNotFoundException when class not found
      */
-    public static Class<?> loadClass(String className) throws ClassNotFoundException {
-        return Class.forName(className, true, BeeClassLoader);
+    @SuppressWarnings("unchecked")
+    public static <V> Class<V> loadClass(String className) throws ClassNotFoundException {
+        return (Class<V>) Class.forName(className, true, BeeClassLoader);
     }
 
     /**
@@ -232,10 +233,11 @@ public class BeanUtil {
      *                                *              underlying constructor represents an abstract class.
      * @throws IllegalAccessException when illegal access
      */
-    public static Object createClassInstance(String className) throws ClassNotFoundException,
+    @SuppressWarnings("unchecked")
+    public static <V> V createClassInstance(String className) throws ClassNotFoundException,
             NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException,
             IllegalArgumentException, InvocationTargetException {
-        return Class.forName(className, true, BeeClassLoader).getDeclaredConstructor().newInstance();
+        return (V) Class.forName(className, true, BeeClassLoader).getDeclaredConstructor().newInstance();
     }
 
     /**
@@ -248,9 +250,9 @@ public class BeanUtil {
      * @throws BeanException          when create failed
      * @throws ClassNotFoundException when class not found
      */
-    public static Object createClassInstance(String beanClassName, Class<?> parentClass, String objectClassType)
+    public static <V> V createClassInstance(String beanClassName, Class<?> parentClass, String objectClassType)
             throws ClassNotFoundException, BeanException {
-        return createClassInstance(loadClass(beanClassName), parentClass != null ? new Class[]{parentClass} : null, objectClassType);
+        return (V)createClassInstance(loadClass(beanClassName), parentClass != null ? new Class[]{parentClass} : null, objectClassType);
     }
 
     /**
@@ -262,7 +264,7 @@ public class BeanUtil {
      * @return an instance of bean class
      * @throws BeanException when create failed
      */
-    public static Object createClassInstance(Class<?> beanClass, Class<?> parentClass, String objectClassType) throws BeanException {
+    public static <V> V createClassInstance(Class<V> beanClass, Class<?> parentClass, String objectClassType) throws BeanException {
         return createClassInstance(beanClass, parentClass != null ? new Class[]{parentClass} : null, objectClassType);
     }
 
@@ -275,7 +277,7 @@ public class BeanUtil {
      * @return an instance of bean class
      * @throws BeanException when create failed
      */
-    public static Object createClassInstance(Class<?> beanClass, Class<?>[] parentClasses, String beanClassType) throws BeanException {
+    public static <V> V createClassInstance(Class<V> beanClass, Class<?>[] parentClasses, String beanClassType) throws BeanException {
         //1: null class check
         if (beanClass == null)
             throw new BeanException("Bean class can't be null");
@@ -404,5 +406,38 @@ public class BeanUtil {
             if (targetType.isInstance(objInstance)) return objInstance;
             throw new ClassCastException();
         }
+    }
+
+    /**
+     * Query given bean name is whether registered
+     *
+     * @param beanName is a name to be queried
+     * @return true if registered
+     */
+    public static boolean isRegisteredMBean(String beanName) throws Exception {
+        try {
+            return ManagementFactory.getPlatformMBeanServer().isRegistered(new ObjectName(beanName));
+        } catch (Throwable e) {
+            throw new BeanException("Failed to check MBean with name:" + beanName, e);
+        }
+    }
+
+    /**
+     * Register a bean to platform MBean server.
+     *
+     * @param beanName to be registered name
+     * @param bean     to be registered bean
+     */
+    public static void registerMBean(String beanName, Object bean) throws Exception {
+        ManagementFactory.getPlatformMBeanServer().registerMBean(bean, new ObjectName(beanName));
+    }
+
+    /**
+     * unregister a bean from platform MBean server.
+     *
+     * @param beanName to be unregistered name
+     */
+    public static void unregisterMBean(String beanName) throws Exception {
+        ManagementFactory.getPlatformMBeanServer().unregisterMBean(new ObjectName(beanName));
     }
 }

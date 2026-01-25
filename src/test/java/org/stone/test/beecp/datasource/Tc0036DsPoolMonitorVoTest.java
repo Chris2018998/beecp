@@ -26,6 +26,9 @@ public class Tc0036DsPoolMonitorVoTest {
 
     @Test
     public void testPoolMonitorVo() throws SQLException {
+        BeeDataSource ds1 = new BeeDataSource();
+        Assertions.assertTrue(ds1.getPoolMonitorVo().isLazy());
+
         BeeDataSourceConfig config = createDefault();
         config.setPoolName("fastPool");
         config.setInitialSize(10);
@@ -35,12 +38,19 @@ public class Tc0036DsPoolMonitorVoTest {
 
         try (BeeDataSource ds = new BeeDataSource(config)) {
             BeeConnectionPoolMonitorVo vo = ds.getPoolMonitorVo();
+            Assertions.assertTrue(ds.getPoolMonitorVo().isReady());
+            Assertions.assertFalse(ds.getPoolMonitorVo().isNew());
+            Assertions.assertFalse(ds.getPoolMonitorVo().isStarting());
+            Assertions.assertFalse(ds.getPoolMonitorVo().isRestarting());
+            Assertions.assertFalse(ds.getPoolMonitorVo().isLazy());
+            Assertions.assertFalse(ds.getPoolMonitorVo().isClosing());
+
             Assertions.assertEquals("fastPool", vo.getPoolName());
-            Assertions.assertEquals("fair", vo.getPoolMode());
+            Assertions.assertTrue(vo.isFairMode());
             Assertions.assertTrue(vo.isReady());
             Assertions.assertEquals(20, vo.getMaxSize());
             Assertions.assertEquals(10, vo.getSemaphoreSize());
-            Assertions.assertEquals(0, vo.getSemaphoreAcquiredSize());
+            Assertions.assertEquals(10, vo.getSemaphoreRemainSize());
 
             Assertions.assertEquals(10, vo.getIdleSize());
             Assertions.assertEquals(0, vo.getSemaphoreWaitingSize());

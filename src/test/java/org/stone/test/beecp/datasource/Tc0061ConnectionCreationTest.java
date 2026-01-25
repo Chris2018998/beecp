@@ -12,8 +12,9 @@ package org.stone.test.beecp.datasource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeDataSource;
-import org.stone.beecp.pool.exception.ConnectionCreateException;
-import org.stone.beecp.pool.exception.ConnectionGetInterruptedException;
+import org.stone.beecp.exception.ConnectionCreatedException;
+import org.stone.beecp.exception.ConnectionGetInterruptedException;
+import org.stone.beecp.exception.XaConnectionCreatedException;
 import org.stone.test.beecp.objects.factory.ExceptionConnectionFactory;
 import org.stone.test.beecp.objects.factory.ExceptionXaConnectionFactory;
 import org.stone.test.beecp.objects.factory.NullConnectionFactory;
@@ -39,7 +40,7 @@ public class Tc0061ConnectionCreationTest {
             try (Connection ignored = ds.getConnection()) {
                 Assertions.fail("[testConnectionCreateException]Test failed");
             } catch (SQLException e) {
-                Assertions.assertInstanceOf(ConnectionCreateException.class, e);
+                Assertions.assertInstanceOf(ConnectionCreatedException.class, e);
                 Assertions.assertEquals("A unknown error occurred when created a connection", e.getMessage());
             }
         }
@@ -51,7 +52,7 @@ public class Tc0061ConnectionCreationTest {
                 XAConnection ignored = ds.getXAConnection();
                 Assertions.fail("[testConnectionCreateException]Test failed");
             } catch (SQLException e) {
-                Assertions.assertInstanceOf(ConnectionCreateException.class, e);
+                Assertions.assertInstanceOf(XaConnectionCreatedException.class, e);
                 Assertions.assertEquals("A unknown error occurred when created an XA connection", e.getMessage());
             }
         }
@@ -106,7 +107,7 @@ public class Tc0061ConnectionCreationTest {
             try (Connection ignored = ds.getConnection()) {
                 Assertions.fail("[testOtherException]Test failed");
             } catch (SQLException e) {
-                Assertions.assertInstanceOf(ConnectionCreateException.class, e);
+                Assertions.assertInstanceOf(ConnectionCreatedException.class, e);
                 Throwable cause = e.getCause();
                 Assertions.assertInstanceOf(RuntimeException.class, cause);
                 Assertions.assertEquals(errorMsg2, cause.getMessage());
@@ -133,7 +134,7 @@ public class Tc0061ConnectionCreationTest {
                 XAConnection ignored = ds.getXAConnection();
                 Assertions.fail("[testOtherException]Test failed");
             } catch (SQLException e) {
-                Assertions.assertInstanceOf(ConnectionCreateException.class, e);
+                Assertions.assertInstanceOf(ConnectionCreatedException.class, e);
                 Throwable cause = e.getCause();
                 Assertions.assertInstanceOf(RuntimeException.class, cause);
                 Assertions.assertEquals(errorMsg2, cause.getMessage());
