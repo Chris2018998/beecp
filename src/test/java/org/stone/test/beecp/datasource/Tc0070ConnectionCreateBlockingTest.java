@@ -17,6 +17,7 @@ import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.test.beecp.objects.factory.BlockingMockConnectionFactory;
 import org.stone.test.beecp.objects.threads.BorrowThread;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
@@ -50,8 +51,10 @@ public class Tc0070ConnectionCreateBlockingTest {
                 Assertions.assertEquals(1, vo.getCreatingSize());
                 Assertions.assertEquals(0, vo.getCreatingTimeoutSize());
 
-                ds.interruptWaitingThreads();
-                LockSupport.parkNanos(TimeUnit.MILLISECONDS.toMillis(500L));
+                List<Thread> interruptedThreadList = ds.interruptWaitingThreads();
+                Assertions.assertTrue(interruptedThreadList.contains(firstBorrower));
+                firstBorrower.join();
+
                 vo = ds.getPoolMonitorVo();
                 Assertions.assertEquals(0, vo.getCreatingSize());
                 Assertions.assertEquals(0, vo.getCreatingTimeoutSize());
@@ -85,8 +88,11 @@ public class Tc0070ConnectionCreateBlockingTest {
                 vo = ds.getPoolMonitorVo();
                 Assertions.assertEquals(1, vo.getCreatingSize());
                 Assertions.assertEquals(1, vo.getCreatingTimeoutSize());
-                ds.interruptWaitingThreads();
-                LockSupport.parkNanos(TimeUnit.MILLISECONDS.toMillis(500L));
+
+                List<Thread> interruptedThreadList = ds.interruptWaitingThreads();
+                Assertions.assertTrue(interruptedThreadList.contains(firstBorrower));
+                firstBorrower.join();
+
                 vo = ds.getPoolMonitorVo();
                 Assertions.assertEquals(0, vo.getCreatingSize());
                 Assertions.assertEquals(0, vo.getCreatingTimeoutSize());

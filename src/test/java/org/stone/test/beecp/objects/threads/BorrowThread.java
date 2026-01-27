@@ -9,7 +9,6 @@
  */
 package org.stone.test.beecp.objects.threads;
 
-import org.stone.beecp.BeeConnectionPool;
 import org.stone.beecp.BeeDataSource;
 import org.stone.test.base.TestUtil;
 
@@ -23,23 +22,17 @@ import java.sql.SQLException;
 public final class BorrowThread extends Thread {
     private final boolean xa;
     private final BeeDataSource ds;
-    private final BeeConnectionPool pool;
     private Connection connection;
     private XAConnection xaConnection;
     private SQLException failureCause;
 
     public BorrowThread(BeeDataSource ds) {
-        this(ds, null, false);
+        this(ds, false);
     }
 
-    public BorrowThread(BeeConnectionPool pool) {
-        this(null, pool, false);
-    }
-
-    public BorrowThread(BeeDataSource ds, BeeConnectionPool pool, boolean xa) {
+    public BorrowThread(BeeDataSource ds, boolean xa) {
         this.xa = xa;
         this.ds = ds;
-        this.pool = pool;
         this.setDaemon(true);
     }
 
@@ -57,18 +50,10 @@ public final class BorrowThread extends Thread {
 
     public void run() {
         try {
-            if (ds != null) {
-                if (xa) {
-                    xaConnection = ds.getXAConnection();
-                } else {
-                    connection = ds.getConnection();
-                }
+            if (xa) {
+                xaConnection = ds.getXAConnection();
             } else {
-                if (xa) {
-                    xaConnection = pool.getXAConnection();
-                } else {
-                    connection = pool.getConnection();
-                }
+                connection = ds.getConnection();
             }
         } catch (SQLException e) {
             this.failureCause = e;

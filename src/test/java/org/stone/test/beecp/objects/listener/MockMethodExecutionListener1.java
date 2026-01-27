@@ -28,7 +28,7 @@ import java.util.List;
  * @author Chris Liao
  */
 public class MockMethodExecutionListener1 implements BeeMethodLogListener {
-    private Logger logger = LoggerFactory.getLogger(MockMethodExecutionListener1.class);
+    private final Logger logger = LoggerFactory.getLogger(MockMethodExecutionListener1.class);
 
     private BeeMethodLog slowLog;
 

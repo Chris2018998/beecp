@@ -101,8 +101,8 @@ public class Tc0033DataSourceLockTest {
         ds.setMaxWait(TimeUnit.SECONDS.toMillis(10L));//timeout on wait
         ds.setPoolImplementClassName(BlockingPoolImpl_ParkNanos.class.getName());
 
-        BorrowThread firstThread = new BorrowThread(ds, null, true);
-        BorrowThread secondThread = new BorrowThread(ds, null, true);
+        BorrowThread firstThread = new BorrowThread(ds, true);
+        BorrowThread secondThread = new BorrowThread(ds, true);
 
         firstThread.start();
         if (waitUtilWaiting(firstThread)) {//block 1 second in pool instance creation

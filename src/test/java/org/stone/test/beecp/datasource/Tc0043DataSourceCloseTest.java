@@ -175,8 +175,8 @@ public class Tc0043DataSourceCloseTest {
     }
 
     private static class DsCloseThread extends Thread {
-        private BeeDataSource ds;
-        private long delayToTime;
+        private final BeeDataSource ds;
+        private final long delayToTime;
 
         public DsCloseThread(BeeDataSource ds, long delayToTime) {
             this.ds = ds;

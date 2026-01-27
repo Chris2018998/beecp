@@ -116,6 +116,7 @@ public class Tc0080ConnectionGetLogTest {
             BorrowThread borrowThread = new BorrowThread(ds);
             borrowThread.start();
             borrowThread.join();
+
             Assertions.assertTrue(ds.getPoolMonitorVo().isEnabledLogCache());
             List<BeeMethodLog> logList = ds.getLogs(Type_Pool_Log);
             Assertions.assertEquals(1, logList.size());
@@ -137,7 +138,7 @@ public class Tc0080ConnectionGetLogTest {
             xaConnectionFactory.setParkNanos(TimeUnit.MILLISECONDS.toNanos(500L));
             ds.setXaConnectionFactory(xaConnectionFactory);
 
-            BorrowThread borrowThread = new BorrowThread(ds, null, true);
+            BorrowThread borrowThread = new BorrowThread(ds, true);
             borrowThread.start();
             borrowThread.join();
 

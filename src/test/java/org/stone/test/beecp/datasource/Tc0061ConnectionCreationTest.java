@@ -25,8 +25,6 @@ import javax.sql.XAConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import static org.stone.test.base.TestUtil.waitUtilWaiting;
-
 /**
  * @author Chris Liao
  */
@@ -64,9 +62,6 @@ public class Tc0061ConnectionCreationTest {
             ds.setConnectionFactory(new NullConnectionFactory(true));
             BorrowThread borrowThread = new BorrowThread(ds);
             borrowThread.start();
-            if (waitUtilWaiting(borrowThread)) {
-                ds.interruptWaitingThreads();
-            }
             borrowThread.join();
             Assertions.assertNotNull(borrowThread.getFailureCause());
             Assertions.assertInstanceOf(ConnectionGetInterruptedException.class, borrowThread.getFailureCause());
@@ -76,11 +71,8 @@ public class Tc0061ConnectionCreationTest {
         //2: fail to create xa-connection
         try (BeeDataSource ds = new BeeDataSource()) {
             ds.setXaConnectionFactory(new NullXaConnectionFactory(true));
-            BorrowThread borrowThread = new BorrowThread(ds, null, true);
+            BorrowThread borrowThread = new BorrowThread(ds, true);
             borrowThread.start();
-            if (waitUtilWaiting(borrowThread)) {
-                ds.interruptWaitingThreads();
-            }
             borrowThread.join();
             Assertions.assertNotNull(borrowThread.getFailureCause());
             Assertions.assertInstanceOf(ConnectionGetInterruptedException.class, borrowThread.getFailureCause());
@@ -89,7 +81,7 @@ public class Tc0061ConnectionCreationTest {
     }
 
     @Test
-    public void testOtherException() throws Exception {
+    public void testOtherException() {
         try (BeeDataSource ds = new BeeDataSource()) {
             ExceptionConnectionFactory exceptionConFactory = new ExceptionConnectionFactory();
             ds.setConnectionFactory(exceptionConFactory);

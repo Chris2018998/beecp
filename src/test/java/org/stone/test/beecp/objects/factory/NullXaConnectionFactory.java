@@ -13,7 +13,6 @@ import org.stone.beecp.BeeXaConnectionFactory;
 
 import javax.sql.XAConnection;
 import java.sql.SQLException;
-import java.util.concurrent.locks.LockSupport;
 
 /**
  * test null result
@@ -22,16 +21,17 @@ import java.util.concurrent.locks.LockSupport;
  */
 
 public class NullXaConnectionFactory extends BaseConnectionFactory implements BeeXaConnectionFactory {
+    private boolean interruptableFlag;
 
     public NullXaConnectionFactory() {
     }
 
-    public NullXaConnectionFactory(boolean needPark) {
-        this.needPark = needPark;
+    public NullXaConnectionFactory(boolean interruptableFlag) {
+        this.interruptableFlag = interruptableFlag;
     }
 
     public XAConnection create() throws SQLException {
-        if (needPark) LockSupport.park();
+        if (interruptableFlag) Thread.currentThread().interrupt();
         return null;
     }
 }

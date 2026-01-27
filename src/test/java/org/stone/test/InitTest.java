@@ -44,8 +44,9 @@ public class InitTest {
 
     @Test
     public void testPreparation() throws Exception {
-        String init_file = "/InitTest.properties";
-        try (InputStream fileStream = this.getClass().getResourceAsStream(init_file)) {
+        Class<?> currentClass = this.getClass();
+        String init_file = currentClass.getSimpleName() + ".properties";
+        try (InputStream fileStream = this.getClass().getClassLoader().getResourceAsStream(init_file)) {
             if (fileStream == null) throw new IOException("Can't find file:'" + init_file + "' in classpath");
             Properties prop = new Properties();
             prop.load(fileStream);
@@ -53,9 +54,7 @@ public class InitTest {
 
             if (CommonUtil.isNotBlank(targetVersion)) {
                 Integer version = Integer.valueOf(targetVersion);
-                Class<?> currentClass = this.getClass();
-                String currentClassName = currentClass.getName();
-                String currentClassPathName = currentClassName.replaceAll("\\.", "/") + ".class";
+                String currentClassPathName = currentClass.getName().replaceAll("\\.", "/") + ".class";
                 URL classFileUrl = currentClass.getClassLoader().getResource(currentClassPathName);
 
                 assert classFileUrl != null;
