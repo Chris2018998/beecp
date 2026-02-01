@@ -13,10 +13,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.test.beecp.objects.threads.ParkDelayThread;
 
 import java.sql.Connection;
-import java.util.concurrent.TimeUnit;
 
 import static org.stone.test.beecp.config.DsConfigFactory.createDefault;
 
@@ -36,11 +34,7 @@ public class Tc0065ConnectionTimeoutTest {
 
         try (BeeDataSource ds = new BeeDataSource(config)) {
             Assertions.assertEquals(initSize, ds.getPoolMonitorVo().getIdleSize());
-
-            ParkDelayThread delayThread = new ParkDelayThread(TimeUnit.MILLISECONDS.toNanos(500L));
-            delayThread.start();
-            delayThread.join();
-
+            Thread.sleep(500L);
             Assertions.assertEquals(0, ds.getPoolMonitorVo().getIdleSize());
         }
     }
@@ -62,9 +56,7 @@ public class Tc0065ConnectionTimeoutTest {
                 Assertions.assertEquals(0, ds.getPoolMonitorVo().getIdleSize());
                 Assertions.assertEquals(initSize, ds.getPoolMonitorVo().getBorrowedSize());
 
-                ParkDelayThread delayThread = new ParkDelayThread(TimeUnit.MILLISECONDS.toNanos(500L));
-                delayThread.start();
-                delayThread.join();
+                Thread.sleep(500L);
 
                 Assertions.assertEquals(0, ds.getPoolMonitorVo().getIdleSize());
                 Assertions.assertEquals(initSize, ds.getPoolMonitorVo().getBorrowedSize());//not recycled
@@ -80,9 +72,7 @@ public class Tc0065ConnectionTimeoutTest {
                 Assertions.assertEquals(0, ds.getPoolMonitorVo().getIdleSize());
                 Assertions.assertEquals(initSize, ds.getPoolMonitorVo().getBorrowedSize());
 
-                ParkDelayThread delayThread = new ParkDelayThread(TimeUnit.MILLISECONDS.toNanos(500L));
-                delayThread.start();
-                delayThread.join();
+                Thread.sleep(500L);
 
                 Assertions.assertEquals(initSize, ds.getPoolMonitorVo().getIdleSize());//force recycled
                 Assertions.assertTrue(con.isClosed());

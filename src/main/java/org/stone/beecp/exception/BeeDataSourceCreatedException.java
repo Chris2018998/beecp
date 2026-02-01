@@ -11,6 +11,7 @@ package org.stone.beecp.exception;
 
 /**
  * Throws this exception when failed to create Bee-DataSource
+ *
  * @author Chris Liao
  * @version 1.0
  */

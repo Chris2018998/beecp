@@ -18,7 +18,6 @@ import org.stone.tools.exception.BeanException;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -861,7 +860,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
             throw new BeeDataSourceConfigException("Load file name cannot be null or empty");
         String fileLowerCaseName = filename.toLowerCase(Locale.US);
         if (!fileLowerCaseName.endsWith(".properties"))
-            throw new BeeDataSourceConfigException("Load file extension name must be 'properties':"+filename);
+            throw new BeeDataSourceConfigException("Load file extension name must be 'properties':" + filename);
 
         if (fileLowerCaseName.startsWith("cp:")) {//1:'cp:' prefix
             String cpFileName = fileLowerCaseName.substring("cp:".length());
@@ -878,10 +877,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
 
     public void loadFromPropertiesFile(File file, String keyPrefix) {
         if (file == null) throw new BeeDataSourceConfigException("Load file cannot be null");
-        if (!file.exists()) throw new BeeDataSourceConfigException("Load file not found:(" + file+")");
-        if (!file.isFile()) throw new BeeDataSourceConfigException("Load file cannot be a folder:("+file+")");
+        if (!file.exists()) throw new BeeDataSourceConfigException("Load file not found:(" + file + ")");
+        if (!file.isFile()) throw new BeeDataSourceConfigException("Load file cannot be a folder:(" + file + ")");
         if (!file.getAbsolutePath().toLowerCase(Locale.US).endsWith(".properties"))
-            throw new BeeDataSourceConfigException("Load file extension name must be 'properties':("+file+")");
+            throw new BeeDataSourceConfigException("Load file extension name must be 'properties':(" + file + ")");
 
         try (InputStream stream = Files.newInputStream(file.toPath())) {
             Properties configProperties = new Properties();

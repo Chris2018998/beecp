@@ -86,6 +86,8 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
     private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
     private ScheduledFuture<?> timeoutLogsClearTaskFuture;
     private ScheduledFuture<?> timeoutConnectionsClearTaskFuture;
+    private FastConnectionPoolMonitorVo simplePoolMonitorVo;
+
     private long idleTimeoutMs;//milliseconds
     private long holdTimeoutMs;//milliseconds
     private boolean supportHoldTimeout;
@@ -152,9 +154,10 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
         //step6: Create scheduled thread pool Executor,and schedule a timeout task here to interrupt possible blocks during creating
         this.scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(2, poolThreadFactory);
         this.scheduledThreadPoolExecutor.setMaximumPoolSize(2);
-        this.scheduledThreadPoolExecutor.allowCoreThreadTimeOut(true);
         this.scheduledThreadPoolExecutor.setKeepAliveTime(10L, TimeUnit.SECONDS);
+        this.scheduledThreadPoolExecutor.allowCoreThreadTimeOut(true);
 
+        this.simplePoolMonitorVo = new FastConnectionPoolMonitorVo();
         this.timeoutConnectionsClearTaskFuture = this.scheduledThreadPoolExecutor.scheduleWithFixedDelay(
                 new ConnectionTimeoutTask(this), poolConfig.getIntervalOfClearTimeout(),
                 poolConfig.getIntervalOfClearTimeout(), TimeUnit.MILLISECONDS);
@@ -1079,56 +1082,82 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
     }
 
     public BeeConnectionPoolMonitorVo getPoolMonitorVo() {
-        int borrowedSize = 0, idleSize = 0;
-        int creatingCount = 0, creatingTimeoutCount = 0;
-        if (connectionArray != null) {
-            long currentTimeMillis = System.currentTimeMillis();
+        return getPoolMonitorVo(false);
+    }
+
+    private BeeConnectionPoolMonitorVo getPoolMonitorVo(boolean simple) {
+        if (simple) {
+            int idleSize = 0, borrowedSize = 0;
             for (PooledConnection p : connectionArray) {
                 if (p != null) {
                     int state = p.state;
                     if (state == CON_IDLE) idleSize++;
-                    if (state == CON_BORROWED) borrowedSize++;
+                    else if (state == CON_BORROWED) borrowedSize++;
+                }
+            }
 
-                    ConnectionCreatingInfo creatingInfo = p.creatingInfo;
-                    if (creatingInfo != null) {
-                        creatingCount++;
-                        if (currentTimeMillis - creatingInfo.creatingStartTime - maxWaitMs >= 0L)
-                            creatingTimeoutCount++;
+            int semaphoreRemainSize = 0;
+            int semaphoreWaitingSize = 0;
+            if (semaphore != null) {
+                semaphoreRemainSize = this.semaphore.availablePermits();
+                semaphoreWaitingSize = this.semaphore.getQueueLength();
+            }
+            this.simplePoolMonitorVo.fillSimple(idleSize, borrowedSize, semaphoreRemainSize, semaphoreWaitingSize);
+            return simplePoolMonitorVo;
+        } else {
+            int idleSize = 0, borrowedSize = 0;
+            int creatingCount = 0, creatingTimeoutCount = 0;
+            if (connectionArray != null) {
+                long currentTimeMillis = System.currentTimeMillis();
+                for (PooledConnection p : connectionArray) {
+                    if (p != null) {
+                        int state = p.state;
+                        if (state == CON_IDLE) idleSize++;
+                        else if (state == CON_BORROWED) borrowedSize++;
+
+                        ConnectionCreatingInfo creatingInfo = p.creatingInfo;
+                        if (creatingInfo != null) {
+                            creatingCount++;
+                            if (currentTimeMillis - creatingInfo.creatingStartTime - maxWaitMs >= 0L)
+                                creatingTimeoutCount++;
+                        }
                     }
                 }
             }
-        }
 
-        int semaphoreRemainSize = 0;
-        int semaphoreWaitingSize = 0;
-        int transferWaitingSize = 0;
-        if (semaphore != null) {
-            semaphoreRemainSize = this.semaphore.availablePermits();
-            semaphoreWaitingSize = this.semaphore.getQueueLength();
-        }
+            int semaphoreRemainSize = 0;
+            int semaphoreWaitingSize = 0;
+            int transferWaitingSize = 0;
+            if (semaphore != null) {
+                semaphoreRemainSize = this.semaphore.availablePermits();
+                semaphoreWaitingSize = this.semaphore.getQueueLength();
+            }
 
-        if (waitQueue != null) {
-            for (Borrower borrower : this.waitQueue)
-                if (borrower.state == null) transferWaitingSize++;
-        }
+            if (waitQueue != null) {
+                for (Borrower borrower : this.waitQueue)
+                    if (borrower.state == null) transferWaitingSize++;
+            }
 
-        return new FastConnectionPoolMonitorVo(
-                this.poolName,
-                this.isFairMode,
-                this.connectionArrayLen,
-                this.semaphoreSize,
-                this.useThreadLocal,
-                this.poolState,
-                idleSize,
-                borrowedSize,
-                semaphoreRemainSize,
-                semaphoreWaitingSize,
-                transferWaitingSize,
-                creatingCount,
-                creatingTimeoutCount,
-                this.logPrinter.isEnableLogOutput(),
-                this.collectMethodLogs);
+            return new FastConnectionPoolMonitorVo(
+                    this.poolName,
+                    this.isFairMode,
+                    this.connectionArrayLen,
+                    this.semaphoreSize,
+                    this.useThreadLocal,
+                    this.poolState,
+                    idleSize,
+                    borrowedSize,
+                    semaphoreRemainSize,
+                    semaphoreWaitingSize,
+                    transferWaitingSize,
+                    creatingCount,
+                    creatingTimeoutCount,
+                    this.logPrinter.isEnableLogOutput(),
+                    this.collectMethodLogs);
+
+        }
     }
+
 
     //***************************************************************************************************************//
     //                                  11: Override methods - completion transfer policy(2+0)                       //
@@ -1188,7 +1217,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
     void closeIdleTimeoutConnections() {
         //step1:print pool info before clean
         if (logPrinter.isEnableLogOutput()) {
-            BeeConnectionPoolMonitorVo vo = getPoolMonitorVo();
+            BeeConnectionPoolMonitorVo vo = getPoolMonitorVo(true);
             logPrinter.info("BeeCP({})-before timed scan,idle:{},borrowed:{},semaphore-waiting:{},transfer-waiting:{}", this.poolName, vo.getIdleSize(), vo.getBorrowedSize(), vo.getSemaphoreWaitingSize(), vo.getTransferWaitingSize());
         }
 
@@ -1218,7 +1247,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
 
         //step4: print pool info after clean
         if (logPrinter.isEnableLogOutput()) {
-            BeeConnectionPoolMonitorVo vo = getPoolMonitorVo();
+            BeeConnectionPoolMonitorVo vo = getPoolMonitorVo(true);
             logPrinter.info("BeeCP({})-after timed scan,idle:{},borrowed:{},semaphore-waiting:{},transfer-waiting:{}", this.poolName, vo.getIdleSize(), vo.getBorrowedSize(), vo.getSemaphoreWaitingSize(), vo.getTransferWaitingSize());
         }
     }

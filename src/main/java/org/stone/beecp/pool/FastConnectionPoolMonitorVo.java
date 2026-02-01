@@ -21,28 +21,29 @@ import static org.stone.beecp.pool.ConnectionPoolStatics.*;
  */
 
 public final class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonitorVo {
-    private final String poolName;
-    private final boolean isFairMode;
-    private final int maxSize;
-    private final int semaphoreSize;
-    private final boolean useThreadLocal;
+    private String poolName;
+    private boolean isFairMode;
+    private int maxSize;
+    private int semaphoreSize;
+    private boolean useThreadLocal;
 
-    private final int poolState;
-    private final int idleSize;
-    private final int borrowedSize;
-    private final int semaphoreRemainSize;
-    private final int semaphoreWaitingSize;
-    private final int transferWaitingSize;
-    private final int creatingSize;
-    private final int creatingTimeoutSize;
-    private final boolean enabledLogPrint;
-    private final boolean enableMethodExecutionLogCache;
+    private int poolState;
+    private int idleSize;
+    private int borrowedSize;
+    private int semaphoreRemainSize;
+    private int semaphoreWaitingSize;
+    private int transferWaitingSize;
+    private int creatingSize;
+    private int creatingTimeoutSize;
+    private boolean enabledLogPrinter;
+    private boolean enabledLogCache;
 
     public FastConnectionPoolMonitorVo(String poolName,
                                        boolean isFairMode,
                                        int maxSize,
                                        int semaphoreSize,
                                        boolean useThreadLocal,
+
                                        int poolState,
                                        int idleSize,
                                        int borrowedSize,
@@ -52,7 +53,7 @@ public final class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonit
                                        int creatingSize,
                                        int creatingTimeoutSize,
                                        boolean enabledLogPrint,
-                                       boolean enableMethodExecutionLogCache) {
+                                       boolean enabledLogCache) {
         this.poolName = poolName;
         this.isFairMode = isFairMode;
         this.maxSize = maxSize;
@@ -67,12 +68,23 @@ public final class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonit
         this.transferWaitingSize = transferWaitingSize;
         this.creatingSize = creatingSize;
         this.creatingTimeoutSize = creatingTimeoutSize;
-        this.enabledLogPrint = enabledLogPrint;
-        this.enableMethodExecutionLogCache = enableMethodExecutionLogCache;
+        this.enabledLogPrinter = enabledLogPrint;
+        this.enabledLogCache = enabledLogCache;
+    }
+
+    //for simple
+    FastConnectionPoolMonitorVo() {
+    }
+
+    void fillSimple(int idleSize, int borrowedSize, int semaphoreRemainSize, int semaphoreWaitingSize) {
+        this.idleSize = idleSize;
+        this.borrowedSize = borrowedSize;
+        this.semaphoreRemainSize = semaphoreRemainSize;
+        this.semaphoreWaitingSize = semaphoreWaitingSize;
     }
 
     //***************************************************************************************************************//
-    //                                        1: Pool base fields                                                 //
+    //                                        1: Pool base fields                                                    //
     //***************************************************************************************************************//
     @Override
     public String getPoolName() {
@@ -133,7 +145,7 @@ public final class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonit
     }
 
     //***************************************************************************************************************//
-    //                                    3: Other methods                                                          //
+    //                                    3: Other methods                                                           //
     //***************************************************************************************************************//
     @Override
     public int getMaxSize() {
@@ -182,12 +194,12 @@ public final class FastConnectionPoolMonitorVo implements BeeConnectionPoolMonit
 
     @Override
     public boolean isEnabledLogPrinter() {
-        return enabledLogPrint;
+        return enabledLogPrinter;
     }
 
     @Override
     public boolean isEnabledLogCache() {
-        return enableMethodExecutionLogCache;
+        return enabledLogCache;
     }
 
     @Override
