@@ -81,10 +81,10 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
         String poolImplementClassName = ds.getPoolImplementClassName();
         if (isBlank(poolImplementClassName)) poolImplementClassName = FastConnectionPool.class.getName();
         try {
-            ds.pool = createClassInstance(poolImplementClassName, BeeConnectionPool.class, "pool");
-            ds.pool.start(ds);
+            BeeConnectionPool pool = createClassInstance(poolImplementClassName, BeeConnectionPool.class, "pool");
+            pool.start(ds);
+            ds.pool = pool;
             ds.poolInitialized = true;
-
             Object connectionFactory = ds.getConnectionFactory();
             if (connectionFactory instanceof CommonDataSource)
                 ds.subDs = (CommonDataSource) connectionFactory;
@@ -256,7 +256,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     }
 
     public List<Thread> interruptWaitingThreads() throws SQLException {
-        if (poolInitialized) {
+        if (this.poolInitialized) {
             return pool.interruptWaitingThreads();
         } else {
             return lock.interruptAllThreads();

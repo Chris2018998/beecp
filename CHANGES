@@ -1,5 +1,8 @@
 beecp changes
 
+Changes in 5.2.1
+1: Add a new configuration item(registerJvmHook)
+
 Changes in 5.2.0
 1: Refactor method logs feature
 2: Enhance pool robustness

@@ -34,7 +34,13 @@ public class MockConnectionFactory extends BaseConnectionFactory implements BeeC
 
     public Connection create() throws SQLException {
         if (needPark) {
-            if (this.parkNanos > 0L) {
+            if (sleepMillis > 0) {
+                try {
+                    Thread.sleep(sleepMillis);
+                } catch (InterruptedException e) {
+                    throw new SQLException(e);
+                }
+            } else if (this.parkNanos > 0L) {
                 LockSupport.parkNanos(parkNanos);
             } else {
                 LockSupport.park();

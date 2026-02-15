@@ -95,7 +95,7 @@ public class Tc0081SQLExecutionLogTest {
 
             MockConnectionProperties connectionProperties = new MockConnectionProperties();
             connectionProperties.parkWhenCallMethod("execute,executeQuery,executeUpdate,executeLargeUpdate,prepareStatement");
-            connectionProperties.setParkNanos(TimeUnit.MILLISECONDS.toNanos(100L));
+            connectionProperties.setSleepMillis(100L);
             MockConnectionFactory connectionFactory = new MockConnectionFactory(connectionProperties);
             ds.setConnectionFactory(connectionFactory);
 

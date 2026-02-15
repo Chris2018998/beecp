@@ -44,5 +44,12 @@ public class Tc0023OtherConfigurationTest {
         Assertions.assertFalse(config.isUseThreadLocal());
         config.setUseThreadLocal(true);
         Assertions.assertTrue(config.isUseThreadLocal());
+
+        //enableThreadLocal
+        Assertions.assertTrue(config.isRegisterJvmHook());//default check
+        config.setRegisterJvmHook(false);
+        Assertions.assertFalse(config.isRegisterJvmHook());
+        config.setRegisterJvmHook(true);
+        Assertions.assertTrue(config.isRegisterJvmHook());
     }
 }

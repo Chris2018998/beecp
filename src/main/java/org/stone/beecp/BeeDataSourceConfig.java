@@ -43,13 +43,13 @@ import static org.stone.tools.LogPrinter.DefaultLogPrinter;
  */
 public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
     //An atomic integer to generate sequence value append to pool name as suffix,its value starts with 1
-    private static final AtomicInteger PoolNameIndex = new AtomicInteger(1);
+    private static final AtomicInteger PoolNameIndex = new AtomicInteger();
     //A list of field name,not be log print during pool initialization, default that five field names in list
     private static final List<String> DefaultExclusionList = Arrays.asList("username", "password", "jdbcUrl", "user", "url");
     //23: An exclusion list of configuration print,default is copies from {@code DefaultExclusionList}
     private final List<String> exclusionListOfPrint = new ArrayList<>(DefaultExclusionList);
     //24: A map stores some properties of connection provider,these properties are injected to provider during pool initialization
-    private final Map<String, Object> connectionFactoryProperties = new HashMap<>(1);
+    private final Map<String, Object> connectionFactoryProperties = new HashMap<>();
 
     //1: Username link to database,default is none
     private String username;
@@ -88,11 +88,13 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
     private long parkTimeForRetry = 3000L;
     //18: A flag to register configuration and pool to JMX server
     private boolean registerMbeans;
-    //19: A flag to print pool working logs,default is false
+    //19: A flag to register a jvm hook to close pool when JVM exits
+    private boolean registerJvmHook = true;
+    //20: A flag to print pool working logs,default is false
     private boolean printRuntimeLogs;
-    //20: A flag to print configured items by logs after configuration check passed
+    //21: A flag to print configured items by logs after configuration check passed
     private boolean printConfiguration;
-    //21: Class name of pool implementation,default is {@code FastConnectionPool}
+    //22: Class name of pool implementation,default is {@code FastConnectionPool}
     private String poolImplementClassName;
 
     //25: Test sql on borrowed connections to check them whether alive,default is "SELECT 1"
@@ -393,6 +395,14 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
 
     public void setRegisterMbeans(boolean registerMbeans) {
         this.registerMbeans = registerMbeans;
+    }
+
+    public boolean isRegisterJvmHook() {
+        return registerJvmHook;
+    }
+
+    public void setRegisterJvmHook(boolean registerJvmHook) {
+        this.registerJvmHook = registerJvmHook;
     }
 
     public boolean isPrintRuntimeLogs() {
@@ -975,9 +985,9 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
         if (initialSize > maxActive)
             throw new BeeDataSourceConfigException("The configured value of item 'initial-size' cannot be greater than the configured value of item 'max-active'");
 
-        Object connectionFactory = createConnectionFactory();
+        Object connectionFactory = this.createConnectionFactory();
         BeeConnectionPredicate predicate = this.createConnectionEvictPredicate();
-        BeeMethodLogListener methodExecutionListener = createMethodExecutionListener();
+        BeeMethodLogListener methodExecutionListener = this.createMethodExecutionListener();
 
         BeeDataSourceConfig checkedConfig = new BeeDataSourceConfig();
         copyTo(checkedConfig);
@@ -996,7 +1006,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
         checkedConfig.connectionFactory = connectionFactory;
         checkedConfig.predicate = predicate;
         checkedConfig.logListener = methodExecutionListener;
-        if (isBlank(checkedConfig.poolName)) checkedConfig.poolName = "FastPool-" + PoolNameIndex.getAndIncrement();
+        if (isBlank(checkedConfig.poolName)) checkedConfig.poolName = "FastPool-" + PoolNameIndex.incrementAndGet();
         if (checkedConfig.printConfiguration) printConfiguration(checkedConfig);
 
         return checkedConfig;

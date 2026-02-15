@@ -66,4 +66,6 @@ public interface BeeDataSourceConfigMXBean {
     String getPoolImplementClassName();
 
     boolean isRegisterMbeans();
+
+    boolean isRegisterJvmHook();
 }

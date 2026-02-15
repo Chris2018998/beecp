@@ -13,7 +13,7 @@ A JDBC connection pool with the characteristics of minimal code, few dependencie
 * Supports restart and configuration reload‌
 * Provides interfaces for extensibility‌
 * Supports virtual thread applications‌
-* [Provide built-in monitoring capabilities‌](https://github.com/Chris2018998/beecp-starter)
+* [Provide monitoring capabilities‌](https://github.com/Chris2018998/beecp-starter)
 
 ## Links
 
@@ -30,7 +30,7 @@ Java7+
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>5.2.0</version>
+   <version>5.2.1</version>
 </dependency>
 ```
 

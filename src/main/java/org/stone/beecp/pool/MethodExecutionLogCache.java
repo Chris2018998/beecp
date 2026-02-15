@@ -146,7 +146,7 @@ final class MethodExecutionLogCache {
         return logList;
     }
 
-    public List<BeeMethodLog> clear(int type) {
+    public void clear(int type) {
         List<BeeMethodLog> removedLogList = new LinkedList<>();
         switch (type) {
             case Type_Pool_Log: {
@@ -177,7 +177,6 @@ final class MethodExecutionLogCache {
 
         for (BeeMethodLog log : removedLogList)
             ((MethodExecutionLog) log).setRemoved(true);
-        return removedLogList;
     }
 
 

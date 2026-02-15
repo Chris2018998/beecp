@@ -19,6 +19,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class BaseConnectionFactory {
     protected long parkNanos;
+    protected long sleepMillis;
+
     protected boolean needPark;
     protected SQLException failCause1;
     protected RuntimeException failCause2;
@@ -38,8 +40,12 @@ public class BaseConnectionFactory {
         this.parkNanos = parkNanos;
     }
 
-    public boolean isNeedPark() {
-        return needPark;
+    public long getSleepMillis() {
+        return sleepMillis;
+    }
+
+    public void setSleepMillis(long sleepMillis) {
+        this.sleepMillis = sleepMillis;
     }
 
     public void setNeedPark(boolean needPark) {

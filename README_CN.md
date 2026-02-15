@@ -16,7 +16,7 @@
 * 支持重启和配置重载
 * 提供接口支持扩展
 * 支持虚拟线程应用
-* 内置监控功能
+* 提供监控功能
 
 ## 🍁 坐标
 
@@ -26,7 +26,7 @@ Java7+
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>5.2.0</version>
+   <version>5.2.1</version>
 </dependency>
 ```
 

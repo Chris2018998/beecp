@@ -22,7 +22,6 @@ import javax.sql.XAConnection;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static org.stone.beecp.BeeMethodLog.Type_Pool_Log;
 
@@ -111,7 +110,7 @@ public class Tc0080ConnectionGetLogTest {
             ds.setSlowConnectionThreshold(1L);
             MockConnectionFactory connectionFactory = new MockConnectionFactory();
             connectionFactory.setNeedPark(true);
-            connectionFactory.setParkNanos(TimeUnit.MILLISECONDS.toNanos(500L));
+            connectionFactory.setSleepMillis(500L);
             ds.setConnectionFactory(connectionFactory);
 
             BorrowThread borrowThread = new BorrowThread(ds);
@@ -137,7 +136,7 @@ public class Tc0080ConnectionGetLogTest {
             ds.setSlowConnectionThreshold(1L);
             MockXaConnectionFactory xaConnectionFactory = new MockXaConnectionFactory();
             xaConnectionFactory.setNeedPark(true);
-            xaConnectionFactory.setParkNanos(TimeUnit.MILLISECONDS.toNanos(500L));
+            xaConnectionFactory.setSleepMillis(500L);
             ds.setXaConnectionFactory(xaConnectionFactory);
 
             BorrowThread borrowThread = new BorrowThread(ds, true);

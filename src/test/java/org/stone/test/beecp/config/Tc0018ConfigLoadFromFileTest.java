@@ -52,12 +52,12 @@ public class Tc0018ConfigLoadFromFileTest {
 
         //1: load file in constructor
         //1.1: load file from class path
-        Assertions.assertTrue(check(new BeeDataSourceConfig(classPathFilename1)).booleanValue());//classpath
-        Assertions.assertTrue(check(new BeeDataSourceConfig(classPathFilename2)).booleanValue());//classpath
+        Assertions.assertTrue(check(new BeeDataSourceConfig(classPathFilename1)));//classpath
+        Assertions.assertTrue(check(new BeeDataSourceConfig(classPathFilename2)));//classpath
 
         //1.2: load file from absolution path
-        Assertions.assertTrue(check(new BeeDataSourceConfig(fileFile)).booleanValue());//from file
-        Assertions.assertTrue(check(new BeeDataSourceConfig(absolutePathFileName)).booleanValue());//from file
+        Assertions.assertTrue(check(new BeeDataSourceConfig(fileFile)));//from file
+        Assertions.assertTrue(check(new BeeDataSourceConfig(absolutePathFileName)));//from file
 
 
         //1.3: load from Properties
@@ -65,32 +65,32 @@ public class Tc0018ConfigLoadFromFileTest {
         try (FileInputStream fileStream = new FileInputStream(fileFile)) {
             properties.load(fileStream);
         }
-        Assertions.assertTrue(check(new BeeDataSourceConfig(properties)).booleanValue());//from properties
+        Assertions.assertTrue(check(new BeeDataSourceConfig(properties)));//from properties
 
         //2: load configuration by methods
         //2.1: load file from class path
         BeeDataSourceConfig config1 = createEmpty();
         config1.loadFromPropertiesFile(classPathFilename1);
-        Assertions.assertTrue(check(config1).booleanValue());
+        Assertions.assertTrue(check(config1));
         config1 = createEmpty();
         config1.loadFromPropertiesFile(classPathFilename1);
-        Assertions.assertTrue(check(config1).booleanValue());
+        Assertions.assertTrue(check(config1));
         //2.2: load file from absolution path
         BeeDataSourceConfig config2 = createEmpty();
         config2.loadFromPropertiesFile(fileFile);
-        Assertions.assertTrue(check(config2).booleanValue());
+        Assertions.assertTrue(check(config2));
         config2 = createEmpty();
         config2.loadFromPropertiesFile(absolutePathFileName);
-        Assertions.assertTrue(check(config2).booleanValue());
+        Assertions.assertTrue(check(config2));
 
         //2.3: load file from absolution path
         BeeDataSourceConfig config3 = createEmpty();
         config3.loadFromProperties(properties);
-        Assertions.assertTrue(check(config3).booleanValue());
+        Assertions.assertTrue(check(config3));
     }
 
     @Test
-    public void testInvalidFileName() throws Exception {
+    public void testInvalidFileName() {
         BeeDataSourceConfig config = createEmpty();
         try {//null filename
             config.loadFromPropertiesFile((String) null);
@@ -180,7 +180,8 @@ public class Tc0018ConfigLoadFromFileTest {
         }
     }
 
-    private Boolean check(BeeDataSourceConfig config) {
+
+    private boolean check(BeeDataSourceConfig config) {
         final String ConfigUrl = "jdbc:beecp://localhost/testdb";
         final String ConfigDriver = "org.stone.beecp.mock.MockDriver";
 

@@ -39,6 +39,7 @@ public class MockConnectionProperties {
 
     //protected long parkNanos;
     private long parkNanos;
+    private long sleepMillis;
     private SQLException mockException1;
     private RuntimeException mockException2;
     private Error mockException3;
@@ -77,6 +78,10 @@ public class MockConnectionProperties {
 
     public void setParkNanos(long parkNanos) {
         this.parkNanos = parkNanos;
+    }
+
+    public void setSleepMillis(long sleepMillis) {
+        this.sleepMillis = sleepMillis;
     }
 
     public void throwsExceptionWhenCallMethod(String names) {
@@ -120,7 +125,13 @@ public class MockConnectionProperties {
         }
 
         if (methodDelayFlagMap.containsKey(methodName)) {
-            if (this.parkNanos > 0L) {
+            if (this.sleepMillis > 0L) {
+                try {
+                    Thread.sleep(this.sleepMillis);
+                } catch (InterruptedException e) {
+                    throw new SQLException(e);
+                }
+            } else if (this.parkNanos > 0L) {
                 LockSupport.parkNanos(parkNanos);
             } else {
                 LockSupport.park();
