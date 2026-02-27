@@ -1,5 +1,8 @@
 beecp changes
 
+Changes in 5.2.2
+1: Fix hook registration issue
+
 Changes in 5.2.1
 1: Add a new configuration item(registerJvmHook)
 

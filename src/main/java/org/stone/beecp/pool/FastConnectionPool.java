@@ -63,6 +63,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
     ConcurrentLinkedQueue<Borrower> waitQueue;
     long methodLogTimeoutMs;//milliseconds
     MethodExecutionLogCache methodLogCache;
+
     private boolean isFairMode;
     private boolean isCompeteMode;
     private int semaphoreSize;
@@ -115,7 +116,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
                 throw new BeeDataSourcePoolStartedFailureException("Data source pool started failure", e);
             }
         } else {
-            throw new BeeDataSourcePoolStartedFailureException("Data source pool is starting or already started up");
+            throw new BeeDataSourcePoolStartedFailureException("Data source pool is starting up or already has started");
         }
     }
 
@@ -215,9 +216,6 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
             this.setDaemon(true);
             this.setName("BeeCP(" + poolName + ")" + "-asyncAdd");
             this.start();
-
-            this.exitHook = new ConnectionPoolHook(this);
-            Runtime.getRuntime().addShutdownHook(this.exitHook);//JVM Hool register on start
         }
 
         //step12: initialize method execution log cache
@@ -245,9 +243,16 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
             new PoolInitAsyncCreateThread(this, initialSize, "BeeCP(" + poolName + ")" + "-asyncInitialConnectionCreator").start();
 
         //step15: Register MXBean to Jmx server
-        if (poolConfig.isRegisterMbeans()) this.registerMBeans(poolConfig);
+        if (poolConfig.isRegisterMbeans())
+            this.registerMBeans(poolConfig);
 
-        //step16:Print completion info at end
+        //step16: Register JVM Hook
+        if (poolConfig.isRegisterJvmHook()) {
+            this.exitHook = new ConnectionPoolHook(this);
+            Runtime.getRuntime().addShutdownHook(this.exitHook);//JVM Hool register on start
+        }
+
+        //step17:Print completion info at end
         String poolInitInfo;
         String driverClassNameOrFactoryName = poolConfig.getDriverClassName();
         if (isNotBlank(driverClassNameOrFactoryName)) {

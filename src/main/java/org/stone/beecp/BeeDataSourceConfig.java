@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -1017,10 +1016,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
         String fieldName = null;
         try {
             for (Field field : BeeDataSourceConfig.class.getDeclaredFields()) {
-                if (Modifier.isStatic(field.getModifiers())) continue;
-
                 fieldName = field.getName();
                 switch (fieldName) {
+                    case CONFIG_POOL_NAME_INDEX:
+                    case CONFIG_DEFAULT_EXCLUSION_LIST:
+                        break;
                     case CONFIG_FACTORY_PROP: //copy 'connectProperties'
                         config.connectionFactoryProperties.putAll(connectionFactoryProperties);
                         break;
@@ -1302,12 +1302,12 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
         DefaultLogPrinter.info("................................................BeeCP({})configuration[start]................................................", poolName);
         try {
             for (Field field : BeeDataSourceConfig.class.getDeclaredFields()) {
-                if (Modifier.isStatic(field.getModifiers())) continue;
-
                 String fieldName = field.getName();
                 boolean infoPrint = !checkedConfig.exclusionListOfPrint.contains(fieldName);
                 switch (fieldName) {
-                    case CONFIG_EXCLUSION_LIST_OF_PRINT: //copy 'exclusionConfigPrintList'
+                    case CONFIG_POOL_NAME_INDEX:
+                    case CONFIG_DEFAULT_EXCLUSION_LIST:
+                    case CONFIG_EXCLUSION_LIST_OF_PRINT:
                         break;
                     case CONFIG_FACTORY_PROP: //copy 'connectionFactoryProperties'
                         if (!connectionFactoryProperties.isEmpty()) {

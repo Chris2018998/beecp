@@ -32,6 +32,10 @@ import static org.stone.tools.LogPrinter.DefaultLogPrinter;
  * @version 1.0
  */
 public final class ConnectionPoolStatics {
+    //config name of pool name index
+    public static final String CONFIG_POOL_NAME_INDEX = "PoolNameIndex";
+    //config default exclusion list
+    public static final String CONFIG_DEFAULT_EXCLUSION_LIST = "DefaultExclusionList";
     //transaction manager jndi name in configuration
     public static final String CONFIG_TM_JNDI = "transactionManagerName";
     //connect properties for driver or driver dataSource

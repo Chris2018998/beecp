@@ -108,10 +108,10 @@ public class Tc0034DsPoolStartFailTest {
 
             if (thread1.getFailCause() != null && thread2.getFailCause() == null) {
                 Assertions.assertInstanceOf(BeeDataSourcePoolStartedFailureException.class, thread1.getFailCause());
-                Assertions.assertEquals("Data source pool is starting or already started up", thread1.getFailCause().getMessage());
+                Assertions.assertEquals("Data source pool is starting up or already has started", thread1.getFailCause().getMessage());
             } else if (thread1.getFailCause() == null && thread2.getFailCause() != null) {
                 Assertions.assertInstanceOf(BeeDataSourcePoolStartedFailureException.class, thread2.getFailCause());
-                Assertions.assertEquals("Data source pool is starting or already started up", thread2.getFailCause().getMessage());
+                Assertions.assertEquals("Data source pool is starting up or already has started", thread2.getFailCause().getMessage());
             }
         }
     }
