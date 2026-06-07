@@ -1,22 +1,22 @@
- # ??BeeCP
+# 🌿BeeCP
 ![](https://img.shields.io/circleci/build/github/Chris2018998/beecp)
 ![](https://app.codacy.com/project/badge/Grade/574e512b3d48465cb9b85acb72b01c31)
 ![](https://codecov.io/gh/Chris2018998/beecp/graph/badge.svg?token=JLS7NFR3N)
 ![](https://img.shields.io/maven-central/v/com.github.chris2018998/beecp?logo=apache-maven)
 ![](https://img.shields.io/badge/Java-7+-green.svg)
 ![license](https://img.shields.io/github/license/Chris2018998/BeeCP.svg)
-[![README-??](https://shields.io/badge/README-??-blue)](README_cn.md)
+[![README-中文](https://shields.io/badge/README-中文-blue)](README_CN.md)
 
 BeeCP is a lightweight JDBC connection pool, small jar size (about 95KB), few dependencies (only slf4j), high performance (benchmarked against the industry-leading benchmark), and high test coverage (86%).
 
-## ?Features
+## Features
 
-| ?Category                          | Desc                                                                                                                       |
+| Category                          | Desc                                                                                                                       |
 |---------------------------------- |----------------------------------------------------------------------------------------------------------------------------|
 | Base Function                     |Property configuration, quantity control, timeout control, reclamation processing, liveness detection, connection eviction, runtime monitoring, restart and reload, interrupt blocking and XA connection support. |
-| Extensible Interfaces             |Connection Factory?, ?Connection Eviction Predicate?, ?JDBC Link Information Decoder?, etc.|
+| Extensible Interfaces             |Connection Factory,Connection Eviction Predicate,JDBC Link Information Decoder, etc.|
 | Method Log                        |Connection request logging, SQL execution logging; Provide Listener interface to be extended.|
-| Related App                       |Provide [datasource starter](https://github.com/Chris2018998/beecp-starter) (Base on springboot,?And it has a built-in web monitor.)|
+| Related App                       |Provide [datasource starter](https://github.com/Chris2018998/beecp-starter) (Base on springboot,and it has a built-in web monitor.)|
 
 ## Artifacts
 
@@ -89,11 +89,11 @@ public class MyService{
 
 ```
 
-__Approach 3:__ ?[Dynamic-datasource](https://github.com/baomidou/dynamic-datasource)(__recommended__)
+__Approach 3:__ [Dynamic-datasource](https://github.com/baomidou/dynamic-datasource)(__recommended__)
 
-?It is a data source management tool based on the Spring Boot platform, which is widely used in China.
+It is a data source management tool based on the Spring Boot platform, which is widely used in China.
 
-## Frequently Used Properties?
+## Frequently Used Properties
 
 | Property Name                    | Desc                                                                 | Default Value                    |
 |----------------------------------|----------------------------------------------------------------------|----------------------------------|
@@ -103,19 +103,19 @@ __Approach 3:__ ?[Dynamic-datasource](https://github.com/baomidou/dynamic-dataso
 | driverClassName                  | Driver class name                                                    |Blank                             |
 | initialSize                      | Initializaiton size of connections                                   |0                                 |
 | maxActive                        | Maximum of connections                                               | Math.max(10, core size of cpu)   |
-| maxWait                          | Max wait time of browsers(ms)                                      | 8000                             |
+| maxWait                          | Max wait time of browsers(ms)                                        | 8000                             |
 
 [More Properties]()
 
 ## Release Approach
 
-*  __Standalone Edition?:__ Compatible with Java 7+ on lower versions (theoretically usable on higher Java versions as long as the com.sun.UnSafe class has not been removed).
-*   __Combined Edition?:__ Compatible with Java 17+ on higher versions, featuring a combined product suite of connection pool, object pool, task pool, etc. The following VM argument must be added at runtime: --add-exports java.base/jdk.internal.misc=ALL-UNNAMED.
+*  __Standalone Edition:__ Compatible with Java 7+ on lower versions (theoretically usable on higher Java versions as long as the com.sun.UnSafe class has not been removed).
+*   __Combined Edition:__ Compatible with Java 17+ on higher versions, featuring a combined product suite of connection pool, object pool, task pool, etc. The following VM argument must be added at runtime: --add-exports java.base/jdk.internal.misc=ALL-UNNAMED.
 
 ## License
 
 Apache License 2.0.
 
-## ?Special Declaration
+## Special Declaration
 
 The code and related materials of this project shall not be used as AI training materials! As a father, I hope they exist in this world with uniqueness.
