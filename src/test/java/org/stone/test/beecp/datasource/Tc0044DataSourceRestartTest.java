@@ -15,7 +15,7 @@ import org.stone.beecp.BeeConnectionPoolMonitorVo;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
 import org.stone.beecp.exception.BeeDataSourceConfigException;
-import org.stone.beecp.exception.BeeDataSourcePoolRestartedFailureException;
+import org.stone.beecp.exception.BeeDataSourcePoolRestartFailedException;
 import org.stone.test.beecp.config.DsConfigFactory;
 import org.stone.test.beecp.objects.factory.MockConnectionFactory;
 
@@ -121,7 +121,7 @@ public class Tc0044DataSourceRestartTest {
                 ds.restart(true, config3);
                 Assertions.fail("[testRestartWithNewConfig]failed");
             } catch (SQLException e) {
-                Assertions.assertInstanceOf(BeeDataSourcePoolRestartedFailureException.class, e);
+                Assertions.assertInstanceOf(BeeDataSourcePoolRestartFailedException.class, e);
                 String cause = e.getCause().getMessage();
                 Assertions.assertEquals("Network error", cause);
                 //check monitor vo

@@ -43,12 +43,10 @@ import static org.stone.tools.LogPrinter.DefaultLogPrinter;
 public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
     //An atomic integer to generate sequence value append to pool name as suffix,its value starts with 1
     private static final AtomicInteger PoolNameIndex = new AtomicInteger();
-    //A list of field name,not be log print during pool initialization, default that five field names in list
-    private static final List<String> DefaultExclusionList = Arrays.asList("username", "password", "jdbcUrl", "user", "url");
     //23: An exclusion list of configuration print,default is copies from {@code DefaultExclusionList}
-    private final List<String> exclusionListOfPrint = new ArrayList<>(DefaultExclusionList);
+    private final List<String> exclusionListOfPrint = new ArrayList<>(Arrays.asList("username", "password", "jdbcUrl", "user", "url"));
     //24: A map stores some properties of connection provider,these properties are injected to provider during pool initialization
-    private final Map<String, Object> connectionFactoryProperties = new HashMap<>();
+    private final Map<String, Object> connectionFactoryProperties = new HashMap<>(0);
 
     //1: Username link to database,default is none
     private String username;
@@ -95,6 +93,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
     private boolean printConfiguration;
     //22: Class name of pool implementation,default is {@code FastConnectionPool}
     private String poolImplementClassName;
+
 
     //25: Test sql on borrowed connections to check them whether alive,default is "SELECT 1"
     private String aliveTestSql = "SELECT 1";
@@ -172,8 +171,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
     //55: Interval time to clear timeout logs,default is 180000 milliseconds(3 minutes)
     private long intervalOfClearTimeoutLogs = logTimeout;
 
-    //56: Milliseconds,slow threshold for connection acquisition,default is 30000(30 seconds)
-    private long slowConnectionThreshold = 30000L;
+    //56: Milliseconds,slow threshold for connection acquisition,default is 8000L(8 seconds)
+    private long slowConnectionThreshold = 8000L;
     //57: Milliseconds,slow threshold for sql execution,default is 30000(30 seconds)
     private long slowSQLThreshold = 30000L;
 
@@ -199,17 +198,17 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
 
     //read configuration from properties file
     public BeeDataSourceConfig(File propertiesFile) {
-        loadFromPropertiesFile(propertiesFile);
+        load(propertiesFile);
     }
 
     //read configuration from properties file
     public BeeDataSourceConfig(String propertiesFileName) {
-        loadFromPropertiesFile(propertiesFileName);
+        load(propertiesFileName);
     }
 
     //read configuration from properties
     public BeeDataSourceConfig(Properties configProperties) {
-        loadFromProperties(configProperties);
+        load(configProperties);
     }
 
     public BeeDataSourceConfig(String driver, String url, String user, String password) {
@@ -287,7 +286,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
 
     public void setInitialSize(int initialSize) {
         if (initialSize < 0)
-            throw new BeeDataSourceConfigException("The given value for the configuration item 'initial-size' cannot be less than zero");
+            throw new BeeDataSourceConfigException("The given value of 'initial-size' cannot be less than zero");
         this.initialSize = initialSize;
     }
 
@@ -305,7 +304,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
 
     public void setMaxActive(int maxActive) {
         if (maxActive <= 0)
-            throw new BeeDataSourceConfigException("The given value for configuration item 'max-active' must be greater than zero");
+            throw new BeeDataSourceConfigException("The given value of 'max-active' must be greater than zero");
         this.maxActive = maxActive;
         //fix issue:#19 Chris-2020-08-16 begin
         this.semaphoreSize = maxActive > 1 ? Math.min(maxActive / 2, NCPU) : 1;
@@ -318,7 +317,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
 
     public void setSemaphoreSize(int semaphoreSize) {
         if (semaphoreSize <= 0)
-            throw new BeeDataSourceConfigException("The given value for configuration item 'semaphore-size' must be greater than zero");
+            throw new BeeDataSourceConfigException("The given value of 'semaphore-size' must be greater than zero");
         this.semaphoreSize = semaphoreSize;
     }
 
@@ -336,8 +335,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
 
     public void setMaxWait(long maxWait) {
         if (maxWait <= 0L)
-            throw new BeeDataSourceConfigException("The given value for configuration item 'max-wait' must be greater than zero");
+            throw new BeeDataSourceConfigException("The given value of 'max-wait' must be greater than zero");
+
         this.maxWait = maxWait;
+        if (this.slowConnectionThreshold > maxWait) this.slowConnectionThreshold = maxWait;
     }
 
     public long getIdleTimeout() {
@@ -346,7 +347,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
 
     public void setIdleTimeout(long idleTimeout) {
         if (idleTimeout <= 0L)
-            throw new BeeDataSourceConfigException("The given value for configuration item 'idle-timeout' must be greater than zero");
+            throw new BeeDataSourceConfigException("The given value of 'idle-timeout' must be greater than zero");
         this.idleTimeout = idleTimeout;
     }
 
@@ -356,7 +357,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
 
     public void setHoldTimeout(long holdTimeout) {
         if (holdTimeout < 0L)
-            throw new BeeDataSourceConfigException("The given value for configuration item 'hold-timeout' cannot be less than zero");
+            throw new BeeDataSourceConfigException("The given value of 'hold-timeout' cannot be less than zero");
         this.holdTimeout = holdTimeout;
     }
 
@@ -366,7 +367,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
 
     public void setIntervalOfClearTimeout(long intervalOfClearTimeout) {
         if (intervalOfClearTimeout <= 0L)
-            throw new BeeDataSourceConfigException("The given value for configuration item 'interval-of-clear-timeout' must be greater than zero");
+            throw new BeeDataSourceConfigException("The given value of 'interval-of-clear-timeout' must be greater than zero");
         this.intervalOfClearTimeout = intervalOfClearTimeout;
     }
 
@@ -384,7 +385,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
 
     public void setParkTimeForRetry(long parkTimeForRetry) {
         if (parkTimeForRetry < 0L)
-            throw new BeeDataSourceConfigException("The given value for configuration item 'park-time-for-retry' cannot be less than zero");
+            throw new BeeDataSourceConfigException("The given value of 'park-time-for-retry' cannot be less than zero");
         this.parkTimeForRetry = parkTimeForRetry;
     }
 
@@ -482,11 +483,11 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
 
     public void setAliveTestSql(String aliveTestSql) {
         if (isBlank(aliveTestSql))
-            throw new BeeDataSourceConfigException("The given value for configuration item 'alive-test-sql' cannot be null or empty");
+            throw new BeeDataSourceConfigException("The given value of 'alive-test-sql' cannot be null or empty");
 
         aliveTestSql = trimString(aliveTestSql);
         if (!aliveTestSql.toUpperCase(Locale.US).startsWith("SELECT "))
-            throw new BeeDataSourceConfigException("The given value for configuration item 'alive-test-sql' must start with 'select '");
+            throw new BeeDataSourceConfigException("The given value of 'alive-test-sql' must start with 'select '");
 
         this.aliveTestSql = aliveTestSql;
     }
@@ -497,7 +498,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
 
     public void setAliveTestTimeout(int aliveTestTimeout) {
         if (aliveTestTimeout < 0L)
-            throw new BeeDataSourceConfigException("The given value for configuration item 'alive-test-timeout' cannot  be less than zero");
+            throw new BeeDataSourceConfigException("The given value of 'alive-test-timeout' cannot  be less than zero");
         this.aliveTestTimeout = aliveTestTimeout;
     }
 
@@ -507,7 +508,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
 
     public void setAliveAssumeTime(long aliveAssumeTime) {
         if (aliveAssumeTime < 0L)
-            throw new BeeDataSourceConfigException("The given value for configuration item 'alive-assume-time' cannot be less than zero");
+            throw new BeeDataSourceConfigException("The given value of 'alive-assume-time' cannot be less than zero");
         this.aliveAssumeTime = aliveAssumeTime;
     }
 
@@ -561,7 +562,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
     public void setDefaultTransactionIsolationName(String transactionIsolationName) {
         String transactionIsolationNameTemp = trimString(transactionIsolationName);
         if (isBlank(transactionIsolationNameTemp))
-            throw new BeeDataSourceConfigException("The given value for configuration item 'default-transaction-isolation-name' cannot be null or empty");
+            throw new BeeDataSourceConfigException("The given value of 'default-transaction-isolation-name' cannot be null or empty");
 
         this.defaultTransactionIsolation = BeeTransactionIsolationNames.getTransactionIsolationCode(transactionIsolationNameTemp);
         if (this.defaultTransactionIsolation != null) {
@@ -756,7 +757,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
 
     public void setLogCacheSize(int logCacheSize) {
         if (logCacheSize <= 0)
-            throw new BeeDataSourceConfigException("The given value for configuration item 'method-execution-log-cache-size' must be greater than zero");
+            throw new BeeDataSourceConfigException("The given value of 'method-execution-log-cache-size' must be greater than zero");
         this.logCacheSize = logCacheSize;
     }
 
@@ -766,7 +767,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
 
     public void setLogTimeout(long logTimeout) {
         if (logTimeout <= 0L)
-            throw new BeeDataSourceConfigException("The given value for configuration item 'method-execution-log-timeout' must be greater than zero");
+            throw new BeeDataSourceConfigException("The given value of 'method-execution-log-timeout' must be greater than zero");
         this.logTimeout = logTimeout;
     }
 
@@ -776,7 +777,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
 
     public void setIntervalOfClearTimeoutLogs(long intervalOfClearTimeoutLogs) {
         if (intervalOfClearTimeoutLogs <= 0L)
-            throw new BeeDataSourceConfigException("The given value for configuration item 'interval-of-clear-timeout-execution-logs' must be greater than zero");
+            throw new BeeDataSourceConfigException("The given value of 'interval-of-clear-timeout-execution-logs' must be greater than zero");
         this.intervalOfClearTimeoutLogs = intervalOfClearTimeoutLogs;
     }
 
@@ -785,8 +786,10 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
     }
 
     public void setSlowConnectionThreshold(long slowConnectionThreshold) {
-        if (slowConnectionThreshold < 0L)
-            throw new BeeDataSourceConfigException("The given value for configuration item 'slow-connection-threshold' must be greater than zero");
+        if (slowConnectionThreshold <= 0L)
+            throw new BeeDataSourceConfigException("The given value of 'slow-connection-threshold' must be greater than zero");
+        if (slowConnectionThreshold > this.maxWait)
+            throw new BeeDataSourceConfigException("The given value of 'slow-connection-threshold' cannot be greater than 'max-wait'");
         this.slowConnectionThreshold = slowConnectionThreshold;
     }
 
@@ -795,8 +798,8 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
     }
 
     public void setSlowSQLThreshold(long slowSQLThreshold) {
-        if (slowSQLThreshold < 0L)
-            throw new BeeDataSourceConfigException("The given value for configuration item 'slow-SQL-threshold' must be greater than zero");
+        if (slowSQLThreshold <= 0L)
+            throw new BeeDataSourceConfigException("The given value of 'slow-SQL-threshold' must be greater than zero");
         this.slowSQLThreshold = slowSQLThreshold;
     }
 
@@ -850,21 +853,13 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
     }
 
     //****************************************************************************************************************//
-    //                                     10: properties configuration(3)                                             //
+    //                                     10: load from file                                                         //
     //****************************************************************************************************************//
-    public void loadFromPropertiesFile(String filename) {
-        loadFromPropertiesFile(filename, null);
+    public void load(String filename) {
+        load(filename, null);
     }
 
-    public void loadFromPropertiesFile(File file) {
-        loadFromPropertiesFile(file, null);
-    }
-
-    public void loadFromProperties(Properties configProperties) {
-        loadFromProperties(configProperties, null);
-    }
-
-    public void loadFromPropertiesFile(String filename, String keyPrefix) {
+    public void load(String filename, String keyPrefix) {
         if (isBlank(filename))
             throw new BeeDataSourceConfigException("Load file name cannot be null or empty");
         String fileLowerCaseName = filename.toLowerCase(Locale.US);
@@ -874,17 +869,24 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
         if (fileLowerCaseName.startsWith("cp:")) {//1:'cp:' prefix
             String cpFileName = fileLowerCaseName.substring("cp:".length());
             Properties fileProperties = loadPropertiesFromClassPathFile(cpFileName);
-            loadFromProperties(fileProperties, keyPrefix);
+            load(fileProperties, keyPrefix);
         } else if (fileLowerCaseName.startsWith("classpath:")) {//2:'classpath:' prefix
             String cpFileName = fileLowerCaseName.substring("classpath:".length());
             Properties fileProperties = loadPropertiesFromClassPathFile(cpFileName);
-            loadFromProperties(fileProperties, keyPrefix);
+            load(fileProperties, keyPrefix);
         } else {//load a real path
-            loadFromPropertiesFile(new File(filename), keyPrefix);
+            load(new File(filename), keyPrefix);
         }
     }
 
-    public void loadFromPropertiesFile(File file, String keyPrefix) {
+    //****************************************************************************************************************//
+    //                                     11: load from file                                                         //
+    //****************************************************************************************************************//
+    public void load(File file) {
+        load(file, null);
+    }
+
+    public void load(File file, String keyPrefix) {
         if (file == null) throw new BeeDataSourceConfigException("Load file cannot be null");
         if (!file.exists()) throw new BeeDataSourceConfigException("Load file not found:(" + file + ")");
         if (!file.isFile()) throw new BeeDataSourceConfigException("Load file cannot be a folder:(" + file + ")");
@@ -895,38 +897,65 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
             Properties configProperties = new Properties();
             configProperties.load(stream);
 
-            this.loadFromProperties(configProperties, keyPrefix);
+            this.load(configProperties, keyPrefix);
         } catch (IOException e) {
             throw new BeeDataSourceConfigException("Failed to load configuration file:" + file, e);
         }
     }
 
-    public void loadFromProperties(Properties configProperties, String keyPrefix) {
+    //****************************************************************************************************************//
+    //                                     12: load from Properties                                                          //
+    //****************************************************************************************************************//
+    public void load(Properties configProperties) {
+        load(configProperties, null);
+    }
+
+    public void load(Properties configProperties, String keyPrefix) {
         if (configProperties == null || configProperties.isEmpty())
             throw new BeeDataSourceConfigException("Load properties cannot be null or empty");
 
+        Map<String, Object> configMap = new HashMap<>(configProperties.size());
+        for (Map.Entry<Object, Object> entry : configProperties.entrySet()) {
+            if (entry.getKey() instanceof String) {
+                configMap.put((String) entry.getKey(), entry.getValue());
+            }
+        }
+        load(configMap, keyPrefix);
+    }
+
+    //****************************************************************************************************************//
+    //                                     13: load from Map                                                          //
+    //****************************************************************************************************************//
+    public void load(Map<String, Object> valueMap) {
+        load(valueMap, null);
+    }
+
+    public void load(Map<String, Object> valueMap, String keyPrefix) {
+        if (valueMap == null || valueMap.isEmpty())
+            throw new BeeDataSourceConfigException("Load map cannot be null or empty");
+
         //1:load configuration item values from outside properties
-        HashMap<String, String> setValueMap;
+        HashMap<String, Object> setValueMap;
         if (isNotBlank(keyPrefix)) {
             if (keyPrefix.charAt(keyPrefix.length() - 1) != '.') keyPrefix = keyPrefix + ".";
             final int keyPrefixLen = keyPrefix.length();
-            setValueMap = new HashMap<>(configProperties.size());
-            for (Map.Entry<Object, Object> entry : configProperties.entrySet()) {
-                String key = (String) entry.getKey();
+            setValueMap = new HashMap<>(valueMap.size());
+            for (Map.Entry<String, Object> entry : valueMap.entrySet()) {
+                String key = entry.getKey();
                 if (key.startsWith(keyPrefix)) {
-                    setValueMap.put(key.substring(keyPrefixLen), (String) entry.getValue());
+                    setValueMap.put(key.substring(keyPrefixLen), entry.getValue());
                 }
             }
         } else {
-            setValueMap = new HashMap(configProperties);
+            setValueMap = new HashMap<>(valueMap);
         }
 
         //2: exclude some special keys in setValueMap
-        String connectPropertiesText = setValueMap.remove(CONFIG_FACTORY_PROP);//remove item if exists in properties file before injection
-        String connectPropertiesSize = setValueMap.remove(CONFIG_FACTORY_PROP_SIZE);//remove item if exists in properties file before injection
-        String sqlExceptionCode = setValueMap.remove(CONFIG_SQL_EXCEPTION_CODE);//remove item if exists in properties file before injection
-        String sqlExceptionState = setValueMap.remove(CONFIG_SQL_EXCEPTION_STATE);//remove item if exists in properties file before injection
-        String exclusionListText = setValueMap.remove(CONFIG_EXCLUSION_LIST_OF_PRINT);
+        Object connectionFactoryPropValue = setValueMap.remove(CONFIG_FACTORY_PROP);//remove item if exists in properties file before injection
+        Object connectionFactoryPropSizeValue = setValueMap.remove(CONFIG_FACTORY_PROP_SIZE);//remove item if exists in properties file before injection
+        Object sqlExceptionCodeValue = setValueMap.remove(CONFIG_SQL_EXCEPTION_CODE);//remove item if exists in properties file before injection
+        Object sqlExceptionStateValue = setValueMap.remove(CONFIG_SQL_EXCEPTION_STATE);//remove item if exists in properties file before injection
+        Object exclusionListOfPrintValue = setValueMap.remove(CONFIG_EXCLUSION_LIST_OF_PRINT);
 
         try {
             setPropertiesValue(this, setValueMap);
@@ -935,16 +964,25 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
         }
 
         //3:try to find 'connectProperties' config value and put to ds config object
-        this.addConnectionFactoryProperty(connectPropertiesText);
-        if (isNotBlank(connectPropertiesSize)) {
-            int size = Integer.parseInt(connectPropertiesSize.trim());
-            for (int i = 1; i <= size; i++)//properties index begin with 1
-                this.addConnectionFactoryProperty(getPropertyValue(setValueMap, CONFIG_FACTORY_PROP_KEY_PREFIX + i));
+        if (connectionFactoryPropValue instanceof String)
+            this.addConnectionFactoryProperty((String) connectionFactoryPropValue);
+        int connectPropertiesSize = 0;
+        if (connectionFactoryPropSizeValue instanceof String) {
+            connectPropertiesSize = Integer.parseInt(((String) connectionFactoryPropSizeValue).trim());
+        } else if (connectionFactoryPropSizeValue instanceof Number) {
+            connectPropertiesSize = ((Number) connectionFactoryPropSizeValue).intValue();
+        }
+        if (connectPropertiesSize > 0) {
+            for (int i = 1; i <= connectPropertiesSize; i++) {//properties index begin with 1
+                Object connectionFactoryProperty = getPropertyValue(setValueMap, CONFIG_FACTORY_PROP_KEY_PREFIX + i);
+                if (connectionFactoryProperty instanceof String)
+                    this.addConnectionFactoryProperty((String) connectionFactoryProperty);
+            }
         }
 
         //4: add error codes if not null and not empty
-        if (isNotBlank(sqlExceptionCode)) {
-            for (String code : sqlExceptionCode.trim().split(",")) {
+        if (sqlExceptionCodeValue instanceof String) {
+            for (String code : ((String) sqlExceptionCodeValue).trim().split(",")) {
                 try {
                     this.addSqlExceptionCode(Integer.parseInt(code));
                 } catch (NumberFormatException e) {
@@ -954,23 +992,23 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
         }
 
         //5: add sql states if not null and not empty
-        if (isNotBlank(sqlExceptionState)) {
-            for (String state : sqlExceptionState.trim().split(",")) {
+        if (sqlExceptionStateValue instanceof String) {
+            for (String state : ((String) sqlExceptionStateValue).trim().split(",")) {
                 this.addSqlExceptionState(state);
             }
         }
 
         //6:try to load exclusion list on config print
-        if (isNotBlank(exclusionListText)) {
+        if (exclusionListOfPrintValue instanceof String) {
             this.clearExclusionListOfPrint();//remove existed exclusion
-            for (String exclusion : exclusionListText.trim().split(",")) {
+            for (String exclusion : ((String) exclusionListOfPrintValue).trim().split(",")) {
                 this.addExclusionNameOfPrint(exclusion);
             }
         }
     }
 
     //****************************************************************************************************************//
-    //                                   11: configuration check and connection factory create methods(8)             //
+    //                                   14: configuration check and connection factory create methods(8)             //
     //****************************************************************************************************************//
 
     /**
@@ -1307,7 +1345,7 @@ public class BeeDataSourceConfig implements BeeDataSourceConfigMXBean {
                 switch (fieldName) {
                     case CONFIG_POOL_NAME_INDEX:
                     case CONFIG_DEFAULT_EXCLUSION_LIST:
-                    case CONFIG_EXCLUSION_LIST_OF_PRINT:
+                    case CONFIG_EXCLUSION_LIST_OF_PRINT: //copy 'exclusionConfigPrintList'
                         break;
                     case CONFIG_FACTORY_PROP: //copy 'connectionFactoryProperties'
                         if (!connectionFactoryProperties.isEmpty()) {

@@ -84,7 +84,7 @@ public class Tc0005JdbcLinkInfoTest {
 
         //situation1: config item name(hump)
         BeeDataSourceConfig config = createEmpty();
-        config.loadFromProperties(prop);
+        config.load(prop);
         assertEquals(user, config.getUsername());
         assertEquals(password, config.getPassword());
         assertEquals(url, config.getUrl());
@@ -95,7 +95,7 @@ public class Tc0005JdbcLinkInfoTest {
         prop.setProperty("jdbc-url", url);
         prop.setProperty("driver-class-name", driver);
         config = createEmpty();
-        config.loadFromProperties(prop);
+        config.load(prop);
         assertEquals(url, config.getUrl());
         assertEquals(url, config.getJdbcUrl());
         assertEquals(driver, config.getDriverClassName());
@@ -105,7 +105,7 @@ public class Tc0005JdbcLinkInfoTest {
         prop.setProperty("jdbc_url", url);
         prop.setProperty("driver_class_name", driver);
         config = createEmpty();
-        config.loadFromProperties(prop);
+        config.load(prop);
         assertEquals(url, config.getUrl());
         assertEquals(url, config.getJdbcUrl());
         assertEquals(driver, config.getDriverClassName());

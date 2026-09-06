@@ -10,15 +10,18 @@
 package org.stone.beecp.exception;
 
 /**
- * connection exception
+ * connection creation exception
  *
  * @author Chris Liao
  * @version 1.0
  */
+public class XaConnectionCreationException extends BeeSQLException {
 
-public class ConnectionRecycledException extends BeeSQLException {
+    public XaConnectionCreationException(String message) {
+        super(message);
+    }
 
-    public ConnectionRecycledException(Throwable cause) {
+    public XaConnectionCreationException(Throwable cause) {
         super(cause);
     }
 }

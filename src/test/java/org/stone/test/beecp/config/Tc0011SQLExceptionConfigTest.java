@@ -124,13 +124,13 @@ public class Tc0011SQLExceptionConfigTest {
         Properties prop = new Properties();
         prop.setProperty("sqlExceptionCodeList", "123");
         prop.setProperty("sqlExceptionStateList", "A");
-        config.loadFromProperties(prop);
+        config.load(prop);
         Assertions.assertTrue(config.getSqlExceptionCodeList().contains(Integer.valueOf(123)));
         Assertions.assertTrue(config.getSqlExceptionStateList().contains("A"));
 
         prop.put("sqlExceptionCodeList", "1,A,C");//contains invalid error code
         try {
-            config.loadFromProperties(prop);
+            config.load(prop);
             fail("[testLoadFromProperties]not threw exception when set invalid sql-exception-code");
         } catch (Exception e) {
             String message = e.getMessage();

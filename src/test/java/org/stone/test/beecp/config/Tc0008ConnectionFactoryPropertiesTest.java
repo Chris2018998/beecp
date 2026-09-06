@@ -88,7 +88,7 @@ public class Tc0008ConnectionFactoryPropertiesTest {
         BeeDataSourceConfig config1 = createEmpty();
         Properties prop1 = new Properties();
         prop1.setProperty("connectionFactoryProperties", "prop1=value1&prop2=value2&prop3=value3");
-        config1.loadFromProperties(prop1);
+        config1.load(prop1);
         Assertions.assertEquals("value1", config1.getConnectionFactoryProperty("prop1"));
         Assertions.assertEquals("value2", config1.getConnectionFactoryProperty("prop2"));
         Assertions.assertEquals("value3", config1.getConnectionFactoryProperty("prop3"));
@@ -96,7 +96,7 @@ public class Tc0008ConnectionFactoryPropertiesTest {
         BeeDataSourceConfig config2 = createEmpty();
         Properties prop2 = new Properties();
         prop2.setProperty("connectionFactoryProperties", "prop1:value1&prop2:value2&prop3:value3");
-        config2.loadFromProperties(prop2);
+        config2.load(prop2);
         Assertions.assertEquals("value1", config2.getConnectionFactoryProperty("prop1"));
         Assertions.assertEquals("value2", config2.getConnectionFactoryProperty("prop2"));
         Assertions.assertEquals("value3", config2.getConnectionFactoryProperty("prop3"));
@@ -107,7 +107,7 @@ public class Tc0008ConnectionFactoryPropertiesTest {
         prop3.setProperty("connectionFactoryProperties.1", "prop1=value1");
         prop3.setProperty("connectionFactoryProperties.2", "prop2:value2");
         prop3.setProperty("connectionFactoryProperties.3", "prop3=value3");
-        config3.loadFromProperties(prop3);
+        config3.load(prop3);
         Assertions.assertEquals("value1", config3.getConnectionFactoryProperty("prop1"));
         Assertions.assertEquals("value2", config3.getConnectionFactoryProperty("prop2"));
         Assertions.assertEquals("value3", config3.getConnectionFactoryProperty("prop3"));

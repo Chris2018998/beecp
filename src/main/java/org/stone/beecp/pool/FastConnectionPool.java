@@ -53,11 +53,11 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
     private static final AtomicIntegerFieldUpdater<FastConnectionPool> PoolStateUpd = IntegerFieldUpdaterImpl.newUpdater(FastConnectionPool.class, "poolState");
     private static final AtomicIntegerFieldUpdater<FastConnectionPool> ServantTryCountUpd = IntegerFieldUpdaterImpl.newUpdater(FastConnectionPool.class, "servantTryCount");
     LogPrinter logPrinter = DefaultLogPrinter;
-
     String poolName;
     volatile int poolState;
     volatile int servantState;
     volatile int servantTryCount;
+
     BeeDataSourceConfig poolConfig;
     PooledConnection[] connectionArray;//fixed len
     ConcurrentLinkedQueue<Borrower> waitQueue;
@@ -103,7 +103,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
     //***************************************************************************************************************//
     public void start(BeeDataSourceConfig config) throws SQLException {
         if (config == null)
-            throw new BeeDataSourcePoolStartedFailureException("Data source configuration can't be null");
+            throw new BeeDataSourcePoolStartFailedException("Data source configuration can't be null");
         if (PoolStateUpd.compareAndSet(this, POOL_NEW, POOL_STARTING)) {//initializes after cas success to change pool state
             try {
                 checkJdbcProxyClass();
@@ -113,10 +113,10 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
                 logPrinter.info("BeeCP({})-started failure", this.poolName, e);
                 this.shutdownInternalThreads(false);//clear some internal member
                 this.poolState = POOL_NEW;//reset state to new after failure
-                throw new BeeDataSourcePoolStartedFailureException("Data source pool started failure", e);
+                throw new BeeDataSourcePoolStartFailedException("Data source pool started failure", e);
             }
         } else {
-            throw new BeeDataSourcePoolStartedFailureException("Data source pool is starting up or already has started");
+            throw new BeeDataSourcePoolStartFailedException("Data source pool is starting up or already has started");
         }
     }
 
@@ -285,7 +285,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
             } catch (SQLException e) {
                 if (syn) {
                     for (int i = 0; i < index; i++)
-                        connectionArray[i].onRemove(DESC_RM_POOL_START);
+                        connectionArray[i].destroy(DESC_RM_POOL_START);
                     throw e;
                 } else {//print log under async mode
                     logPrinter.warn("Failed to create initial connections by async mode", e);
@@ -312,8 +312,8 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
                 rawXaConn = this.rawXaConnFactory.create();//this call may be blocked
                 if (rawXaConn == null) {
                     if (creatingThread.isInterrupted() && Thread.interrupted())
-                        throw new ConnectionGetInterruptedException("An interruption occurred when created an XA connection");
-                    throw new XaConnectionCreatedException("A unknown error occurred when created an XA connection");
+                        throw new ConnectionGetInterruptedException("An interruption occurred during creating an XA connection");
+                    throw new XaConnectionCreationException("XA connection created failed,null returned from XAConnection factory");
                 }
                 rawConn = rawXaConn.getConnection();
                 rawXaRes = rawXaConn.getXAResource();
@@ -321,8 +321,8 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
                 rawConn = this.rawConnFactory.create();
                 if (rawConn == null) {
                     if (creatingThread.isInterrupted() && Thread.interrupted())
-                        throw new ConnectionGetInterruptedException("An interruption occurred when created a connection");
-                    throw new ConnectionCreatedException("A unknown error occurred when created a connection");
+                        throw new ConnectionGetInterruptedException("An interruption occurred during creating a connection");
+                    throw new ConnectionCreationException("Connection created failed,null returned from connection factory");
                 }
             }
 
@@ -344,7 +344,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
             p.state = CON_CLOSED;//reset to closed state
             if (rawConn != null) oclose(rawConn);
             else if (rawXaConn != null) oclose(rawXaConn);
-            throw e instanceof SQLException ? (SQLException) e : new ConnectionCreatedException(e);
+            throw e instanceof SQLException ? (SQLException) e : new ConnectionCreationException(e);
         } finally {
             p.creatingInfo = null;//clear filling of pooled connection
         }
@@ -363,7 +363,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
                     throw new ConnectionDefaultValueGetException("Failed to get default value of 'auto-commit' from initial test connection", e);
                 }
             } else {
-                defaultAutoCommit = poolConfig.isDefaultAutoCommit().booleanValue();
+                defaultAutoCommit = poolConfig.isDefaultAutoCommit();
             }
 
             try {
@@ -384,7 +384,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
                     throw new ConnectionDefaultValueGetException("Failed to get default value of 'transaction-isolation' from initial test connection", e);
                 }
             } else {
-                defaultTransactionIsolation = poolConfig.getDefaultTransactionIsolation().intValue();
+                defaultTransactionIsolation = poolConfig.getDefaultTransactionIsolation();
             }
 
             try {
@@ -405,7 +405,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
                     throw new ConnectionDefaultValueGetException("Failed to get default value of 'read-only' from initial test connection", e);
                 }
             } else {
-                defaultReadOnly = poolConfig.isDefaultReadOnly().booleanValue();
+                defaultReadOnly = poolConfig.isDefaultReadOnly();
             }
 
             try {
@@ -537,13 +537,17 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
     public Connection getConnection() throws SQLException {
         if (this.collectMethodLogs) {
             BeeMethodLog log = methodLogCache.beforeCall(Type_Pool_Log, "FastConnectionPool.getConnection()", null, null, null);
+
+            Object result = null;
             try {
                 Connection con = this.conProxyFactory.createProxyConnection(this.getPooledConnection());
-                methodLogCache.afterCall(con, 0L, null, log);
+                result = con;
                 return con;
             } catch (SQLException e) {
-                methodLogCache.afterCall(e, 0L, null, log);
+                result = e;
                 throw e;
+            } finally {
+                methodLogCache.afterCall(result, 0L, null, log);
             }
         } else {
             return this.conProxyFactory.createProxyConnection(this.getPooledConnection());
@@ -553,16 +557,20 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
     public XAConnection getXAConnection() throws SQLException {
         if (this.collectMethodLogs) {
             BeeMethodLog log = methodLogCache.beforeCall(Type_Pool_Log, "FastConnectionPool.getXAConnection()", null, null, null);
+
+            Object result = null;
             try {
                 PooledConnection p = this.getPooledConnection();
                 ProxyConnectionBase proxyConn = this.conProxyFactory.createProxyConnection(p);
                 XAResource proxyResource = this.isRawXaConnFactory ? new XaProxyResource(p.rawXaRes, proxyConn) : new XaResourceLocalImpl(proxyConn);
                 XAConnection xaConn = new XaProxyConnection(proxyConn, proxyResource);
-                methodLogCache.afterCall(xaConn, 0L, null, log);
+                result = xaConn;
                 return xaConn;
             } catch (SQLException e) {
-                methodLogCache.afterCall(e, 0L, null, log);
+                result = e;
                 throw e;
+            } finally {
+                methodLogCache.afterCall(result, 0L, null, log);
             }
         } else {
             PooledConnection p = this.getPooledConnection();
@@ -575,7 +583,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
     //******* Core method for get *****
     private PooledConnection getPooledConnection() throws SQLException {
         if (this.poolState != POOL_READY)
-            throw new BeeDataSourcePoolNotReadyException("Pool has been closed or is restarting");
+            throw new BeeDataSourcePoolNotReadyException("Pool was not ready");
 
         //1: try to reuse last used connection
         Borrower b = null;
@@ -589,6 +597,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
                     if (state == CON_IDLE) {
                         if (ConStUpd.compareAndSet(p, CON_IDLE, CON_BORROWED)) {
                             if (this.testOnBorrow(p)) return p;
+                            return this.fillRawConnection(p, CON_BORROWED, b.thread);
                         } else if (p.state == CON_CLOSED && ConStUpd.compareAndSet(p, CON_CLOSED, CON_CREATING)) {
                             return this.fillRawConnection(p, CON_BORROWED, b.thread);
                         }
@@ -631,9 +640,13 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
                         Object s = b.state;//acceptable types: PooledConnection,Throwable,null
                         if (s instanceof PooledConnection) {
                             p = (PooledConnection) s;
-                            if (this.transferPolicy.tryCatch(p) && this.testOnBorrow(p)) {
-                                this.waitQueue.remove(b);
-                                return b.lastUsed = p;
+                            if (this.transferPolicy.tryCatch(p)) {
+                                try {
+                                    if (this.testOnBorrow(p)) return b.lastUsed = p;
+                                    return b.lastUsed = this.fillRawConnection(p, CON_BORROWED, b.thread);
+                                } finally {
+                                    this.waitQueue.remove(b);
+                                }
                             }
                         } else if (s instanceof Throwable) {//here: s must be throwable object
                             this.waitQueue.remove(b);
@@ -667,8 +680,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
     //Check borrowed connection is whether alive
     private boolean testOnBorrow(PooledConnection p) {
         if (System.currentTimeMillis() - p.lastAccessTime - this.aliveAssumeTimeMs >= 0L && !this.conValidTest.isAlive(p)) {
-            p.onRemove(DESC_RM_CON_BAD);
-            this.tryWakeupServantThread();
+            p.clean(DESC_RM_CON_BAD);
             return false;
         } else {
             return true;
@@ -708,6 +720,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
             if (state == CON_IDLE) {
                 if (ConStUpd.compareAndSet(p, CON_IDLE, CON_BORROWED)) {
                     if (this.testOnBorrow(p)) return p;
+                    return this.fillRawConnection(p, CON_BORROWED, creatingThread);
                 } else if (p.state == CON_CLOSED && ConStUpd.compareAndSet(p, CON_CLOSED, CON_CREATING)) {
                     return this.fillRawConnection(p, CON_BORROWED, creatingThread);
                 }
@@ -727,7 +740,10 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
             s = b.state;
             if (s instanceof PooledConnection) {
                 p = (PooledConnection) s;
-                if (!(this.transferPolicy.tryCatch(p) && this.testOnBorrow(p))) {
+                if (this.transferPolicy.tryCatch(p)) {
+                    if (!this.testOnBorrow(p))
+                        this.fillRawConnection(p, CON_BORROWED, b.thread);
+                } else {
                     p = null;
                 }
             } else if (s instanceof Throwable) {
@@ -771,7 +787,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
     }
 
     void abort(PooledConnection p, String reason) {
-        p.onRemove(reason);
+        p.destroy(reason);
         this.tryWakeupServantThread();
     }
 
@@ -837,11 +853,11 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
                 if (e instanceof BeeDataSourcePoolException) {
                     throw (BeeDataSourcePoolException) e;
                 } else {
-                    throw new BeeDataSourcePoolRestartedFailureException("Data source pool restarted failure", e);
+                    throw new BeeDataSourcePoolRestartFailedException("Data source pool restarted failure", e);
                 }
             }
         } else {
-            throw new BeeDataSourcePoolRestartedFailureException("Pool has been closed or is restarting");
+            throw new BeeDataSourcePoolRestartFailedException("Pool has been closed or is restarting");
         }
     }
 
@@ -857,7 +873,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
                 if (state == CON_IDLE) {
                     if (ConStUpd.compareAndSet(p, CON_IDLE, CON_CLOSED)) {
                         closedCount++;
-                        p.onRemove(source);
+                        p.destroy(source);
                     }
                 } else if (state == CON_BORROWED) {
                     ProxyConnectionBase proxyInUsing = p.proxyInUsing;
@@ -1073,7 +1089,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
 
         //2: transfer exception to waiter in queue
         if (this.waitQueue != null && !this.waitQueue.isEmpty()) {
-            BeeDataSourcePoolRestartedFailureException exception = new BeeDataSourcePoolRestartedFailureException("Pool has been closed or is restarting");
+            BeeDataSourcePoolRestartFailedException exception = new BeeDataSourcePoolRestartFailedException("Pool has been closed or is restarting");
             while (!this.waitQueue.isEmpty()) this.transferException(exception);
         }
 
@@ -1206,16 +1222,18 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
             if (servantState == THREAD_EXIT) break;
             if (servantState == THREAD_WORKING) {
                 if (servantTryCount > 0 && !waitQueue.isEmpty()) {
-                    ServantTryCountUpd.decrementAndGet(this);//only here to decrement
-                    try {
-                        PooledConnection p = searchOrCreate(currentThread);
-                        if (p != null) recycle(p);
-                    } catch (Throwable e) {
-                        this.transferException(e);
+                    if (ServantTryCountUpd.compareAndSet(this, servantTryCount, servantTryCount - 1)) {
+                        try {
+                            PooledConnection p = searchOrCreate(currentThread);
+                            if (p != null) recycle(p);
+                        } catch (Throwable e) {
+                            this.transferException(e);
+                        }
                     }
                 } else if (ServantStateUpd.compareAndSet(this, THREAD_WORKING, THREAD_WAITING)) {
                     LockSupport.park();
                 }
+
             } else {//THREAD_WAITING(maybe park fail)
                 this.servantState = THREAD_WORKING;
             }
@@ -1244,7 +1262,7 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
             } else if (state == CON_IDLE && this.semaphore.availablePermits() == this.semaphoreSize) {//no borrowers on semaphore
                 boolean isTimeoutInIdle = System.currentTimeMillis() - p.lastAccessTime - this.idleTimeoutMs >= 0L;
                 if (isTimeoutInIdle && ConStUpd.compareAndSet(p, state, CON_CLOSED)) {//need close idle
-                    p.onRemove(DESC_RM_CON_IDLE);
+                    p.destroy(DESC_RM_CON_IDLE);
                     this.tryWakeupServantThread();
                 }
             } else if (state == CON_BORROWED && supportHoldTimeout) {
@@ -1273,10 +1291,9 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
             this.poolName = poolName;
         }
 
+        @Override
         public Thread newThread(Runnable r) {
-            Thread th = new Thread(r, poolName + "-networkTimeoutRestThread");
-            th.setDaemon(true);
-            return th;
+            return new Thread(r, poolName);
         }
     }
 
@@ -1382,9 +1399,9 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
         private final boolean supportQueryTimeout;
         private final FastConnectionPool pool;
 
-        public PooledConnectionAliveTestBySql(String poolName, String testSql, int validTestTimeout,
-                                              boolean isDefaultAutoCommit, boolean supportQueryTimeout,
-                                              FastConnectionPool pool) {
+        PooledConnectionAliveTestBySql(String poolName, String testSql, int validTestTimeout,
+                                       boolean isDefaultAutoCommit, boolean supportQueryTimeout,
+                                       FastConnectionPool pool) {
             this.poolName = poolName;
             this.testSql = testSql;
             this.validTestTimeout = validTestTimeout;
@@ -1392,7 +1409,6 @@ public class FastConnectionPool extends Thread implements BeeConnectionPool, Fas
             this.supportQueryTimeout = supportQueryTimeout;
             this.pool = pool;
         }
-
 
         //In order to avoid possible dirty data into db,the value of auto-commit property of the target connection must be false
         public boolean isAlive(PooledConnection p) {//

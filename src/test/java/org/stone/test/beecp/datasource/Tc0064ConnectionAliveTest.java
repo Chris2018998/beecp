@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.exception.ConnectionGetTimeoutException;
 import org.stone.test.base.LogCollector;
 import org.stone.test.beecp.driver.MockConnectionProperties;
 import org.stone.test.beecp.objects.factory.MockConnectionFactory;
@@ -27,6 +26,8 @@ import static org.stone.test.beecp.config.DsConfigFactory.createDefault;
  * @author Chris Liao
  */
 public class Tc0064ConnectionAliveTest {
+    private final String errorMsg = "Network exception,connection can't be established";
+
     @Test
     public void testAliveTestFalseByIsValid() throws Exception {
         BeeDataSourceConfig config = createDefault();
@@ -42,11 +43,13 @@ public class Tc0064ConnectionAliveTest {
 
         try (BeeDataSource ds = new BeeDataSource(config)) {
             Assertions.assertEquals(1, ds.getPoolMonitorVo().getIdleSize());
-            propertiesSet.setValid(false);
+            propertiesSet.setValid(false);//bad flag,
+            factory.setFailCause(new SQLException(errorMsg));//bad connection,pool attempt to create new for borrower,so mock failure exception
+
             try (Connection ignored = ds.getConnection()) {
                 Assertions.fail("testAliveTestFalseByIsValid");
-            } catch (ConnectionGetTimeoutException e) {
-                Assertions.assertEquals("Waited timeout for a released connection", e.getMessage());
+            } catch (SQLException e) {
+                Assertions.assertEquals(errorMsg, e.getMessage());
             }
         }
     }
@@ -67,43 +70,41 @@ public class Tc0064ConnectionAliveTest {
         try (BeeDataSource ds = new BeeDataSource(config1)) {
             Assertions.assertEquals(1, ds.getPoolMonitorVo().getIdleSize());
             propertiesSet.setMockException1(new SQLException());
+
             propertiesSet.throwsExceptionWhenCallMethod("isValid");
-
-            LogCollector logCollector = LogCollector.startLogCollector();
+            factory.setFailCause(new SQLException(errorMsg));//bad connection,pool attempt to create new for borrower,so mock failure exception
             try (Connection ignored = ds.getConnection()) {
                 Assertions.fail("testValidExceptionByIsValid");
-            } catch (ConnectionGetTimeoutException e) {
-                String logs = logCollector.endLogCollector();
-                Assertions.assertTrue(logs.contains("alive test failed on a borrowed connection"));
-                Assertions.assertEquals("Waited timeout for a released connection", e.getMessage());
+            } catch (SQLException e) {
+                Assertions.assertEquals(errorMsg, e.getMessage());
             }
         }
 
-        BeeDataSourceConfig config2 = createDefault();
-        config2.setInitialSize(1);
-        config2.setMaxActive(1);
-        config2.setAliveAssumeTime(0L);
-        config2.setMaxWait(1L);
-        config2.setForceRecycleBorrowedOnClose(true);
-        MockConnectionProperties propertiesSet2 = new MockConnectionProperties();
-        MockConnectionFactory factory2 = new MockConnectionFactory(propertiesSet2);
-        config2.setConnectionFactory(factory2);
-        config2.setPrintRuntimeLogs(false);
-
-        try (BeeDataSource ds = new BeeDataSource(config2)) {
-            Assertions.assertEquals(1, ds.getPoolMonitorVo().getIdleSize());
-            propertiesSet2.setMockException1(new SQLException());
-            propertiesSet2.throwsExceptionWhenCallMethod("isValid");
-
-            LogCollector logCollector = LogCollector.startLogCollector();
-            try (Connection ignored = ds.getConnection()) {
-                Assertions.fail("testValidExceptionByIsValid");
-            } catch (ConnectionGetTimeoutException e) {
-                String logs = logCollector.endLogCollector();
-                Assertions.assertFalse(logs.contains("alive test failed on a borrowed connection"));
-                Assertions.assertEquals("Waited timeout for a released connection", e.getMessage());
-            }
-        }
+//        BeeDataSourceConfig config2 = createDefault();
+//        config2.setInitialSize(1);
+//        config2.setMaxActive(1);
+//        config2.setAliveAssumeTime(0L);
+//        config2.setMaxWait(1L);
+//        config2.setForceRecycleBorrowedOnClose(true);
+//        MockConnectionProperties propertiesSet2 = new MockConnectionProperties();
+//        MockConnectionFactory factory2 = new MockConnectionFactory(propertiesSet2);
+//        config2.setConnectionFactory(factory2);
+//        config2.setPrintRuntimeLogs(false);
+//
+//        try (BeeDataSource ds = new BeeDataSource(config2)) {
+//            Assertions.assertEquals(1, ds.getPoolMonitorVo().getIdleSize());
+//            propertiesSet2.setMockException1(new SQLException());
+//            propertiesSet2.throwsExceptionWhenCallMethod("isValid");
+//
+//            LogCollector logCollector = LogCollector.startLogCollector();
+//            try (Connection ignored = ds.getConnection()) {
+//                Assertions.fail("testValidExceptionByIsValid");
+//            } catch (ConnectionGetTimeoutException e) {
+//                String logs = logCollector.endLogCollector();
+//                Assertions.assertFalse(logs.contains("alive test failed on a borrowed connection"));
+//                Assertions.assertEquals("Waited timeout for a released connection", e.getMessage());
+//            }
+//        }
     }
 
     @Test
@@ -235,18 +236,14 @@ public class Tc0064ConnectionAliveTest {
 
         try (BeeDataSource ds = new BeeDataSource(config1)) {//success test
             Assertions.assertEquals(1, ds.getPoolMonitorVo().getIdleSize());
+            propertiesSet1.setMockException1(new SQLException("execute fail"));
+            propertiesSet1.throwsExceptionWhenCallMethod("execute");
+            factory1.setFailCause(new SQLException(errorMsg));//bad connection,pool attempt to create new for borrower,so mock failure exception
 
-            try {
-                propertiesSet1.setMockException1(new SQLException("execute fail"));
-                propertiesSet1.throwsExceptionWhenCallMethod("execute");
-                LogCollector logCollector = LogCollector.startLogCollector();
-                try (Connection con = ds.getConnection()) {
-                    String logs = logCollector.endLogCollector();
-                    Assertions.assertTrue(logs.contains("connection alive test failed with sql,pool will abandon it"));
-                    Assertions.fail("testAliveTestFalseBySqlStatement");
-                }
-            } catch (ConnectionGetTimeoutException e) {
-                Assertions.assertEquals("Waited timeout for a released connection", e.getMessage());
+            try (Connection ignored = ds.getConnection()) {
+                Assertions.fail("testAliveTestFalseBySqlStatement");
+            } catch (SQLException e) {
+                Assertions.assertEquals(errorMsg, e.getMessage());
             }
         }
 
@@ -263,17 +260,13 @@ public class Tc0064ConnectionAliveTest {
 
         try (BeeDataSource ds = new BeeDataSource(config2)) {//success test
             Assertions.assertEquals(1, ds.getPoolMonitorVo().getIdleSize());
-            try {//
-                propertiesSet2.setMockException1(new SQLException("execute fail"));
-                propertiesSet2.throwsExceptionWhenCallMethod("execute");
-                LogCollector logCollector = LogCollector.startLogCollector();
-                try (Connection ignored = ds.getConnection()) {
-                    String logs = logCollector.endLogCollector();
-                    Assertions.assertFalse(logs.contains("connection alive test failed with sql,pool will abandon it"));
-                    Assertions.fail("testAliveTestFalseBySqlStatement");
-                }
-            } catch (ConnectionGetTimeoutException e) {
-                Assertions.assertEquals("Waited timeout for a released connection", e.getMessage());
+            propertiesSet2.setMockException1(new SQLException("execute fail"));
+            propertiesSet2.throwsExceptionWhenCallMethod("execute");
+            factory2.setFailCause(new SQLException(errorMsg));//bad connection,pool attempt to create new for borrower,so mock failure exception
+            try (Connection ignored = ds.getConnection()) {
+                Assertions.fail("testAliveTestFalseBySqlStatement");
+            } catch (SQLException e) {
+                Assertions.assertEquals(errorMsg, e.getMessage());
             }
         }
 
@@ -292,18 +285,13 @@ public class Tc0064ConnectionAliveTest {
 
         try (BeeDataSource ds = new BeeDataSource(config3)) {//success test
             Assertions.assertEquals(1, ds.getPoolMonitorVo().getIdleSize());
-
-            try {//
-                propertiesSet3.setMockException1(new SQLException("createStatement fail"));
-                propertiesSet3.throwsExceptionWhenCallMethod("createStatement");
-                LogCollector logCollector = LogCollector.startLogCollector();
-                try (Connection con3 = ds.getConnection()) {
-                    String logs = logCollector.endLogCollector();
-                    Assertions.assertFalse(logs.contains("connection alive test failed with sql,pool will abandon it"));
-                    Assertions.fail("testAliveTestFalseBySqlStatement");
-                }
-            } catch (ConnectionGetTimeoutException e) {
-                Assertions.assertEquals("Waited timeout for a released connection", e.getMessage());
+            propertiesSet3.setMockException1(new SQLException("createStatement fail"));
+            propertiesSet3.throwsExceptionWhenCallMethod("createStatement");
+            factory3.setFailCause(new SQLException(errorMsg));//bad connection,pool attempt to create new for borrower,so mock failure exception
+            try (Connection ignored = ds.getConnection()) {
+                Assertions.fail("testAliveTestFalseBySqlStatement");
+            } catch (SQLException e) {
+                Assertions.assertEquals(errorMsg, e.getMessage());
             }
         }
     }

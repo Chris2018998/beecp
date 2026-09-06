@@ -40,6 +40,8 @@ public interface BeeConnectionPoolMonitorVo extends Serializable {
 
     boolean isClosing();
 
+    boolean isClosed();
+
     boolean isStarting();
 
     boolean isRestarting();

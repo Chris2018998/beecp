@@ -31,8 +31,9 @@ public final class XaProxyConnection implements XAConnection {
         this.proxyResource = proxyResource;
     }
 
+    //Closes the physical connection(called not the client)
     public void close() throws SQLException {
-        this.proxyConn.close();
+        this.proxyConn.abort(null);
     }
 
     public Connection getConnection() throws SQLException {

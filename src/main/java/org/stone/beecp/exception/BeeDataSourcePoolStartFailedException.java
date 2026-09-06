@@ -10,18 +10,17 @@
 package org.stone.beecp.exception;
 
 /**
- * connection creation exception
+ * Throws this exception when data source pool startup fail.
  *
  * @author Chris Liao
  * @version 1.0
  */
-public class XaConnectionCreatedException extends BeeSQLException {
-
-    public XaConnectionCreatedException(String message) {
-        super(message);
+public class BeeDataSourcePoolStartFailedException extends BeeDataSourcePoolException {
+    public BeeDataSourcePoolStartFailedException(String s) {
+        super(s);
     }
 
-    public XaConnectionCreatedException(Throwable cause) {
-        super(cause);
+    public BeeDataSourcePoolStartFailedException(String s, Throwable cause) {
+        super(s, cause);
     }
 }

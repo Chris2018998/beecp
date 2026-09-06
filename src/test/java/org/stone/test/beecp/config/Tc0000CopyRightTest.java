@@ -1,4 +1,3 @@
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -25,14 +24,15 @@ public class Tc0000CopyRightTest {
 
     @Test
     public void testOnPrintRightInfo() {
-        String buf = "*********************************************************************************\n" +
-                "*                                                                               *\n" +
-                "*                            BeeCP Test                                         *\n" +
-                "*                                                                               *\n" +
-                "*                                                     Author:Chris2018998       *\n" +
-                "*                                                     All rights reserved       *\n" +
-                "********************************************************************************\n";
 
+        String buf =
+                "*********************************************************************************\n"
+                        + "*                                                                               *\n"
+                        + "*                            BeeCP Test                                         *\n"
+                        + "*                                                                               *\n"
+                        + "*                                                     Author:Chris2018998       *\n"
+                        + "*                                                     All rights reserved       *\n"
+                        + "********************************************************************************\n";
         try {
             InitTest.switchToSystemOut();
             System.out.print(buf);

@@ -10,7 +10,7 @@
 package org.stone.beecp.pool;
 
 import org.stone.beecp.BeeConnectionPredicate;
-import org.stone.beecp.exception.ConnectionRecycledException;
+import org.stone.beecp.exception.ConnectionRecycleException;
 
 import javax.transaction.xa.XAResource;
 import java.sql.Connection;
@@ -191,34 +191,35 @@ final class PooledConnection {
             this.pool.recycle(this);
         } catch (Throwable e) {
             this.pool.abort(this, DESC_RM_CON_BAD);
-            throw e instanceof SQLException ? (SQLException) e : new ConnectionRecycledException(e);
+            throw e instanceof SQLException ? (SQLException) e : new ConnectionRecycleException(e);
         }
     }
 
     //***************************************************************************************************************//
     //                                    6:call back method                                                         //                                                                                  //
     //***************************************************************************************************************//
-
-    /**
-     * call back while remove pooledConnection from pool
-     */
-    void onRemove(String msg) {
-        pool.logPrinter.info("BeeCP({})-begin to remove a pooled connection:{} for cause:{}", pool.poolName, this, msg);
+    //called in borrow test
+    void clean(String msg) {
+        pool.logPrinter.info("BeeCP({})-begin to clean a pooled connection:{} for cause:{}", pool.poolName, this, msg);
 
         try {
             this.resetRawConn();
         } catch (Throwable e) {
-            pool.logPrinter.warn("BeeCP({})-resetting connection failed", pool.poolName, e);
+            pool.logPrinter.warn("BeeCP({})-clean pooled connection failed", pool.poolName, e);
         } finally {
             oclose(this.rawConn);
-
             this.rawConn = null;
             this.rawXaRes = null;
             this.proxyInUsing = null;
             this.resetFlags = null;
             this.openStatements = null;
-            this.state = CON_CLOSED;
         }
+    }
+
+    //called when idle-timeout or pool shutdown
+    void destroy(String msg) {
+        clean(msg);
+        this.state = CON_CLOSED;
     }
 
     //***************************************************************************************************************//

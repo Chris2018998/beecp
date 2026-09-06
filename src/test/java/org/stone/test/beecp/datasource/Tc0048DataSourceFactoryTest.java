@@ -9,6 +9,8 @@
  */
 package org.stone.test.beecp.datasource;
 
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeDataSource;
@@ -20,8 +22,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 import java.lang.reflect.Method;
 import java.util.Hashtable;
 

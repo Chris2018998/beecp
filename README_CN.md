@@ -27,7 +27,7 @@ Java7+
 <dependency>
    <groupId>com.github.chris2018998</groupId>
    <artifactId>beecp</artifactId>
-   <version>5.2.2</version>
+   <version>5.2.3</version>
 </dependency>
 ```
 

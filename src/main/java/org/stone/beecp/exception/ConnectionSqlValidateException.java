@@ -15,9 +15,9 @@ package org.stone.beecp.exception;
  * @author Chris Liao
  * @version 1.0
  */
-public class ConnectionTestSqlExecutedException extends BeeSQLException {
+public class ConnectionSqlValidateException extends BeeSQLException {
 
-    public ConnectionTestSqlExecutedException(String message, Throwable cause) {
+    public ConnectionSqlValidateException(String message, Throwable cause) {
         super(message, cause);
     }
 }

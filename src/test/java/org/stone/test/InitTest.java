@@ -18,7 +18,6 @@ import java.io.*;
 import java.net.URL;
 import java.util.Properties;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.stone.test.base.TestUtil.getClassVersion;
 
 /**
@@ -27,10 +26,10 @@ import static org.stone.test.base.TestUtil.getClassVersion;
  * @author chris liao
  */
 public class InitTest {
-    public static PrintStream systemOut;
-    public static PrintStream systemErr;
-    public static PrintStream systemTestOut;
-    public static PrintStream systemTestErr;
+    private static PrintStream systemOut;
+    private static PrintStream systemErr;
+    private static PrintStream systemTestOut;
+    private static PrintStream systemTestErr;
 
     public static void switchToSystemOut() {
         System.setOut(systemOut);
@@ -46,8 +45,8 @@ public class InitTest {
     public void testPreparation() throws Exception {
         Class<?> currentClass = this.getClass();
         String init_file = currentClass.getSimpleName() + ".properties";
-        try (InputStream fileStream = this.getClass().getClassLoader().getResourceAsStream(init_file)) {
-            if (fileStream == null) throw new IOException("Can't find file:'" + init_file + "' in classpath");
+        try (InputStream fileStream = currentClass.getClassLoader().getResourceAsStream(init_file)) {
+            if (fileStream == null) throw new IOException("Not found file:'" + init_file + "' in classpath");
             Properties prop = new Properties();
             prop.load(fileStream);
             String targetVersion = prop.getProperty("classes.major");
@@ -74,6 +73,5 @@ public class InitTest {
 
         systemTestOut = new PrintStream(new ByteArrayOutputStream());
         systemTestErr = new PrintStream(new ByteArrayOutputStream());
-        assertTrue(true);
     }
 }

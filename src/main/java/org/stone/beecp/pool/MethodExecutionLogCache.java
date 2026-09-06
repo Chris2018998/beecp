@@ -30,8 +30,6 @@ import static org.stone.beecp.BeeMethodLog.*;
 final class MethodExecutionLogCache {
     //pool name
     private String poolName;
-    //cache size
-    private int maxSize;
     //slow threshold value of connection get,time unit:milliseconds,refer to {@code BeeDataSourceConfig.slowConnectionGetThreshold}
     private long slowConnectionThreshold;
     //slow threshold of sql execution,time unit:milliseconds,refer to {@code BeeDataSourceConfig.slowSQLExecutionThreshold}
@@ -62,7 +60,6 @@ final class MethodExecutionLogCache {
         this.slowConnectionThreshold = slowGet;
         this.slowSQLThreshold = slowExec;
 
-        this.maxSize = cacheSize;
         this.connectionGetLogsQueue = new LinkedBlockingQueue<>(cacheSize);
         this.sqlExecutionLogsQueue = new LinkedBlockingQueue<>(cacheSize);
     }
@@ -75,44 +72,36 @@ final class MethodExecutionLogCache {
     //                                         2: logs record                                                        //
     //***************************************************************************************************************//
     public BeeMethodLog beforeCall(int type, String method, Object[] parameters, String sql, Statement statement) throws SQLException {
-        MethodExecutionLog log = new MethodExecutionLog(poolName, type, method, parameters, statement);
-        this.offerQueue(log, type, parameters, sql);
-        if (listener != null) listener.onMethodStart(log);//can put sql check,sql parse....
+        MethodExecutionLog log = new MethodExecutionLog(poolName, type, method, parameters, sql, statement);
+        if (listener != null) listener.onMethodStart(log);
+        this.offerQueue(log);
         return log;
     }
 
-    private void offerQueue(MethodExecutionLog log, int type, Object[] parameters, String sql) {
+    private void offerQueue(MethodExecutionLog log) {
         LinkedBlockingQueue<MethodExecutionLog> queue;
-        if (type == Type_Pool_Log) {//connection logs
+        if (log.getType() == Type_Pool_Log) {//connection logs
             queue = connectionGetLogsQueue;
         } else {//sql execution logs
             queue = sqlExecutionLogsQueue;
-            if (parameters == null || parameters.length == 0) {
-                log.setSql(sql);
-            } else {
-                log.setSql((String) parameters[0]);
-            }
         }
 
         while (!queue.offer(log)) {
-            if (queue.size() == this.maxSize) {
-                MethodExecutionLog firstLog = queue.poll();
-                if (firstLog != null) firstLog.setRemoved(true);
-            }
+            MethodExecutionLog firstLog = queue.poll();
+            if (firstLog != null) firstLog.setRemoved(true);
         }
     }
 
     public void afterCall(Object callResult, long preparationTookTime, Object[] preparedParameters, BeeMethodLog log) throws SQLException {
-        MethodExecutionLog defaultTypeLog = (MethodExecutionLog) log;
-        defaultTypeLog.setResult(callResult, preparationTookTime, preparedParameters);
-        int logType = defaultTypeLog.getType();
+        MethodExecutionLog logImpl = (MethodExecutionLog) log;
+        logImpl.setResult(callResult, preparationTookTime, preparedParameters);
 
-        if (defaultTypeLog.isRemoved()) {
-            defaultTypeLog.setRemoved(false);
-            offerQueue(defaultTypeLog, logType, defaultTypeLog.getParameters(), defaultTypeLog.getSql());
+        if (logImpl.isRemoved()) {
+            logImpl.setRemoved(false);
+            offerQueue(logImpl);
         }
 
-        defaultTypeLog.setAsSlow(0L, Type_Pool_Log == logType ? this.slowConnectionThreshold : this.slowSQLThreshold);
+        logImpl.setAsSlow(0L, Type_Pool_Log == logImpl.getType() ? this.slowConnectionThreshold : this.slowSQLThreshold);
         if (listener != null) listener.onMethodEnd(log);
     }
 

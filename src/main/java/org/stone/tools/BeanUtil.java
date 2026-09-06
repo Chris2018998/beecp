@@ -90,8 +90,8 @@ public class BeanUtil {
      * @param propertyName is a value search key
      * @return mapped value
      */
-    public static String getPropertyValue(Map<String, String> valueMap, final String propertyName) {
-        String value = valueMap.get(propertyName);
+    public static Object getPropertyValue(Map<String, Object> valueMap, final String propertyName) {
+        Object value = valueMap.get(propertyName);
         if (value != null) return value;
         value = valueMap.get(propertyNameToFieldId(propertyName, Separator_MiddleLine));
         if (value != null) return value;
@@ -161,7 +161,7 @@ public class BeanUtil {
      * @param valueMap properties value store
      * @throws BeanException if bean is null
      */
-    public static void setPropertiesValue(Object bean, Map<String, ?> valueMap) throws BeanException {
+    public static void setPropertiesValue(Object bean, Map<String, Object> valueMap) throws BeanException {
         if (bean == null) throw new BeanException("Bean can't be null");
         setPropertiesValue(bean, getClassSetMethodMap(bean.getClass()), valueMap);
     }
@@ -174,7 +174,7 @@ public class BeanUtil {
      * @param valueMap     properties value store
      * @throws BeanException if bean is null
      */
-    public static void setPropertiesValue(Object bean, Map<String, Method> setMethodMap, Map<String, ?> valueMap) throws BeanException {
+    public static void setPropertiesValue(Object bean, Map<String, Method> setMethodMap, Map<String, Object> valueMap) throws BeanException {
         if (bean == null) throw new BeanException("Bean can't be null");
         if (setMethodMap == null || setMethodMap.isEmpty() || valueMap == null || valueMap.isEmpty()) return;
         for (Map.Entry<String, Method> entry : setMethodMap.entrySet()) {
@@ -252,7 +252,8 @@ public class BeanUtil {
      */
     public static <V> V createClassInstance(String beanClassName, Class<?> parentClass, String objectClassType)
             throws ClassNotFoundException, BeanException {
-        return (V)createClassInstance(loadClass(beanClassName), parentClass != null ? new Class[]{parentClass} : null, objectClassType);
+        Class<V> beanClass = loadClass(beanClassName);
+        return createClassInstance(beanClass, parentClass != null ? new Class[]{parentClass} : null, objectClassType);
     }
 
     /**
@@ -308,6 +309,8 @@ public class BeanUtil {
         //5: create instance with constructor
         try {
             return beanClass.getConstructor().newInstance();
+        } catch (InvocationTargetException e) {
+            throw new BeanException("Failed to create instance on class[" + beanClass.getName() + "]", e.getCause());
         } catch (Throwable e) {
             throw new BeanException("Failed to create instance on class[" + beanClass.getName() + "]", e);
         }
@@ -348,7 +351,7 @@ public class BeanUtil {
         text = text.trim();
 
         if (targetType == char.class || targetType == Character.class) {
-            return Character.valueOf(text.charAt(0));
+            return text.charAt(0);
         } else if (targetType == boolean.class || targetType == Boolean.class) {
             return Boolean.valueOf(text);
         } else if (targetType == byte.class || targetType == Byte.class) {
@@ -405,20 +408,6 @@ public class BeanUtil {
             Object objInstance = Class.forName(text, true, BeeClassLoader).getDeclaredConstructor().newInstance();
             if (targetType.isInstance(objInstance)) return objInstance;
             throw new ClassCastException();
-        }
-    }
-
-    /**
-     * Query given bean name is whether registered
-     *
-     * @param beanName is a name to be queried
-     * @return true if registered
-     */
-    public static boolean isRegisteredMBean(String beanName) throws Exception {
-        try {
-            return ManagementFactory.getPlatformMBeanServer().isRegistered(new ObjectName(beanName));
-        } catch (Throwable e) {
-            throw new BeanException("Failed to check MBean with name:" + beanName, e);
         }
     }
 

@@ -58,13 +58,13 @@ public class Tc0042DsPoolJvmHookTest {
         //false-->true
         BeeDataSourceConfig config2 = createDefault();
         config2.setRegisterJvmHook(false);
-        try (BeeDataSource ds = new BeeDataSource(config)) {
+        try (BeeDataSource ds = new BeeDataSource(config2)) {
             Object pool = TestUtil.getFieldValue(ds, "pool");
             Assertions.assertNotNull(pool);
             Assertions.assertNull(TestUtil.getFieldValue(pool, "exitHook"));
 
-            config.setRegisterJvmHook(true);
-            ds.restart(true, config);
+            config2.setRegisterJvmHook(true);
+            ds.restart(true, config2);
             Assertions.assertNotNull(pool);
             Assertions.assertNotNull(TestUtil.getFieldValue(pool, "exitHook"));
         }

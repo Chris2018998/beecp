@@ -416,7 +416,7 @@ final class ProxyClassesGenerator {
                     CtClass[] parameterTypes = ctMethod.getParameterTypes();
                     int methodParameterSize = parameterTypes.length;
                     if (methodParameterSize == 0) {
-                        methodBuffer.append("BeeMethodLog log = logCache.beforeCall(BeeMethodLog.Type_Statement_Log,").append(methodSignature).append(",null,null,null);");
+                        methodBuffer.append("BeeMethodLog log = logCache.beforeCall(BeeMethodLog.Type_Connection_Log,").append(methodSignature).append(",null,null,null);");
                     } else {
                         methodBuffer.append("Object[]parameters = new Object[]{");
                         for (int i = 0; i < methodParameterSize; i++) {
@@ -424,29 +424,32 @@ final class ProxyClassesGenerator {
                             methodBuffer.append(getConvertType("$" + (i + 1), parameterTypes[i]));
                         }
                         methodBuffer.append("};");
-                        methodBuffer.append("BeeMethodLog log = logCache.beforeCall(BeeMethodLog.Type_Statement_Log,").append(methodSignature).append(",parameters,null,null);");
+                        methodBuffer.append("BeeMethodLog log = logCache.beforeCall(BeeMethodLog.Type_Connection_Log,").append(methodSignature).append(",parameters,null,null);");
                     }
 
                     //2.2: add 'try'
-                    if (existsSQLException) methodBuffer.append(" try{");
-
+                    methodBuffer.append(" Object result=null;");
+                    methodBuffer.append(" try{");
                     //2.3: add 'raw PreparedStatement invocation'
                     methodBuffer.append(ctResultType.getName()).append(" re=raw.").append(methodName).append("($$);");
+                    methodBuffer.append("result=re;");
 
-                    //2.4: add 'logCache.afterCall'
-                    methodBuffer.append("logCache.afterCall(re,0L,null,log);");
-
-                    //2.5: add 'proxy object creation' code
+                    //2.4: add 'proxy object creation' code
                     methodBuffer.append("return new ProxyPsStatement4L(re,this,p,log.getEndTime() - log.getStartTime(),$1);");
 
-                    //2.6: add 'catch'
+                    //2.5: add 'catch'
                     if (existsSQLException) {
                         methodBuffer.append(" }catch(SQLException e){");
+                        methodBuffer.append(" result=e;");
                         methodBuffer.append(" p.checkSQLException(e);");
-                        methodBuffer.append(" logCache.afterCall(e,0L,null,log);");
-                        methodBuffer.append(" throw e;}");
+                        //methodBuffer.append(" logCache.afterCall(e,0L,null,log);");
+                        methodBuffer.append(" throw e;");
                     }
 
+                    //2.5: add 'finally'
+                    methodBuffer.append(" }finally{");
+                    methodBuffer.append("   logCache.afterCall(result,0L,null,log);");
+                    methodBuffer.append(" }");
                 } else if (ctResultType == ctCallableStatementClass) {//Connection.prepareCall(...)
                     //3.1: add 'logCache.beforeCall'
                     String methodSignature = getCtMethodSignature("Connection", ctMethod);
@@ -465,24 +468,28 @@ final class ProxyClassesGenerator {
                     }
 
                     //3.2: add 'try'
-                    if (existsSQLException) methodBuffer.append(" try{");
+                    methodBuffer.append(" Object result=null;");
+                    methodBuffer.append(" try{");
 
                     //3.3: add 'raw CallableStatement invocation'
                     methodBuffer.append(ctResultType.getName()).append(" re=raw.").append(methodName).append("($$);");
+                    methodBuffer.append("result=re;");
 
-                    //3.4: add 'logCache.afterCall'
-                    methodBuffer.append("logCache.afterCall(re,0L,null,log);");
-
-                    //3.5: dd 'proxy object creation' code
+                    //3.4: dd 'proxy object creation' code
                     methodBuffer.append("return new ProxyCsStatement4L(re,this,p,log.getEndTime()-log.getStartTime(),$1);");
 
-                    //3.6: add 'catch'
+                    //3.5: add 'catch'
                     if (existsSQLException) {
                         methodBuffer.append(" }catch(SQLException e){");
+                        methodBuffer.append(" result=e;");
                         methodBuffer.append(" p.checkSQLException(e);");
-                        methodBuffer.append(" logCache.afterCall(e,0L,null,log);");
-                        methodBuffer.append(" throw e;}");
+                        methodBuffer.append(" throw e;");
                     }
+
+                    //2.5: add 'finally'
+                    methodBuffer.append(" }finally{");
+                    methodBuffer.append("  logCache.afterCall(result,0L,null,log);");
+                    methodBuffer.append(" }");
                 }
                 methodBuffer.append("}");
                 newCtMethod.setBody(methodBuffer.toString());
@@ -592,7 +599,9 @@ final class ProxyClassesGenerator {
 
                 //2: add 'try' code snippet
                 boolean existsSQLException = exitsSQLException(ctMethod.getExceptionTypes());
-                if (existsSQLException) methodBuffer.append("  try{");
+
+                methodBuffer.append(" Object result=null;");
+                methodBuffer.append(" try{");
 
                 //3: set dirty flag
                 methodBuffer.append("p.commitDirtyInd=!p.curAutoCommit;");
@@ -607,10 +616,8 @@ final class ProxyClassesGenerator {
                 methodBuffer.append("p.lastAccessTime=System.currentTimeMillis();");
 
                 //6: add 'logCache.afterCall' code snippet
-                if (ctResultType == CtClass.voidType) {
-                    methodBuffer.append("logCache.afterCall(null,preparationTookTime,null,log);");
-                } else {
-                    methodBuffer.append("logCache.afterCall(").append(getConvertType("r", ctResultType)).append(",preparationTookTime,null,log);");
+                if (ctResultType != CtClass.voidType) {
+                    methodBuffer.append("result=").append(getConvertType("r", ctResultType)).append(";");
                 }
 
                 //7: return block
@@ -623,10 +630,15 @@ final class ProxyClassesGenerator {
                 //8: catch block
                 if (existsSQLException) {
                     methodBuffer.append(" }catch(SQLException e){");
+                    methodBuffer.append(" result=e;");
                     methodBuffer.append(" p.checkSQLException(e);");
-                    methodBuffer.append(" logCache.afterCall(e,preparationTookTime,null,log);");
-                    methodBuffer.append(" throw e;}");
+                    methodBuffer.append(" throw e;");
                 }
+
+                //9: add 'finally'
+                methodBuffer.append(" }finally{");
+                methodBuffer.append(" logCache.afterCall(result,preparationTookTime,null,log);");
+                methodBuffer.append(" }");
 
                 //method end
                 methodBuffer.append("}");

@@ -13,7 +13,7 @@ import org.stone.beecp.BeeConnectionPool;
 import org.stone.beecp.exception.BeeDataSourceConfigException;
 import org.stone.beecp.exception.BeeDataSourcePoolHasClosedException;
 import org.stone.beecp.exception.BeeDataSourcePoolLazyInitializationException;
-import org.stone.beecp.exception.ConnectionTestSqlExecutedException;
+import org.stone.beecp.exception.ConnectionSqlValidateException;
 
 import javax.sql.CommonDataSource;
 import javax.sql.XAConnection;
@@ -190,7 +190,7 @@ public final class ConnectionPoolStatics {
     static String getPoolStateDesc(int state) {
         switch (state) {
             case POOL_LAZY:
-                return "Pool is lazy and initialized by calling one of its methods:getObjectHandle or getXAConnection";
+                return "Pool is lazy";
             case POOL_NEW:
                 return "Pool is new";
             case POOL_STARTING:
@@ -316,7 +316,7 @@ public final class ConnectionPoolStatics {
             try {
                 st.execute(testSql);
             } catch (Throwable e) {
-                throw new ConnectionTestSqlExecutedException("Invalid test sql:" + testSql, e);
+                throw new ConnectionSqlValidateException("Invalid test sql:" + testSql, e);
             } finally {
                 rawCon.rollback();//why? maybe store procedure in test sql
             }

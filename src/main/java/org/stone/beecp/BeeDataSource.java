@@ -9,7 +9,7 @@
  */
 package org.stone.beecp;
 
-import org.stone.beecp.exception.BeeDataSourceCreatedException;
+import org.stone.beecp.exception.BeeDataSourceCreationException;
 import org.stone.beecp.exception.BeeDataSourcePoolInstantiatedException;
 import org.stone.beecp.exception.ConnectionGetInterruptedException;
 import org.stone.beecp.exception.ConnectionGetTimeoutException;
@@ -73,7 +73,7 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
             BeeDataSource.createPool(this);
             this.maxWaitNanos = MILLISECONDS.toNanos(config.getMaxWait());
         } catch (SQLException e) {
-            throw new BeeDataSourceCreatedException(e);
+            throw new BeeDataSourceCreationException(e);
         }
     }
 
@@ -219,6 +219,10 @@ public class BeeDataSource extends BeeDataSourceConfig implements DataSource, XA
     //***************************************************************************************************************//
     public String toString() {
         return pool.toString();
+    }
+
+    public boolean isLazy() {
+        return !this.poolInitialized;
     }
 
     public boolean isClosed() {

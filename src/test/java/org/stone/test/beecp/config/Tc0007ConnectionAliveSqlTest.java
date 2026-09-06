@@ -33,28 +33,28 @@ public class Tc0007ConnectionAliveSqlTest {
             config.setAliveTestSql(null);
             fail("[testOnSetAndGet]Setting test failed on configuration item[alive-test-sql]");
         } catch (BeeDataSourceConfigException e) {
-            Assertions.assertEquals("The given value for configuration item 'alive-test-sql' cannot be null or empty", e.getMessage());
+            Assertions.assertEquals("The given value of 'alive-test-sql' cannot be null or empty", e.getMessage());
         }
 
         try {
             config.setAliveTestSql("");
             fail("[testOnSetAndGet]Setting test failed on configuration item[alive-test-sql]");
         } catch (BeeDataSourceConfigException e) {
-            Assertions.assertEquals("The given value for configuration item 'alive-test-sql' cannot be null or empty", e.getMessage());
+            Assertions.assertEquals("The given value of 'alive-test-sql' cannot be null or empty", e.getMessage());
         }
 
         try {
             config.setAliveTestSql(" ");
             fail("[testOnSetAndGet]Setting test failed on configuration item[alive-test-sql]");
         } catch (BeeDataSourceConfigException e) {
-            Assertions.assertEquals("The given value for configuration item 'alive-test-sql' cannot be null or empty", e.getMessage());
+            Assertions.assertEquals("The given value of 'alive-test-sql' cannot be null or empty", e.getMessage());
         }
 
         try {
             config.setAliveTestSql("SELECT1");
             fail("[testInvalidConfigTestSQL]Setting test failed on configuration item[alive-test-sql]");
         } catch (BeeDataSourceConfigException e) {
-            assertEquals("The given value for configuration item 'alive-test-sql' must start with 'select '", e.getMessage());
+            assertEquals("The given value of 'alive-test-sql' must start with 'select '", e.getMessage());
         }
 
         Assertions.assertEquals("SELECT 2", config.getAliveTestSql());

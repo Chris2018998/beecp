@@ -1,5 +1,10 @@
 beecp changes
 
+Changes in 5.2.3
+-----------------------------------------------------
+1: Support load configuration from map
+2: Attempt to create new one when bad pooled connection borrowed
+
 Changes in 5.2.2
 1: Fix hook registration issue
 

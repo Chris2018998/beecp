@@ -13,8 +13,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.exception.BeeDataSourceCreatedException;
-import org.stone.beecp.exception.BeeDataSourcePoolStartedFailureException;
+import org.stone.beecp.exception.BeeDataSourceCreationException;
+import org.stone.beecp.exception.BeeDataSourcePoolStartFailedException;
 import org.stone.beecp.pool.FastConnectionPool;
 import org.stone.test.base.LogCollector;
 import org.stone.test.beecp.objects.factory.ExceptionConnectionFactory;
@@ -45,9 +45,9 @@ public class Tc0034DsPoolStartFailTest {
         //1: create initial connections in sync mode(no one created successful)
         try (BeeDataSource ignored = new BeeDataSource(config)) {
             Assertions.fail("[testInitializationFail]Test failed");
-        } catch (BeeDataSourceCreatedException e) {
-            Assertions.assertInstanceOf(BeeDataSourcePoolStartedFailureException.class, e.getCause());
-            BeeDataSourcePoolStartedFailureException poolFailureException = (BeeDataSourcePoolStartedFailureException) e.getCause();
+        } catch (BeeDataSourceCreationException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolStartFailedException.class, e.getCause());
+            BeeDataSourcePoolStartFailedException poolFailureException = (BeeDataSourcePoolStartFailedException) e.getCause();
             SQLException failCause = (SQLException) poolFailureException.getCause();
             Assertions.assertEquals(errorMsg1, failCause.getMessage());
         }
@@ -58,9 +58,9 @@ public class Tc0034DsPoolStartFailTest {
         String errorMsg2 = "the count of created connections has reached max";
         try (BeeDataSource ignored = new BeeDataSource(config)) {
             Assertions.fail("[testInitializationFail]Test failed");
-        } catch (BeeDataSourceCreatedException e) {
-            Assertions.assertInstanceOf(BeeDataSourcePoolStartedFailureException.class, e.getCause());
-            BeeDataSourcePoolStartedFailureException poolFailureException = (BeeDataSourcePoolStartedFailureException) e.getCause();
+        } catch (BeeDataSourceCreationException e) {
+            Assertions.assertInstanceOf(BeeDataSourcePoolStartFailedException.class, e.getCause());
+            BeeDataSourcePoolStartFailedException poolFailureException = (BeeDataSourcePoolStartFailedException) e.getCause();
             SQLException failCause = (SQLException) poolFailureException.getCause();
             Assertions.assertEquals(errorMsg2, failCause.getMessage());
         }
@@ -75,7 +75,7 @@ public class Tc0034DsPoolStartFailTest {
             Assertions.assertNotNull(ignored);
             String runtimeLog = logCollector.endLogCollector();
             Assertions.assertTrue(runtimeLog.contains("Failed to create initial connections by async mode"));
-        } catch (BeeDataSourceCreatedException e) {
+        } catch (BeeDataSourceCreationException e) {
             Assertions.fail("[testInitializationFail]Test failed");
         }
     }
@@ -86,7 +86,7 @@ public class Tc0034DsPoolStartFailTest {
             pool.start(null);
             Assertions.fail("[testNullConfig]Test failed");
         } catch (SQLException e) {
-            Assertions.assertInstanceOf(BeeDataSourcePoolStartedFailureException.class, e);
+            Assertions.assertInstanceOf(BeeDataSourcePoolStartFailedException.class, e);
             Assertions.assertEquals("Data source configuration can't be null", e.getMessage());
         }
     }
@@ -107,10 +107,10 @@ public class Tc0034DsPoolStartFailTest {
             thread2.join();
 
             if (thread1.getFailCause() != null && thread2.getFailCause() == null) {
-                Assertions.assertInstanceOf(BeeDataSourcePoolStartedFailureException.class, thread1.getFailCause());
+                Assertions.assertInstanceOf(BeeDataSourcePoolStartFailedException.class, thread1.getFailCause());
                 Assertions.assertEquals("Data source pool is starting up or already has started", thread1.getFailCause().getMessage());
             } else if (thread1.getFailCause() == null && thread2.getFailCause() != null) {
-                Assertions.assertInstanceOf(BeeDataSourcePoolStartedFailureException.class, thread2.getFailCause());
+                Assertions.assertInstanceOf(BeeDataSourcePoolStartFailedException.class, thread2.getFailCause());
                 Assertions.assertEquals("Data source pool is starting up or already has started", thread2.getFailCause().getMessage());
             }
         }

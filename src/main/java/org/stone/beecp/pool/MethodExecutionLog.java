@@ -34,6 +34,8 @@ public class MethodExecutionLog implements BeeMethodLog {
     private final String id;
     //pool name
     private final String poolName;
+    //call thread
+    private final Thread callThread;
 
     //Method name of pool or (Statement,PreparedStatement,CallableStatement)
     private final String method;
@@ -70,7 +72,7 @@ public class MethodExecutionLog implements BeeMethodLog {
     //handled flag
     private boolean handled;
 
-    public MethodExecutionLog(String poolName, int type, String method, Object[] parameters, Statement statement) {
+    public MethodExecutionLog(String poolName, int type, String method, Object[] parameters, String sql, Statement statement) {
         this.poolName = poolName;
         this.type = type;
         this.method = method;
@@ -78,10 +80,22 @@ public class MethodExecutionLog implements BeeMethodLog {
         this.statement = statement;
         this.id = UUID.randomUUID().toString();
         this.startTime = System.currentTimeMillis();
+        this.callThread = Thread.currentThread();
+        if (type != Type_Pool_Log) {
+            if (parameters == null || parameters.length == 0) {
+                this.sql = sql;
+            } else {
+                this.sql = (String) parameters[0];
+            }
+        }
     }
 
     public String getPoolName() {
         return this.poolName;
+    }
+
+    public Thread getCallThread() {
+        return this.callThread;
     }
 
     public int getType() {
@@ -154,10 +168,6 @@ public class MethodExecutionLog implements BeeMethodLog {
 
     public String getSql() {
         return sql;
-    }
-
-    void setSql(String sql) {
-        this.sql = sql;
     }
 
     public long getSqlPreparedTime() {

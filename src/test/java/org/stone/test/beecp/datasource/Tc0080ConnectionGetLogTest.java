@@ -50,6 +50,7 @@ public class Tc0080ConnectionGetLogTest {
                 BeeMethodLog log = logList.get(0);
                 Assertions.assertNotNull(log.getId());
                 Assertions.assertEquals(Type_Pool_Log, log.getType());
+                Assertions.assertEquals(Thread.currentThread(), log.getCallThread());
 
                 Assertions.assertEquals("FastConnectionPool.getConnection()", log.getMethod());
                 Assertions.assertFalse(log.isSuccessful());

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.stone.beecp.BeeConnectionPool;
 import org.stone.beecp.BeeDataSource;
 import org.stone.beecp.BeeDataSourceConfig;
-import org.stone.beecp.exception.BeeDataSourceCreatedException;
+import org.stone.beecp.exception.BeeDataSourceCreationException;
 import org.stone.beecp.exception.BeeDataSourcePoolInstantiatedException;
 import org.stone.test.beecp.objects.factory.MockConnectionFactory;
 import org.stone.test.beecp.objects.pool.PoolImpl_NoDefaultConstructor;
@@ -35,7 +35,7 @@ public class Tc0032DsPoolCreateFailTest {
         config.setPoolImplementClassName(poolClassName);
         try (BeeDataSource ignored = new BeeDataSource(config)) {
             Assertions.fail("[testFailException]test failed");
-        } catch (BeeDataSourceCreatedException e) {
+        } catch (BeeDataSourceCreationException e) {
             Assertions.assertInstanceOf(BeeDataSourcePoolInstantiatedException.class, e.getCause());
             BeeDataSourcePoolInstantiatedException poolCreateFailedException = (BeeDataSourcePoolInstantiatedException) e.getCause();
             Assertions.assertInstanceOf(BeanException.class, poolCreateFailedException.getCause());
@@ -48,7 +48,7 @@ public class Tc0032DsPoolCreateFailTest {
         config.setPoolImplementClassName(poolClassName2);
         try (BeeDataSource ignored = new BeeDataSource(config)) {
             Assertions.fail("[testFailException]test failed");
-        } catch (BeeDataSourceCreatedException e) {
+        } catch (BeeDataSourceCreationException e) {
             Assertions.assertInstanceOf(BeeDataSourcePoolInstantiatedException.class, e.getCause());
             BeeDataSourcePoolInstantiatedException poolCreateFailedException = (BeeDataSourcePoolInstantiatedException) e.getCause();
             Assertions.assertInstanceOf(BeanException.class, poolCreateFailedException.getCause());
@@ -62,7 +62,7 @@ public class Tc0032DsPoolCreateFailTest {
         config.setPoolImplementClassName(poolClassName3);
         try (BeeDataSource ignored = new BeeDataSource(config)) {
             Assertions.fail("[testFailException]test failed");
-        } catch (BeeDataSourceCreatedException e) {
+        } catch (BeeDataSourceCreationException e) {
             Assertions.assertInstanceOf(BeeDataSourcePoolInstantiatedException.class, e.getCause());
             BeeDataSourcePoolInstantiatedException poolCreateFailedException = (BeeDataSourcePoolInstantiatedException) e.getCause();
             Assertions.assertInstanceOf(ClassNotFoundException.class, poolCreateFailedException.getCause());

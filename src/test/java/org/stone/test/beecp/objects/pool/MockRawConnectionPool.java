@@ -11,7 +11,7 @@ package org.stone.test.beecp.objects.pool;
 
 import org.stone.beecp.*;
 import org.stone.beecp.exception.BeeDataSourcePoolNotReadyException;
-import org.stone.beecp.exception.BeeDataSourcePoolStartedFailureException;
+import org.stone.beecp.exception.BeeDataSourcePoolStartFailedException;
 import org.stone.beecp.exception.ConnectionGetInterruptedException;
 import org.stone.beecp.exception.ConnectionGetTimeoutException;
 import org.stone.tools.extension.InterruptableSemaphore;
@@ -55,7 +55,7 @@ public final class MockRawConnectionPool implements BeeConnectionPool {
      */
     public void start(BeeDataSourceConfig config) throws SQLException {
         if (config == null)
-            throw new BeeDataSourcePoolStartedFailureException("Data source configuration can't be null");
+            throw new BeeDataSourcePoolStartFailedException("Data source configuration can't be null");
         this.poolConfig = config.check();
         this.defaultMaxWait = MILLISECONDS.toNanos(poolConfig.getMaxWait());
         this.poolName = poolConfig.getPoolName();

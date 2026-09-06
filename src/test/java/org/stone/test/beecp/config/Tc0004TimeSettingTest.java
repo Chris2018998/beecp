@@ -38,13 +38,13 @@ public class Tc0004TimeSettingTest {
             config.setMaxWait(0L);//zero is not acceptable
             fail("[testSetAndGet]Setting test failed on configuration item[max-wait]");
         } catch (BeeDataSourceConfigException e) {
-            Assertions.assertEquals("The given value for configuration item 'max-wait' must be greater than zero", e.getMessage());
+            Assertions.assertEquals("The given value of 'max-wait' must be greater than zero", e.getMessage());
         }
         try {
             config.setMaxWait(-1L);//negative number is not acceptable
             fail("[testSetAndGet]Setting test failed on configuration item[max-wait]");
         } catch (BeeDataSourceConfigException e) {
-            Assertions.assertEquals("The given value for configuration item 'max-wait' must be greater than zero", e.getMessage());
+            Assertions.assertEquals("The given value of 'max-wait' must be greater than zero", e.getMessage());
         }
         Assertions.assertEquals(5000L, config.getMaxWait());//check field value not changed
 
@@ -56,13 +56,13 @@ public class Tc0004TimeSettingTest {
             config.setIdleTimeout(0L);
             fail("[testSetAndGet]Setting test failed on configuration item[idle-timeout]");
         } catch (BeeDataSourceConfigException e) {
-            Assertions.assertEquals("The given value for configuration item 'idle-timeout' must be greater than zero", e.getMessage());
+            Assertions.assertEquals("The given value of 'idle-timeout' must be greater than zero", e.getMessage());
         }
         try {
             config.setIdleTimeout(-1L);
             fail("[testSetAndGet]Setting test failed on configuration item[idle-timeout]");
         } catch (BeeDataSourceConfigException e) {
-            Assertions.assertEquals("The given value for configuration item 'idle-timeout' must be greater than zero", e.getMessage());
+            Assertions.assertEquals("The given value of 'idle-timeout' must be greater than zero", e.getMessage());
         }
         Assertions.assertEquals(5000L, config.getIdleTimeout());//check field value not changed
 
@@ -76,7 +76,7 @@ public class Tc0004TimeSettingTest {
             config.setHoldTimeout(-1L);
             fail("[testSetAndGet]Setting test failed on configuration item[hold-timeout]");
         } catch (BeeDataSourceConfigException e) {
-            Assertions.assertEquals("The given value for configuration item 'hold-timeout' cannot be less than zero", e.getMessage());
+            Assertions.assertEquals("The given value of 'hold-timeout' cannot be less than zero", e.getMessage());
         }
         Assertions.assertEquals(0L, config.getHoldTimeout());//check field value not changed
 
@@ -88,7 +88,7 @@ public class Tc0004TimeSettingTest {
             config.setAliveTestTimeout(-1);
             fail("[testSetAndGet]Setting test failed on configuration item[alive-test-timeout]");
         } catch (BeeDataSourceConfigException e) {
-            Assertions.assertEquals("The given value for configuration item 'alive-test-timeout' cannot  be less than zero", e.getMessage());
+            Assertions.assertEquals("The given value of 'alive-test-timeout' cannot  be less than zero", e.getMessage());
         }
         Assertions.assertEquals(0, config.getAliveTestTimeout());//not change check
 
@@ -100,7 +100,7 @@ public class Tc0004TimeSettingTest {
             config.setAliveAssumeTime(-1L);
             fail("[testSetAndGet]Setting test failed on configuration item[alive-assume-time]");
         } catch (BeeDataSourceConfigException e) {
-            Assertions.assertEquals("The given value for configuration item 'alive-assume-time' cannot be less than zero", e.getMessage());
+            Assertions.assertEquals("The given value of 'alive-assume-time' cannot be less than zero", e.getMessage());
         }
         Assertions.assertEquals(0L, config.getAliveAssumeTime());//not change check
 
@@ -112,13 +112,13 @@ public class Tc0004TimeSettingTest {
             config.setIntervalOfClearTimeout(0L);
             fail("[testSetAndGet]Setting test failed on configuration item[interval-to-clear-timeout]");
         } catch (BeeDataSourceConfigException e) {
-            Assertions.assertEquals("The given value for configuration item 'interval-of-clear-timeout' must be greater than zero", e.getMessage());
+            Assertions.assertEquals("The given value of 'interval-of-clear-timeout' must be greater than zero", e.getMessage());
         }
         try {
             config.setIntervalOfClearTimeout(-1L);
             fail("[testSetAndGet]Setting test failed on configuration item[interval-to-clear-timeout]");
         } catch (BeeDataSourceConfigException e) {
-            Assertions.assertEquals("The given value for configuration item 'interval-of-clear-timeout' must be greater than zero", e.getMessage());
+            Assertions.assertEquals("The given value of 'interval-of-clear-timeout' must be greater than zero", e.getMessage());
         }
         Assertions.assertEquals(MINUTES.toMillis(2L), config.getAliveAssumeTime());//not change check
 
@@ -135,7 +135,7 @@ public class Tc0004TimeSettingTest {
             config.setParkTimeForRetry(-1);
             fail("[testSetAndGet]Setting test failed on configuration item[park-time-for-retry]");
         } catch (BeeDataSourceConfigException e) {
-            Assertions.assertEquals("The given value for configuration item 'park-time-for-retry' cannot be less than zero", e.getMessage());
+            Assertions.assertEquals("The given value of 'park-time-for-retry' cannot be less than zero", e.getMessage());
         }
         Assertions.assertEquals(0L, config.getParkTimeForRetry());//not change check
     }

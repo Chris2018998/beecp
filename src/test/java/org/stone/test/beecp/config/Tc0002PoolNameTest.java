@@ -49,17 +49,17 @@ public class Tc0002PoolNameTest {
         Properties prop = new Properties();
 
         prop.setProperty("poolName", "pool1");
-        config.loadFromProperties(prop);
+        config.load(prop);
         assertEquals("pool1", config.getPoolName());
 
         prop.clear();
         prop.setProperty("pool-name", "pool2");
-        config.loadFromProperties(prop);
+        config.load(prop);
         assertEquals("pool2", config.getPoolName());
 
         prop.clear();
         prop.setProperty("pool_name", "pool3");
-        config.loadFromProperties(prop);
+        config.load(prop);
         assertEquals("pool3", config.getPoolName());
     }
 }
